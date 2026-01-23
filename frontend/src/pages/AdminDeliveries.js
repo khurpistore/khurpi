@@ -102,6 +102,8 @@ const DeliveryDialog = ({ delivery, onClose, onSuccess }) => {
 const AdminDeliveries = () => {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
