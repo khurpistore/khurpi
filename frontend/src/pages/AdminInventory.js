@@ -12,9 +12,11 @@ const API = `${BACKEND_URL}/api`;
 const AdminSidebar = ({ active, navigate }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
     { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
     { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
     { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
     { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
   ];
 
