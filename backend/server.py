@@ -598,6 +598,125 @@ async def update_user_address(user_id: str, address: str):
     user.pop("password", None)
     return User(**user)
 
+@api_router.get("/admin/users")
+async def get_all_users():
+    users = await db.users.find({}, {"_id": 0}).to_list(1000)
+    for user in users:
+        user.pop("password", None)
+    return users
+
+@api_router.put("/admin/users/{user_id}")
+async def admin_update_user(user_id: str, user_data: UserUpdate):
+    update_data = {k: v for k, v in user_data.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    result = await db.users.update_one({"id": user_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    user.pop("password", None)
+    return User(**user)
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str):
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"success": True}
+
+@api_router.put("/admin/subscriptions/{subscription_id}")
+async def admin_update_subscription(subscription_id: str, sub_data: SubscriptionUpdate):
+    update_data = {k: v for k, v in sub_data.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    result = await db.subscriptions.update_one({"id": subscription_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    return Subscription(**subscription)
+
+@api_router.delete("/admin/subscriptions/{subscription_id}")
+async def admin_delete_subscription(subscription_id: str):
+    await db.subscription_items.delete_many({"subscription_id": subscription_id})
+    await db.deliveries.delete_many({"subscription_id": subscription_id})
+    result = await db.subscriptions.delete_one({"id": subscription_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    return {"success": True}
+
+@api_router.put("/admin/deliveries/{delivery_id}")
+async def admin_update_delivery(delivery_id: str, delivery_data: DeliveryUpdate):
+    update_data = {k: v for k, v in delivery_data.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    result = await db.deliveries.update_one({"id": delivery_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Delivery not found")
+    
+    delivery = await db.deliveries.find_one({"id": delivery_id}, {"_id": 0})
+    return delivery
+
+@api_router.get("/admin/payments")
+async def get_all_payments_admin():
+    payments = await db.payments.find({}, {"_id": 0}).to_list(1000)
+    
+    result = []
+    for payment in payments:
+        user = await db.users.find_one({"id": payment["user_id"]}, {"_id": 0})
+        subscription = await db.subscriptions.find_one({"id": payment["subscription_id"]}, {"_id": 0})
+        
+        result.append({
+            **payment,
+            "user": user,
+            "subscription": subscription
+        })
+    
+    return result
+
+@api_router.put("/admin/payments/{payment_id}")
+async def admin_update_payment(payment_id: str, payment_data: PaymentUpdate):
+    update_data = {k: v for k, v in payment_data.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    result = await db.payments.update_one({"id": payment_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    payment = await db.payments.find_one({"id": payment_id}, {"_id": 0})
+    return payment
+
+@api_router.get("/admin/stats/recent")
+async def get_recent_activities():
+    recent_subscriptions = await db.subscriptions.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    recent_payments = await db.payments.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    
+    for sub in recent_subscriptions:
+        user = await db.users.find_one({"id": sub["user_id"]}, {"_id": 0})
+        sub["user"] = user
+    
+    for payment in recent_payments:
+        user = await db.users.find_one({"id": payment["user_id"]}, {"_id": 0})
+        payment["user"] = user
+    
+    return {
+        "recent_subscriptions": recent_subscriptions,
+        "recent_payments": recent_payments
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
