@@ -54,6 +54,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     name: product?.name || '',
     image: product?.image || '',
     benefit: product?.benefit || '',
+    nutrients: product?.nutrients || '',
     price: product?.price || '',
     growth_days: product?.growth_days || '',
     active: product?.active !== false
@@ -106,13 +107,24 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
         />
       </div>
       <div>
-        <Label htmlFor="benefit">Benefit</Label>
+        <Label htmlFor="benefit">Health Benefit</Label>
         <Textarea
           id="benefit"
           data-testid="product-benefit-input"
           value={formData.benefit}
           onChange={(e) => setFormData({ ...formData, benefit: e.target.value })}
           required
+          className="mt-1"
+        />
+      </div>
+      <div>
+        <Label htmlFor="nutrients">Nutritional Profile (Format: Category: Values | Category: Values)</Label>
+        <Textarea
+          id="nutrients"
+          data-testid="product-nutrients-input"
+          value={formData.nutrients}
+          onChange={(e) => setFormData({ ...formData, nutrients: e.target.value })}
+          placeholder="Vitamins: A, C, K | Minerals: Calcium, Iron | Protein: 7g per 100g"
           className="mt-1"
         />
       </div>
