@@ -1,0 +1,156 @@
+{
+  "brand_identity": {
+    "name": "Khurpi",
+    "core_values": ["Freshness", "Vitality", "Earth-Connected", "Premium Simplicity"],
+    "emotional_tone": "Organic, Trustworthy, Rejuvenating, Clean",
+    "archetype": "Organic & Earthy (The Modern Grower)"
+  },
+  "theme": {
+    "mode": "light",
+    "strategy": "Nature-Inspired Minimalism. Avoid stark white (#FFFFFF) for backgrounds; use 'Paper White' or 'Soft Stone' to reduce eye strain and increase warmth."
+  },
+  "colors": {
+    "primary": {
+      "name": "Deep Forest",
+      "hex": "#1A3C34",
+      "usage": "Headings, Primary Buttons, Strong Borders",
+      "tailwind_var": "--primary"
+    },
+    "secondary": {
+      "name": "Fresh Sprout",
+      "hex": "#86C232",
+      "usage": "Accents, Success States, Highlights, 'Add' buttons",
+      "tailwind_var": "--secondary"
+    },
+    "background": {
+      "name": "Morning Mist",
+      "hex": "#F7F9F6",
+      "usage": "Main Page Backgrounds",
+      "tailwind_var": "--background"
+    },
+    "surface": {
+      "name": "Pure White",
+      "hex": "#FFFFFF",
+      "usage": "Cards, Modals, Input Fields",
+      "tailwind_var": "--card"
+    },
+    "text": {
+      "primary": "#1A3C34",
+      "secondary": "#4A665F",
+      "muted": "#8B9D98"
+    },
+    "status": {
+      "success": "#4E8D56",
+      "warning": "#E8A633",
+      "error": "#D64545",
+      "info": "#4A8B9D"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "Playfair Display, serif",
+      "weights": ["600", "700"],
+      "usage": "Hero titles, Section headers. Adds the 'Premium' touch.",
+      "letter_spacing": "-0.02em"
+    },
+    "body": {
+      "family": "Manrope, sans-serif",
+      "weights": ["400", "500", "600"],
+      "usage": "UI text, descriptions, buttons, data.",
+      "letter_spacing": "0.01em"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "usage": "Order IDs, Price calculations, Technical data."
+    }
+  },
+  "layout_system": {
+    "spacing_scale": "Generous. Use p-6, p-8, p-12 for containers. Gap-6 or Gap-8 for grids.",
+    "container_width": "max-w-7xl",
+    "border_radius": {
+      "default": "rounded-xl",
+      "card": "rounded-2xl",
+      "button": "rounded-full"
+    },
+    "grids": {
+      "marketing": "Bento Grid (Mode A). Asymmetric layouts for storytelling.",
+      "catalog": "Responsive Grid (grid-cols-1 md:grid-cols-2 lg:grid-cols-3). Focus on large imagery.",
+      "dashboard": "Dense Grid (Mode B). High data density, clear hierarchy."
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "soft": "0 4px 20px -2px rgba(26, 60, 52, 0.08)",
+      "hover": "0 10px 25px -5px rgba(26, 60, 52, 0.12)",
+      "sharp": "4px 4px 0px 0px #1A3C34"
+    },
+    "textures": "Subtle noise overlay (opacity 0.03) on backgrounds to remove digital flatness.",
+    "glassmorphism": "Use sparingly on sticky headers: bg-white/80 backdrop-blur-md border-b border-green-100."
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-white hover:bg-primary/90 rounded-full px-8 py-6 text-lg font-medium transition-transform hover:-translate-y-0.5",
+      "secondary": "bg-white border-2 border-primary/10 text-primary hover:border-primary hover:bg-primary/5 rounded-full px-6 py-4",
+      "ghost": "text-primary hover:bg-primary/5 rounded-lg px-4 py-2"
+    },
+    "cards": {
+      "product": "bg-white rounded-2xl overflow-hidden border border-border/50 hover:shadow-hover transition-all duration-300 group",
+      "dashboard": "bg-white rounded-xl border border-border p-6 shadow-sm"
+    },
+    "inputs": {
+      "style": "bg-white border-border focus:border-primary focus:ring-1 focus:ring-primary/20 rounded-lg h-12 px-4"
+    }
+  },
+  "image_strategy": {
+    "style": "Natural light, high texture, close-ups of leaves/roots. No artificial studio lighting.",
+    "urls": {
+      "hero_bg": "https://images.unsplash.com/photo-1647613233056-fc9918256a8d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwxfHxtaWNyb2dyZWVucyUyMHRyYXklMjBmcmVzaHxlbnwwfHx8fDE3NjkxNzI1MjB8MA&ixlib=rb-4.1.0&q=85",
+      "products": [
+        {
+          "name": "Garden Cress",
+          "url": "https://images.unsplash.com/photo-1653076446136-705337f5d2a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwyfHxtaWNyb2dyZWVucyUyMHRyYXklMjBmcmVzaHxlbnwwfHx8fDE3NjkxNzI1MjB8MA&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "name": "Mixed Salad",
+          "url": "https://images.unsplash.com/photo-1633133451255-5e7b18ba768a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwzfHxtaWNyb2dyZWVucyUyMHRyYXklMjBmcmVzaHxlbnwwfHx8fDE3NjkxNzI1MjB8MA&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "name": "Sunflower Microgreens",
+          "url": "https://images.unsplash.com/photo-1647613233075-e0d5546b0f22?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHw0fHxtaWNyb2dyZWVucyUyMHRyYXklMjBmcmVzaHxlbnwwfHx8fDE3NjkxNzI1MjB8MA&ixlib=rb-4.1.0&q=85"
+        }
+      ],
+      "lifestyle": [
+        "https://images.unsplash.com/photo-1758522483965-54af5d922b7c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwyfHxoYXBweSUyMHBlcnNvbiUyMGVhdGluZyUyMGhlYWx0aHklMjBzYWxhZHxlbnwwfHx8fDE3NjkxNzI1MjV8MA&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1552846573-47e482355fa7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxoYXBweSUyMHBlcnNvbiUyMGVhdGluZyUyMGhlYWx0aHklMjBzYWxhZHxlbnwwfHx8fDE3NjkxNzI1MjV8MA&ixlib=rb-4.1.0&q=85"
+      ]
+    }
+  },
+  "page_specific_guidelines": {
+    "landing_page": {
+      "hero": "Split layout. Left: Bold Typography 'Freshness Delivered'. Right: Hero Image with organic shape mask.",
+      "features": "Use 3-column grid with large icons and generous whitespace.",
+      "cta": "Full width section with 'Deep Forest' background and 'Fresh Sprout' button."
+    },
+    "subscription_flow": {
+      "step_indicator": "Clean horizontal progress bar. Active step: Primary Color. Inactive: Muted.",
+      "tray_selection": "Visual cards. User clicks on the tray image to select. Selected state: Thick Green Border + Checkmark.",
+      "summary": "Sticky sidebar on desktop, bottom sheet on mobile. Live price update is critical."
+    },
+    "admin_dashboard": {
+      "layout": "Sidebar navigation (Dark). Main content area (Light).",
+      "tables": "Clean rows, no vertical borders. Status badges (Active=Green, Paused=Yellow, Cancelled=Red).",
+      "metrics": "Simple cards with big numbers. Sparkline charts for trends."
+    }
+  },
+  "universal_guidelines": [
+    "Do not use gradients for backgrounds, use solid colors or subtle textures.",
+    "Ensure all interactive elements have a hover state.",
+    "Use 'Manrope' for all UI text.",
+    "Use 'Playfair Display' for all Headings (h1-h3).",
+    "All images must have alt text.",
+    "Mobile-first responsive design is mandatory.",
+    "Use 'sonner' for toast notifications.",
+    "Add 'data-testid' to all interactive elements."
+  ],
+  "instructions_to_main_agent": "You are building the frontend for Khurpi. Use the provided colors and typography. Implement the subscription flow with a focus on clarity and ease of use. Use the provided image URLs for the respective sections. Ensure the admin panel is functional and data-dense but legible."
+}
