@@ -68,6 +68,7 @@ class ProductUpdate(BaseModel):
     name: Optional[str] = None
     image: Optional[str] = None
     benefit: Optional[str] = None
+    nutrients: Optional[str] = None
     price: Optional[float] = None
     growth_days: Optional[int] = None
     active: Optional[bool] = None
