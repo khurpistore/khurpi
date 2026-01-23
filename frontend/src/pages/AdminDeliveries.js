@@ -144,6 +144,11 @@ const AdminDeliveries = () => {
     }
   };
 
+  const openDialog = (delivery) => {
+    setSelectedDelivery(delivery);
+    setDialogOpen(true);
+  };
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar active="deliveries" navigate={navigate} />
