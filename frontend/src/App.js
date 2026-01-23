@@ -38,9 +38,11 @@ function App() {
             
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/products" element={<AdminProducts />} />
             <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
             <Route path="/admin/deliveries" element={<AdminDeliveries />} />
+            <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/inventory" element={<AdminInventory />} />
             
             <Route path="*" element={<Navigate to="/" />} />
