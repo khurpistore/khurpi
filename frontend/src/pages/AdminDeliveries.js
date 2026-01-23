@@ -18,9 +18,11 @@ const API = `${BACKEND_URL}/api`;
 const AdminSidebar = ({ active, navigate }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
     { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
     { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
     { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
     { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
   ];
 
@@ -45,6 +47,55 @@ const AdminSidebar = ({ active, navigate }) => {
         })}
       </nav>
     </div>
+  );
+};
+
+const DeliveryDialog = ({ delivery, onClose, onSuccess }) => {
+  const [status, setStatus] = useState(delivery?.status || 'scheduled');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await axios.put(`${API}/admin/deliveries/${delivery.id}`, { status });
+      toast.success('Delivery status updated successfully');
+      onSuccess();
+      onClose();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Operation failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label>Delivery Status</Label>
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger data-testid="delivery-status-select" className="mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="scheduled">Scheduled</SelectItem>
+            <SelectItem value="delivered">Delivered</SelectItem>
+            <SelectItem value="skipped">Skipped</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <Button
+        data-testid="save-delivery-button"
+        type="submit"
+        disabled={loading}
+        className="w-full bg-primary hover:bg-primary/90 rounded-full"
+      >
+        {loading ? 'Saving...' : 'Update Status'}
+      </Button>
+    </form>
   );
 };
 
