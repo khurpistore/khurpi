@@ -206,6 +206,32 @@ const AdminDeliveries = () => {
                       <p className="text-sm font-mono">{delivery.subscription_id.slice(0, 8)}</p>
                     </div>
                   </div>
+                  <Dialog open={dialogOpen && selectedDelivery?.id === delivery.id} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        data-testid={`edit-delivery-button-${delivery.id}`}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDialog(delivery)}
+                        className="rounded-full mt-4"
+                      >
+                        <Pencil className="w-4 h-4 mr-1" />
+                        Update Status
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle className="heading-text">Update Delivery Status</DialogTitle>
+                      </DialogHeader>
+                      {selectedDelivery && (
+                        <DeliveryDialog
+                          delivery={selectedDelivery}
+                          onClose={() => setDialogOpen(false)}
+                          onSuccess={fetchDeliveries}
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </CardContent>
               </Card>
             ))}
