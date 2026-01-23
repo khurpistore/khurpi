@@ -14,9 +14,11 @@ import SubscriptionDetail from '@/pages/SubscriptionDetail';
 import Profile from '@/pages/Profile';
 import AdminLogin from '@/pages/AdminLogin';
 import AdminDashboard from '@/pages/AdminDashboard';
+import AdminUsers from '@/pages/AdminUsers';
 import AdminProducts from '@/pages/AdminProducts';
 import AdminSubscriptions from '@/pages/AdminSubscriptions';
 import AdminDeliveries from '@/pages/AdminDeliveries';
+import AdminPayments from '@/pages/AdminPayments';
 import AdminInventory from '@/pages/AdminInventory';
 
 function App() {
