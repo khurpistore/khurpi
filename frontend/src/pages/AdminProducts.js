@@ -9,8 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, LayoutDashboard, Package, Users, TrendingUp } from 'lucide-react';
+import { Plus, Pencil, Trash2, LayoutDashboard, Package, Users, TrendingUp, CreditCard } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
