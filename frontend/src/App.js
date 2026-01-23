@@ -31,14 +31,15 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/subscription/create" element={<SubscriptionCreate />} />
             <Route path="/subscriptions" element={<MySubscriptions />} />
+            <Route path="/subscription/:id" element={<SubscriptionDetail />} />
             <Route path="/profile" element={<Profile />} />
             
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
             <Route path="/admin/deliveries" element={<AdminDeliveries />} />
             <Route path="/admin/inventory" element={<AdminInventory />} />
-            <Route path="/admin/subscriptions" element={<Navigate to="/admin/dashboard" />} />
             
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
