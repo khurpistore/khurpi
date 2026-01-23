@@ -102,7 +102,8 @@ const Products = () => {
                 <Card
                   key={product.id}
                   data-testid={`product-card-${product.id}`}
-                  className="overflow-hidden border border-border/50 hover:shadow-lg transition-all duration-300 group"
+                  className="overflow-hidden border border-border/50 hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                  onClick={() => navigate(`/product/${product.id}`)}
                 >
                   <div className="aspect-video overflow-hidden">
                     <img
@@ -113,7 +114,7 @@ const Products = () => {
                   </div>
                   <CardContent className="p-6">
                     <h3 className="text-2xl font-semibold text-primary mb-2 heading-text">{product.name}</h3>
-                    <p className="text-muted-foreground mb-4 body-text">{product.benefit}</p>
+                    <p className="text-muted-foreground mb-4 body-text line-clamp-2">{product.benefit}</p>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-2xl font-bold text-primary">₹{product.price}</p>
