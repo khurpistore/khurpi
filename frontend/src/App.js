@@ -10,10 +10,12 @@ import Signup from '@/pages/Signup';
 import Products from '@/pages/Products';
 import SubscriptionCreate from '@/pages/SubscriptionCreate';
 import MySubscriptions from '@/pages/MySubscriptions';
+import SubscriptionDetail from '@/pages/SubscriptionDetail';
 import Profile from '@/pages/Profile';
 import AdminLogin from '@/pages/AdminLogin';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminProducts from '@/pages/AdminProducts';
+import AdminSubscriptions from '@/pages/AdminSubscriptions';
 import AdminDeliveries from '@/pages/AdminDeliveries';
 import AdminInventory from '@/pages/AdminInventory';
 
