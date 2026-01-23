@@ -186,6 +186,21 @@ const AdminSubscriptions = () => {
     setFilteredSubscriptions(filtered);
   };
 
+  const handleDelete = async (subscriptionId) => {
+    try {
+      await axios.delete(`${API}/admin/subscriptions/${subscriptionId}`);
+      toast.success('Subscription deleted successfully');
+      fetchSubscriptions();
+    } catch (error) {
+      toast.error('Failed to delete subscription');
+    }
+  };
+
+  const openDialog = (subscription) => {
+    setSelectedSubscription(subscription);
+    setDialogOpen(true);
+  };
+
   const getStatusBadge = (status) => {
     const colors = {
       active: 'bg-green-100 text-green-800',
