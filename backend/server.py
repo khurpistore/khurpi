@@ -85,6 +85,7 @@ class Subscription(BaseModel):
     tray_count: int
     total_price: float
     next_delivery_date: Optional[str] = None
+    skipped_deliveries: List[str] = []
     created_at: str
 
 class SubscriptionCreate(BaseModel):
@@ -100,6 +101,10 @@ class SubscriptionUpdate(BaseModel):
     frequency: Optional[str] = None
     delivery_day: Optional[str] = None
     tray_count: Optional[int] = None
+
+class SubscriptionItemsUpdate(BaseModel):
+    items: List[SubscriptionItem]
+    total_price: float
 
 class Delivery(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -230,6 +235,7 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "tray_count": sub_data.tray_count,
         "total_price": sub_data.total_price,
         "next_delivery_date": sub_data.start_date,
+        "skipped_deliveries": [],
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -282,6 +288,16 @@ async def get_subscription(subscription_id: str):
 
 @api_router.put("/subscriptions/{subscription_id}", response_model=Subscription)
 async def update_subscription(subscription_id: str, sub_data: SubscriptionUpdate):
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    if sub_data.status == "paused" and subscription.get("next_delivery_date"):
+        delivery_date = datetime.fromisoformat(subscription["next_delivery_date"]).replace(tzinfo=timezone.utc)
+        cutoff_time = delivery_date - timedelta(hours=24)
+        if datetime.now(timezone.utc) >= cutoff_time:
+            raise HTTPException(status_code=400, detail="Cannot pause within 24 hours of next delivery")
+    
     update_data = {k: v for k, v in sub_data.model_dump().items() if v is not None}
     
     if not update_data:
@@ -294,6 +310,88 @@ async def update_subscription(subscription_id: str, sub_data: SubscriptionUpdate
     
     subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
     return Subscription(**subscription)
+
+@api_router.post("/subscriptions/{subscription_id}/skip")
+async def skip_next_delivery(subscription_id: str):
+    import uuid
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    if not subscription.get("next_delivery_date"):
+        raise HTTPException(status_code=400, detail="No upcoming delivery to skip")
+    
+    delivery_date = datetime.fromisoformat(subscription["next_delivery_date"]).replace(tzinfo=timezone.utc)
+    cutoff_time = delivery_date - timedelta(hours=24)
+    
+    if datetime.now(timezone.utc) >= cutoff_time:
+        raise HTTPException(status_code=400, detail="Cannot skip within 24 hours of delivery")
+    
+    skipped_deliveries = subscription.get("skipped_deliveries", [])
+    skipped_deliveries.append(subscription["next_delivery_date"])
+    
+    await db.deliveries.update_one(
+        {"subscription_id": subscription_id, "delivery_date": subscription["next_delivery_date"]},
+        {"$set": {"status": "skipped"}}
+    )
+    
+    next_date = calculate_next_delivery(subscription["next_delivery_date"], subscription["frequency"])
+    
+    await db.subscriptions.update_one(
+        {"id": subscription_id},
+        {"$set": {"skipped_deliveries": skipped_deliveries, "next_delivery_date": next_date}}
+    )
+    
+    new_delivery = {
+        "id": str(uuid.uuid4()),
+        "subscription_id": subscription_id,
+        "delivery_date": next_date,
+        "status": "scheduled",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.deliveries.insert_one(new_delivery)
+    
+    return {"success": True, "next_delivery_date": next_date}
+
+@api_router.put("/subscriptions/{subscription_id}/items")
+async def update_subscription_items(subscription_id: str, update_data: SubscriptionItemsUpdate):
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    await db.subscription_items.delete_many({"subscription_id": subscription_id})
+    
+    import uuid
+    for item in update_data.items:
+        item_doc = {
+            "id": str(uuid.uuid4()),
+            "subscription_id": subscription_id,
+            "product_id": item.product_id,
+            "quantity": item.quantity,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.subscription_items.insert_one(item_doc)
+    
+    await db.subscriptions.update_one(
+        {"id": subscription_id},
+        {"$set": {"total_price": update_data.total_price, "tray_count": sum(i.quantity for i in update_data.items)}}
+    )
+    
+    return {"success": True}
+
+def calculate_next_delivery(current_date: str, frequency: str) -> str:
+    current = datetime.fromisoformat(current_date).replace(tzinfo=timezone.utc)
+    
+    if frequency == "weekly":
+        next_date = current + timedelta(days=7)
+    elif frequency == "bi-weekly":
+        next_date = current + timedelta(days=14)
+    elif frequency == "monthly":
+        next_date = current + timedelta(days=30)
+    else:
+        next_date = current + timedelta(days=7)
+    
+    return next_date.date().isoformat()
 
 @api_router.get("/subscriptions/{subscription_id}/items")
 async def get_subscription_items(subscription_id: str):
@@ -351,6 +449,23 @@ async def get_admin_dashboard():
         "today_deliveries": today_deliveries,
         "total_revenue": total_revenue
     }
+
+@api_router.get("/admin/subscriptions")
+async def get_all_subscriptions_admin():
+    subscriptions = await db.subscriptions.find({}, {"_id": 0}).to_list(1000)
+    
+    result = []
+    for sub in subscriptions:
+        user = await db.users.find_one({"id": sub["user_id"]}, {"_id": 0})
+        items = await db.subscription_items.find({"subscription_id": sub["id"]}, {"_id": 0}).to_list(100)
+        
+        result.append({
+            **sub,
+            "user": user,
+            "items_count": len(items)
+        })
+    
+    return result
 
 @api_router.get("/admin/deliveries/today")
 async def get_today_deliveries():
