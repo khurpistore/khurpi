@@ -1,53 +1,49 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/context/AuthContext';
+import '@/App.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import Landing from '@/pages/Landing';
+import Login from '@/pages/Login';
+import Signup from '@/pages/Signup';
+import Products from '@/pages/Products';
+import SubscriptionCreate from '@/pages/SubscriptionCreate';
+import MySubscriptions from '@/pages/MySubscriptions';
+import Profile from '@/pages/Profile';
+import AdminLogin from '@/pages/AdminLogin';
+import AdminDashboard from '@/pages/AdminDashboard';
+import AdminProducts from '@/pages/AdminProducts';
+import AdminDeliveries from '@/pages/AdminDeliveries';
+import AdminInventory from '@/pages/AdminInventory';
 
 function App() {
   return (
-    <div className="App">
+    <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/subscription/create" element={<SubscriptionCreate />} />
+            <Route path="/subscriptions" element={<MySubscriptions />} />
+            <Route path="/profile" element={<Profile />} />
+            
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/deliveries" element={<AdminDeliveries />} />
+            <Route path="/admin/inventory" element={<AdminInventory />} />
+            <Route path="/admin/subscriptions" element={<Navigate to="/admin/dashboard" />} />
+            
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+          <Toaster position="top-center" />
+        </div>
       </BrowserRouter>
-    </div>
+    </AuthProvider>
   );
 }
 
