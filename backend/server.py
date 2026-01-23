@@ -101,6 +101,20 @@ class SubscriptionUpdate(BaseModel):
     frequency: Optional[str] = None
     delivery_day: Optional[str] = None
     tray_count: Optional[int] = None
+    next_delivery_date: Optional[str] = None
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    role: Optional[str] = None
+
+class DeliveryUpdate(BaseModel):
+    status: Optional[str] = None
+    delivery_date: Optional[str] = None
+
+class PaymentUpdate(BaseModel):
+    status: Optional[str] = None
 
 class SubscriptionItemsUpdate(BaseModel):
     items: List[SubscriptionItem]
