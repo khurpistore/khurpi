@@ -300,6 +300,64 @@ const AdminSubscriptions = () => {
                         )}
                       </div>
                     </div>
+                    <div className="flex gap-2 mt-4">
+                      <Dialog open={dialogOpen && selectedSubscription?.id === subscription.id} onOpenChange={setDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            data-testid={`edit-subscription-button-${subscription.id}`}
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openDialog(subscription)}
+                            className="flex-1 rounded-full"
+                          >
+                            <Pencil className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle className="heading-text">Edit Subscription</DialogTitle>
+                          </DialogHeader>
+                          {selectedSubscription && (
+                            <SubscriptionDialog
+                              subscription={selectedSubscription}
+                              onClose={() => setDialogOpen(false)}
+                              onSuccess={fetchSubscriptions}
+                            />
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            data-testid={`delete-subscription-button-${subscription.id}`}
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 rounded-full text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Subscription?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete this subscription and all associated deliveries. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(subscription.id)}
+                              className="bg-destructive text-destructive-foreground"
+                            >
+                              Delete Subscription
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
