@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, DollarSign, TrendingUp, Download } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, DollarSign, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
