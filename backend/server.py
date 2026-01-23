@@ -49,6 +49,7 @@ class Product(BaseModel):
     name: str
     image: str
     benefit: str
+    nutrients: Optional[str] = None
     price: float
     growth_days: int
     active: bool = True
@@ -58,6 +59,7 @@ class ProductCreate(BaseModel):
     name: str
     image: str
     benefit: str
+    nutrients: Optional[str] = None
     price: float
     growth_days: int
     active: bool = True
