@@ -20,9 +20,11 @@ const API = `${BACKEND_URL}/api`;
 const AdminSidebar = ({ active, navigate }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
     { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
     { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
     { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
     { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
   ];
 
@@ -47,6 +49,87 @@ const AdminSidebar = ({ active, navigate }) => {
         })}
       </nav>
     </div>
+  );
+};
+
+const SubscriptionDialog = ({ subscription, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    status: subscription?.status || 'active',
+    frequency: subscription?.frequency || 'weekly',
+    delivery_day: subscription?.delivery_day || 'Monday'
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await axios.put(`${API}/admin/subscriptions/${subscription.id}`, formData);
+      toast.success('Subscription updated successfully');
+      onSuccess();
+      onClose();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Operation failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label>Status</Label>
+        <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+          <SelectTrigger data-testid="subscription-status-select" className="mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="paused">Paused</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label>Frequency</Label>
+        <Select value={formData.frequency} onValueChange={(value) => setFormData({ ...formData, frequency: value })}>
+          <SelectTrigger data-testid="subscription-frequency-select" className="mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="weekly">Weekly</SelectItem>
+            <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
+            <SelectItem value="monthly">Monthly</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label>Delivery Day</Label>
+        <Select value={formData.delivery_day} onValueChange={(value) => setFormData({ ...formData, delivery_day: value })}>
+          <SelectTrigger data-testid="subscription-delivery-day-select" className="mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Monday">Monday</SelectItem>
+            <SelectItem value="Tuesday">Tuesday</SelectItem>
+            <SelectItem value="Wednesday">Wednesday</SelectItem>
+            <SelectItem value="Thursday">Thursday</SelectItem>
+            <SelectItem value="Friday">Friday</SelectItem>
+            <SelectItem value="Saturday">Saturday</SelectItem>
+            <SelectItem value="Sunday">Sunday</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <Button
+        data-testid="save-subscription-button"
+        type="submit"
+        disabled={loading}
+        className="w-full bg-primary hover:bg-primary/90 rounded-full"
+      >
+        {loading ? 'Saving...' : 'Update Subscription'}
+      </Button>
+    </form>
   );
 };
 
