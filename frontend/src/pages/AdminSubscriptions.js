@@ -139,6 +139,8 @@ const AdminSubscriptions = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSubscription, setSelectedSubscription] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
