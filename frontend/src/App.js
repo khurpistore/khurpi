@@ -8,6 +8,7 @@ import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import Products from '@/pages/Products';
+import ProductDetail from '@/pages/ProductDetail';
 import SubscriptionCreate from '@/pages/SubscriptionCreate';
 import MySubscriptions from '@/pages/MySubscriptions';
 import SubscriptionDetail from '@/pages/SubscriptionDetail';
