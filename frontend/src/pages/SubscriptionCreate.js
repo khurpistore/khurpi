@@ -775,15 +775,6 @@ const SubscriptionCreate = () => {
                   </div>
                 )}
               </CardContent>
-            </Card> 
-                      disabled={referralLoading || !referralCode.trim()}
-                      variant="outline"
-                    >
-                      {referralLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
             </Card>
 
             {/* Payment Method */}
