@@ -107,8 +107,11 @@ const Landing = () => {
           <h3 className="text-3xl sm:text-4xl font-bold mb-6 heading-text">
             Ready to Start Your Healthy Journey?
           </h3>
-          <p className="text-lg mb-8 opacity-90">
+          <p className="text-lg mb-2 opacity-90">
             Join hundreds of health-conscious customers enjoying fresh microgreens delivered to their door.
+          </p>
+          <p className="text-sm mb-8 opacity-75">
+            🚚 Currently delivering in NOIDA area only
           </p>
           <Button
             data-testid="cta-signup-button"
