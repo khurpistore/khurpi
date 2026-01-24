@@ -59,18 +59,37 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 | Beyond 10 km      | ₹150         |
 
 #### Subscription Plans with Discounts
-| Plan Name         | Frequency    | Deliveries/Week | Discount |
-|-------------------|--------------|-----------------|----------|
-| Weekly            | 1x/week      | 1               | 5%       |
-| Twice Weekly      | 2x/week      | 2               | 10%      |
-| Daily (6 days)    | 6 days/week  | 6               | 25%      |
+| Plan Name         | Frequency    | Deliveries/Week | Trays/Month | Discount |
+|-------------------|--------------|-----------------|-------------|----------|
+| Weekly            | 1x/week      | 1               | 4           | 0%       |
+| Twice Weekly      | 2x/week      | 2               | 8           | 10%      |
+| 4 Days a Week     | 4x/week      | 4               | 16          | 50%      |
 
-### 4. Address Management
-- Multiple addresses per user
-- Map-based location selection (Leaflet)
-- Structured fields: Line 1, Line 2, City, Pincode, Landmark
+### 5. Address Management
+- Multiple addresses per user with structured fields:
+  - Address Name/Label (Home, Office, etc.)
+  - Address Line 1 (House/Flat No.)
+  - Address Line 2 (Street, Landmark - optional)
+  - Area/Sector
+  - City (fixed to NOIDA)
+  - PIN Code
+- Map-based location pinning (internal lat/lng - not shown to user)
 - NOIDA-only validation
 - Default address selection
+
+### 6. Discount Coupons (Admin)
+- Create, edit, delete coupons
+- Percentage or fixed amount discounts
+- Min order amount, max discount limits
+- Usage limits, validity dates
+- Active/inactive status
+
+### 7. Referral Program (Admin)
+- Register referrers with unique codes
+- Commission rate per referrer
+- Track referrals and commission earned
+- Mark commission as paid
+- Referral statistics dashboard
 
 ---
 
