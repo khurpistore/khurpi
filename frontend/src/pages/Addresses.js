@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle } from 'lucide-react';
+import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 
 const Addresses = () => {
   const { user, addresses, addAddress, updateAddressById, deleteAddress, setDefaultAddress, fetchAddresses } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [formData, setFormData] = useState({
@@ -28,6 +29,15 @@ const Addresses = () => {
     is_default: false
   });
   const [loading, setLoading] = useState(false);
+  
+  // Check if coming from subscription flow
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get('returnTo');
+
+  // Handle return to subscription
+  const handleBackToSubscription = () => {
+    navigate('/subscription/create?restored=true');
+  };
 
   useEffect(() => {
     if (!user) {
