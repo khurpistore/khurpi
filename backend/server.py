@@ -216,6 +216,10 @@ class SubscriptionCreate(BaseModel):
     total_price: float
     plan_id: Optional[str] = None
     address_id: Optional[str] = None
+    coupon_code: Optional[str] = None
+    coupon_discount: float = 0
+    referral_code: Optional[str] = None
+    payment_method: str = "cod"
 
 class SubscriptionUpdate(BaseModel):
     status: Optional[str] = None
