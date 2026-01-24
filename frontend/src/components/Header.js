@@ -77,14 +77,6 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2 lg:gap-4">
             <Button
-              data-testid="subscribe-nav-button"
-              onClick={() => navigate('/subscription/create')}
-              className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-full px-4 lg:px-6 font-semibold shadow-lg hover:shadow-xl transition-all"
-            >
-              <Sparkles className="w-4 h-4 mr-1 lg:mr-2" />
-              Subscribe & Save
-            </Button>
-            <Button
               variant="ghost"
               onClick={() => navigate('/products')}
               className="rounded-full"
@@ -272,14 +264,6 @@ const Header = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-green-100 px-4 py-3 space-y-1">
-            <Button
-              onClick={() => { navigate('/subscription/create'); setMobileMenuOpen(false); }}
-              className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-full font-semibold mb-2"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Subscribe & Save
-            </Button>
-            
             <Button
               variant="ghost"
               className="w-full justify-start"
