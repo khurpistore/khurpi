@@ -58,12 +58,26 @@ const SubscriptionCreate = () => {
     }
     fetchProducts();
     fetchSubscriptionPlans();
+    fetchAddresses();
   }, [user, navigate]);
 
   useEffect(() => {
-    // Re-fetch delivery info when addresses are loaded/changed
-    fetchDeliveryInfo();
+    // Set default address when addresses load
+    if (addresses.length > 0 && !selectedAddressId) {
+      const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
+      setSelectedAddressId(defaultAddr.id);
+    }
   }, [addresses]);
+
+  useEffect(() => {
+    // Re-fetch delivery info when selected address changes
+    if (selectedAddressId) {
+      const selectedAddr = addresses.find(a => a.id === selectedAddressId);
+      if (selectedAddr && selectedAddr.latitude && selectedAddr.longitude) {
+        fetchDeliveryInfoForAddress(selectedAddr.latitude, selectedAddr.longitude);
+      }
+    }
+  }, [selectedAddressId, addresses]);
 
   useEffect(() => {
     if (selectedProducts.length > 0) {
@@ -73,6 +87,15 @@ const SubscriptionCreate = () => {
       setMinStartDate(new Date());
     }
   }, [selectedProducts]);
+
+  const fetchDeliveryInfoForAddress = async (lat, lng) => {
+    try {
+      const response = await axios.post(`${API}/settings/calculate-delivery-fee?lat=${lat}&lon=${lng}`);
+      setDeliveryInfo(response.data);
+    } catch (error) {
+      setDeliveryInfo({ fee: 0, distance: 0 });
+    }
+  };
 
   const fetchProducts = async () => {
     try {
