@@ -57,6 +57,7 @@ function App() {
                 <Route path="/admin/deliveries" element={<AdminDeliveries />} />
                 <Route path="/admin/payments" element={<AdminPayments />} />
                 <Route path="/admin/inventory" element={<AdminInventory />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
                 
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
