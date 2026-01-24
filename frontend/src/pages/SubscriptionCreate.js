@@ -665,6 +665,62 @@ const SubscriptionCreate = () => {
               </CardContent>
             </Card>
 
+            {/* Delivery Address Selection */}
+            <Card className="mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <h4 className="font-semibold text-base sm:text-lg mb-3 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  Delivery Address
+                </h4>
+                
+                {addresses.length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground mb-3">No delivery address found</p>
+                    <Button onClick={() => navigate('/addresses')} className="rounded-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Address
+                    </Button>
+                  </div>
+                ) : (
+                  <RadioGroup value={selectedAddressId} onValueChange={setSelectedAddressId}>
+                    <div className="space-y-3">
+                      {addresses.map((address) => (
+                        <div 
+                          key={address.id}
+                          className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                            selectedAddressId === address.id ? 'border-primary bg-green-50' : 'border-gray-200 hover:bg-gray-50'
+                          }`}
+                          onClick={() => setSelectedAddressId(address.id)}
+                        >
+                          <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={address.id} className="font-medium cursor-pointer">
+                                {address.name || 'Address'}
+                              </Label>
+                              {address.is_default && (
+                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">Default</span>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">{address.address_line}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </RadioGroup>
+                )}
+                
+                <Button 
+                  variant="link" 
+                  className="mt-3 p-0 h-auto text-primary"
+                  onClick={() => navigate('/addresses')}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add new address
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Order Summary */}
             <Card className="mb-6">
               <CardContent className="p-4 sm:p-6">
