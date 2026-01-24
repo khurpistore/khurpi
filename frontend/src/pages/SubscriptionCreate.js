@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight, Sparkles, Tag, Truck } from 'lucide-react';
+import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight, Sparkles, Tag, Truck, CreditCard, Gift, X, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
@@ -20,7 +20,7 @@ const API = `${BACKEND_URL}/api`;
 const STEPS = [
   { id: 1, title: 'Select Products' },
   { id: 2, title: 'Choose Plan' },
-  { id: 3, title: 'Schedule & Review' }
+  { id: 3, title: 'Review & Pay' }
 ];
 
 const SubscriptionCreate = () => {
@@ -35,6 +35,19 @@ const SubscriptionCreate = () => {
   const [stockWarning, setStockWarning] = useState(null);
   const [minStartDate, setMinStartDate] = useState(new Date());
   const [deliveryInfo, setDeliveryInfo] = useState(null);
+  
+  // Coupon and Referral states
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [appliedReferral, setAppliedReferral] = useState(null);
+  const [referralLoading, setReferralLoading] = useState(false);
+  
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [processingPayment, setProcessingPayment] = useState(false);
+  
   const navigate = useNavigate();
   const { user, addresses } = useAuth();
 
