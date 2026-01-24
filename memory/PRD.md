@@ -20,7 +20,7 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - **Product Detail:** Detailed view with nutrients, health benefits, add to cart
 - **Cart System:** Add/remove items, quantity management, persisted in localStorage
 - **Checkout:** Address selection, delivery fee calculation, order placement (COD)
-- **Subscription Creation:** 3-step wizard with plan selection and discounts
+- **Subscription Creation:** 3-step wizard with plan selection, **MONTHLY billing** (tray × deliveries/week × 4 weeks), and discounts
 - **Profile:** Manage personal info, multiple addresses with map selection
 - **My Subscriptions:** View and manage active subscriptions
 - **My Orders:** View order history with status, items, and delivery details
