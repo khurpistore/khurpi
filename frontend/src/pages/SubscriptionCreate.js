@@ -192,8 +192,80 @@ const SubscriptionCreate = () => {
     return deliveryInfo?.fee || 0;
   };
 
+  const getCouponDiscount = () => {
+    if (!appliedCoupon) return 0;
+    return appliedCoupon.discount || 0;
+  };
+
   const calculateTotal = () => {
-    return calculateSubtotal() - calculateDiscount() + getDeliveryFee();
+    const subtotal = calculateSubtotal();
+    const planDiscount = calculateDiscount();
+    const delivery = getDeliveryFee();
+    const couponDiscount = getCouponDiscount();
+    return Math.max(0, subtotal - planDiscount + delivery - couponDiscount);
+  };
+
+  // Apply coupon code
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    setCouponLoading(true);
+    try {
+      const orderAmount = calculateSubtotal() - calculateDiscount() + getDeliveryFee();
+      const response = await axios.post(`${API}/coupons/validate?code=${couponCode}&order_amount=${orderAmount}`);
+      setAppliedCoupon(response.data);
+      toast.success(`Coupon applied! You save ₹${response.data.discount.toFixed(2)}`);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Invalid coupon code');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+  };
+
+  // Apply referral code
+  const handleApplyReferral = async () => {
+    if (!referralCode.trim()) {
+      toast.error('Please enter a referral code');
+      return;
+    }
+
+    setReferralLoading(true);
+    try {
+      // Validate referral code exists
+      const response = await axios.get(`${API}/admin/referrers`);
+      const referrer = response.data.find(r => r.referral_code === referralCode.toUpperCase() && r.is_active);
+      
+      if (referrer) {
+        setAppliedReferral({
+          code: referrer.referral_code,
+          referrer_name: referrer.name,
+          referrer_id: referrer.id
+        });
+        toast.success(`Referral code applied! ${referrer.name} will earn commission on your order.`);
+      } else {
+        toast.error('Invalid or inactive referral code');
+        setAppliedReferral(null);
+      }
+    } catch (error) {
+      toast.error('Failed to validate referral code');
+      setAppliedReferral(null);
+    } finally {
+      setReferralLoading(false);
+    }
+  };
+
+  const removeReferral = () => {
+    setAppliedReferral(null);
+    setReferralCode('');
   };
 
   const handleSubmit = async () => {
