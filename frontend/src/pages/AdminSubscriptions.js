@@ -21,7 +21,7 @@ const API = `${BACKEND_URL}/api`;
 const SubscriptionDialog = ({ subscription, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     status: subscription?.status || 'active',
-    frequency: subscription?.frequency || 'weekly',
+    frequency: subscription?.frequency || 'once_week',
     delivery_day: subscription?.delivery_day || 'Monday'
   });
   const [loading, setLoading] = useState(false);
