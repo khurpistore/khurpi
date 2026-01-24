@@ -709,10 +709,12 @@ const SubscriptionCreate = () => {
                       <span className="text-muted-foreground">Subtotal</span>
                       <span>₹{calculateSubtotal().toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({selectedPlan.discount}%)</span>
-                      <span>-₹{calculateDiscount().toFixed(2)}</span>
-                    </div>
+                    {selectedPlan.discount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Plan Discount ({selectedPlan.discount}%)</span>
+                        <span>-₹{calculateDiscount().toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground flex items-center gap-1">
                         <Truck className="w-3 h-3" /> Delivery
@@ -723,14 +725,16 @@ const SubscriptionCreate = () => {
                         <span>₹{getDeliveryFee()}</span>
                       )}
                     </div>
-                    {deliveryInfo && deliveryInfo.distance && (
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Distance from shop</span>
-                        <span>{deliveryInfo.distance.toFixed(1)} km</span>
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-green-600">
+                        <span className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" /> Coupon ({appliedCoupon.code})
+                        </span>
+                        <span>-₹{getCouponDiscount().toFixed(2)}</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
-                      <span>Per Delivery Total</span>
+                      <span>Total Amount</span>
                       <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -748,20 +752,164 @@ const SubscriptionCreate = () => {
               </CardContent>
             </Card>
 
+            {/* Coupon Code */}
+            <Card className="mb-4">
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-primary" />
+                  Apply Coupon Code
+                </h4>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div>
+                      <p className="font-semibold text-green-800">{appliedCoupon.code}</p>
+                      <p className="text-sm text-green-600">You save ₹{appliedCoupon.discount.toFixed(2)}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={removeCoupon} className="text-red-600 hover:text-red-700">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      data-testid="coupon-input"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={handleApplyCoupon} 
+                      disabled={couponLoading || !couponCode.trim()}
+                      variant="outline"
+                    >
+                      {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Referral Code */}
+            <Card className="mb-4">
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-primary" />
+                  Have a Referral Code?
+                </h4>
+                {appliedReferral ? (
+                  <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div>
+                      <p className="font-semibold text-blue-800">{appliedReferral.code}</p>
+                      <p className="text-sm text-blue-600">Referred by {appliedReferral.referrer_name}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={removeReferral} className="text-red-600 hover:text-red-700">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      data-testid="referral-input"
+                      placeholder="Enter referral code"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={handleApplyReferral} 
+                      disabled={referralLoading || !referralCode.trim()}
+                      variant="outline"
+                    >
+                      {referralLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Payment Method */}
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-primary" />
+                  Payment Method
+                </h4>
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <div className="space-y-3">
+                    <div 
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        paymentMethod === 'cod' ? 'border-primary bg-green-50' : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setPaymentMethod('cod')}
+                    >
+                      <RadioGroupItem value="cod" id="cod" />
+                      <div className="flex-1">
+                        <Label htmlFor="cod" className="font-medium cursor-pointer">Cash on Delivery</Label>
+                        <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
+                      </div>
+                    </div>
+                    <div 
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        paymentMethod === 'online' ? 'border-primary bg-green-50' : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setPaymentMethod('online')}
+                    >
+                      <RadioGroupItem value="online" id="online" />
+                      <div className="flex-1">
+                        <Label htmlFor="online" className="font-medium cursor-pointer">Pay Online</Label>
+                        <p className="text-xs text-muted-foreground">UPI, Cards, Net Banking (Razorpay)</p>
+                      </div>
+                      <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">Coming Soon</span>
+                    </div>
+                  </div>
+                </RadioGroup>
+              </CardContent>
+            </Card>
+
             {/* Savings Highlight */}
-            {selectedPlan && (
+            {selectedPlan && (calculateDiscount() > 0 || getCouponDiscount() > 0) && (
               <Card className="bg-gradient-to-r from-green-100 to-green-50 border-green-200">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-green-800">
                     <Sparkles className="w-5 h-5" />
-                    <span className="font-bold">You're saving ₹{calculateDiscount().toFixed(2)} per delivery!</span>
+                    <span className="font-bold">
+                      Total Savings: ₹{(calculateDiscount() + getCouponDiscount()).toFixed(2)}
+                    </span>
                   </div>
                   <p className="text-sm text-green-700 mt-1">
-                    That's ₹{(calculateDiscount() * 4).toFixed(2)} savings per month with {selectedPlan.name}
+                    {selectedPlan.discount > 0 && `₹${calculateDiscount().toFixed(2)} from ${selectedPlan.name}`}
+                    {selectedPlan.discount > 0 && appliedCoupon && ' + '}
+                    {appliedCoupon && `₹${getCouponDiscount().toFixed(2)} from coupon`}
                   </p>
                 </CardContent>
               </Card>
             )}
+
+            {/* Pay Button */}
+            <div className="mt-6">
+              <Button
+                data-testid="pay-button"
+                onClick={handleSubmit}
+                disabled={loading || processingPayment || !startDate}
+                className="w-full py-6 text-lg font-semibold rounded-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+              >
+                {processingPayment ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    {paymentMethod === 'cod' ? `Place Order - ₹${calculateTotal().toFixed(2)}` : `Pay ₹${calculateTotal().toFixed(2)}`}
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                By placing this order, you agree to our Terms & Conditions
+              </p>
+            </div>
           </div>
         )}
       </div>
