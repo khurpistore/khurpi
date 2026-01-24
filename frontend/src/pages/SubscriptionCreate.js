@@ -8,13 +8,19 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Check, Package } from 'lucide-react';
+import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+const STEPS = [
+  { id: 1, title: 'Select Products' },
+  { id: 2, title: 'Schedule' },
+  { id: 3, title: 'Review & Confirm' }
+];
 
 const SubscriptionCreate = () => {
   const [step, setStep] = useState(1);
@@ -160,7 +166,6 @@ const SubscriptionCreate = () => {
       const errorMsg = error.response?.data?.detail || 'Failed to create subscription';
       toast.error(errorMsg);
       
-      // If stock issue, suggest alternative date
       if (errorMsg.includes('out of stock')) {
         toast.info('Please select a later start date for out-of-stock products');
       }
@@ -169,33 +174,102 @@ const SubscriptionCreate = () => {
     }
   };
 
+  const canGoNext = () => {
+    if (step === 1) return selectedProducts.length > 0;
+    if (step === 2) return startDate !== null;
+    return true;
+  };
+
+  const goToStep = (targetStep) => {
+    if (targetStep < step || canGoNext()) {
+      setStep(targetStep);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background py-6 sm:py-12">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-2 heading-text">
-            Create Your Subscription
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Delivering fresh microgreens in NOIDA area
-          </p>
-          <div className="flex gap-2 mt-4">
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                className={`h-1.5 sm:h-2 flex-1 rounded-full ${
-                  step >= s ? 'bg-primary' : 'bg-border'
-                }`}
-              />
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+      {/* Fixed Step Header */}
+      <div className="sticky top-16 sm:top-20 z-40 bg-white/95 backdrop-blur-md border-b border-green-100 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          {/* Step Navigation Buttons at Top */}
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="outline"
+              onClick={() => goToStep(step - 1)}
+              disabled={step === 1}
+              className="rounded-full"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">Previous</span>
+            </Button>
+
+            <h2 className="text-lg sm:text-xl font-bold text-primary">
+              {STEPS[step - 1].title}
+            </h2>
+
+            {step < 3 ? (
+              <Button
+                onClick={() => goToStep(step + 1)}
+                disabled={!canGoNext()}
+                className="bg-primary hover:bg-primary/90 rounded-full"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="bg-primary hover:bg-primary/90 rounded-full"
+              >
+                {loading ? 'Processing...' : 'Confirm'}
+              </Button>
+            )}
+          </div>
+
+          {/* Step Progress */}
+          <div className="flex items-center gap-2">
+            {STEPS.map((s, idx) => (
+              <React.Fragment key={s.id}>
+                <button
+                  onClick={() => goToStep(s.id)}
+                  disabled={s.id > step && !canGoNext()}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+                    step === s.id 
+                      ? 'bg-primary text-white' 
+                      : step > s.id 
+                        ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                        : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs ${
+                    step === s.id 
+                      ? 'bg-white/20' 
+                      : step > s.id 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-gray-200'
+                  }`}>
+                    {step > s.id ? <Check className="w-3 h-3" /> : s.id}
+                  </span>
+                  <span className="hidden sm:inline">{s.title}</span>
+                </button>
+                {idx < STEPS.length - 1 && (
+                  <div className={`flex-1 h-0.5 ${step > s.id ? 'bg-green-400' : 'bg-gray-200'}`} />
+                )}
+              </React.Fragment>
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <p className="text-xs sm:text-sm text-muted-foreground mb-6">
+          Delivering fresh microgreens in NOIDA area • Save 15% with subscription
+        </p>
 
         {step === 1 && (
           <div>
-            <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-4 sm:mb-6 heading-text">
-              Step 1: Select Microgreens
-            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
               {products.map((product) => {
                 const isSelected = selectedProducts.some(p => p.product_id === product.id);
@@ -251,25 +325,11 @@ const SubscriptionCreate = () => {
                 );
               })}
             </div>
-            <div className="flex justify-end">
-              <Button
-                data-testid="next-to-step2-button"
-                onClick={() => setStep(2)}
-                disabled={selectedProducts.length === 0}
-                className="bg-primary hover:bg-primary/90 rounded-full px-6 sm:px-8 w-full sm:w-auto"
-              >
-                Next: Schedule
-              </Button>
-            </div>
           </div>
         )}
 
         {step === 2 && (
           <div>
-            <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-4 sm:mb-6 heading-text">
-              Step 2: Choose Schedule
-            </h3>
-            
             {stockWarning && (
               <Card className="mb-4 sm:mb-6 border-amber-200 bg-amber-50">
                 <CardContent className="p-3 sm:p-4">
@@ -387,32 +447,11 @@ const SubscriptionCreate = () => {
                 </div>
               </CardContent>
             </Card>
-            <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4 sm:mt-6">
-              <Button
-                data-testid="back-to-step1-button"
-                variant="outline"
-                onClick={() => setStep(1)}
-                className="rounded-full order-2 sm:order-1"
-              >
-                Back
-              </Button>
-              <Button
-                data-testid="next-to-step3-button"
-                onClick={() => setStep(3)}
-                disabled={!startDate}
-                className="bg-primary hover:bg-primary/90 rounded-full px-6 sm:px-8 order-1 sm:order-2"
-              >
-                Next: Review
-              </Button>
-            </div>
           </div>
         )}
 
         {step === 3 && (
           <div>
-            <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-4 sm:mb-6 heading-text">
-              Step 3: Review & Confirm
-            </h3>
             <Card className="mb-4 sm:mb-6">
               <CardContent className="p-4 sm:p-6">
                 <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4">Order Summary</h4>
@@ -450,24 +489,18 @@ const SubscriptionCreate = () => {
                 </div>
               </CardContent>
             </Card>
-            <div className="flex flex-col sm:flex-row justify-between gap-3">
-              <Button
-                data-testid="back-to-step2-button"
-                variant="outline"
-                onClick={() => setStep(2)}
-                className="rounded-full order-2 sm:order-1"
-              >
-                Back
-              </Button>
-              <Button
-                data-testid="confirm-subscription-button"
-                onClick={handleSubmit}
-                disabled={loading}
-                className="bg-primary hover:bg-primary/90 rounded-full px-6 sm:px-8 order-1 sm:order-2"
-              >
-                {loading ? 'Processing...' : 'Confirm Subscription'}
-              </Button>
-            </div>
+
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="p-4 sm:p-6">
+                <h4 className="font-semibold text-green-800 mb-2">Subscription Benefits</h4>
+                <ul className="text-sm text-green-700 space-y-1">
+                  <li>✓ Save 15% on every delivery</li>
+                  <li>✓ Free delivery on all orders</li>
+                  <li>✓ Pause or skip anytime</li>
+                  <li>✓ Freshly harvested just for you</li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>
