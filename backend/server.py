@@ -73,6 +73,7 @@ class ProductUpdate(BaseModel):
     nutrients: Optional[str] = None
     price: Optional[float] = None
     growth_days: Optional[int] = None
+    stock: Optional[int] = None
     active: Optional[bool] = None
 
 class SubscriptionItem(BaseModel):
