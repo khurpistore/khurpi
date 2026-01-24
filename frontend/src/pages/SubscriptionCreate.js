@@ -708,7 +708,7 @@ const SubscriptionCreate = () => {
                 {addresses.length === 0 ? (
                   <div className="text-center py-4">
                     <p className="text-muted-foreground mb-3">No delivery address found</p>
-                    <Button onClick={() => navigate('/addresses')} className="rounded-full">
+                    <Button onClick={handleEditAddresses} className="rounded-full">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Address
                     </Button>
