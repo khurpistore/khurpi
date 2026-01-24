@@ -574,7 +574,7 @@ const SubscriptionCreate = () => {
             {selectedPlan && selectedProducts.length > 0 && (
               <Card className="mt-6 border-primary/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-3">Weekly Price Preview</h4>
+                  <h4 className="font-semibold mb-3">Monthly Price Preview</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Per Tray Cost</span>
@@ -584,9 +584,13 @@ const SubscriptionCreate = () => {
                       <span>Deliveries/week</span>
                       <span>×{selectedPlan.deliveries_per_week}</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span>Weeks/month</span>
+                      <span>×4</span>
+                    </div>
                     <div className="flex justify-between bg-gray-50 p-2 rounded -mx-2">
-                      <span className="font-medium">Weekly Subtotal</span>
-                      <span>₹{calculateWeeklySubtotal().toFixed(2)}</span>
+                      <span className="font-medium">Monthly Subtotal</span>
+                      <span>₹{calculateMonthlySubtotal().toFixed(2)}</span>
                     </div>
                     {selectedPlan.discount > 0 && (
                       <div className="flex justify-between text-green-600">
@@ -596,16 +600,16 @@ const SubscriptionCreate = () => {
                     )}
                     <div className="flex justify-between">
                       <span className="flex items-center gap-1">
-                        <Truck className="w-3 h-3" /> Delivery
+                        <Truck className="w-3 h-3" /> Delivery (4 weeks)
                       </span>
                       {getDeliveryFee() === 0 ? (
                         <span className="text-green-600">FREE</span>
                       ) : (
-                        <span>₹{getDeliveryFee()}</span>
+                        <span>₹{(getDeliveryFee() * 4).toFixed(2)}</span>
                       )}
                     </div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
-                      <span>Weekly Total</span>
+                      <span>Monthly Total</span>
                       <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
                     </div>
                   </div>
