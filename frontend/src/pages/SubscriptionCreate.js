@@ -105,7 +105,13 @@ const SubscriptionCreate = () => {
       toast.success('Subscription created successfully!');
       navigate('/subscriptions');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create subscription');
+      const errorMsg = error.response?.data?.detail || 'Failed to create subscription';
+      toast.error(errorMsg);
+      
+      // If stock issue, suggest alternative date
+      if (errorMsg.includes('out of stock')) {
+        toast.info('Please select a later start date for out-of-stock products');
+      }
     } finally {
       setLoading(false);
     }
