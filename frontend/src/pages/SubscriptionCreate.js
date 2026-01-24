@@ -272,7 +272,7 @@ const SubscriptionCreate = () => {
     // Check if user has any addresses (new way) or legacy address
     if (addresses.length === 0 && !user?.address) {
       toast.error('Please add your address in profile before subscribing');
-      navigate('/profile');
+      navigate('/addresses');
       return;
     }
 
@@ -292,6 +292,7 @@ const SubscriptionCreate = () => {
     }
 
     setLoading(true);
+    setProcessingPayment(true);
 
     try {
       // Get the default address id
@@ -305,17 +306,45 @@ const SubscriptionCreate = () => {
         items: selectedProducts,
         total_price: calculateTotal(),
         plan_id: selectedPlan.id,
-        address_id: defaultAddress?.id || null
+        address_id: defaultAddress?.id || null,
+        coupon_code: appliedCoupon?.code || null,
+        coupon_discount: appliedCoupon?.discount || 0,
+        referral_code: appliedReferral?.code || null,
+        payment_method: paymentMethod
       };
 
-      await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
-      toast.success('Subscription created successfully!');
+      // Simulate payment processing for non-COD
+      if (paymentMethod !== 'cod') {
+        toast.info('Processing payment...');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      const response = await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
+      
+      // Apply referral if present
+      if (appliedReferral) {
+        try {
+          await axios.post(`${API}/referrals/apply`, null, {
+            params: {
+              code: appliedReferral.code,
+              user_id: user.id,
+              order_id: response.data.id,
+              order_amount: calculateTotal()
+            }
+          });
+        } catch (err) {
+          console.log('Referral application failed:', err);
+        }
+      }
+
+      toast.success('Subscription created successfully! 🎉');
       navigate('/subscriptions');
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 'Failed to create subscription';
       toast.error(errorMsg);
     } finally {
       setLoading(false);
+      setProcessingPayment(false);
     }
   };
 
