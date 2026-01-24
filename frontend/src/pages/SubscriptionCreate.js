@@ -875,11 +875,6 @@ const SubscriptionCreate = () => {
                       <p className="text-sm text-green-600 mt-1">
                         You save ₹{appliedDiscount.discount.toFixed(2)}
                       </p>
-                      {appliedDiscount.type === 'referral' && (
-                        <p className="text-xs text-blue-600 mt-1">
-                          {appliedDiscount.referrer_name} will also earn commission! 🎉
-                        </p>
-                      )}
                     </div>
                     <Button variant="ghost" size="sm" onClick={removeDiscount} className="text-red-600 hover:text-red-700">
                       <X className="w-4 h-4" />
