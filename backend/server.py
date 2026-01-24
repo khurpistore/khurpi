@@ -201,8 +201,12 @@ class Subscription(BaseModel):
     discount_percent: float = 0
     discount_amount: float = 0
     delivery_fee: float = 0
+    coupon_code: Optional[str] = None
+    coupon_discount: float = 0
     total_price: float
     address_id: Optional[str] = None
+    payment_method: str = "cod"
+    payment_status: str = "pending"
     next_delivery_date: Optional[str] = None
     skipped_deliveries: List[str] = []
     created_at: str
