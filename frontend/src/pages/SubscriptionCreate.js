@@ -266,6 +266,29 @@ const SubscriptionCreate = () => {
             <h3 className="text-2xl font-semibold text-primary mb-6 heading-text">
               Step 2: Choose Schedule
             </h3>
+            
+            {stockWarning && (
+              <Card className="mb-6 border-amber-200 bg-amber-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-amber-700 text-lg">⚠</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-amber-900 mb-1">Stock Availability Notice</p>
+                      <p className="text-sm text-amber-800 mb-2">{stockWarning.message}</p>
+                      <p className="text-sm text-amber-900 font-medium">
+                        Earliest available delivery: {format(stockWarning.earliestDate, 'PPP')}
+                      </p>
+                      <p className="text-xs text-amber-700 mt-1">
+                        Please select a start date on or after this date to include all products.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             <Card>
               <CardContent className="p-6 space-y-6">
                 <div>
