@@ -26,6 +26,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K | Minerals: Calcium, Iron, Potassium | Antioxidants: Beta-carotene",
             "price": 180.0,
             "growth_days": 8,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -224,6 +225,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, A, K, E | Minerals: Calcium, Iron | Anthocyanins: High",
             "price": 180.0,
             "growth_days": 8,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
