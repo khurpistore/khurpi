@@ -349,9 +349,17 @@ const SubscriptionCreate = () => {
 
   const canGoNext = () => {
     if (step === 1) return selectedProducts.length > 0;
-    if (step === 2) return selectedPlan !== null;
+    if (step === 2) return selectedPlan !== null && selectedProducts.length > 0;
     return true;
   };
+
+  // Go back to Step 1 if all products are removed in Step 2
+  useEffect(() => {
+    if (step === 2 && selectedProducts.length === 0) {
+      setStep(1);
+      toast.info('Please select at least one product');
+    }
+  }, [selectedProducts, step]);
 
   const goToStep = (targetStep) => {
     if (targetStep < step || canGoNext()) {
