@@ -13,6 +13,19 @@ import { format } from 'date-fns';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Format plan name for display
+const getPlanDisplayName = (frequency) => {
+  const planNames = {
+    'once_week': 'Once a Week',
+    'twice_week': 'Twice a Week',
+    'four_days_week': '4 Days a Week',
+    'weekly': 'Once a Week',
+    'twice_weekly': 'Twice a Week',
+    'four_days': '4 Days a Week'
+  };
+  return planNames[frequency] || frequency;
+};
+
 const MySubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
