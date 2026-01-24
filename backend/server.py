@@ -245,6 +245,25 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     import uuid
     from datetime import datetime
     
+    # Check stock availability and calculate earliest delivery date
+    earliest_date = datetime.now(timezone.utc).date()
+    requested_date = datetime.fromisoformat(sub_data.start_date).date()
+    
+    for item in sub_data.items:
+        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
+        
+        # Check if out of stock
+        if product.get("stock", 0) < item.quantity:
+            # Calculate earliest available date based on grow time
+            grow_date = earliest_date + timedelta(days=product["growth_days"])
+            if requested_date < grow_date:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"{product['name']} is out of stock. Earliest delivery: {grow_date.isoformat()} ({product['growth_days']} days from now)"
+                )
+    
     subscription_doc = {
         "id": str(uuid.uuid4()),
         "user_id": user_id,
@@ -261,6 +280,7 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     
     await db.subscriptions.insert_one(subscription_doc)
     
+    # Deduct stock and create subscription items
     for item in sub_data.items:
         item_doc = {
             "id": str(uuid.uuid4()),
@@ -270,6 +290,12 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.subscription_items.insert_one(item_doc)
+        
+        # Deduct stock
+        await db.products.update_one(
+            {"id": item.product_id},
+            {"$inc": {"stock": -item.quantity}}
+        )
     
     payment_doc = {
         "id": str(uuid.uuid4()),
