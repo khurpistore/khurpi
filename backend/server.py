@@ -198,6 +198,7 @@ class Subscription(BaseModel):
     status: str = "active"
     tray_count: int
     total_price: float
+    discount_percent: float = 0
     next_delivery_date: Optional[str] = None
     skipped_deliveries: List[str] = []
     created_at: str
@@ -209,6 +210,7 @@ class SubscriptionCreate(BaseModel):
     tray_count: int
     items: List[SubscriptionItem]
     total_price: float
+    plan_id: Optional[str] = None
 
 class SubscriptionUpdate(BaseModel):
     status: Optional[str] = None
