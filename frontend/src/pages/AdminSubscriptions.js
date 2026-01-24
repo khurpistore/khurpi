@@ -58,15 +58,15 @@ const SubscriptionDialog = ({ subscription, onClose, onSuccess }) => {
         </Select>
       </div>
       <div>
-        <Label className="text-sm">Frequency</Label>
+        <Label className="text-sm">Plan (Monthly Billing)</Label>
         <Select value={formData.frequency} onValueChange={(value) => setFormData({ ...formData, frequency: value })}>
           <SelectTrigger data-testid="subscription-frequency-select" className="mt-1">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="weekly">Weekly</SelectItem>
-            <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
-            <SelectItem value="monthly">Monthly</SelectItem>
+            <SelectItem value="once_week">Once a Week</SelectItem>
+            <SelectItem value="twice_week">Twice a Week</SelectItem>
+            <SelectItem value="four_days_week">4 Days a Week</SelectItem>
           </SelectContent>
         </Select>
       </div>
