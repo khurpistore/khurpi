@@ -31,7 +31,7 @@ const Landing = () => {
                   className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-full px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Subscribe & Save 15%
+                  Subscribe & Save
                 </Button>
                 <Button
                   data-testid="explore-products-button"

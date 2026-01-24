@@ -324,9 +324,6 @@ const SubscriptionCreate = () => {
 
       {/* Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <p className="text-xs sm:text-sm text-muted-foreground mb-6">
-          Delivering fresh microgreens in NOIDA area • Free delivery on subscriptions within 1 km
-        </p>
 
         {/* Step 1: Select Products */}
         {step === 1 && (
