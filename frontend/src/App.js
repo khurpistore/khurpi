@@ -29,6 +29,8 @@ import AdminDeliveries from '@/pages/AdminDeliveries';
 import AdminPayments from '@/pages/AdminPayments';
 import AdminInventory from '@/pages/AdminInventory';
 import AdminSettings from '@/pages/AdminSettings';
+import AdminCoupons from '@/pages/AdminCoupons';
+import AdminReferrals from '@/pages/AdminReferrals';
 
 function App() {
   return (
@@ -62,6 +64,8 @@ function App() {
                 <Route path="/admin/payments" element={<AdminPayments />} />
                 <Route path="/admin/inventory" element={<AdminInventory />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/coupons" element={<AdminCoupons />} />
+                <Route path="/admin/referrals" element={<AdminReferrals />} />
                 
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
