@@ -159,7 +159,7 @@ const SubscriptionDetail = () => {
                 <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Price Calculation</p>
                 <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
                   <div className="text-center px-3 py-2 bg-gray-50 rounded-lg">
-                    <p className="font-bold text-primary">₹{itemsTotal}</p>
+                    <p className="font-bold text-primary">₹{perTrayPrice.toFixed(0)}</p>
                     <p className="text-xs text-muted-foreground">per tray</p>
                   </div>
                   <span className="text-muted-foreground font-bold">×</span>
@@ -174,7 +174,7 @@ const SubscriptionDetail = () => {
                   </div>
                   <span className="text-muted-foreground font-bold">=</span>
                   <div className="text-center px-3 py-2 bg-primary/10 rounded-lg">
-                    <p className="font-bold text-primary">₹{monthlySubtotal}</p>
+                    <p className="font-bold text-primary">₹{monthlySubtotal.toFixed(0)}</p>
                     <p className="text-xs text-muted-foreground">subtotal</p>
                   </div>
                 </div>
