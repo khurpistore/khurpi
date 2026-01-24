@@ -120,11 +120,14 @@ const Profile = () => {
                 <Textarea
                   id="address"
                   data-testid="address-input"
-                  placeholder="Enter your delivery address"
+                  placeholder="Enter your delivery address in NOIDA"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="mt-1 min-h-[100px]"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  * We currently deliver only in NOIDA area
+                </p>
                 <Button
                   data-testid="save-address-button"
                   onClick={handleSaveAddress}
