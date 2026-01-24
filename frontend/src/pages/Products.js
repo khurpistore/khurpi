@@ -115,7 +115,7 @@ const Products = () => {
                   <CardContent className="p-6">
                     <h3 className="text-2xl font-semibold text-primary mb-2 heading-text">{product.name}</h3>
                     <p className="text-muted-foreground mb-4 body-text line-clamp-2">{product.benefit}</p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <div>
                         <p className="text-2xl font-bold text-primary">₹{product.price}</p>
                         <p className="text-sm text-muted-foreground">per 5×7 tray</p>
@@ -125,6 +125,15 @@ const Products = () => {
                         <p className="text-lg font-semibold text-secondary">{product.growth_days} days</p>
                       </div>
                     </div>
+                    {product.stock <= 0 ? (
+                      <div className="mt-2 px-3 py-1.5 bg-red-50 text-red-700 text-sm rounded-full inline-block">
+                        Out of Stock - Available in {product.growth_days} days
+                      </div>
+                    ) : product.stock < 10 ? (
+                      <div className="mt-2 px-3 py-1.5 bg-amber-50 text-amber-700 text-sm rounded-full inline-block">
+                        Only {product.stock} left in stock
+                      </div>
+                    ) : null}
                   </CardContent>
                 </Card>
               ))}
