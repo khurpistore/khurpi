@@ -52,6 +52,7 @@ class Product(BaseModel):
     nutrients: Optional[str] = None
     price: float
     growth_days: int
+    stock: int = 100
     active: bool = True
     created_at: str
 
@@ -62,6 +63,7 @@ class ProductCreate(BaseModel):
     nutrients: Optional[str] = None
     price: float
     growth_days: int
+    stock: int = 100
     active: bool = True
 
 class ProductUpdate(BaseModel):
