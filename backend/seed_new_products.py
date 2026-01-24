@@ -38,6 +38,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K | Minerals: Calcium, Iron, Magnesium | Essential oils: Eugenol, Linalool",
             "price": 190.0,
             "growth_days": 12,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -49,6 +50,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K, Folate | Minerals: Iron, Zinc | Protein: 7g per 100g",
             "price": 150.0,
             "growth_days": 10,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -60,6 +62,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: B-complex, E | Minerals: Manganese, Phosphorus | Fiber: Soluble and Insoluble",
             "price": 150.0,
             "growth_days": 9,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -71,6 +74,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, B, C | Minerals: Magnesium, Potassium | Carotenoids: Lutein, Zeaxanthin",
             "price": 160.0,
             "growth_days": 10,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -82,6 +86,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, K, B6 | Minerals: Calcium, Potassium | Compounds: Sulforaphane, Indoles",
             "price": 180.0,
             "growth_days": 11,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -93,6 +98,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, K, B9 | Minerals: Manganese, Potassium | Choline: 45mg per 100g",
             "price": 200.0,
             "growth_days": 11,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -104,6 +110,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K | Minerals: Calcium, Iron, Folate | Antioxidants: Beta-carotene",
             "price": 165.0,
             "growth_days": 10,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -115,6 +122,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K, E | Minerals: Iron, Calcium, Magnesium | Protein: 9g per 100g",
             "price": 190.0,
             "growth_days": 9,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -126,6 +134,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: K, C, A, B-complex | Minerals: Calcium, Iron, Zinc | Chlorophyll: High",
             "price": 160.0,
             "growth_days": 8,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -137,6 +146,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, A, K | Minerals: Calcium, Iron | Enzymes: Myrosinase",
             "price": 150.0,
             "growth_days": 7,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -148,6 +158,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, K, A | Minerals: Calcium, Magnesium | Isoflavones: Genistein, Daidzein",
             "price": 150.0,
             "growth_days": 9,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -159,6 +170,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K | Minerals: Iron, Potassium, Magnesium | Nitrates: 250mg per 100g",
             "price": 180.0,
             "growth_days": 10,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -170,6 +182,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K | Minerals: Iron, Calcium | Fiber: 3g per 100g",
             "price": 150.0,
             "growth_days": 8,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -181,6 +194,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, B6, K | Minerals: Potassium, Copper | Anthocyanins: High",
             "price": 190.0,
             "growth_days": 9,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -192,6 +206,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K (1000% DV) | Minerals: Calcium, Iron | Antioxidants: Quercetin, Kaempferol",
             "price": 200.0,
             "growth_days": 12,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -203,6 +218,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A (300% DV), C, K | Minerals: Potassium | Carotenoids: Alpha & Beta-carotene",
             "price": 190.0,
             "growth_days": 10,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -214,6 +230,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, K, Folate | Minerals: Iron, Calcium, Magnesium | Nitrates: High",
             "price": 150.0,
             "growth_days": 9,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -237,6 +254,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, K, Folate | Minerals: Potassium, Calcium | Flavonoids: High",
             "price": 190.0,
             "growth_days": 8,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -248,6 +266,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: A, C, E, K | Minerals: Iron, Calcium | Betalains: Anti-inflammatory compounds",
             "price": 195.0,
             "growth_days": 10,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -259,6 +278,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: C, K, A | Minerals: Calcium, Iron | Sulforaphane: 100mg per 100g",
             "price": 200.0,
             "growth_days": 11,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
@@ -270,6 +290,7 @@ async def seed_new_products():
             "nutrients": "Vitamins: E (200% DV), B-complex | Minerals: Selenium, Zinc, Iron | Protein: 6g per 100g",
             "price": 160.0,
             "growth_days": 10,
+            "stock": 50,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
