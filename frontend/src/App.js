@@ -14,6 +14,8 @@ import Products from '@/pages/Products';
 import ProductDetail from '@/pages/ProductDetail';
 import Cart from '@/pages/Cart';
 import Checkout from '@/pages/Checkout';
+import Orders from '@/pages/Orders';
+import Addresses from '@/pages/Addresses';
 import SubscriptionCreate from '@/pages/SubscriptionCreate';
 import MySubscriptions from '@/pages/MySubscriptions';
 import SubscriptionDetail from '@/pages/SubscriptionDetail';
@@ -44,6 +46,8 @@ function App() {
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/addresses" element={<Addresses />} />
                 <Route path="/subscription/create" element={<SubscriptionCreate />} />
                 <Route path="/subscriptions" element={<MySubscriptions />} />
                 <Route path="/subscription/:id" element={<SubscriptionDetail />} />
