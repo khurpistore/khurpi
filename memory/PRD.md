@@ -83,6 +83,7 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - Min order amount, max discount limits
 - Usage limits, validity dates
 - Active/inactive status
+- **Customer can apply coupons during subscription checkout**
 
 ### 7. Referral Program (Admin)
 - Register referrers with unique codes
@@ -90,6 +91,17 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - Track referrals and commission earned
 - Mark commission as paid
 - Referral statistics dashboard
+- **Customers can enter referral codes during checkout**
+
+### 8. Subscription Checkout
+- Order summary with all price breakdowns
+- Apply coupon code with instant discount calculation
+- Enter referral code to credit referrer
+- Payment method selection:
+  - Cash on Delivery (active)
+  - Online Payment via Razorpay (coming soon)
+- Total savings display
+- Place Order button with final amount
 
 ---
 
