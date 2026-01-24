@@ -49,13 +49,74 @@ const SubscriptionCreate = () => {
   const [processingPayment, setProcessingPayment] = useState(false);
   
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, addresses, fetchAddresses } = useAuth();
+
+  // Save subscription state to localStorage before navigating away
+  const saveSubscriptionState = () => {
+    const state = {
+      step,
+      selectedProducts,
+      selectedPlan,
+      deliveryDay,
+      startDate: startDate ? startDate.toISOString() : null,
+      selectedAddressId,
+      discountCode,
+      appliedDiscount,
+      paymentMethod
+    };
+    localStorage.setItem('subscriptionDraft', JSON.stringify(state));
+  };
+
+  // Restore subscription state from localStorage
+  const restoreSubscriptionState = () => {
+    const saved = localStorage.getItem('subscriptionDraft');
+    if (saved) {
+      try {
+        const state = JSON.parse(saved);
+        if (state.selectedProducts?.length > 0) {
+          setSelectedProducts(state.selectedProducts);
+          setSelectedPlan(state.selectedPlan);
+          setDeliveryDay(state.deliveryDay || 'Monday');
+          setStartDate(state.startDate ? new Date(state.startDate) : null);
+          setSelectedAddressId(state.selectedAddressId);
+          setDiscountCode(state.discountCode || '');
+          setAppliedDiscount(state.appliedDiscount);
+          setPaymentMethod(state.paymentMethod || 'cod');
+          setStep(state.step || 1);
+          // Clear the saved state after restoring
+          localStorage.removeItem('subscriptionDraft');
+          return true;
+        }
+      } catch (e) {
+        console.error('Error restoring subscription state:', e);
+      }
+    }
+    return false;
+  };
+
+  // Navigate to addresses with return capability
+  const handleEditAddresses = () => {
+    saveSubscriptionState();
+    navigate('/addresses?returnTo=subscription');
+  };
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
+    
+    // Check if returning from addresses page
+    const params = new URLSearchParams(location.search);
+    const restored = params.get('restored');
+    
+    if (restored === 'true') {
+      restoreSubscriptionState();
+      // Clean up URL
+      navigate('/subscription/create', { replace: true });
+    }
+    
     fetchProducts();
     fetchSubscriptionPlans();
     fetchAddresses();
