@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from 'react-leaflet';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap, Popup } from 'react-leaflet';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { MapPin, X, Navigation } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -22,114 +24,226 @@ const NOIDA_BOUNDS = [
   [28.7, 77.5]   // Northeast
 ];
 
-function LocationMarker({ position, setPosition }) {
-  const map = useMapEvents({
+function LocationMarker({ position, setPosition, onLocationSelect }) {
+  const map = useMap();
+  
+  useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
       // Check if click is within NOIDA bounds
       if (lat >= 28.4 && lat <= 28.7 && lng >= 77.2 && lng <= 77.5) {
         setPosition([lat, lng]);
+        onLocationSelect && onLocationSelect(lat, lng);
       } else {
-        // Show toast or alert that only NOIDA area is allowed
         alert('Please select a location within NOIDA area only');
       }
     },
   });
 
+  useEffect(() => {
+    if (position) {
+      map.flyTo(position, 14);
+    }
+  }, [position, map]);
+
   return position ? (
     <Marker position={position}>
       <Popup>
-        Selected Location<br />
-        Lat: {position[0].toFixed(4)}<br />
-        Lng: {position[1].toFixed(4)}
+        <div className="text-sm">
+          <strong>Selected Location</strong><br />
+          Lat: {position[0].toFixed(4)}<br />
+          Lng: {position[1].toFixed(4)}
+        </div>
       </Popup>
     </Marker>
   ) : null;
 }
 
-const LocationPicker = ({ address, setAddress, onSave, loading }) => {
-  const [position, setPosition] = useState(NOIDA_CENTER);
-  const [manualAddress, setManualAddress] = useState(address || '');
+const LocationPicker = ({ 
+  initialAddress = '', 
+  initialLat = null, 
+  initialLng = null,
+  onSave, 
+  onCancel,
+  loading = false,
+  isEdit = false,
+  showSetDefault = false,
+  isDefault = false
+}) => {
+  const [position, setPosition] = useState(
+    initialLat && initialLng ? [initialLat, initialLng] : NOIDA_CENTER
+  );
+  const [addressText, setAddressText] = useState(initialAddress);
+  const [setAsDefault, setSetAsDefault] = useState(isDefault);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
-    setManualAddress(address || '');
-  }, [address]);
+    setAddressText(initialAddress);
+    if (initialLat && initialLng) {
+      setPosition([initialLat, initialLng]);
+    }
+  }, [initialAddress, initialLat, initialLng]);
 
-  const handleUseLocation = () => {
-    if (position) {
-      const locationText = `Location: Lat ${position[0].toFixed(4)}, Lng ${position[1].toFixed(4)}, NOIDA, UP`;
-      setManualAddress(prev => {
-        // If address already has text, append location, otherwise just use location
-        if (prev && !prev.includes('Lat')) {
-          return `${prev}\n${locationText}`;
-        }
-        return locationText;
-      });
+  const handleLocationSelect = (lat, lng) => {
+    // Append coordinates to address if not already there
+    const coordsText = `(Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)})`;
+    if (!addressText.includes('Lat:')) {
+      setAddressText(prev => prev ? `${prev}\n${coordsText}` : coordsText);
+    } else {
+      // Replace existing coordinates
+      setAddressText(prev => prev.replace(/\(Lat: [\d.]+, Lng: [\d.]+\)/, coordsText));
     }
   };
 
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // Check if within NOIDA bounds
+        if (latitude >= 28.4 && latitude <= 28.7 && longitude >= 77.2 && longitude <= 77.5) {
+          setPosition([latitude, longitude]);
+          handleLocationSelect(latitude, longitude);
+        } else {
+          alert('Your current location is outside NOIDA. Please select a location within NOIDA.');
+        }
+        setLocating(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        alert('Unable to get your location. Please select on map.');
+        setLocating(false);
+      }
+    );
+  };
+
   const handleSave = () => {
-    setAddress(manualAddress);
-    onSave();
+    if (!addressText.trim()) {
+      alert('Please enter an address');
+      return;
+    }
+    
+    // Validate NOIDA
+    if (!addressText.toUpperCase().includes('NOIDA')) {
+      alert('Please include NOIDA in your address. We currently deliver only in NOIDA area.');
+      return;
+    }
+
+    onSave({
+      address_line: addressText.trim(),
+      latitude: position[0],
+      longitude: position[1],
+      is_default: setAsDefault
+    });
   };
 
   return (
-    <Card>
-      <CardContent className="p-4 md:p-6">
-        <Label className="mb-2 block">Select Location on Map</Label>
-        <p className="text-xs text-muted-foreground mb-3">
-          Click on the map to select your delivery location in NOIDA
-        </p>
-        
-        <div className="rounded-lg overflow-hidden border border-border mb-4" style={{ height: '300px' }}>
-          <MapContainer
-            center={NOIDA_CENTER}
-            zoom={12}
-            style={{ height: '100%', width: '100%' }}
-            maxBounds={NOIDA_BOUNDS}
-            maxBoundsViscosity={1.0}
+    <Card className="border-green-200 shadow-md">
+      <CardHeader className="pb-2 sm:pb-4">
+        <CardTitle className="text-base sm:text-lg text-primary flex items-center gap-2">
+          <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+          {isEdit ? 'Edit Address' : 'Add New Address'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-3 sm:p-6 pt-0">
+        <div className="space-y-4">
+          {/* Map */}
+          <div>
+            <Label className="text-sm mb-2 block">Select Location on Map</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Click on the map to pin your delivery location in NOIDA
+            </p>
+            <div className="rounded-lg overflow-hidden border border-green-200" style={{ height: '250px' }}>
+              <MapContainer
+                center={position || NOIDA_CENTER}
+                zoom={13}
+                style={{ height: '100%', width: '100%' }}
+                maxBounds={NOIDA_BOUNDS}
+                maxBoundsViscosity={1.0}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <LocationMarker 
+                  position={position} 
+                  setPosition={setPosition} 
+                  onLocationSelect={handleLocationSelect}
+                />
+              </MapContainer>
+            </div>
+          </div>
+
+          {/* Current Location Button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleUseCurrentLocation}
+            disabled={locating}
+            className="w-full sm:w-auto text-xs sm:text-sm"
           >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            <Navigation className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+            {locating ? 'Locating...' : 'Use My Current Location'}
+          </Button>
+
+          {/* Address Text */}
+          <div>
+            <Label htmlFor="address-input" className="text-sm">Complete Address</Label>
+            <Textarea
+              id="address-input"
+              data-testid="address-input"
+              placeholder="Enter house/flat number, sector, landmarks in NOIDA"
+              value={addressText}
+              onChange={(e) => setAddressText(e.target.value)}
+              className="mt-1 min-h-[80px] sm:min-h-[100px] text-sm"
             />
-            <LocationMarker position={position} setPosition={setPosition} />
-          </MapContainer>
+            <p className="text-xs text-muted-foreground mt-1">
+              * We currently deliver only in NOIDA area
+            </p>
+          </div>
+
+          {/* Set as Default */}
+          {showSetDefault && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="set-default"
+                checked={setAsDefault}
+                onCheckedChange={setSetAsDefault}
+              />
+              <Label htmlFor="set-default" className="text-sm cursor-pointer">
+                Set as default delivery address
+              </Label>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+            <Button
+              data-testid="save-address-button"
+              onClick={handleSave}
+              disabled={loading || !addressText.trim()}
+              className="bg-primary hover:bg-primary/90 rounded-full flex-1 sm:flex-none text-sm"
+            >
+              {loading ? 'Saving...' : (isEdit ? 'Update Address' : 'Save Address')}
+            </Button>
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                className="rounded-full flex-1 sm:flex-none text-sm"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
         </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleUseLocation}
-          className="mb-3 w-full sm:w-auto"
-        >
-          📍 Use Selected Map Location
-        </Button>
-
-        <div>
-          <Label htmlFor="address">Complete Address</Label>
-          <Textarea
-            id="address"
-            data-testid="address-input"
-            placeholder="Enter house/flat number, sector, landmarks in NOIDA"
-            value={manualAddress}
-            onChange={(e) => setManualAddress(e.target.value)}
-            className="mt-1 min-h-[100px]"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            * We currently deliver only in NOIDA area
-          </p>
-        </div>
-
-        <Button
-          data-testid="save-address-button"
-          onClick={handleSave}
-          disabled={loading || !manualAddress}
-          className="mt-4 bg-primary hover:bg-primary/90 rounded-full w-full sm:w-auto"
-        >
-          {loading ? 'Saving...' : 'Save Address'}
-        </Button>
       </CardContent>
     </Card>
   );
