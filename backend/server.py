@@ -115,20 +115,38 @@ class Address(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     user_id: str
+    name: Optional[str] = None
     address_line: str
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    area: Optional[str] = None
+    city: Optional[str] = "NOIDA"
+    pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     is_default: bool = False
     created_at: str
 
 class AddressCreate(BaseModel):
+    name: Optional[str] = None
     address_line: str
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    area: Optional[str] = None
+    city: Optional[str] = "NOIDA"
+    pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     is_default: bool = False
 
 class AddressUpdate(BaseModel):
+    name: Optional[str] = None
     address_line: Optional[str] = None
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    area: Optional[str] = None
+    city: Optional[str] = "NOIDA"
+    pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     is_default: Optional[bool] = None
