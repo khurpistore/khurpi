@@ -170,6 +170,29 @@ class PaymentCreate(BaseModel):
     subscription_id: str
     amount: float
 
+class OrderItem(BaseModel):
+    product_id: str
+    quantity: int
+    price: float
+
+class Order(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    user_id: str
+    address_id: str
+    items: List[OrderItem]
+    total: float
+    status: str = "pending"
+    order_type: str = "one_time"
+    created_at: str
+
+class OrderCreate(BaseModel):
+    user_id: str
+    address_id: str
+    items: List[OrderItem]
+    total: float
+    order_type: str = "one_time"
+
 @api_router.post("/auth/signup", response_model=User)
 async def signup(user_data: UserCreate):
     existing = await db.users.find_one({"phone": user_data.phone}, {"_id": 0})
