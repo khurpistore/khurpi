@@ -292,6 +292,45 @@ const SubscriptionCreate = () => {
               </Card>
             )}
             
+            <Card className="mb-6 border-secondary/30 bg-secondary/5">
+              <CardContent className="p-6">
+                <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Selected Products
+                </h4>
+                <div className="space-y-3">
+                  {selectedProducts.map((item) => {
+                    const product = products.find(p => p.id === item.product_id);
+                    return product ? (
+                      <div
+                        key={item.product_id}
+                        className="flex items-center gap-4 p-3 bg-white rounded-lg border border-border"
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-primary">{product.name}</h5>
+                          <p className="text-sm text-muted-foreground">
+                            {item.quantity} tray{item.quantity > 1 ? 's' : ''} × ₹{product.price}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">₹{(product.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ) : null;
+                  })}
+                  <div className="border-t pt-3 flex justify-between items-center">
+                    <span className="font-semibold text-primary">Total per delivery</span>
+                    <span className="text-2xl font-bold text-primary">₹{calculateTotal()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
             <Card>
               <CardContent className="p-6 space-y-6">
                 <div>
