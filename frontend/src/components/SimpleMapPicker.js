@@ -42,11 +42,15 @@ const SimpleMapPicker = ({ onLocationSelect, initialLocation }) => {
     initialLocation ? [initialLocation.lat, initialLocation.lng] : null
   );
 
+  // Update position when initialLocation prop changes (for edit mode)
+  const initialLat = initialLocation?.lat;
+  const initialLng = initialLocation?.lng;
+  
   useEffect(() => {
-    if (initialLocation) {
-      setPosition([initialLocation.lat, initialLocation.lng]);
+    if (initialLat && initialLng) {
+      setPosition([initialLat, initialLng]);
     }
-  }, [initialLocation]);
+  }, [initialLat, initialLng]);
 
   return (
     <MapContainer
