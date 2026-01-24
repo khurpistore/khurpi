@@ -743,6 +743,92 @@ async def get_inventory_planning():
     
     return list(product_demand.values())
 
+# Orders API (for single purchases)
+@api_router.post("/orders", response_model=Order)
+async def create_order(order_data: OrderCreate):
+    import uuid
+    
+    # Verify user exists
+    user = await db.users.find_one({"id": order_data.user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify address exists
+    address = await db.addresses.find_one({"id": order_data.address_id, "user_id": order_data.user_id}, {"_id": 0})
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    # Create order
+    order_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": order_data.user_id,
+        "address_id": order_data.address_id,
+        "items": [item.model_dump() for item in order_data.items],
+        "total": order_data.total,
+        "status": "confirmed",  # Auto-confirm for COD
+        "order_type": order_data.order_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.orders.insert_one(order_doc)
+    
+    # Create a payment record (mocked as COD)
+    payment_doc = {
+        "id": str(uuid.uuid4()),
+        "subscription_id": order_doc["id"],  # Using order_id as reference
+        "user_id": order_data.user_id,
+        "amount": order_data.total,
+        "status": "pending",  # COD - pending until delivery
+        "payment_date": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.payments.insert_one(payment_doc)
+    
+    return Order(**order_doc)
+
+@api_router.get("/orders")
+async def get_user_orders(user_id: str):
+    orders = await db.orders.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich with product details
+    for order in orders:
+        enriched_items = []
+        for item in order.get("items", []):
+            product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+            enriched_items.append({
+                **item,
+                "product": product
+            })
+        order["items"] = enriched_items
+        
+        # Get address
+        address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
+        order["address"] = address
+    
+    return orders
+
+@api_router.get("/orders/{order_id}")
+async def get_order(order_id: str):
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Enrich with product details
+    enriched_items = []
+    for item in order.get("items", []):
+        product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+        enriched_items.append({
+            **item,
+            "product": product
+        })
+    order["items"] = enriched_items
+    
+    # Get address
+    address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
+    order["address"] = address
+    
+    return order
+
 @api_router.put("/users/{user_id}/address")
 async def update_user_address(user_id: str, address: str):
     result = await db.users.update_one({"id": user_id}, {"$set": {"address": address}})
