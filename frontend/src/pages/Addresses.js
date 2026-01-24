@@ -168,6 +168,23 @@ const Addresses = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back to Subscription Banner */}
+        {returnTo === 'subscription' && (
+          <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between">
+            <p className="text-sm text-primary font-medium">
+              Add or edit your address, then return to complete your subscription
+            </p>
+            <Button 
+              onClick={handleBackToSubscription}
+              size="sm"
+              className="rounded-full"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to Subscription
+            </Button>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-primary flex items-center gap-2">
             <MapPin className="w-7 h-7" />
