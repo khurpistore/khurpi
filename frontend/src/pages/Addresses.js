@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,12 @@ const Addresses = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [formData, setFormData] = useState({
-    address_line: '',
+    name: '',
+    address_line_1: '',
+    address_line_2: '',
+    area: '',
+    city: 'NOIDA',
+    pincode: '',
     latitude: null,
     longitude: null,
     is_default: false
@@ -34,7 +39,12 @@ const Addresses = () => {
 
   const resetForm = () => {
     setFormData({
-      address_line: '',
+      name: '',
+      address_line_1: '',
+      address_line_2: '',
+      area: '',
+      city: 'NOIDA',
+      pincode: '',
       latitude: null,
       longitude: null,
       is_default: false
@@ -46,26 +56,56 @@ const Addresses = () => {
     setFormData(prev => ({
       ...prev,
       latitude: location.lat,
-      longitude: location.lng,
-      address_line: location.address || prev.address_line
+      longitude: location.lng
     }));
+  };
+
+  const buildAddressLine = () => {
+    const parts = [
+      formData.address_line_1,
+      formData.address_line_2,
+      formData.area,
+      formData.city,
+      formData.pincode
+    ].filter(Boolean);
+    return parts.join(', ');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.address_line.toUpperCase().includes('NOIDA')) {
+    const fullAddress = buildAddressLine();
+    
+    if (!fullAddress.toUpperCase().includes('NOIDA')) {
       toast.error('We currently deliver only in NOIDA area');
+      return;
+    }
+
+    if (!formData.pincode || formData.pincode.length !== 6) {
+      toast.error('Please enter a valid 6-digit PIN code');
       return;
     }
 
     setLoading(true);
     try {
+      const addressData = {
+        address_line: fullAddress,
+        name: formData.name,
+        address_line_1: formData.address_line_1,
+        address_line_2: formData.address_line_2,
+        area: formData.area,
+        city: formData.city,
+        pincode: formData.pincode,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        is_default: formData.is_default
+      };
+
       if (editingAddress) {
-        await updateAddressById(editingAddress.id, formData);
+        await updateAddressById(editingAddress.id, addressData);
         toast.success('Address updated successfully');
       } else {
-        await addAddress(formData);
+        await addAddress(addressData);
         toast.success('Address added successfully');
       }
       setIsAddDialogOpen(false);
@@ -80,7 +120,12 @@ const Addresses = () => {
   const handleEdit = (address) => {
     setEditingAddress(address);
     setFormData({
-      address_line: address.address_line,
+      name: address.name || '',
+      address_line_1: address.address_line_1 || address.address_line || '',
+      address_line_2: address.address_line_2 || '',
+      area: address.area || '',
+      city: address.city || 'NOIDA',
+      pincode: address.pincode || '',
       latitude: address.latitude,
       longitude: address.longitude,
       is_default: address.is_default
@@ -136,8 +181,79 @@ const Addresses = () => {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label>Select Location on Map</Label>
-                  <div className="mt-2 h-64 rounded-lg overflow-hidden border">
+                  <Label>Address Name / Label *</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g., Home, Office, Mom's Place"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label>Address Line 1 *</Label>
+                  <Input
+                    value={formData.address_line_1}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address_line_1: e.target.value }))}
+                    placeholder="House/Flat No., Building Name"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label>Address Line 2</Label>
+                  <Input
+                    value={formData.address_line_2}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address_line_2: e.target.value }))}
+                    placeholder="Street, Landmark (optional)"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Area / Sector *</Label>
+                    <Input
+                      value={formData.area}
+                      onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
+                      placeholder="e.g., Sector 62"
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>City</Label>
+                    <Input
+                      value={formData.city}
+                      disabled
+                      className="mt-1 bg-gray-50"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      We currently deliver only in NOIDA
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>PIN Code *</Label>
+                  <Input
+                    value={formData.pincode}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                    placeholder="e.g., 201301"
+                    required
+                    maxLength={6}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label>Pin Location on Map (Optional)</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Click on the map to set your exact delivery location for accurate delivery
+                  </p>
+                  <div className="h-48 rounded-lg overflow-hidden border">
                     <LocationPicker
                       onLocationSelect={handleLocationSelect}
                       initialLocation={formData.latitude && formData.longitude ? {
@@ -146,24 +262,11 @@ const Addresses = () => {
                       } : null}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Click on the map to select your delivery location
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="address_line">Full Address *</Label>
-                  <Input
-                    id="address_line"
-                    value={formData.address_line}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address_line: e.target.value }))}
-                    placeholder="Enter your full address (must include NOIDA)"
-                    required
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    We currently deliver only in NOIDA area
-                  </p>
+                  {formData.latitude && formData.longitude && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ Location pinned on map
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -175,7 +278,7 @@ const Addresses = () => {
                     className="rounded border-gray-300"
                   />
                   <Label htmlFor="is_default" className="cursor-pointer">
-                    Set as default address
+                    Set as default delivery address
                   </Label>
                 </div>
 
@@ -227,6 +330,7 @@ const Addresses = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <MapPin className="w-5 h-5 text-primary" />
+                        <span className="font-semibold">{address.name || 'Address'}</span>
                         {address.is_default && (
                           <Badge className="bg-primary text-white">
                             <Star className="w-3 h-3 mr-1" />
@@ -234,12 +338,7 @@ const Addresses = () => {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-base sm:text-lg">{address.address_line}</p>
-                      {address.latitude && address.longitude && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Coordinates: {address.latitude.toFixed(4)}, {address.longitude.toFixed(4)}
-                        </p>
-                      )}
+                      <p className="text-base">{address.address_line}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
