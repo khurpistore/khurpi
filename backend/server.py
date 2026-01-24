@@ -284,24 +284,64 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     import uuid
     from datetime import datetime
     
-    # Check stock availability and calculate earliest delivery date
-    earliest_date = datetime.now(timezone.utc).date()
+    # Get user and validate NOIDA location
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("address"):
+        raise HTTPException(status_code=400, detail="Please add delivery address in your profile")
+    
+    # Check if address contains NOIDA
+    address_upper = user["address"].upper()
+    if "NOIDA" not in address_upper:
+        raise HTTPException(
+            status_code=400, 
+            detail="Sorry, we currently deliver only in NOIDA area. Please update your address or contact support."
+        )
+    
+    # Check stock availability and calculate earliest delivery date for ALL products
+    today = datetime.now(timezone.utc).date()
     requested_date = datetime.fromisoformat(sub_data.start_date).date()
+    
+    earliest_available_date = today
+    out_of_stock_products = []
+    low_stock_products = []
     
     for item in sub_data.items:
         product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
         if not product:
-            raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
+            raise HTTPException(status_code=404, detail=f"Product not found")
+        
+        stock = product.get("stock", 0)
         
         # Check if out of stock
-        if product.get("stock", 0) < item.quantity:
-            # Calculate earliest available date based on grow time
-            grow_date = earliest_date + timedelta(days=product["growth_days"])
-            if requested_date < grow_date:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"{product['name']} is out of stock. Earliest delivery: {grow_date.isoformat()} ({product['growth_days']} days from now)"
-                )
+        if stock < item.quantity:
+            grow_date = today + timedelta(days=product["growth_days"])
+            # Track the latest date needed for any out-of-stock product
+            if grow_date > earliest_available_date:
+                earliest_available_date = grow_date
+            
+            out_of_stock_products.append({
+                "name": product["name"],
+                "requested": item.quantity,
+                "available": stock,
+                "needed": item.quantity - stock,
+                "grow_days": product["growth_days"],
+                "available_date": grow_date.isoformat()
+            })
+        elif stock < 10:
+            low_stock_products.append({
+                "name": product["name"],
+                "stock": stock
+            })
+    
+    # If any products are out of stock, enforce earliest available date
+    if out_of_stock_products:
+        if requested_date < earliest_available_date:
+            # Build detailed error message
+            products_list = ", ".join([f"{p['name']} (needs {p['grow_days']} days)" for p in out_of_stock_products])
+            raise HTTPException(
+                status_code=400,
+                detail=f"Some products are out of stock: {products_list}. Earliest delivery date for all products: {earliest_available_date.isoformat()}. Please select a start date on or after this date."
+            )
     
     subscription_doc = {
         "id": str(uuid.uuid4()),
