@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Leaf, ArrowLeft, Clock, Sprout, Heart, ShieldCheck } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, Minus, Plus, ShoppingCart, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -13,8 +15,10 @@ const API = `${BACKEND_URL}/api`;
 const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addToCart } = useCart();
   const { id } = useParams();
 
   useEffect(() => {
@@ -33,6 +37,15 @@ const ProductDetail = () => {
     }
   };
 
+  const handleAddToCart = () => {
+    if (product.stock <= 0) {
+      toast.error('This product is currently out of stock');
+      return;
+    }
+    addToCart(product, quantity);
+    toast.success(`${quantity} × ${product.name} added to cart`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -44,44 +57,8 @@ const ProductDetail = () => {
   if (!product) return null;
 
   return (
-    <div className="min-h-screen">
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-green-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <Leaf className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-primary heading-text">Khurpi</h1>
-          </div>
-          <div className="flex gap-3">
-            {user ? (
-              <>
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate('/subscriptions')}
-                  className="rounded-full"
-                >
-                  My Subscriptions
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate('/profile')}
-                  className="rounded-full"
-                >
-                  Profile
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => navigate('/login')}
-                className="bg-primary hover:bg-primary/90 text-white rounded-full"
-              >
-                Login
-              </Button>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="bg-gradient-to-b from-green-50 to-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <Button
           data-testid="back-to-products-button"
           variant="ghost"
@@ -92,7 +69,7 @@ const ProductDetail = () => {
           Back to Products
         </Button>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           <div>
             <div className="aspect-square rounded-2xl overflow-hidden shadow-lg">
               <img
@@ -103,13 +80,13 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             <div>
-              <h1 className="text-5xl font-bold text-primary mb-4 heading-text">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-4 heading-text">
                 {product.name}
               </h1>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="text-4xl font-bold text-primary">₹{product.price}</div>
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <div className="text-3xl sm:text-4xl font-bold text-primary">₹{product.price}</div>
                 <div className="text-muted-foreground">per 5×7 inch tray</div>
               </div>
               
@@ -133,7 +110,7 @@ const ProductDetail = () => {
                 </div>
               )}
               
-              <div className="flex items-center gap-4 text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm sm:text-base">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-secondary" />
                   <span>Ready in {product.growth_days} days</span>
@@ -146,14 +123,14 @@ const ProductDetail = () => {
             </div>
 
             <Card className="border-secondary/20">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-start gap-3 mb-4">
-                  <Heart className="w-6 h-6 text-secondary mt-1" />
+                  <Heart className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="text-xl font-semibold text-primary mb-2 heading-text">
+                    <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2 heading-text">
                       Health Benefits
                     </h3>
-                    <p className="text-muted-foreground leading-relaxed">{product.benefit}</p>
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{product.benefit}</p>
                   </div>
                 </div>
               </CardContent>
@@ -161,19 +138,19 @@ const ProductDetail = () => {
 
             {product.nutrients && (
               <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="flex items-start gap-3">
-                    <ShieldCheck className="w-6 h-6 text-primary mt-1" />
+                    <ShieldCheck className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-primary mb-3 heading-text">
+                      <h3 className="text-lg sm:text-xl font-semibold text-primary mb-3 heading-text">
                         Nutritional Profile
                       </h3>
-                      <div className="space-y-2">
+                      <div className="space-y-2 text-sm sm:text-base">
                         {product.nutrients.split('|').map((nutrient, index) => {
                           const [category, values] = nutrient.split(':');
                           return (
-                            <div key={index} className="flex gap-2">
-                              <span className="font-semibold text-primary min-w-[100px]">
+                            <div key={index} className="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                              <span className="font-semibold text-primary sm:min-w-[100px]">
                                 {category.trim()}:
                               </span>
                               <span className="text-muted-foreground">{values?.trim()}</span>
@@ -187,10 +164,67 @@ const ProductDetail = () => {
               </Card>
             )}
 
-            <div className="space-y-4">
+            {/* Buy Options */}
+            <div className="space-y-4 p-4 sm:p-6 bg-white rounded-xl border border-border shadow-sm">
+              <h3 className="font-semibold text-primary">Buy Now</h3>
+              
+              {/* Quantity Selector */}
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">Quantity:</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-8 h-8 p-0"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-16 text-center"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-8 h-8 p-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <span className="text-lg font-bold text-primary ml-auto">
+                  ₹{(product.price * quantity).toFixed(2)}
+                </span>
+              </div>
+
+              <Button
+                data-testid="add-to-cart-detail-button"
+                size="lg"
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0}
+                className="w-full bg-primary hover:bg-primary/90 text-white rounded-full py-5 text-lg font-medium"
+              >
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Add to Cart
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+
               <Button
                 data-testid="start-subscription-detail-button"
                 size="lg"
+                variant="outline"
                 onClick={() => {
                   if (!user) {
                     toast.error('Please login to start a subscription');
@@ -199,24 +233,16 @@ const ProductDetail = () => {
                   }
                   navigate('/subscription/create');
                 }}
-                className="w-full bg-primary hover:bg-primary/90 text-white rounded-full py-6 text-lg font-medium"
+                className="w-full rounded-full py-5 text-lg border-2 border-green-500 text-green-700 hover:bg-green-50"
               >
-                Start Subscription
-              </Button>
-              <Button
-                data-testid="view-all-products-button"
-                size="lg"
-                variant="outline"
-                onClick={() => navigate('/products')}
-                className="w-full rounded-full py-6 text-lg"
-              >
-                View All Products
+                <Sparkles className="w-5 h-5 mr-2" />
+                Subscribe & Save 15%
               </Button>
             </div>
 
-            <div className="bg-secondary/10 rounded-xl p-6">
+            <div className="bg-secondary/10 rounded-xl p-4 sm:p-6">
               <h4 className="font-semibold text-primary mb-3">Why Choose Khurpi Microgreens?</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-secondary mt-0.5">✓</span>
                   <span>Harvested within 24 hours of delivery</span>
