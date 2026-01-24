@@ -731,6 +731,120 @@ async def update_user_address(user_id: str, address: str):
     user.pop("password", None)
     return User(**user)
 
+# Multiple Address Management APIs
+@api_router.get("/users/{user_id}/addresses", response_model=List[Address])
+async def get_user_addresses(user_id: str):
+    addresses = await db.addresses.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    return addresses
+
+@api_router.post("/users/{user_id}/addresses", response_model=Address)
+async def add_user_address(user_id: str, address_data: AddressCreate):
+    import uuid
+    
+    # Validate NOIDA
+    if "NOIDA" not in address_data.address_line.upper():
+        raise HTTPException(status_code=400, detail="We currently deliver only in NOIDA area")
+    
+    # If this is the first address or marked as default, update other addresses
+    if address_data.is_default:
+        await db.addresses.update_many(
+            {"user_id": user_id},
+            {"$set": {"is_default": False}}
+        )
+    
+    # Check if this is the first address
+    existing_count = await db.addresses.count_documents({"user_id": user_id})
+    
+    address_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "address_line": address_data.address_line,
+        "latitude": address_data.latitude,
+        "longitude": address_data.longitude,
+        "is_default": address_data.is_default or existing_count == 0,  # First address is always default
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.addresses.insert_one(address_doc)
+    
+    # Also update the user's main address field if this is default
+    if address_doc["is_default"]:
+        await db.users.update_one({"id": user_id}, {"$set": {"address": address_data.address_line}})
+    
+    return Address(**address_doc)
+
+@api_router.put("/users/{user_id}/addresses/{address_id}", response_model=Address)
+async def update_user_address_by_id(user_id: str, address_id: str, address_data: AddressUpdate):
+    address = await db.addresses.find_one({"id": address_id, "user_id": user_id}, {"_id": 0})
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    update_data = {k: v for k, v in address_data.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    # Validate NOIDA if address_line is being updated
+    if "address_line" in update_data and "NOIDA" not in update_data["address_line"].upper():
+        raise HTTPException(status_code=400, detail="We currently deliver only in NOIDA area")
+    
+    # If setting as default, unset others
+    if update_data.get("is_default"):
+        await db.addresses.update_many(
+            {"user_id": user_id, "id": {"$ne": address_id}},
+            {"$set": {"is_default": False}}
+        )
+    
+    await db.addresses.update_one({"id": address_id}, {"$set": update_data})
+    
+    updated_address = await db.addresses.find_one({"id": address_id}, {"_id": 0})
+    
+    # Update user's main address if this is default
+    if updated_address.get("is_default"):
+        await db.users.update_one({"id": user_id}, {"$set": {"address": updated_address["address_line"]}})
+    
+    return Address(**updated_address)
+
+@api_router.delete("/users/{user_id}/addresses/{address_id}")
+async def delete_user_address(user_id: str, address_id: str):
+    address = await db.addresses.find_one({"id": address_id, "user_id": user_id}, {"_id": 0})
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    was_default = address.get("is_default", False)
+    
+    result = await db.addresses.delete_one({"id": address_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    # If deleted address was default, make another one default
+    if was_default:
+        remaining = await db.addresses.find_one({"user_id": user_id}, {"_id": 0})
+        if remaining:
+            await db.addresses.update_one({"id": remaining["id"]}, {"$set": {"is_default": True}})
+            await db.users.update_one({"id": user_id}, {"$set": {"address": remaining["address_line"]}})
+        else:
+            await db.users.update_one({"id": user_id}, {"$set": {"address": None}})
+    
+    return {"success": True}
+
+@api_router.put("/users/{user_id}/addresses/{address_id}/set-default")
+async def set_default_address(user_id: str, address_id: str):
+    address = await db.addresses.find_one({"id": address_id, "user_id": user_id}, {"_id": 0})
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    # Unset all other defaults
+    await db.addresses.update_many({"user_id": user_id}, {"$set": {"is_default": False}})
+    
+    # Set this one as default
+    await db.addresses.update_one({"id": address_id}, {"$set": {"is_default": True}})
+    
+    # Update user's main address
+    await db.users.update_one({"id": user_id}, {"$set": {"address": address["address_line"]}})
+    
+    return {"success": True}
+
 @api_router.get("/admin/users")
 async def get_all_users():
     users = await db.users.find({}, {"_id": 0}).to_list(1000)
