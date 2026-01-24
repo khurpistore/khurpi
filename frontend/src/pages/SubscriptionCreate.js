@@ -745,10 +745,10 @@ const SubscriptionCreate = () => {
                 <Button 
                   variant="link" 
                   className="mt-3 p-0 h-auto text-primary"
-                  onClick={() => navigate('/addresses')}
+                  onClick={handleEditAddresses}
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Add new address
+                  Add or edit addresses
                 </Button>
               </CardContent>
             </Card>
