@@ -109,6 +109,22 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - `GET /api/settings/subscription-plans` - Subscription plans
 - `POST /api/settings/calculate-delivery-fee` - Calculate delivery fee
 
+### Coupons
+- `GET /api/admin/coupons` - List all coupons
+- `POST /api/admin/coupons` - Create coupon
+- `PUT /api/admin/coupons/:id` - Update coupon
+- `DELETE /api/admin/coupons/:id` - Delete coupon
+- `POST /api/coupons/validate` - Validate and calculate coupon discount
+
+### Referrals
+- `GET /api/admin/referrers` - List all referrers with stats
+- `GET /api/admin/referral-stats` - Overall referral statistics
+- `POST /api/admin/referrers` - Register new referrer
+- `PUT /api/admin/referrers/:id` - Update referrer
+- `DELETE /api/admin/referrers/:id` - Delete referrer
+- `POST /api/admin/referrers/:id/pay-commission` - Mark commission as paid
+- `POST /api/referrals/apply` - Apply referral code to order
+
 ### Products
 - `GET /api/products` - List products
 - `GET /api/products/:id` - Product detail
