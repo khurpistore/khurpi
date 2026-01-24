@@ -915,6 +915,87 @@ async def get_order(order_id: str):
     
     return order
 
+# Settings & Configuration APIs
+@api_router.get("/settings/shop")
+async def get_shop_settings():
+    """Get shop configuration"""
+    config = await get_shop_config()
+    return config
+
+@api_router.get("/settings/delivery-pricing")
+async def get_delivery_pricing_settings():
+    """Get delivery pricing tiers"""
+    pricing = await get_delivery_pricing()
+    return pricing
+
+@api_router.get("/settings/subscription-plans")
+async def get_subscription_plans_settings():
+    """Get subscription plans with discounts"""
+    plans = await get_subscription_plans()
+    return plans
+
+@api_router.post("/settings/calculate-delivery-fee")
+async def calculate_delivery_fee_api(lat: float, lon: float):
+    """Calculate delivery fee for a given location"""
+    result = await calculate_delivery_fee(lat, lon)
+    return result
+
+# Admin Settings Management
+@api_router.put("/admin/settings/shop")
+async def update_shop_settings(data: dict):
+    """Update shop configuration"""
+    await db.settings.update_one(
+        {"type": "shop_config"},
+        {"$set": {"type": "shop_config", "data": data}},
+        upsert=True
+    )
+    return {"success": True, "data": data}
+
+@api_router.put("/admin/settings/delivery-pricing")
+async def update_delivery_pricing(data: List[dict]):
+    """Update delivery pricing tiers"""
+    # Validate data
+    for tier in data:
+        if "max_distance" not in tier or "fee" not in tier or "label" not in tier:
+            raise HTTPException(status_code=400, detail="Each tier must have max_distance, fee, and label")
+    
+    await db.settings.update_one(
+        {"type": "delivery_pricing"},
+        {"$set": {"type": "delivery_pricing", "data": data}},
+        upsert=True
+    )
+    return {"success": True, "data": data}
+
+@api_router.put("/admin/settings/subscription-plans")
+async def update_subscription_plans(data: List[dict]):
+    """Update subscription plans"""
+    # Validate data
+    for plan in data:
+        required_fields = ["id", "name", "frequency", "deliveries_per_week", "discount"]
+        for field in required_fields:
+            if field not in plan:
+                raise HTTPException(status_code=400, detail=f"Each plan must have {field}")
+    
+    await db.settings.update_one(
+        {"type": "subscription_plans"},
+        {"$set": {"type": "subscription_plans", "data": data}},
+        upsert=True
+    )
+    return {"success": True, "data": data}
+
+@api_router.get("/admin/settings/all")
+async def get_all_admin_settings():
+    """Get all settings for admin panel"""
+    shop = await get_shop_config()
+    delivery = await get_delivery_pricing()
+    plans = await get_subscription_plans()
+    
+    return {
+        "shop_config": shop,
+        "delivery_pricing": delivery,
+        "subscription_plans": plans
+    }
+
 @api_router.put("/users/{user_id}/address")
 async def update_user_address(user_id: str, address: str):
     result = await db.users.update_one({"id": user_id}, {"$set": {"address": address}})
