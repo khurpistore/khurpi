@@ -170,20 +170,20 @@ const SubscriptionCreate = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12">
+    <div className="min-h-screen bg-background py-6 sm:py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-4xl font-bold text-primary mb-2 heading-text">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-2 heading-text">
             Create Your Subscription
           </h2>
-          <p className="text-sm text-muted-foreground">
-            🚚 Delivering fresh microgreens in NOIDA area
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Delivering fresh microgreens in NOIDA area
           </p>
           <div className="flex gap-2 mt-4">
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-2 flex-1 rounded-full ${
+                className={`h-1.5 sm:h-2 flex-1 rounded-full ${
                   step >= s ? 'bg-primary' : 'bg-border'
                 }`}
               />
@@ -193,10 +193,10 @@ const SubscriptionCreate = () => {
 
         {step === 1 && (
           <div>
-            <h3 className="text-2xl font-semibold text-primary mb-6 heading-text">
+            <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-4 sm:mb-6 heading-text">
               Step 1: Select Microgreens
             </h3>
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
               {products.map((product) => {
                 const isSelected = selectedProducts.some(p => p.product_id === product.id);
                 const selectedItem = selectedProducts.find(p => p.product_id === product.id);
@@ -210,31 +210,31 @@ const SubscriptionCreate = () => {
                     }`}
                     onClick={() => toggleProduct(product.id)}
                   >
-                    <CardContent className="p-6">
-                      <div className="flex gap-4">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex gap-3 sm:gap-4">
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-24 h-24 rounded-lg object-cover"
+                          className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0"
                         />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
-                            <h4 className="text-xl font-semibold text-primary heading-text">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="text-base sm:text-xl font-semibold text-primary heading-text truncate">
                               {product.name}
                             </h4>
                             {isSelected && (
-                              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                                <Check className="w-4 h-4 text-white" />
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                               </div>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mb-2">{product.benefit}</p>
-                          <p className="text-lg font-bold text-primary">₹{product.price}/tray</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 line-clamp-2">{product.benefit}</p>
+                          <p className="text-base sm:text-lg font-bold text-primary">₹{product.price}/tray</p>
                         </div>
                       </div>
                       {isSelected && (
-                        <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-                          <Label>Trays per delivery</Label>
+                        <div className="mt-3 sm:mt-4" onClick={(e) => e.stopPropagation()}>
+                          <Label className="text-xs sm:text-sm">Trays per delivery</Label>
                           <Input
                             data-testid={`quantity-input-${product.id}`}
                             type="number"
@@ -256,7 +256,7 @@ const SubscriptionCreate = () => {
                 data-testid="next-to-step2-button"
                 onClick={() => setStep(2)}
                 disabled={selectedProducts.length === 0}
-                className="bg-primary hover:bg-primary/90 rounded-full px-8"
+                className="bg-primary hover:bg-primary/90 rounded-full px-6 sm:px-8 w-full sm:w-auto"
               >
                 Next: Schedule
               </Button>
@@ -266,25 +266,22 @@ const SubscriptionCreate = () => {
 
         {step === 2 && (
           <div>
-            <h3 className="text-2xl font-semibold text-primary mb-6 heading-text">
+            <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-4 sm:mb-6 heading-text">
               Step 2: Choose Schedule
             </h3>
             
             {stockWarning && (
-              <Card className="mb-6 border-amber-200 bg-amber-50">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-amber-700 text-lg">⚠</span>
+              <Card className="mb-4 sm:mb-6 border-amber-200 bg-amber-50">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-amber-700 text-sm sm:text-lg">!</span>
                     </div>
                     <div>
-                      <p className="font-semibold text-amber-900 mb-1">Stock Availability Notice</p>
-                      <p className="text-sm text-amber-800 mb-2">{stockWarning.message}</p>
-                      <p className="text-sm text-amber-900 font-medium">
-                        Earliest available delivery: {format(stockWarning.earliestDate, 'PPP')}
-                      </p>
-                      <p className="text-xs text-amber-700 mt-1">
-                        Please select a start date on or after this date to include all products.
+                      <p className="font-semibold text-amber-900 mb-1 text-sm sm:text-base">Stock Notice</p>
+                      <p className="text-xs sm:text-sm text-amber-800 mb-2">{stockWarning.message}</p>
+                      <p className="text-xs sm:text-sm text-amber-900 font-medium">
+                        Earliest delivery: {format(stockWarning.earliestDate, 'PPP')}
                       </p>
                     </div>
                   </div>
@@ -292,49 +289,49 @@ const SubscriptionCreate = () => {
               </Card>
             )}
             
-            <Card className="mb-6 border-secondary/30 bg-secondary/5">
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
-                  <Package className="w-5 h-5" />
+            <Card className="mb-4 sm:mb-6 border-secondary/30 bg-secondary/5">
+              <CardContent className="p-4 sm:p-6">
+                <h4 className="font-semibold text-primary mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5" />
                   Selected Products
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {selectedProducts.map((item) => {
                     const product = products.find(p => p.id === item.product_id);
                     return product ? (
                       <div
                         key={item.product_id}
-                        className="flex items-center gap-4 p-3 bg-white rounded-lg border border-border"
+                        className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 bg-white rounded-lg border border-border"
                       >
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-16 h-16 rounded-lg object-cover"
+                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover"
                         />
-                        <div className="flex-1">
-                          <h5 className="font-semibold text-primary">{product.name}</h5>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-semibold text-primary text-sm sm:text-base truncate">{product.name}</h5>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {item.quantity} tray{item.quantity > 1 ? 's' : ''} × ₹{product.price}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-primary">₹{(product.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-bold text-primary text-sm sm:text-base">₹{(product.price * item.quantity).toFixed(2)}</p>
                         </div>
                       </div>
                     ) : null;
                   })}
                   <div className="border-t pt-3 flex justify-between items-center">
-                    <span className="font-semibold text-primary">Total per delivery</span>
-                    <span className="text-2xl font-bold text-primary">₹{calculateTotal()}</span>
+                    <span className="font-semibold text-primary text-sm sm:text-base">Total per delivery</span>
+                    <span className="text-xl sm:text-2xl font-bold text-primary">₹{calculateTotal()}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div>
-                  <Label>Delivery Frequency</Label>
+                  <Label className="text-sm">Delivery Frequency</Label>
                   <Select value={frequency} onValueChange={setFrequency}>
                     <SelectTrigger data-testid="frequency-select" className="mt-1">
                       <SelectValue />
@@ -348,7 +345,7 @@ const SubscriptionCreate = () => {
                 </div>
 
                 <div>
-                  <Label>Preferred Delivery Day</Label>
+                  <Label className="text-sm">Preferred Delivery Day</Label>
                   <Select value={deliveryDay} onValueChange={setDeliveryDay}>
                     <SelectTrigger data-testid="delivery-day-select" className="mt-1">
                       <SelectValue />
@@ -366,13 +363,13 @@ const SubscriptionCreate = () => {
                 </div>
 
                 <div>
-                  <Label>Start Date</Label>
+                  <Label className="text-sm">Start Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         data-testid="start-date-button"
                         variant="outline"
-                        className="w-full justify-start text-left font-normal mt-1"
+                        className="w-full justify-start text-left font-normal mt-1 text-sm"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {startDate ? format(startDate, 'PPP') : 'Pick a date'}
@@ -390,12 +387,12 @@ const SubscriptionCreate = () => {
                 </div>
               </CardContent>
             </Card>
-            <div className="flex justify-between mt-6">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4 sm:mt-6">
               <Button
                 data-testid="back-to-step1-button"
                 variant="outline"
                 onClick={() => setStep(1)}
-                className="rounded-full"
+                className="rounded-full order-2 sm:order-1"
               >
                 Back
               </Button>
@@ -403,7 +400,7 @@ const SubscriptionCreate = () => {
                 data-testid="next-to-step3-button"
                 onClick={() => setStep(3)}
                 disabled={!startDate}
-                className="bg-primary hover:bg-primary/90 rounded-full px-8"
+                className="bg-primary hover:bg-primary/90 rounded-full px-6 sm:px-8 order-1 sm:order-2"
               >
                 Next: Review
               </Button>
@@ -413,52 +410,52 @@ const SubscriptionCreate = () => {
 
         {step === 3 && (
           <div>
-            <h3 className="text-2xl font-semibold text-primary mb-6 heading-text">
+            <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-4 sm:mb-6 heading-text">
               Step 3: Review & Confirm
             </h3>
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-lg mb-4">Order Summary</h4>
-                <div className="space-y-3">
+            <Card className="mb-4 sm:mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4">Order Summary</h4>
+                <div className="space-y-2 sm:space-y-3">
                   {selectedProducts.map((item) => {
                     const product = products.find(p => p.id === item.product_id);
                     return product ? (
-                      <div key={item.product_id} className="flex justify-between">
-                        <span>
+                      <div key={item.product_id} className="flex justify-between text-sm sm:text-base">
+                        <span className="truncate pr-2">
                           {product.name} × {item.quantity}
                         </span>
-                        <span className="font-semibold">₹{product.price * item.quantity}</span>
+                        <span className="font-semibold flex-shrink-0">₹{product.price * item.quantity}</span>
                       </div>
                     ) : null;
                   })}
-                  <div className="border-t pt-3 flex justify-between text-lg font-bold">
+                  <div className="border-t pt-3 flex justify-between text-base sm:text-lg font-bold">
                     <span>Total per delivery</span>
                     <span data-testid="total-price">₹{calculateTotal()}</span>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-6 border-t space-y-2">
-                  <div className="flex justify-between">
+                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t space-y-2">
+                  <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Frequency:</span>
                     <span className="font-medium capitalize">{frequency}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Delivery Day:</span>
                     <span className="font-medium">{deliveryDay}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Start Date:</span>
                     <span className="font-medium">{startDate ? format(startDate, 'PPP') : ''}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            <div className="flex justify-between">
+            <div className="flex flex-col sm:flex-row justify-between gap-3">
               <Button
                 data-testid="back-to-step2-button"
                 variant="outline"
                 onClick={() => setStep(2)}
-                className="rounded-full"
+                className="rounded-full order-2 sm:order-1"
               >
                 Back
               </Button>
@@ -466,7 +463,7 @@ const SubscriptionCreate = () => {
                 data-testid="confirm-subscription-button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="bg-primary hover:bg-primary/90 rounded-full px-8"
+                className="bg-primary hover:bg-primary/90 rounded-full px-6 sm:px-8 order-1 sm:order-2"
               >
                 {loading ? 'Processing...' : 'Confirm Subscription'}
               </Button>
