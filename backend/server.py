@@ -197,6 +197,45 @@ async def get_products(active_only: bool = True):
     products = await db.products.find(query, {"_id": 0}).to_list(100)
     return products
 
+@api_router.post("/products/check-availability")
+async def check_product_availability(items: List[SubscriptionItem], start_date: str):
+    from datetime import datetime
+    
+    earliest_date = datetime.now(timezone.utc).date()
+    requested_date = datetime.fromisoformat(start_date).date()
+    
+    availability = []
+    
+    for item in items:
+        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        if not product:
+            continue
+        
+        stock = product.get("stock", 0)
+        is_available = stock >= item.quantity
+        
+        if not is_available:
+            earliest_available = earliest_date + timedelta(days=product["growth_days"])
+            availability.append({
+                "product_id": item.product_id,
+                "product_name": product["name"],
+                "available": False,
+                "current_stock": stock,
+                "requested": item.quantity,
+                "earliest_date": earliest_available.isoformat(),
+                "grow_days": product["growth_days"]
+            })
+        else:
+            availability.append({
+                "product_id": item.product_id,
+                "product_name": product["name"],
+                "available": True,
+                "current_stock": stock,
+                "requested": item.quantity
+            })
+    
+    return {"items": availability, "all_available": all(item["available"] for item in availability)}
+
 @api_router.get("/products/{product_id}", response_model=Product)
 async def get_product(product_id: str):
     product = await db.products.find_one({"id": product_id}, {"_id": 0})
