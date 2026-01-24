@@ -25,6 +25,8 @@ const SubscriptionCreate = () => {
   const [deliveryDay, setDeliveryDay] = useState('Monday');
   const [startDate, setStartDate] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [stockWarning, setStockWarning] = useState(null);
+  const [minStartDate, setMinStartDate] = useState(new Date());
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -36,12 +38,62 @@ const SubscriptionCreate = () => {
     fetchProducts();
   }, [user, navigate]);
 
+  useEffect(() => {
+    if (selectedProducts.length > 0) {
+      checkStockAvailability();
+    } else {
+      setStockWarning(null);
+      setMinStartDate(new Date());
+    }
+  }, [selectedProducts]);
+
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`${API}/products`);
       setProducts(response.data);
     } catch (error) {
       toast.error('Failed to load products');
+    }
+  };
+
+  const checkStockAvailability = async () => {
+    try {
+      const today = new Date();
+      let maxGrowDays = 0;
+      const outOfStockItems = [];
+
+      for (const item of selectedProducts) {
+        const product = products.find(p => p.id === item.product_id);
+        if (product) {
+          if (product.stock < item.quantity) {
+            outOfStockItems.push({
+              name: product.name,
+              growDays: product.growth_days
+            });
+            if (product.growth_days > maxGrowDays) {
+              maxGrowDays = product.growth_days;
+            }
+          }
+        }
+      }
+
+      if (outOfStockItems.length > 0) {
+        const earliestDate = new Date(today);
+        earliestDate.setDate(earliestDate.getDate() + maxGrowDays);
+        setMinStartDate(earliestDate);
+        
+        const productNames = outOfStockItems.map(p => `${p.name} (${p.growDays} days)`).join(', ');
+        setStockWarning({
+          message: `Some products are out of stock: ${productNames}`,
+          earliestDate: earliestDate,
+          products: outOfStockItems
+        });
+      } else {
+        setStockWarning(null);
+        setMinStartDate(new Date());
+      }
+    } catch (error) {
+      console.error('Error checking stock:', error);
     }
   };
 
