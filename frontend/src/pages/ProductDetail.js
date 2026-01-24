@@ -112,6 +112,27 @@ const ProductDetail = () => {
                 <div className="text-4xl font-bold text-primary">₹{product.price}</div>
                 <div className="text-muted-foreground">per 5×7 inch tray</div>
               </div>
+              
+              {product.stock <= 0 ? (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 font-semibold mb-1">Currently Out of Stock</p>
+                  <p className="text-red-600 text-sm">
+                    This product will be available for delivery in {product.growth_days} days. 
+                    You can schedule your subscription to start after {product.growth_days} days from today.
+                  </p>
+                </div>
+              ) : product.stock < 10 ? (
+                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-amber-800 font-semibold">
+                    Only {product.stock} trays left in stock!
+                  </p>
+                </div>
+              ) : (
+                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 font-semibold">In Stock - {product.stock} trays available</p>
+                </div>
+              )}
+              
               <div className="flex items-center gap-4 text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-secondary" />
