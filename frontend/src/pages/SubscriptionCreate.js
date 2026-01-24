@@ -207,17 +207,18 @@ const SubscriptionCreate = () => {
     return total;
   };
 
-  // Calculate weekly subtotal (per tray × deliveries per week)
-  const calculateWeeklySubtotal = () => {
+  // Calculate monthly subtotal (per tray × deliveries per week × 4 weeks)
+  const calculateMonthlySubtotal = () => {
     const perTray = calculatePerTrayPrice();
     const deliveriesPerWeek = selectedPlan?.deliveries_per_week || 1;
-    return perTray * deliveriesPerWeek;
+    const weeksPerMonth = 4;
+    return perTray * deliveriesPerWeek * weeksPerMonth;
   };
 
-  // Calculate discount on weekly subtotal
+  // Calculate discount on monthly subtotal
   const calculateDiscount = () => {
     if (!selectedPlan) return 0;
-    return (calculateWeeklySubtotal() * selectedPlan.discount) / 100;
+    return (calculateMonthlySubtotal() * selectedPlan.discount) / 100;
   };
 
   const getDeliveryFee = () => {
@@ -229,13 +230,13 @@ const SubscriptionCreate = () => {
     return appliedDiscount.discount || 0;
   };
 
-  // Calculate total weekly cost
+  // Calculate total monthly cost
   const calculateTotal = () => {
-    const weeklySubtotal = calculateWeeklySubtotal();
+    const monthlySubtotal = calculateMonthlySubtotal();
     const planDiscount = calculateDiscount();
-    const delivery = getDeliveryFee();
+    const delivery = getDeliveryFee() * 4; // Delivery fee per month (4 weeks)
     const codeDiscount = getDiscountCodeSavings();
-    return Math.max(0, weeklySubtotal - planDiscount + delivery - codeDiscount);
+    return Math.max(0, monthlySubtotal - planDiscount + delivery - codeDiscount);
   };
 
   // Apply discount code (works for both coupons and referral codes)
@@ -247,7 +248,7 @@ const SubscriptionCreate = () => {
 
     setDiscountLoading(true);
     try {
-      const orderAmount = calculateWeeklySubtotal() - calculateDiscount() + getDeliveryFee();
+      const orderAmount = calculateMonthlySubtotal() - calculateDiscount() + (getDeliveryFee() * 4);
       const response = await axios.post(`${API}/discount/validate?code=${discountCode}&order_amount=${orderAmount}`);
       setAppliedDiscount(response.data);
       toast.success(response.data.message);
