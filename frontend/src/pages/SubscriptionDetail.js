@@ -265,8 +265,8 @@ const SubscriptionDetail = () => {
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Plan</p>
-                    <p className="font-medium capitalize">{subscription.frequency}</p>
+                    <p className="text-xs text-muted-foreground">Plan (Monthly)</p>
+                    <p className="font-medium">{getPlanDisplayName(subscription.frequency)}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
