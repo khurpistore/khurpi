@@ -116,28 +116,12 @@ const Profile = () => {
                 <MapPin className="w-5 h-5 text-primary" />
                 <h3 className="text-xl font-semibold text-primary heading-text">Delivery Address</h3>
               </div>
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  data-testid="address-input"
-                  placeholder="Enter your delivery address in NOIDA"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="mt-1 min-h-[100px]"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  * We currently deliver only in NOIDA area
-                </p>
-                <Button
-                  data-testid="save-address-button"
-                  onClick={handleSaveAddress}
-                  disabled={loading}
-                  className="mt-4 bg-primary hover:bg-primary/90 rounded-full"
-                >
-                  {loading ? 'Saving...' : 'Save Address'}
-                </Button>
-              </div>
+              <LocationPicker
+                address={address}
+                setAddress={setAddress}
+                onSave={handleSaveAddress}
+                loading={loading}
+              />
             </CardContent>
           </Card>
 
