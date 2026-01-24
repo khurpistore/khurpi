@@ -341,7 +341,7 @@ const SubscriptionCreate = () => {
                         mode="single"
                         selected={startDate}
                         onSelect={setStartDate}
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => date < minStartDate}
                       />
                     </PopoverContent>
                   </Popover>
