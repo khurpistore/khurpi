@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -12,7 +12,8 @@ const menuItems = [
   { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
   { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
   { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-  { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
+  { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' },
+  { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' }
 ];
 
 const AdminLayout = ({ children, active, title }) => {
