@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Leaf, User, MapPin, CreditCard, Plus, Trash2, Edit2, Star, Menu, X } from 'lucide-react';
+import { User, MapPin, CreditCard, Plus, Trash2, Edit2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -20,7 +20,6 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, addresses, addAddress, updateAddressById, deleteAddress, setDefaultAddress, logout, fetchAddresses } = useAuth();
 
@@ -96,68 +95,8 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-green-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-            <h1 className="text-xl sm:text-2xl font-bold text-primary heading-text">Khurpi</h1>
-          </div>
-          
-          {/* Desktop Nav */}
-          <div className="hidden sm:flex gap-3">
-            <Button
-              data-testid="products-nav-button"
-              variant="ghost"
-              onClick={() => navigate('/products')}
-              className="rounded-full"
-            >
-              Products
-            </Button>
-            <Button
-              data-testid="subscriptions-nav-button"
-              variant="ghost"
-              onClick={() => navigate('/subscriptions')}
-              className="rounded-full"
-            >
-              My Subscriptions
-            </Button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="sm:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="sm:hidden bg-white border-b border-green-100 px-4 py-3 space-y-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => { navigate('/products'); setMobileMenuOpen(false); }}
-            >
-              Products
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => { navigate('/subscriptions'); setMobileMenuOpen(false); }}
-            >
-              My Subscriptions
-            </Button>
-          </div>
-        )}
-      </nav>
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-        <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8 heading-text">My Profile</h2>
+        <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8 heading-text">My Profile</h1>
 
         <div className="space-y-4 sm:space-y-6">
           {/* Personal Information */}
@@ -218,9 +157,11 @@ const Profile = () => {
               {editingAddress && (
                 <div className="mb-4">
                   <LocationPicker
-                    initialAddress={editingAddress.address_line}
-                    initialLat={editingAddress.latitude}
-                    initialLng={editingAddress.longitude}
+                    initialData={{
+                      address_line: editingAddress.address_line,
+                      latitude: editingAddress.latitude,
+                      longitude: editingAddress.longitude
+                    }}
                     onSave={handleUpdateAddress}
                     onCancel={() => setEditingAddress(null)}
                     loading={loading}
