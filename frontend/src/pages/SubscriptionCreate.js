@@ -255,10 +255,15 @@ const SubscriptionCreate = () => {
   };
 
   const handleSubmit = async () => {
-    // Check if user has any addresses (new way) or legacy address
-    if (addresses.length === 0 && !user?.address) {
-      toast.error('Please add your address in profile before subscribing');
+    // Check if user has any addresses
+    if (addresses.length === 0) {
+      toast.error('Please add your delivery address first');
       navigate('/addresses');
+      return;
+    }
+
+    if (!selectedAddressId) {
+      toast.error('Please select a delivery address');
       return;
     }
 
@@ -281,9 +286,6 @@ const SubscriptionCreate = () => {
     setProcessingPayment(true);
 
     try {
-      // Get the default address id
-      const defaultAddress = addresses.find(a => a.is_default) || addresses[0];
-
       const subscriptionData = {
         frequency: selectedPlan.frequency,
         delivery_day: deliveryDay,
@@ -292,7 +294,7 @@ const SubscriptionCreate = () => {
         items: selectedProducts,
         total_price: calculateTotal(),
         plan_id: selectedPlan.id,
-        address_id: defaultAddress?.id || null,
+        address_id: selectedAddressId,
         coupon_code: appliedDiscount?.code || null,
         coupon_discount: appliedDiscount?.discount || 0,
         referral_code: appliedDiscount?.type === 'referral' ? appliedDiscount.code : null,
