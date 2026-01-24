@@ -736,11 +736,12 @@ const SubscriptionCreate = () => {
               <CardContent className="p-4 sm:p-6">
                 <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
                   <Package className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Order Summary
+                  Weekly Order Summary
                 </h4>
                 
-                {/* Products */}
+                {/* Products per delivery */}
                 <div className="space-y-2 mb-4">
+                  <p className="text-xs text-muted-foreground mb-2">Per tray/delivery:</p>
                   {selectedProducts.map((item) => {
                     const product = products.find(p => p.id === item.product_id);
                     return product ? (
@@ -750,6 +751,10 @@ const SubscriptionCreate = () => {
                       </div>
                     ) : null;
                   })}
+                  <div className="flex justify-between text-sm font-medium border-t pt-2 mt-2">
+                    <span>Per Tray Cost</span>
+                    <span>₹{calculatePerTrayPrice().toFixed(2)}</span>
+                  </div>
                 </div>
 
                 {/* Plan Details */}
@@ -760,15 +765,19 @@ const SubscriptionCreate = () => {
                       <span className="font-medium">{selectedPlan.name}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span>₹{calculateSubtotal().toFixed(2)}</span>
+                      <span className="text-muted-foreground">Deliveries per week</span>
+                      <span className="font-medium">{selectedPlan.deliveries_per_week}×</span>
+                    </div>
+                    <div className="flex justify-between bg-gray-50 p-2 rounded -mx-2">
+                      <span className="font-medium">Weekly Subtotal</span>
+                      <span className="font-medium">₹{calculatePerTrayPrice().toFixed(2)} × {selectedPlan.deliveries_per_week} = ₹{calculateWeeklySubtotal().toFixed(2)}</span>
                     </div>
                     {selectedPlan.discount > 0 && (
                       <div className="flex justify-between text-green-600">
                         <span>Plan Discount ({selectedPlan.discount}%)</span>
                         <span>-₹{calculateDiscount().toFixed(2)}</span>
                       </div>
-                    )}
+                    )}}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground flex items-center gap-1">
                         <Truck className="w-3 h-3" /> Delivery
