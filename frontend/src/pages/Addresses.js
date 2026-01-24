@@ -208,11 +208,42 @@ const Addresses = () => {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+                {/* Map Location - At Top, Mandatory */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Navigation className="w-4 h-4" />
+                      Pin Location *
+                    </div>
+                    {formData.latitude && formData.longitude ? (
+                      <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        Location Set
+                      </span>
+                    ) : (
+                      <span className="text-xs text-red-500">Required</span>
+                    )}
+                  </div>
+                  <div className="h-52 rounded-lg overflow-hidden border border-gray-200">
+                    <SimpleMapPicker
+                      key={editingAddress?.id || 'new'}
+                      onLocationSelect={handleLocationSelect}
+                      initialLocation={formData.latitude && formData.longitude ? {
+                        lat: formData.latitude,
+                        lng: formData.longitude
+                      } : null}
+                    />
+                  </div>
+                  {!formData.latitude && !formData.longitude && (
+                    <p className="text-xs text-red-500 mt-2">Click on the map to pin your delivery location</p>
+                  )}
+                </div>
+
                 {/* Address Label */}
                 <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                     <Home className="w-4 h-4" />
-                    Address Label
+                    Address Label *
                   </div>
                   <Input
                     value={formData.name}
@@ -292,31 +323,6 @@ const Addresses = () => {
                         Delivery Area
                       </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Map Location */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Navigation className="w-4 h-4" />
-                      Pin Location
-                    </div>
-                    {formData.latitude && formData.longitude && (
-                      <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        Set
-                      </span>
-                    )}
-                  </div>
-                  <div className="h-52 rounded-lg overflow-hidden border border-gray-200">
-                    <SimpleMapPicker
-                      onLocationSelect={handleLocationSelect}
-                      initialLocation={formData.latitude && formData.longitude ? {
-                        lat: formData.latitude,
-                        lng: formData.longitude
-                      } : null}
-                    />
                   </div>
                 </div>
 
