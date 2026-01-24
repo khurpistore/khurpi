@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Check, Plus } from 'lucide-react';
+import { MapPin, CreditCard, Check, Plus, Truck, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -21,6 +21,8 @@ const Checkout = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showNewAddress, setShowNewAddress] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
+  const [shopConfig, setShopConfig] = useState(null);
   const [newAddress, setNewAddress] = useState({
     address_line1: '',
     address_line2: '',
@@ -38,6 +40,7 @@ const Checkout = () => {
       navigate('/cart');
       return;
     }
+    fetchShopConfig();
     // Set default address
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
@@ -46,6 +49,39 @@ const Checkout = () => {
       setSelectedAddressId(addresses[0].id);
     }
   }, [user, cartItems, addresses, navigate]);
+
+  useEffect(() => {
+    if (selectedAddressId) {
+      calculateDeliveryFee();
+    }
+  }, [selectedAddressId]);
+
+  const fetchShopConfig = async () => {
+    try {
+      const response = await axios.get(`${API}/settings/shop`);
+      setShopConfig(response.data);
+    } catch (error) {
+      console.error('Failed to fetch shop config');
+    }
+  };
+
+  const calculateDeliveryFee = async () => {
+    const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+    if (selectedAddress?.latitude && selectedAddress?.longitude) {
+      try {
+        const response = await axios.post(
+          `${API}/settings/calculate-delivery-fee?lat=${selectedAddress.latitude}&lon=${selectedAddress.longitude}`
+        );
+        setDeliveryInfo(response.data);
+      } catch (error) {
+        console.error('Failed to calculate delivery fee');
+        setDeliveryInfo({ fee: 150, distance: 0, label: 'Standard Delivery' });
+      }
+    } else {
+      // Default fee if no coordinates
+      setDeliveryInfo({ fee: 150, distance: 0, label: 'Standard Delivery' });
+    }
+  };
 
   const handleAddNewAddress = async () => {
     if (!newAddress.address_line1 || !newAddress.pincode) {
@@ -85,7 +121,6 @@ const Checkout = () => {
 
     setLoading(true);
     try {
-      // Create order (mocked payment)
       const orderData = {
         user_id: user.id,
         address_id: selectedAddressId,
@@ -94,7 +129,9 @@ const Checkout = () => {
           quantity: item.quantity,
           price: item.product.price
         })),
-        total: getCartTotal(),
+        subtotal: getCartTotal(),
+        delivery_fee: deliveryInfo?.fee || 0,
+        total: getCartTotal() + (deliveryInfo?.fee || 0),
         order_type: 'one_time'
       };
 
@@ -102,7 +139,7 @@ const Checkout = () => {
       
       clearCart();
       toast.success('Order placed successfully!');
-      navigate('/orders');
+      navigate('/profile');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to place order');
     } finally {
@@ -113,6 +150,10 @@ const Checkout = () => {
   if (!user || cartItems.length === 0) {
     return null;
   }
+
+  const subtotal = getCartTotal();
+  const deliveryFee = deliveryInfo?.fee || 0;
+  const total = subtotal + deliveryFee;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
@@ -127,6 +168,13 @@ const Checkout = () => {
                 <MapPin className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Delivery Address</h2>
               </div>
+
+              {shopConfig && (
+                <div className="mb-4 p-3 bg-green-50 rounded-lg text-sm">
+                  <p className="font-medium text-green-800">Delivering from:</p>
+                  <p className="text-green-700">{shopConfig.address}</p>
+                </div>
+              )}
 
               {addresses.length > 0 && !showNewAddress && (
                 <RadioGroup value={selectedAddressId} onValueChange={setSelectedAddressId}>
@@ -231,6 +279,41 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
+          {/* Delivery Info */}
+          {deliveryInfo && (
+            <Card className={deliveryInfo.fee === 0 ? 'border-green-200 bg-green-50' : ''}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Truck className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold">Delivery Information</h2>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{deliveryInfo.label}</p>
+                    {deliveryInfo.distance > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Distance: {deliveryInfo.distance.toFixed(1)} km from shop
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    {deliveryInfo.fee === 0 ? (
+                      <span className="text-lg font-bold text-green-600">FREE</span>
+                    ) : (
+                      <span className="text-lg font-bold">₹{deliveryInfo.fee}</span>
+                    )}
+                  </div>
+                </div>
+                {deliveryInfo.fee > 0 && (
+                  <div className="mt-3 p-2 bg-amber-50 rounded text-xs text-amber-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Move closer to our shop (within 1 km) to get free delivery!</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Payment - Mocked */}
           <Card>
             <CardContent className="p-4 sm:p-6">
@@ -271,18 +354,22 @@ const Checkout = () => {
               <div className="space-y-2 text-sm border-t pt-4 mb-4">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>₹{getCartTotal().toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery</span>
-                  <span className="text-green-600">FREE</span>
+                  {deliveryFee === 0 ? (
+                    <span className="text-green-600 font-medium">FREE</span>
+                  ) : (
+                    <span>₹{deliveryFee}</span>
+                  )}
                 </div>
               </div>
               
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">₹{getCartTotal().toFixed(2)}</span>
+                  <span className="text-primary">₹{total.toFixed(2)}</span>
                 </div>
               </div>
 
