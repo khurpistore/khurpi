@@ -21,7 +21,7 @@ const Footer = () => {
               <img 
                 src="/khurpi-logo.png" 
                 alt="Khurpi" 
-                className="h-12 w-auto brightness-0 invert"
+                className="h-12 w-auto"
               />
             </div>
             <p className="text-sm text-white/80">
