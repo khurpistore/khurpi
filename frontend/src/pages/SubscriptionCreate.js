@@ -41,12 +41,15 @@ const SubscriptionCreate = () => {
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [discountLoading, setDiscountLoading] = useState(false);
   
+  // Address selection state
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [processingPayment, setProcessingPayment] = useState(false);
   
   const navigate = useNavigate();
-  const { user, addresses } = useAuth();
+  const { user, addresses, fetchAddresses } = useAuth();
 
   useEffect(() => {
     if (!user) {
