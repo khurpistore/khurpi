@@ -71,7 +71,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5" />
-                <span>Sector 62, NOIDA, UP 201301</span>
+                <span>E-312, ACE City, Noida Extension, 201306</span>
               </li>
             </ul>
           </div>
