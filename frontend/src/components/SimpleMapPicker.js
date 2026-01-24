@@ -38,19 +38,12 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
 }
 
 const SimpleMapPicker = ({ onLocationSelect, initialLocation }) => {
+  // Use a key to force remount when initialLocation changes
+  const initialKey = initialLocation ? `${initialLocation.lat}-${initialLocation.lng}` : 'default';
+  
   const [position, setPosition] = useState(
     initialLocation ? [initialLocation.lat, initialLocation.lng] : null
   );
-
-  // Update position when initialLocation prop changes (for edit mode)
-  const initialLat = initialLocation?.lat;
-  const initialLng = initialLocation?.lng;
-  
-  useEffect(() => {
-    if (initialLat && initialLng) {
-      setPosition([initialLat, initialLng]);
-    }
-  }, [initialLat, initialLng]);
 
   return (
     <MapContainer
