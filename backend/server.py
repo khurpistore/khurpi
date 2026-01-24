@@ -1317,6 +1317,275 @@ async def get_recent_activities():
         "recent_payments": recent_payments
     }
 
+# ============ COUPON MANAGEMENT APIs ============
+
+class CouponCreate(BaseModel):
+    code: str
+    discount_type: str = "percentage"  # percentage or fixed
+    discount_value: float
+    min_order_amount: float = 0
+    max_discount: Optional[float] = None
+    usage_limit: Optional[int] = None
+    valid_from: Optional[str] = None
+    valid_until: Optional[str] = None
+    is_active: bool = True
+    description: Optional[str] = None
+
+class CouponUpdate(BaseModel):
+    code: Optional[str] = None
+    discount_type: Optional[str] = None
+    discount_value: Optional[float] = None
+    min_order_amount: Optional[float] = None
+    max_discount: Optional[float] = None
+    usage_limit: Optional[int] = None
+    valid_from: Optional[str] = None
+    valid_until: Optional[str] = None
+    is_active: Optional[bool] = None
+    description: Optional[str] = None
+
+@api_router.get("/admin/coupons")
+async def get_all_coupons():
+    coupons = await db.coupons.find({}, {"_id": 0}).to_list(1000)
+    return coupons
+
+@api_router.post("/admin/coupons")
+async def create_coupon(coupon_data: CouponCreate):
+    import uuid
+    
+    # Check if code already exists
+    existing = await db.coupons.find_one({"code": coupon_data.code.upper()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Coupon code already exists")
+    
+    coupon_doc = {
+        "id": str(uuid.uuid4()),
+        "code": coupon_data.code.upper(),
+        "discount_type": coupon_data.discount_type,
+        "discount_value": coupon_data.discount_value,
+        "min_order_amount": coupon_data.min_order_amount,
+        "max_discount": coupon_data.max_discount,
+        "usage_limit": coupon_data.usage_limit,
+        "times_used": 0,
+        "valid_from": coupon_data.valid_from,
+        "valid_until": coupon_data.valid_until,
+        "is_active": coupon_data.is_active,
+        "description": coupon_data.description,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.coupons.insert_one(coupon_doc)
+    return coupon_doc
+
+@api_router.put("/admin/coupons/{coupon_id}")
+async def update_coupon(coupon_id: str, coupon_data: CouponUpdate):
+    update_data = {k: v for k, v in coupon_data.model_dump().items() if v is not None}
+    
+    if "code" in update_data:
+        update_data["code"] = update_data["code"].upper()
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    result = await db.coupons.update_one({"id": coupon_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    
+    coupon = await db.coupons.find_one({"id": coupon_id}, {"_id": 0})
+    return coupon
+
+@api_router.delete("/admin/coupons/{coupon_id}")
+async def delete_coupon(coupon_id: str):
+    result = await db.coupons.delete_one({"id": coupon_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    return {"success": True}
+
+@api_router.post("/coupons/validate")
+async def validate_coupon(code: str, order_amount: float):
+    coupon = await db.coupons.find_one({"code": code.upper(), "is_active": True}, {"_id": 0})
+    
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Invalid or expired coupon code")
+    
+    # Check validity dates
+    now = datetime.now(timezone.utc).isoformat()
+    if coupon.get("valid_from") and coupon["valid_from"] > now:
+        raise HTTPException(status_code=400, detail="Coupon is not yet active")
+    if coupon.get("valid_until") and coupon["valid_until"] < now:
+        raise HTTPException(status_code=400, detail="Coupon has expired")
+    
+    # Check usage limit
+    if coupon.get("usage_limit") and coupon.get("times_used", 0) >= coupon["usage_limit"]:
+        raise HTTPException(status_code=400, detail="Coupon usage limit reached")
+    
+    # Check minimum order
+    if order_amount < coupon.get("min_order_amount", 0):
+        raise HTTPException(status_code=400, detail=f"Minimum order amount is ₹{coupon['min_order_amount']}")
+    
+    # Calculate discount
+    if coupon["discount_type"] == "percentage":
+        discount = (order_amount * coupon["discount_value"]) / 100
+        if coupon.get("max_discount"):
+            discount = min(discount, coupon["max_discount"])
+    else:
+        discount = coupon["discount_value"]
+    
+    return {
+        "valid": True,
+        "code": coupon["code"],
+        "discount": discount,
+        "discount_type": coupon["discount_type"],
+        "discount_value": coupon["discount_value"]
+    }
+
+# ============ REFERRAL MANAGEMENT APIs ============
+
+class ReferrerCreate(BaseModel):
+    name: str
+    phone: str
+    email: Optional[str] = None
+    commission_rate: float = 10
+    referral_code: str
+    is_active: bool = True
+
+class ReferrerUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    commission_rate: Optional[float] = None
+    referral_code: Optional[str] = None
+    is_active: Optional[bool] = None
+
+@api_router.get("/admin/referrers")
+async def get_all_referrers():
+    referrers = await db.referrers.find({}, {"_id": 0}).to_list(1000)
+    
+    # Calculate stats for each referrer
+    for referrer in referrers:
+        referrals = await db.referrals.find({"referrer_id": referrer["id"]}, {"_id": 0}).to_list(1000)
+        referrer["total_referrals"] = len(referrals)
+        referrer["total_earned"] = sum(r.get("commission_amount", 0) for r in referrals)
+        referrer["pending_amount"] = sum(r.get("commission_amount", 0) for r in referrals if not r.get("is_paid"))
+    
+    return referrers
+
+@api_router.get("/admin/referral-stats")
+async def get_referral_stats():
+    referrers = await db.referrers.find({}, {"_id": 0}).to_list(1000)
+    referrals = await db.referrals.find({}, {"_id": 0}).to_list(10000)
+    
+    total_commission = sum(r.get("commission_amount", 0) for r in referrals)
+    pending_commission = sum(r.get("commission_amount", 0) for r in referrals if not r.get("is_paid"))
+    
+    return {
+        "total_referrers": len(referrers),
+        "total_referrals": len(referrals),
+        "total_commission": total_commission,
+        "pending_commission": pending_commission
+    }
+
+@api_router.post("/admin/referrers")
+async def create_referrer(referrer_data: ReferrerCreate):
+    import uuid
+    
+    # Check if code already exists
+    existing = await db.referrers.find_one({"referral_code": referrer_data.referral_code.upper()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Referral code already exists")
+    
+    # Check if phone already registered
+    existing_phone = await db.referrers.find_one({"phone": referrer_data.phone}, {"_id": 0})
+    if existing_phone:
+        raise HTTPException(status_code=400, detail="Phone number already registered as referrer")
+    
+    referrer_doc = {
+        "id": str(uuid.uuid4()),
+        "name": referrer_data.name,
+        "phone": referrer_data.phone,
+        "email": referrer_data.email,
+        "commission_rate": referrer_data.commission_rate,
+        "referral_code": referrer_data.referral_code.upper(),
+        "is_active": referrer_data.is_active,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.referrers.insert_one(referrer_doc)
+    return referrer_doc
+
+@api_router.put("/admin/referrers/{referrer_id}")
+async def update_referrer(referrer_id: str, referrer_data: ReferrerUpdate):
+    update_data = {k: v for k, v in referrer_data.model_dump().items() if v is not None}
+    
+    if "referral_code" in update_data:
+        update_data["referral_code"] = update_data["referral_code"].upper()
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    result = await db.referrers.update_one({"id": referrer_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Referrer not found")
+    
+    referrer = await db.referrers.find_one({"id": referrer_id}, {"_id": 0})
+    return referrer
+
+@api_router.delete("/admin/referrers/{referrer_id}")
+async def delete_referrer(referrer_id: str):
+    # Delete referral history
+    await db.referrals.delete_many({"referrer_id": referrer_id})
+    
+    result = await db.referrers.delete_one({"id": referrer_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Referrer not found")
+    return {"success": True}
+
+@api_router.post("/admin/referrers/{referrer_id}/pay-commission")
+async def pay_referrer_commission(referrer_id: str):
+    # Mark all pending referrals as paid
+    result = await db.referrals.update_many(
+        {"referrer_id": referrer_id, "is_paid": False},
+        {"$set": {"is_paid": True, "paid_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"success": True, "referrals_paid": result.modified_count}
+
+@api_router.post("/referrals/apply")
+async def apply_referral_code(code: str, user_id: str, order_id: str, order_amount: float):
+    import uuid
+    
+    referrer = await db.referrers.find_one({"referral_code": code.upper(), "is_active": True}, {"_id": 0})
+    
+    if not referrer:
+        raise HTTPException(status_code=404, detail="Invalid referral code")
+    
+    # Check if user already used a referral
+    existing = await db.referrals.find_one({"referred_user_id": user_id}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="You have already used a referral code")
+    
+    commission_amount = (order_amount * referrer["commission_rate"]) / 100
+    
+    referral_doc = {
+        "id": str(uuid.uuid4()),
+        "referrer_id": referrer["id"],
+        "referred_user_id": user_id,
+        "order_id": order_id,
+        "order_amount": order_amount,
+        "commission_amount": commission_amount,
+        "is_paid": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.referrals.insert_one(referral_doc)
+    
+    return {
+        "success": True,
+        "referrer_name": referrer["name"],
+        "commission_earned": commission_amount
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
