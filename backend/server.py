@@ -851,13 +851,21 @@ async def create_order(order_data: OrderCreate):
     if not address:
         raise HTTPException(status_code=404, detail="Address not found")
     
+    # Calculate delivery fee based on address location
+    delivery_info = {"fee": 0, "distance": 0}
+    if address.get("latitude") and address.get("longitude"):
+        delivery_info = await calculate_delivery_fee(address["latitude"], address["longitude"])
+    
     # Create order
     order_doc = {
         "id": str(uuid.uuid4()),
         "user_id": order_data.user_id,
         "address_id": order_data.address_id,
         "items": [item.model_dump() for item in order_data.items],
-        "total": order_data.total,
+        "subtotal": order_data.subtotal,
+        "delivery_fee": delivery_info["fee"],
+        "delivery_distance": delivery_info.get("distance", 0),
+        "total": order_data.subtotal + delivery_info["fee"],
         "status": "confirmed",  # Auto-confirm for COD
         "order_type": order_data.order_type,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -870,7 +878,7 @@ async def create_order(order_data: OrderCreate):
         "id": str(uuid.uuid4()),
         "subscription_id": order_doc["id"],  # Using order_id as reference
         "user_id": order_data.user_id,
-        "amount": order_data.total,
+        "amount": order_doc["total"],
         "status": "pending",  # COD - pending until delivery
         "payment_date": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
