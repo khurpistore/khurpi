@@ -577,17 +577,23 @@ const SubscriptionCreate = () => {
                       <span>Discount ({selectedPlan.discount}%)</span>
                       <span>-₹{calculateDiscount().toFixed(2)}</span>
                     </div>
-                    {deliveryInfo && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Delivery</span>
-                        {deliveryInfo.fee === 0 ? (
-                          <span className="text-green-600">FREE</span>
-                        ) : (
-                          <span>₹{deliveryInfo.fee}</span>
-                        )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Truck className="w-3 h-3" /> Delivery
+                      </span>
+                      {getDeliveryFee() === 0 ? (
+                        <span className="text-green-600 font-medium">FREE</span>
+                      ) : (
+                        <span>₹{getDeliveryFee()}</span>
+                      )}
+                    </div>
+                    {deliveryInfo && deliveryInfo.distance && (
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Distance from shop</span>
+                        <span>{deliveryInfo.distance.toFixed(1)} km</span>
                       </div>
                     )}
-                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                    <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                       <span>Per Delivery Total</span>
                       <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
                     </div>
