@@ -1465,6 +1465,72 @@ async def validate_coupon(code: str, order_amount: float):
         "discount_value": coupon["discount_value"]
     }
 
+# Unified discount code validation - checks both coupons and referral codes
+@api_router.post("/discount/validate")
+async def validate_discount_code(code: str, order_amount: float):
+    code_upper = code.upper().strip()
+    
+    # First check if it's a coupon
+    coupon = await db.coupons.find_one({"code": code_upper, "is_active": True}, {"_id": 0})
+    
+    if coupon:
+        # Validate coupon
+        now = datetime.now(timezone.utc).isoformat()
+        if coupon.get("valid_from") and coupon["valid_from"] > now:
+            raise HTTPException(status_code=400, detail="Code is not yet active")
+        if coupon.get("valid_until") and coupon["valid_until"] < now:
+            raise HTTPException(status_code=400, detail="Code has expired")
+        if coupon.get("usage_limit") and coupon.get("times_used", 0) >= coupon["usage_limit"]:
+            raise HTTPException(status_code=400, detail="Code usage limit reached")
+        if order_amount < coupon.get("min_order_amount", 0):
+            raise HTTPException(status_code=400, detail=f"Minimum order amount is ₹{coupon['min_order_amount']}")
+        
+        # Calculate discount
+        if coupon["discount_type"] == "percentage":
+            discount = (order_amount * coupon["discount_value"]) / 100
+            if coupon.get("max_discount"):
+                discount = min(discount, coupon["max_discount"])
+        else:
+            discount = coupon["discount_value"]
+        
+        return {
+            "valid": True,
+            "type": "coupon",
+            "code": coupon["code"],
+            "discount": round(discount, 2),
+            "discount_type": coupon["discount_type"],
+            "discount_value": coupon["discount_value"],
+            "description": coupon.get("description", "Coupon discount applied"),
+            "message": f"Coupon applied! You save ₹{discount:.2f}"
+        }
+    
+    # Check if it's a referral code
+    referrer = await db.referrers.find_one({"referral_code": code_upper, "is_active": True}, {"_id": 0})
+    
+    if referrer:
+        # Referral code gives customer a discount (10% or as configured) 
+        # AND referrer earns commission
+        customer_discount_percent = 10  # Customer gets 10% off when using referral
+        customer_discount = (order_amount * customer_discount_percent) / 100
+        max_referral_discount = 100  # Max ₹100 discount for referral
+        customer_discount = min(customer_discount, max_referral_discount)
+        
+        return {
+            "valid": True,
+            "type": "referral",
+            "code": referrer["referral_code"],
+            "discount": round(customer_discount, 2),
+            "discount_type": "percentage",
+            "discount_value": customer_discount_percent,
+            "referrer_id": referrer["id"],
+            "referrer_name": referrer["name"],
+            "referrer_commission_rate": referrer["commission_rate"],
+            "description": f"Referred by {referrer['name']}",
+            "message": f"Referral code applied! You save ₹{customer_discount:.2f} and {referrer['name']} earns commission"
+        }
+    
+    raise HTTPException(status_code=404, detail="Invalid discount code")
+
 # ============ REFERRAL MANAGEMENT APIs ============
 
 class ReferrerCreate(BaseModel):
