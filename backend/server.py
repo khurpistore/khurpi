@@ -422,18 +422,38 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     import uuid
     from datetime import datetime
     
-    # Get user and validate NOIDA location
+    # Get user
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
-    if not user or not user.get("address"):
-        raise HTTPException(status_code=400, detail="Please add delivery address in your profile")
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
     
-    # Check if address contains NOIDA
-    address_upper = user["address"].upper()
-    if "NOIDA" not in address_upper:
+    # Check for addresses in the addresses collection
+    addresses = await db.addresses.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    
+    # Also check legacy user.address field
+    has_address = len(addresses) > 0 or user.get("address")
+    
+    if not has_address:
+        raise HTTPException(status_code=400, detail="Please add a delivery address in your profile first")
+    
+    # Get the default address or first address for validation and delivery fee
+    default_address = next((a for a in addresses if a.get("is_default")), None)
+    if not default_address and addresses:
+        default_address = addresses[0]
+    
+    # Check NOIDA validation
+    address_to_check = default_address.get("address_line", "") if default_address else user.get("address", "")
+    if "NOIDA" not in address_to_check.upper():
         raise HTTPException(
             status_code=400, 
-            detail="Sorry, we currently deliver only in NOIDA area. Please update your address or contact support."
+            detail="Sorry, we currently deliver only in NOIDA area. Please update your address."
         )
+    
+    # Calculate delivery fee based on address location
+    delivery_fee = 0
+    if default_address and default_address.get("latitude") and default_address.get("longitude"):
+        delivery_info = await calculate_delivery_fee(default_address["latitude"], default_address["longitude"])
+        delivery_fee = delivery_info["fee"]
     
     # Check stock availability and calculate earliest delivery date for ALL products
     today = datetime.now(timezone.utc).date()
