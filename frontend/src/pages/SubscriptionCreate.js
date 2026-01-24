@@ -36,13 +36,10 @@ const SubscriptionCreate = () => {
   const [minStartDate, setMinStartDate] = useState(new Date());
   const [deliveryInfo, setDeliveryInfo] = useState(null);
   
-  // Coupon and Referral states
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [referralCode, setReferralCode] = useState('');
-  const [appliedReferral, setAppliedReferral] = useState(null);
-  const [referralLoading, setReferralLoading] = useState(false);
+  // Unified discount code state
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
   
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('cod');
