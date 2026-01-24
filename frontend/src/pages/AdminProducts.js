@@ -58,6 +58,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     nutrients: product?.nutrients || '',
     price: product?.price || '',
     growth_days: product?.growth_days || '',
+    stock: product?.stock || 50,
     active: product?.active !== false
   });
   const [loading, setLoading] = useState(false);
@@ -129,29 +130,44 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           className="mt-1"
         />
       </div>
-      <div>
-        <Label htmlFor="price">Price (₹)</Label>
-        <Input
-          id="price"
-          data-testid="product-price-input"
-          type="number"
-          step="0.01"
-          value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-          required
-          className="mt-1"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="price">Price (₹)</Label>
+          <Input
+            id="price"
+            data-testid="product-price-input"
+            type="number"
+            step="0.01"
+            value={formData.price}
+            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+            required
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="growth_days">Growth Days</Label>
+          <Input
+            id="growth_days"
+            data-testid="product-growth-days-input"
+            type="number"
+            value={formData.growth_days}
+            onChange={(e) => setFormData({ ...formData, growth_days: parseInt(e.target.value) })}
+            required
+            className="mt-1"
+          />
+        </div>
       </div>
       <div>
-        <Label htmlFor="growth_days">Growth Days</Label>
+        <Label htmlFor="stock">Stock Quantity</Label>
         <Input
-          id="growth_days"
-          data-testid="product-growth-days-input"
+          id="stock"
+          data-testid="product-stock-input"
           type="number"
-          value={formData.growth_days}
-          onChange={(e) => setFormData({ ...formData, growth_days: parseInt(e.target.value) })}
+          value={formData.stock}
+          onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
           required
           className="mt-1"
+          placeholder="Number of trays available"
         />
       </div>
       <div className="flex items-center gap-2">
