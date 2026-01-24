@@ -176,9 +176,9 @@ class TestDeliveryFeeCalculation:
     
     def test_calculate_delivery_fee_within_10km(self):
         """Test delivery fee within 10km = ₹100"""
-        # Coordinates ~7km from shop (Noida Sector 18 area)
-        lat = 28.5700
-        lon = 77.3200
+        # Coordinates ~7km from shop (closer to Noida Extension)
+        lat = 28.5200
+        lon = 77.4000
         
         response = requests.post(
             f"{BASE_URL}/api/settings/calculate-delivery-fee?lat={lat}&lon={lon}"
