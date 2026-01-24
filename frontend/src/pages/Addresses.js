@@ -310,7 +310,7 @@ const Addresses = () => {
                     )}
                   </div>
                   <div className="h-52 rounded-lg overflow-hidden border border-gray-200">
-                    <LocationPicker
+                    <SimpleMapPicker
                       onLocationSelect={handleLocationSelect}
                       initialLocation={formData.latitude && formData.longitude ? {
                         lat: formData.latitude,
