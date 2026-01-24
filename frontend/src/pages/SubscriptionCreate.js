@@ -461,6 +461,16 @@ const SubscriptionCreate = () => {
                       <span>Discount ({selectedPlan.discount}%)</span>
                       <span>-₹{calculateDiscount().toFixed(2)}</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="flex items-center gap-1">
+                        <Truck className="w-3 h-3" /> Delivery
+                      </span>
+                      {getDeliveryFee() === 0 ? (
+                        <span className="text-green-600">FREE</span>
+                      ) : (
+                        <span>₹{getDeliveryFee()}</span>
+                      )}
+                    </div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
                       <span>You Pay</span>
                       <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
