@@ -26,6 +26,7 @@ import AdminSubscriptions from '@/pages/AdminSubscriptions';
 import AdminDeliveries from '@/pages/AdminDeliveries';
 import AdminPayments from '@/pages/AdminPayments';
 import AdminInventory from '@/pages/AdminInventory';
+import AdminSettings from '@/pages/AdminSettings';
 
 function App() {
   return (
