@@ -80,6 +80,19 @@ const SubscriptionDetail = () => {
     return <Badge className={colors[status] || 'bg-gray-100 text-gray-800'}>{status}</Badge>;
   };
 
+  // Format plan name for display
+  const getPlanDisplayName = (frequency) => {
+    const planNames = {
+      'once_week': 'Once a Week',
+      'twice_week': 'Twice a Week',
+      'four_days_week': '4 Days a Week',
+      'weekly': 'Once a Week',
+      'twice_weekly': 'Twice a Week',
+      'four_days': '4 Days a Week'
+    };
+    return planNames[frequency] || frequency;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
