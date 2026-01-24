@@ -685,12 +685,16 @@ const SubscriptionCreate = () => {
                         <span>₹{getDeliveryFee()}</span>
                       )}
                     </div>
-                    {appliedCoupon && (
+                    {appliedDiscount && (
                       <div className="flex justify-between text-green-600">
                         <span className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" /> Coupon ({appliedCoupon.code})
+                          {appliedDiscount.type === 'referral' ? (
+                            <><Gift className="w-3 h-3" /> Referral ({appliedDiscount.code})</>
+                          ) : (
+                            <><Tag className="w-3 h-3" /> Coupon ({appliedDiscount.code})</>
+                          )}
                         </span>
-                        <span>-₹{getCouponDiscount().toFixed(2)}</span>
+                        <span>-₹{getDiscountCodeSavings().toFixed(2)}</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
@@ -712,72 +716,66 @@ const SubscriptionCreate = () => {
               </CardContent>
             </Card>
 
-            {/* Coupon Code */}
+            {/* Unified Discount Code */}
             <Card className="mb-4">
               <CardContent className="p-4">
-                <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                   <Tag className="w-4 h-4 text-primary" />
-                  Apply Coupon Code
+                  Have a Discount Code?
                 </h4>
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div>
-                      <p className="font-semibold text-green-800">{appliedCoupon.code}</p>
-                      <p className="text-sm text-green-600">You save ₹{appliedCoupon.discount.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Enter coupon code or referral code to get discount
+                </p>
+                {appliedDiscount ? (
+                  <div className={`flex items-center justify-between rounded-lg p-3 ${
+                    appliedDiscount.type === 'referral' 
+                      ? 'bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200' 
+                      : 'bg-green-50 border border-green-200'
+                  }`}>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        {appliedDiscount.type === 'referral' ? (
+                          <Gift className="w-4 h-4 text-blue-600" />
+                        ) : (
+                          <Tag className="w-4 h-4 text-green-600" />
+                        )}
+                        <p className={`font-semibold ${appliedDiscount.type === 'referral' ? 'text-blue-800' : 'text-green-800'}`}>
+                          {appliedDiscount.code}
+                        </p>
+                      </div>
+                      <p className="text-sm text-green-600 mt-1">
+                        You save ₹{appliedDiscount.discount.toFixed(2)}
+                      </p>
+                      {appliedDiscount.type === 'referral' && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          {appliedDiscount.referrer_name} will also earn commission! 🎉
+                        </p>
+                      )}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={removeCoupon} className="text-red-600 hover:text-red-700">
+                    <Button variant="ghost" size="sm" onClick={removeDiscount} className="text-red-600 hover:text-red-700">
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
                     <Input
-                      data-testid="coupon-input"
-                      placeholder="Enter coupon code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      data-testid="discount-code-input"
+                      placeholder="Enter code (e.g., WELCOME20 or RAHUL10)"
+                      value={discountCode}
+                      onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
                       className="flex-1"
                     />
                     <Button 
-                      onClick={handleApplyCoupon} 
-                      disabled={couponLoading || !couponCode.trim()}
+                      onClick={handleApplyDiscount} 
+                      disabled={discountLoading || !discountCode.trim()}
                       variant="outline"
                     >
-                      {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                      {discountLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
                     </Button>
                   </div>
                 )}
               </CardContent>
-            </Card>
-
-            {/* Referral Code */}
-            <Card className="mb-4">
-              <CardContent className="p-4">
-                <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                  <Gift className="w-4 h-4 text-primary" />
-                  Have a Referral Code?
-                </h4>
-                {appliedReferral ? (
-                  <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div>
-                      <p className="font-semibold text-blue-800">{appliedReferral.code}</p>
-                      <p className="text-sm text-blue-600">Referred by {appliedReferral.referrer_name}</p>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={removeReferral} className="text-red-600 hover:text-red-700">
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      data-testid="referral-input"
-                      placeholder="Enter referral code"
-                      value={referralCode}
-                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleApplyReferral} 
+            </Card> 
                       disabled={referralLoading || !referralCode.trim()}
                       variant="outline"
                     >
