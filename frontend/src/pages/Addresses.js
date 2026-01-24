@@ -84,6 +84,12 @@ const Addresses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate map location is set
+    if (!formData.latitude || !formData.longitude) {
+      toast.error('Please pin your delivery location on the map');
+      return;
+    }
+    
     const fullAddress = buildAddressLine();
     
     if (!fullAddress.toUpperCase().includes('NOIDA')) {
