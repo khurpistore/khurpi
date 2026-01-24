@@ -119,7 +119,7 @@ const MySubscriptions = () => {
                       <div className="flex gap-6 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          <span className="capitalize">{subscription.frequency}</span>
+                          <span>{getPlanDisplayName(subscription.frequency)}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
@@ -129,7 +129,7 @@ const MySubscriptions = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-primary">₹{subscription.total_price}</p>
-                      <p className="text-sm text-muted-foreground">per delivery</p>
+                      <p className="text-sm text-muted-foreground">per month</p>
                     </div>
                   </div>
 
