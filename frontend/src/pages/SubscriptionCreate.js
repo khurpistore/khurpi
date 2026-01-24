@@ -573,11 +573,19 @@ const SubscriptionCreate = () => {
             {selectedPlan && selectedProducts.length > 0 && (
               <Card className="mt-6 border-primary/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-3">Price Preview (per delivery)</h4>
+                  <h4 className="font-semibold mb-3">Weekly Price Preview</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>₹{calculateSubtotal().toFixed(2)}</span>
+                      <span>Per Tray Cost</span>
+                      <span>₹{calculatePerTrayPrice().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Deliveries/week</span>
+                      <span>×{selectedPlan.deliveries_per_week}</span>
+                    </div>
+                    <div className="flex justify-between bg-gray-50 p-2 rounded -mx-2">
+                      <span className="font-medium">Weekly Subtotal</span>
+                      <span>₹{calculateWeeklySubtotal().toFixed(2)}</span>
                     </div>
                     {selectedPlan.discount > 0 && (
                       <div className="flex justify-between text-green-600">
@@ -596,7 +604,7 @@ const SubscriptionCreate = () => {
                       )}
                     </div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
-                      <span>You Pay</span>
+                      <span>Weekly Total</span>
                       <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
                     </div>
                   </div>
