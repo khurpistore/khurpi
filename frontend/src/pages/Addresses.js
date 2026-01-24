@@ -392,34 +392,44 @@ const Addresses = () => {
             {addresses.map((address) => (
               <Card 
                 key={address.id} 
-                data-testid={`address-${address.id}`}
-                className={`transition-all ${address.is_default ? 'border-primary border-2' : ''}`}
+                data-testid={`address-card-${address.id}`}
+                className={`transition-all hover:shadow-md ${address.is_default ? 'border-primary border-2 bg-primary/5' : ''}`}
               >
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <span className="font-semibold">{address.name || 'Address'}</span>
-                        {address.is_default && (
-                          <Badge className="bg-primary text-white">
-                            <Star className="w-3 h-3 mr-1" />
-                            Default
-                          </Badge>
-                        )}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          address.is_default ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          <MapPin className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-lg">{address.name || 'Address'}</span>
+                          {address.is_default && (
+                            <Badge className="ml-2 bg-primary text-white">
+                              <Star className="w-3 h-3 mr-1" />
+                              Default
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-base">{address.address_line}</p>
+                      <p className="text-base text-gray-700 ml-10">{address.address_line}</p>
+                      {address.pincode && (
+                        <p className="text-sm text-muted-foreground ml-10 mt-1">PIN: {address.pincode}</p>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-10 sm:ml-0">
                       {!address.is_default && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleSetDefault(address.id)}
-                          className="rounded-full"
+                          className="rounded-full text-xs"
+                          data-testid={`set-default-${address.id}`}
                         >
-                          <CheckCircle className="w-4 h-4 mr-1" />
+                          <CheckCircle className="w-3 h-3 mr-1" />
                           Set Default
                         </Button>
                       )}
@@ -427,6 +437,8 @@ const Addresses = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(address)}
+                        className="rounded-full"
+                        data-testid={`edit-address-${address.id}`}
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
@@ -434,7 +446,8 @@ const Addresses = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(address.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full"
+                        data-testid={`delete-address-${address.id}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
