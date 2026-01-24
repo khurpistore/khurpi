@@ -546,6 +546,20 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
                 detail=f"Some products are out of stock: {products_list}. Earliest delivery date for all products: {earliest_available_date.isoformat()}. Please select a start date on or after this date."
             )
     
+    # Apply coupon discount
+    coupon_discount = sub_data.coupon_discount or 0
+    
+    # Calculate final total including coupon
+    final_total = subtotal - discount_amount + delivery_fee - coupon_discount
+    final_total = max(0, final_total)  # Ensure non-negative
+    
+    # Update coupon usage if coupon was applied
+    if sub_data.coupon_code:
+        await db.coupons.update_one(
+            {"code": sub_data.coupon_code.upper()},
+            {"$inc": {"times_used": 1}}
+        )
+    
     subscription_doc = {
         "id": str(uuid.uuid4()),
         "user_id": user_id,
@@ -558,8 +572,12 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "discount_percent": discount_percent,
         "discount_amount": discount_amount,
         "delivery_fee": delivery_fee,
+        "coupon_code": sub_data.coupon_code,
+        "coupon_discount": coupon_discount,
         "total_price": final_total,
         "address_id": selected_address.get("id") if selected_address else None,
+        "payment_method": sub_data.payment_method,
+        "payment_status": "pending" if sub_data.payment_method == "cod" else "paid",
         "next_delivery_date": sub_data.start_date,
         "skipped_deliveries": [],
         "created_at": datetime.now(timezone.utc).isoformat()
