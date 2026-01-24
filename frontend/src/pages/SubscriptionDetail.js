@@ -82,7 +82,7 @@ const SubscriptionDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -90,252 +90,357 @@ const SubscriptionDetail = () => {
 
   if (!subscription) return null;
 
+  // Calculate pricing breakdown
+  const itemsTotal = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0);
+  const deliveriesPerWeek = subscription.deliveries_per_week || 1;
+  const weeksPerMonth = 4;
+  const monthlySubtotal = itemsTotal * deliveriesPerWeek * weeksPerMonth;
+  const planDiscount = subscription.plan_discount || 0;
+  const planDiscountAmount = (monthlySubtotal * planDiscount) / 100;
+  const deliveryFee = subscription.delivery_fee || 0;
+  const monthlyDeliveryFee = deliveryFee * weeksPerMonth;
+  const couponDiscount = subscription.coupon_discount || 0;
+  const referralDiscount = subscription.referral_discount || 0;
+  const totalDiscount = planDiscountAmount + couponDiscount + referralDiscount;
+  const monthlyTotal = subscription.total_price || (monthlySubtotal - planDiscountAmount + monthlyDeliveryFee - couponDiscount - referralDiscount);
+
   return (
-    <div className="min-h-screen">
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-green-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <Leaf className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-primary heading-text">Khurpi</h1>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+      {/* Simple Back Header */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-green-100 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center">
           <Button
-            data-testid="back-to-subscriptions-button"
             variant="ghost"
+            size="sm"
             onClick={() => navigate('/subscriptions')}
             className="rounded-full"
           >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Subscriptions
           </Button>
         </div>
-      </nav>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Title Section */}
+        <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-4xl font-bold text-primary heading-text">
-              Subscription #{subscription.id.slice(0, 8)}
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary">
+              Subscription
             </h2>
             {getStatusBadge(subscription.status)}
           </div>
-          <p className="text-muted-foreground">Created on {format(new Date(subscription.created_at), 'PPP')}</p>
+          <p className="text-sm text-muted-foreground">
+            ID: {subscription.id.slice(0, 8)} • Created {format(new Date(subscription.created_at), 'PP')}
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="heading-text">Subscription Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-primary mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Frequency</p>
-                      <p className="font-medium capitalize">{subscription.frequency}</p>
-                    </div>
+        <div className="space-y-6">
+          {/* Monthly Cost Breakdown Card */}
+          <Card className="border-2 border-primary/20 bg-gradient-to-br from-green-50/50 to-white overflow-hidden">
+            <div className="bg-primary/10 px-4 py-3 border-b border-primary/20">
+              <h3 className="font-semibold text-primary flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Monthly Subscription Cost
+              </h3>
+            </div>
+            <CardContent className="p-4">
+              {/* Calculation Formula */}
+              <div className="bg-white rounded-lg p-3 border border-gray-100 mb-4">
+                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Price Calculation</p>
+                <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
+                  <div className="text-center px-3 py-2 bg-gray-50 rounded-lg">
+                    <p className="font-bold text-primary">₹{itemsTotal}</p>
+                    <p className="text-xs text-muted-foreground">per tray</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Calendar className="w-5 h-5 text-primary mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Delivery Day</p>
-                      <p className="font-medium">{subscription.delivery_day}</p>
-                    </div>
+                  <span className="text-muted-foreground font-bold">×</span>
+                  <div className="text-center px-3 py-2 bg-gray-50 rounded-lg">
+                    <p className="font-bold text-primary">{deliveriesPerWeek}</p>
+                    <p className="text-xs text-muted-foreground">days/week</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Package className="w-5 h-5 text-primary mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Trays</p>
-                      <p className="font-medium">{subscription.tray_count} trays per delivery</p>
-                    </div>
+                  <span className="text-muted-foreground font-bold">×</span>
+                  <div className="text-center px-3 py-2 bg-gray-50 rounded-lg">
+                    <p className="font-bold text-primary">4</p>
+                    <p className="text-xs text-muted-foreground">weeks</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Start Date</p>
-                      <p className="font-medium">{format(new Date(subscription.start_date), 'PPP')}</p>
-                    </div>
+                  <span className="text-muted-foreground font-bold">=</span>
+                  <div className="text-center px-3 py-2 bg-primary/10 rounded-lg">
+                    <p className="font-bold text-primary">₹{monthlySubtotal}</p>
+                    <p className="text-xs text-muted-foreground">subtotal</p>
                   </div>
                 </div>
-                {subscription.next_delivery_date && subscription.status === 'active' && (
-                  <div className="bg-secondary/10 rounded-lg p-4">
-                    <p className="text-sm font-medium text-primary">
-                      Next Delivery: {format(new Date(subscription.next_delivery_date), 'PPP')}
-                    </p>
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between py-1">
+                  <span className="text-muted-foreground">Monthly Subtotal ({deliveriesPerWeek}×/week × 4 weeks)</span>
+                  <span className="font-medium">₹{monthlySubtotal.toFixed(2)}</span>
+                </div>
+                
+                {planDiscount > 0 && (
+                  <div className="flex justify-between py-1 text-green-600 bg-green-50 px-2 -mx-2 rounded">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      Plan Discount ({planDiscount}%)
+                    </span>
+                    <span className="font-medium">-₹{planDiscountAmount.toFixed(2)}</span>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+                
+                <div className="flex justify-between py-1">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    <Truck className="w-3 h-3" /> Delivery (4 weeks)
+                  </span>
+                  {monthlyDeliveryFee === 0 ? (
+                    <span className="text-green-600 font-medium">FREE</span>
+                  ) : (
+                    <span className="font-medium">₹{monthlyDeliveryFee.toFixed(2)}</span>
+                  )}
+                </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="heading-text">Products in Subscription</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3" data-testid="subscription-items">
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-4 p-3 bg-background rounded-lg"
-                      data-testid={`subscription-item-${item.product_id}`}
-                    >
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-primary">{item.product.name}</h4>
-                        <p className="text-sm text-muted-foreground">{item.product.benefit}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold">x{item.quantity}</p>
-                        <p className="text-sm text-muted-foreground">₹{item.product.price * item.quantity}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="border-t pt-3 flex justify-between text-lg font-bold">
-                    <span>Total per delivery</span>
-                    <span data-testid="subscription-total-price">₹{subscription.total_price}</span>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between py-1 text-green-600 bg-green-50 px-2 -mx-2 rounded">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      Coupon ({subscription.coupon_code})
+                    </span>
+                    <span className="font-medium">-₹{couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {referralDiscount > 0 && (
+                  <div className="flex justify-between py-1 text-blue-600 bg-blue-50 px-2 -mx-2 rounded">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Referral ({subscription.referral_code})
+                    </span>
+                    <span className="font-medium">-₹{referralDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {/* Total */}
+                <div className="flex justify-between items-center pt-3 mt-2 border-t-2 border-dashed border-primary/30">
+                  <div>
+                    <span className="font-bold text-lg">Monthly Total</span>
+                    {totalDiscount > 0 && (
+                      <p className="text-xs text-green-600">You save ₹{totalDiscount.toFixed(0)}/month!</p>
+                    )}
+                  </div>
+                  <span className="font-bold text-2xl text-primary">₹{monthlyTotal.toFixed(0)}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Subscription Info */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Subscription Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Plan</p>
+                    <p className="font-medium capitalize">{subscription.frequency}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="heading-text">Delivery History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {deliveries.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">No deliveries yet</p>
-                ) : (
-                  <div className="space-y-3" data-testid="delivery-history">
-                    {deliveries.sort((a, b) => new Date(b.delivery_date) - new Date(a.delivery_date)).map((delivery) => (
-                      <div
-                        key={delivery.id}
-                        data-testid={`delivery-${delivery.id}`}
-                        className="flex justify-between items-center p-3 bg-background rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium">{format(new Date(delivery.delivery_date), 'PPP')}</p>
-                          <p className="text-sm text-muted-foreground">Delivery #{delivery.id.slice(0, 8)}</p>
-                        </div>
-                        {getStatusBadge(delivery.status)}
-                      </div>
-                    ))}
+                <div className="flex items-start gap-3">
+                  <Calendar className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Delivery Day</p>
+                    <p className="font-medium">{subscription.delivery_day}</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Package className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Trays per Delivery</p>
+                    <p className="font-medium">{subscription.tray_count} trays</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Start Date</p>
+                    <p className="font-medium">{format(new Date(subscription.start_date), 'PP')}</p>
+                  </div>
+                </div>
+              </div>
+              {subscription.next_delivery_date && subscription.status === 'active' && (
+                <div className="mt-4 bg-primary/10 rounded-lg p-3">
+                  <p className="text-sm font-medium text-primary">
+                    📦 Next Delivery: {format(new Date(subscription.next_delivery_date), 'PPPP')}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="heading-text">Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {subscription.status === 'active' && subscription.next_delivery_date && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        data-testid="skip-delivery-button"
-                        variant="outline"
-                        className="w-full rounded-full"
-                      >
-                        Skip Next Delivery
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Skip Next Delivery?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Your next delivery on {format(new Date(subscription.next_delivery_date), 'PPP')} will be skipped.
-                          The following delivery will be automatically scheduled.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleSkipDelivery}>Confirm Skip</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-
-                {subscription.status === 'active' && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        data-testid="pause-subscription-detail-button"
-                        variant="outline"
-                        className="w-full rounded-full"
-                      >
-                        Pause Subscription
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Pause Subscription?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          <div className="flex items-start gap-2 text-amber-600 mb-2">
-                            <AlertTriangle className="w-5 h-5 mt-0.5" />
-                            <span>Cannot pause within 24 hours of next delivery</span>
-                          </div>
-                          Your subscription will be paused and no deliveries will be scheduled until you resume it.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleStatusChange('paused')}>Confirm Pause</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-
-                {subscription.status === 'paused' && (
-                  <Button
-                    data-testid="resume-subscription-detail-button"
-                    onClick={() => handleStatusChange('active')}
-                    className="w-full bg-secondary hover:bg-secondary/90 rounded-full"
+          {/* Products */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Products ({items.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3" data-testid="subscription-items">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                    data-testid={`subscription-item-${item.product_id}`}
                   >
-                    Resume Subscription
-                  </Button>
-                )}
+                    <img
+                      src={item.product?.image}
+                      alt={item.product?.name}
+                      className="w-14 h-14 rounded-lg object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm truncate">{item.product?.name}</h4>
+                      <p className="text-xs text-muted-foreground">₹{item.product?.price}/tray</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">×{item.quantity}</p>
+                      <p className="text-sm text-primary">₹{(item.product?.price || 0) * item.quantity}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-                {subscription.status !== 'cancelled' && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        data-testid="cancel-subscription-detail-button"
-                        variant="destructive"
-                        className="w-full rounded-full"
+          {/* Actions */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Manage Subscription</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {subscription.status === 'active' && subscription.next_delivery_date && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      data-testid="skip-delivery-button"
+                      variant="outline"
+                      className="w-full rounded-full"
+                    >
+                      Skip Next Delivery
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Skip Next Delivery?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Your next delivery on {format(new Date(subscription.next_delivery_date), 'PPP')} will be skipped.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleSkipDelivery}>Confirm Skip</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
+              {subscription.status === 'active' && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      data-testid="pause-subscription-detail-button"
+                      variant="outline"
+                      className="w-full rounded-full"
+                    >
+                      Pause Subscription
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Pause Subscription?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        <div className="flex items-start gap-2 text-amber-600 mb-2">
+                          <AlertTriangle className="w-5 h-5 mt-0.5" />
+                          <span>Cannot pause within 24 hours of next delivery</span>
+                        </div>
+                        Your subscription will be paused until you resume it.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleStatusChange('paused')}>Confirm Pause</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
+              {subscription.status === 'paused' && (
+                <Button
+                  data-testid="resume-subscription-detail-button"
+                  onClick={() => handleStatusChange('active')}
+                  className="w-full bg-primary hover:bg-primary/90 rounded-full"
+                >
+                  Resume Subscription
+                </Button>
+              )}
+
+              {subscription.status !== 'cancelled' && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      data-testid="cancel-subscription-detail-button"
+                      variant="destructive"
+                      className="w-full rounded-full"
+                    >
+                      Cancel Subscription
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. Your subscription will be permanently cancelled.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleStatusChange('cancelled')}
+                        className="bg-destructive text-destructive-foreground"
                       >
                         Cancel Subscription
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. Your subscription will be permanently cancelled.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleStatusChange('cancelled')}
-                          className="bg-destructive text-destructive-foreground"
-                        >
-                          Cancel Subscription
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Delivery History */}
+          {deliveries.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Delivery History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2" data-testid="delivery-history">
+                  {deliveries.sort((a, b) => new Date(b.delivery_date) - new Date(a.delivery_date)).map((delivery) => (
+                    <div
+                      key={delivery.id}
+                      data-testid={`delivery-${delivery.id}`}
+                      className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium text-sm">{format(new Date(delivery.delivery_date), 'PP')}</p>
+                        <p className="text-xs text-muted-foreground">#{delivery.id.slice(0, 8)}</p>
+                      </div>
+                      {getStatusBadge(delivery.status)}
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-          </div>
+          )}
         </div>
       </div>
     </div>
