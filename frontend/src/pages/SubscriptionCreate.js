@@ -45,8 +45,12 @@ const SubscriptionCreate = () => {
     }
     fetchProducts();
     fetchSubscriptionPlans();
-    fetchDeliveryInfo();
   }, [user, navigate]);
+
+  useEffect(() => {
+    // Re-fetch delivery info when addresses are loaded/changed
+    fetchDeliveryInfo();
+  }, [addresses]);
 
   useEffect(() => {
     if (selectedProducts.length > 0) {
