@@ -502,6 +502,67 @@ const SubscriptionCreate = () => {
         {/* Step 2: Choose Plan */}
         {step === 2 && (
           <div>
+            {/* Selected Products Summary */}
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <Package className="w-4 h-4 text-primary" />
+                  Your Selected Products
+                </h3>
+                <div className="space-y-3">
+                  {selectedProducts.map((item) => {
+                    const product = products.find(p => p.id === item.product_id);
+                    return product ? (
+                      <div key={item.product_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{product.name}</p>
+                          <p className="text-xs text-muted-foreground">₹{product.price}/tray</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))}
+                            disabled={item.quantity <= 1}
+                          >
+                            <span className="text-lg">−</span>
+                          </Button>
+                          <span className="w-8 text-center font-medium">{item.quantity}</span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(item.product_id, Math.min(10, item.quantity + 1))}
+                            disabled={item.quantity >= 10}
+                          >
+                            <span className="text-lg">+</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => toggleProduct(item.product_id)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
+                <div className="flex justify-between items-center mt-3 pt-3 border-t">
+                  <span className="text-sm text-muted-foreground">Per delivery cost:</span>
+                  <span className="font-semibold text-primary">₹{calculatePerTrayPrice().toFixed(2)}</span>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-5 h-5 text-green-600" />
