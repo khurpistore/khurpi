@@ -817,19 +817,19 @@ const SubscriptionCreate = () => {
             </Card>
 
             {/* Savings Highlight */}
-            {selectedPlan && (calculateDiscount() > 0 || getCouponDiscount() > 0) && (
+            {selectedPlan && (calculateDiscount() > 0 || getDiscountCodeSavings() > 0) && (
               <Card className="bg-gradient-to-r from-green-100 to-green-50 border-green-200">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-green-800">
                     <Sparkles className="w-5 h-5" />
                     <span className="font-bold">
-                      Total Savings: ₹{(calculateDiscount() + getCouponDiscount()).toFixed(2)}
+                      Total Savings: ₹{(calculateDiscount() + getDiscountCodeSavings()).toFixed(2)}
                     </span>
                   </div>
                   <p className="text-sm text-green-700 mt-1">
                     {selectedPlan.discount > 0 && `₹${calculateDiscount().toFixed(2)} from ${selectedPlan.name}`}
-                    {selectedPlan.discount > 0 && appliedCoupon && ' + '}
-                    {appliedCoupon && `₹${getCouponDiscount().toFixed(2)} from coupon`}
+                    {selectedPlan.discount > 0 && appliedDiscount && ' + '}
+                    {appliedDiscount && `₹${getDiscountCodeSavings().toFixed(2)} from ${appliedDiscount.type === 'referral' ? 'referral' : 'coupon'}`}
                   </p>
                 </CardContent>
               </Card>
