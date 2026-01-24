@@ -4,53 +4,19 @@ import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { LayoutDashboard, Package, Users, TrendingUp, Search, Pencil, Trash2, CreditCard } from 'lucide-react';
+import { Search, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-const AdminSidebar = ({ active, navigate }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-    { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
-    { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
-    { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
-    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-    { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
-  ];
-
-  return (
-    <div className="w-64 bg-primary text-white min-h-screen p-6">
-      <h2 className="text-2xl font-bold mb-8 heading-text">Khurpi Admin</h2>
-      <nav className="space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                active === item.id ? 'bg-white/20' : 'hover:bg-white/10'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
-};
 
 const SubscriptionDialog = ({ subscription, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -79,7 +45,7 @@ const SubscriptionDialog = ({ subscription, onClose, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Status</Label>
+        <Label className="text-sm">Status</Label>
         <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
           <SelectTrigger data-testid="subscription-status-select" className="mt-1">
             <SelectValue />
@@ -92,7 +58,7 @@ const SubscriptionDialog = ({ subscription, onClose, onSuccess }) => {
         </Select>
       </div>
       <div>
-        <Label>Frequency</Label>
+        <Label className="text-sm">Frequency</Label>
         <Select value={formData.frequency} onValueChange={(value) => setFormData({ ...formData, frequency: value })}>
           <SelectTrigger data-testid="subscription-frequency-select" className="mt-1">
             <SelectValue />
@@ -105,7 +71,7 @@ const SubscriptionDialog = ({ subscription, onClose, onSuccess }) => {
         </Select>
       </div>
       <div>
-        <Label>Delivery Day</Label>
+        <Label className="text-sm">Delivery Day</Label>
         <Select value={formData.delivery_day} onValueChange={(value) => setFormData({ ...formData, delivery_day: value })}>
           <SelectTrigger data-testid="subscription-delivery-day-select" className="mt-1">
             <SelectValue />
@@ -211,182 +177,175 @@ const AdminSubscriptions = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <AdminSidebar active="subscriptions" navigate={navigate} />
-      <div className="flex-1 p-8 bg-background">
-        <h1 className="text-4xl font-bold text-primary mb-8 heading-text">Manage Subscriptions</h1>
-
-        <div className="mb-6 flex gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              data-testid="search-subscriptions-input"
-              placeholder="Search by customer name, phone, or subscription ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger data-testid="status-filter-select" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="paused">Paused</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
+    <AdminLayout active="subscriptions" title="Manage Subscriptions">
+      {/* Filters */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+          <Input
+            data-testid="search-subscriptions-input"
+            placeholder="Search by name, phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 sm:pl-10"
+          />
         </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger data-testid="status-filter-select" className="w-full sm:w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="paused">Paused</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {loading ? (
-          <p className="text-muted-foreground">Loading subscriptions...</p>
-        ) : filteredSubscriptions.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-muted-foreground">
-                {searchTerm || statusFilter !== 'all' ? 'No subscriptions match your filters' : 'No subscriptions found'}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4" data-testid="admin-subscriptions-list">
-            {filteredSubscriptions.map((subscription) => (
-              <Card key={subscription.id} data-testid={`admin-subscription-card-${subscription.id}`}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-primary">
-                          {subscription.user?.name || 'Unknown User'}
-                        </h3>
-                        {getStatusBadge(subscription.status)}
-                      </div>
-                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Phone</p>
-                          <p className="font-medium">{subscription.user?.phone || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Subscription ID</p>
-                          <p className="font-medium font-mono">{subscription.id.slice(0, 8)}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Frequency</p>
-                          <p className="font-medium capitalize">{subscription.frequency}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Items</p>
-                          <p className="font-medium">{subscription.items_count} products</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Total Price</p>
-                          <p className="font-medium text-primary">₹{subscription.total_price}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Delivery Day</p>
-                          <p className="font-medium">{subscription.delivery_day}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Start Date</p>
-                          <p className="font-medium">{format(new Date(subscription.start_date), 'PP')}</p>
-                        </div>
-                        {subscription.next_delivery_date && subscription.status === 'active' && (
-                          <div>
-                            <p className="text-muted-foreground">Next Delivery</p>
-                            <p className="font-medium text-secondary">{format(new Date(subscription.next_delivery_date), 'PP')}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Dialog open={dialogOpen && selectedSubscription?.id === subscription.id} onOpenChange={setDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button
-                            data-testid={`edit-subscription-button-${subscription.id}`}
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openDialog(subscription)}
-                            className="flex-1 rounded-full"
-                          >
-                            <Pencil className="w-4 h-4 mr-1" />
-                            Edit
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle className="heading-text">Edit Subscription</DialogTitle>
-                          </DialogHeader>
-                          {selectedSubscription && (
-                            <SubscriptionDialog
-                              subscription={selectedSubscription}
-                              onClose={() => setDialogOpen(false)}
-                              onSuccess={fetchSubscriptions}
-                            />
-                          )}
-                        </DialogContent>
-                      </Dialog>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            data-testid={`delete-subscription-button-${subscription.id}`}
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 rounded-full text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Subscription?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete this subscription and all associated deliveries. This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(subscription.id)}
-                              className="bg-destructive text-destructive-foreground"
-                            >
-                              Delete Subscription
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      {/* Stats Summary */}
+      <div className="mb-6 p-3 sm:p-4 bg-white rounded-lg border border-border">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 text-center">
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-primary">{subscriptions.length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
           </div>
-        )}
-
-        <div className="mt-6 p-4 bg-background rounded-lg border border-border">
-          <div className="grid md:grid-cols-4 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-primary">{subscriptions.length}</p>
-              <p className="text-sm text-muted-foreground">Total Subscriptions</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-secondary">{subscriptions.filter(s => s.status === 'active').length}</p>
-              <p className="text-sm text-muted-foreground">Active</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-amber-600">{subscriptions.filter(s => s.status === 'paused').length}</p>
-              <p className="text-sm text-muted-foreground">Paused</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-600">{subscriptions.filter(s => s.status === 'cancelled').length}</p>
-              <p className="text-sm text-muted-foreground">Cancelled</p>
-            </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-green-600">{subscriptions.filter(s => s.status === 'active').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Active</p>
+          </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-amber-600">{subscriptions.filter(s => s.status === 'paused').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Paused</p>
+          </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-red-600">{subscriptions.filter(s => s.status === 'cancelled').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Cancelled</p>
           </div>
         </div>
       </div>
-    </div>
+
+      {loading ? (
+        <p className="text-muted-foreground">Loading subscriptions...</p>
+      ) : filteredSubscriptions.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 sm:p-12 text-center">
+            <p className="text-muted-foreground">
+              {searchTerm || statusFilter !== 'all' ? 'No subscriptions match your filters' : 'No subscriptions found'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3 sm:space-y-4" data-testid="admin-subscriptions-list">
+          {filteredSubscriptions.map((subscription) => (
+            <Card key={subscription.id} data-testid={`admin-subscription-card-${subscription.id}`}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-primary">
+                        {subscription.user?.name || 'Unknown User'}
+                      </h3>
+                      {getStatusBadge(subscription.status)}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Phone</p>
+                        <p className="font-medium truncate">{subscription.user?.phone || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Frequency</p>
+                        <p className="font-medium capitalize">{subscription.frequency}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Items</p>
+                        <p className="font-medium">{subscription.items_count} products</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Total</p>
+                        <p className="font-medium text-primary">₹{subscription.total_price}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Delivery Day</p>
+                        <p className="font-medium">{subscription.delivery_day}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Start Date</p>
+                        <p className="font-medium">{format(new Date(subscription.start_date), 'PP')}</p>
+                      </div>
+                      {subscription.next_delivery_date && subscription.status === 'active' && (
+                        <div>
+                          <p className="text-muted-foreground">Next Delivery</p>
+                          <p className="font-medium text-secondary">{format(new Date(subscription.next_delivery_date), 'PP')}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-row lg:flex-col gap-2">
+                    <Dialog open={dialogOpen && selectedSubscription?.id === subscription.id} onOpenChange={setDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          data-testid={`edit-subscription-button-${subscription.id}`}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openDialog(subscription)}
+                          className="flex-1 lg:flex-none rounded-full text-xs sm:text-sm"
+                        >
+                          <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          Edit
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+                        <DialogHeader>
+                          <DialogTitle className="heading-text">Edit Subscription</DialogTitle>
+                        </DialogHeader>
+                        {selectedSubscription && (
+                          <SubscriptionDialog
+                            subscription={selectedSubscription}
+                            onClose={() => setDialogOpen(false)}
+                            onSuccess={fetchSubscriptions}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          data-testid={`delete-subscription-button-${subscription.id}`}
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 lg:flex-none rounded-full text-destructive text-xs sm:text-sm"
+                        >
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="mx-4 sm:mx-auto">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Subscription?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete this subscription and all deliveries.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(subscription.id)}
+                            className="bg-destructive text-destructive-foreground"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </AdminLayout>
   );
 };
 

@@ -10,46 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { LayoutDashboard, Package, Users, TrendingUp, Search, CreditCard, Download } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { format } from 'date-fns';
+import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-const AdminSidebar = ({ active, navigate }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-    { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
-    { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
-    { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
-    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-    { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
-  ];
-
-  return (
-    <div className="w-64 bg-primary text-white min-h-screen p-6">
-      <h2 className="text-2xl font-bold mb-8 heading-text">Khurpi Admin</h2>
-      <nav className="space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                active === item.id ? 'bg-white/20' : 'hover:bg-white/10'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
-};
 
 const PaymentDialog = ({ payment, onClose, onSuccess }) => {
   const [status, setStatus] = useState(payment?.status || 'success');
@@ -74,7 +40,7 @@ const PaymentDialog = ({ payment, onClose, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Payment Status</Label>
+        <Label className="text-sm">Payment Status</Label>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger data-testid="payment-status-select" className="mt-1">
             <SelectValue />
@@ -170,136 +136,133 @@ const AdminPayments = () => {
   const totalRevenue = filteredPayments.filter(p => p.status === 'success').reduce((sum, p) => sum + p.amount, 0);
 
   return (
-    <div className="flex min-h-screen">
-      <AdminSidebar active="payments" navigate={navigate} />
-      <div className="flex-1 p-8 bg-background">
-        <h1 className="text-4xl font-bold text-primary mb-8 heading-text">Payment Management</h1>
-
-        <div className="mb-6 flex gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              data-testid="search-payments-input"
-              placeholder="Search by customer name, phone, or payment ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger data-testid="payment-status-filter" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="refunded">Refunded</SelectItem>
-            </SelectContent>
-          </Select>
+    <AdminLayout active="payments" title="Payment Management">
+      {/* Filters */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+          <Input
+            data-testid="search-payments-input"
+            placeholder="Search by name, phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 sm:pl-10"
+          />
         </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger data-testid="payment-status-filter" className="w-full sm:w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="success">Success</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="refunded">Refunded</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {loading ? (
-          <p className="text-muted-foreground">Loading payments...</p>
-        ) : filteredPayments.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-muted-foreground">
-                {searchTerm || statusFilter !== 'all' ? 'No payments match your filters' : 'No payments found'}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4" data-testid="admin-payments-list">
-            {filteredPayments.map((payment) => (
-              <Card key={payment.id} data-testid={`admin-payment-card-${payment.id}`}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-primary">
-                          {payment.user?.name || 'Unknown User'}
-                        </h3>
-                        {getStatusBadge(payment.status)}
-                      </div>
-                      <div className="grid md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Amount</p>
-                          <p className="font-bold text-primary text-lg">₹{payment.amount}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Payment ID</p>
-                          <p className="font-medium font-mono">{payment.id.slice(0, 12)}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Customer Phone</p>
-                          <p className="font-medium">{payment.user?.phone || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Payment Date</p>
-                          <p className="font-medium">{format(new Date(payment.payment_date), 'PPp')}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <Dialog open={dialogOpen && selectedPayment?.id === payment.id} onOpenChange={setDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          data-testid={`edit-payment-button-${payment.id}`}
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openDialog(payment)}
-                          className="rounded-full ml-4"
-                        >
-                          Edit Status
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle className="heading-text">Update Payment Status</DialogTitle>
-                        </DialogHeader>
-                        {selectedPayment && (
-                          <PaymentDialog
-                            payment={selectedPayment}
-                            onClose={() => setDialogOpen(false)}
-                            onSuccess={fetchPayments}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      {/* Stats Summary */}
+      <div className="mb-6 p-3 sm:p-4 bg-white rounded-lg border border-border">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4 text-center">
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-primary">{payments.length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
           </div>
-        )}
-
-        <div className="mt-6 p-4 bg-background rounded-lg border border-border">
-          <div className="grid md:grid-cols-5 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-primary">{payments.length}</p>
-              <p className="text-sm text-muted-foreground">Total Payments</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">{payments.filter(p => p.status === 'success').length}</p>
-              <p className="text-sm text-muted-foreground">Successful</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-600">{payments.filter(p => p.status === 'failed').length}</p>
-              <p className="text-sm text-muted-foreground">Failed</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-yellow-600">{payments.filter(p => p.status === 'pending').length}</p>
-              <p className="text-sm text-muted-foreground">Pending</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-primary">₹{totalRevenue}</p>
-              <p className="text-sm text-muted-foreground">Total Revenue</p>
-            </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-green-600">{payments.filter(p => p.status === 'success').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Success</p>
+          </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-red-600">{payments.filter(p => p.status === 'failed').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Failed</p>
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-lg sm:text-2xl font-bold text-yellow-600">{payments.filter(p => p.status === 'pending').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
+          </div>
+          <div className="col-span-3 sm:col-span-1 pt-2 sm:pt-0 border-t sm:border-t-0">
+            <p className="text-lg sm:text-2xl font-bold text-primary">₹{totalRevenue}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Revenue</p>
           </div>
         </div>
       </div>
-    </div>
+
+      {loading ? (
+        <p className="text-muted-foreground">Loading payments...</p>
+      ) : filteredPayments.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 sm:p-12 text-center">
+            <p className="text-muted-foreground">
+              {searchTerm || statusFilter !== 'all' ? 'No payments match your filters' : 'No payments found'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3 sm:space-y-4" data-testid="admin-payments-list">
+          {filteredPayments.map((payment) => (
+            <Card key={payment.id} data-testid={`admin-payment-card-${payment.id}`}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-primary">
+                        {payment.user?.name || 'Unknown User'}
+                      </h3>
+                      {getStatusBadge(payment.status)}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Amount</p>
+                        <p className="font-bold text-primary text-base sm:text-lg">₹{payment.amount}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Payment ID</p>
+                        <p className="font-medium font-mono truncate">{payment.id.slice(0, 12)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Phone</p>
+                        <p className="font-medium">{payment.user?.phone || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Date</p>
+                        <p className="font-medium">{format(new Date(payment.payment_date), 'PP')}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Dialog open={dialogOpen && selectedPayment?.id === payment.id} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        data-testid={`edit-payment-button-${payment.id}`}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDialog(payment)}
+                        className="rounded-full text-xs sm:text-sm w-full sm:w-auto"
+                      >
+                        Edit Status
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+                      <DialogHeader>
+                        <DialogTitle className="heading-text">Update Payment Status</DialogTitle>
+                      </DialogHeader>
+                      {selectedPayment && (
+                        <PaymentDialog
+                          payment={selectedPayment}
+                          onClose={() => setDialogOpen(false)}
+                          onSuccess={fetchPayments}
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </AdminLayout>
   );
 };
 

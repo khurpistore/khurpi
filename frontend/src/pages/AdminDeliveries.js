@@ -9,46 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { LayoutDashboard, Package, Users, TrendingUp, Download, Pencil, CreditCard } from 'lucide-react';
+import { Download, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
+import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-const AdminSidebar = ({ active, navigate }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-    { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
-    { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
-    { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
-    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-    { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
-  ];
-
-  return (
-    <div className="w-64 bg-primary text-white min-h-screen p-6">
-      <h2 className="text-2xl font-bold mb-8 heading-text">Khurpi Admin</h2>
-      <nav className="space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                active === item.id ? 'bg-white/20' : 'hover:bg-white/10'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
-};
 
 const DeliveryDialog = ({ delivery, onClose, onSuccess }) => {
   const [status, setStatus] = useState(delivery?.status || 'scheduled');
@@ -73,7 +39,7 @@ const DeliveryDialog = ({ delivery, onClose, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Delivery Status</Label>
+        <Label className="text-sm">Delivery Status</Label>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger data-testid="delivery-status-select" className="mt-1">
             <SelectValue />
@@ -149,96 +115,112 @@ const AdminDeliveries = () => {
     setDialogOpen(true);
   };
 
-  return (
-    <div className="flex min-h-screen">
-      <AdminSidebar active="deliveries" navigate={navigate} />
-      <div className="flex-1 p-8 bg-background">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-primary heading-text">Today's Deliveries</h1>
-          <Button
-            data-testid="export-deliveries-button"
-            onClick={handleExport}
-            className="bg-primary hover:bg-primary/90 rounded-full"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
-          </Button>
-        </div>
+  const getStatusColor = (status) => {
+    const colors = {
+      scheduled: 'bg-blue-100 text-blue-800',
+      delivered: 'bg-green-100 text-green-800',
+      skipped: 'bg-yellow-100 text-yellow-800',
+      failed: 'bg-red-100 text-red-800',
+      cancelled: 'bg-gray-100 text-gray-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
 
-        {loading ? (
-          <p className="text-muted-foreground">Loading deliveries...</p>
-        ) : deliveries.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-muted-foreground">No deliveries scheduled for today</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4" data-testid="deliveries-list">
-            {deliveries.map((delivery) => (
-              <Card key={delivery.id} data-testid={`delivery-card-${delivery.id}`}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-primary">
-                          {delivery.user?.name || 'Unknown'}
-                        </h3>
-                        <Badge className="bg-secondary/20 text-secondary">{delivery.status}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        Phone: {delivery.user?.phone || 'N/A'}
+  return (
+    <AdminLayout active="deliveries" title="Today's Deliveries">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <p className="text-sm text-muted-foreground">
+          {deliveries.length} deliveries scheduled for today
+        </p>
+        <Button
+          data-testid="export-deliveries-button"
+          onClick={handleExport}
+          className="bg-primary hover:bg-primary/90 rounded-full w-full sm:w-auto"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Export CSV
+        </Button>
+      </div>
+
+      {loading ? (
+        <p className="text-muted-foreground">Loading deliveries...</p>
+      ) : deliveries.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 sm:p-12 text-center">
+            <p className="text-muted-foreground">No deliveries scheduled for today</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3 sm:space-y-4" data-testid="deliveries-list">
+          {deliveries.map((delivery) => (
+            <Card key={delivery.id} data-testid={`delivery-card-${delivery.id}`}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-primary">
+                        {delivery.user?.name || 'Unknown'}
+                      </h3>
+                      <Badge className={getStatusColor(delivery.status)}>{delivery.status}</Badge>
+                    </div>
+                    <div className="space-y-1 text-xs sm:text-sm mb-3">
+                      <p className="text-muted-foreground">
+                        <span className="font-medium">Phone:</span> {delivery.user?.phone || 'N/A'}
                       </p>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Address: {delivery.user?.address || 'No address provided'}
+                      <p className="text-muted-foreground">
+                        <span className="font-medium">Address:</span> {delivery.user?.address || 'No address provided'}
                       </p>
-                      <div className="bg-background rounded-lg p-3">
-                        <p className="text-sm font-medium mb-2">Products:</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs sm:text-sm font-medium mb-2">Products:</p>
+                      <div className="space-y-1">
                         {delivery.products?.map((product, idx) => (
-                          <p key={idx} className="text-sm text-muted-foreground">
+                          <p key={idx} className="text-xs sm:text-sm text-muted-foreground">
                             {product.name} × {product.quantity}
                           </p>
                         ))}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Subscription ID</p>
-                      <p className="text-sm font-mono">{delivery.subscription_id.slice(0, 8)}</p>
-                    </div>
                   </div>
-                  <Dialog open={dialogOpen && selectedDelivery?.id === delivery.id} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        data-testid={`edit-delivery-button-${delivery.id}`}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openDialog(delivery)}
-                        className="rounded-full mt-4"
-                      >
-                        <Pencil className="w-4 h-4 mr-1" />
-                        Update Status
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle className="heading-text">Update Delivery Status</DialogTitle>
-                      </DialogHeader>
-                      {selectedDelivery && (
-                        <DeliveryDialog
-                          delivery={selectedDelivery}
-                          onClose={() => setDialogOpen(false)}
-                          onSuccess={fetchDeliveries}
-                        />
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="text-xs sm:text-sm text-right lg:text-left mb-2">
+                      <p className="text-muted-foreground">Subscription ID</p>
+                      <p className="font-mono">{delivery.subscription_id.slice(0, 8)}</p>
+                    </div>
+                    <Dialog open={dialogOpen && selectedDelivery?.id === delivery.id} onOpenChange={setDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          data-testid={`edit-delivery-button-${delivery.id}`}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openDialog(delivery)}
+                          className="rounded-full text-xs sm:text-sm"
+                        >
+                          <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          Update Status
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+                        <DialogHeader>
+                          <DialogTitle className="heading-text">Update Delivery Status</DialogTitle>
+                        </DialogHeader>
+                        {selectedDelivery && (
+                          <DeliveryDialog
+                            delivery={selectedDelivery}
+                            onClose={() => setDialogOpen(false)}
+                            onSuccess={fetchDeliveries}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </AdminLayout>
   );
 };
 
