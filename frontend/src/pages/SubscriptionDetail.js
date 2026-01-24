@@ -94,7 +94,11 @@ const SubscriptionDetail = () => {
   const itemsTotal = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0);
   const deliveriesPerWeek = subscription.deliveries_per_week || 1;
   const weeksPerMonth = 4;
-  const monthlySubtotal = itemsTotal * deliveriesPerWeek * weeksPerMonth;
+  
+  // Use stored total_price if available, otherwise calculate
+  const storedMonthlyTotal = subscription.total_price || 0;
+  const monthlySubtotal = itemsTotal > 0 ? itemsTotal * deliveriesPerWeek * weeksPerMonth : storedMonthlyTotal;
+  
   const planDiscount = subscription.plan_discount || 0;
   const planDiscountAmount = (monthlySubtotal * planDiscount) / 100;
   const deliveryFee = subscription.delivery_fee || 0;
@@ -102,7 +106,12 @@ const SubscriptionDetail = () => {
   const couponDiscount = subscription.coupon_discount || 0;
   const referralDiscount = subscription.referral_discount || 0;
   const totalDiscount = planDiscountAmount + couponDiscount + referralDiscount;
-  const monthlyTotal = subscription.total_price || (monthlySubtotal - planDiscountAmount + monthlyDeliveryFee - couponDiscount - referralDiscount);
+  
+  // Final monthly total
+  const monthlyTotal = storedMonthlyTotal > 0 ? storedMonthlyTotal : Math.max(0, monthlySubtotal - planDiscountAmount + monthlyDeliveryFee - couponDiscount - referralDiscount);
+  
+  // Per tray cost (for display)
+  const perTrayPrice = itemsTotal > 0 ? itemsTotal : (storedMonthlyTotal / (deliveriesPerWeek * weeksPerMonth));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
