@@ -58,37 +58,10 @@ const MySubscriptions = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-green-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <Leaf className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-primary heading-text">Khurpi</h1>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              data-testid="products-nav-button"
-              variant="ghost"
-              onClick={() => navigate('/products')}
-              className="rounded-full"
-            >
-              Products
-            </Button>
-            <Button
-              data-testid="profile-nav-button"
-              variant="ghost"
-              onClick={() => navigate('/profile')}
-              className="rounded-full"
-            >
-              Profile
-            </Button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-4xl font-bold text-primary heading-text">My Subscriptions</h2>
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary heading-text">My Subscriptions</h2>
           <Button
             data-testid="create-subscription-button"
             onClick={() => navigate('/subscription/create')}
