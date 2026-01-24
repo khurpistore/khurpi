@@ -25,6 +25,28 @@ api_router = APIRouter(prefix="/api")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+class Address(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    user_id: str
+    address_line: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_default: bool = False
+    created_at: str
+
+class AddressCreate(BaseModel):
+    address_line: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_default: bool = False
+
+class AddressUpdate(BaseModel):
+    address_line: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_default: Optional[bool] = None
+
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
