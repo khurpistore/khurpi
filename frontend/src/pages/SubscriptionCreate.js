@@ -267,9 +267,9 @@ const SubscriptionCreate = () => {
         total_price: calculateTotal(),
         plan_id: selectedPlan.id,
         address_id: defaultAddress?.id || null,
-        coupon_code: appliedCoupon?.code || null,
-        coupon_discount: appliedCoupon?.discount || 0,
-        referral_code: appliedReferral?.code || null,
+        coupon_code: appliedDiscount?.code || null,
+        coupon_discount: appliedDiscount?.discount || 0,
+        referral_code: appliedDiscount?.type === 'referral' ? appliedDiscount.code : null,
         payment_method: paymentMethod
       };
 
@@ -281,19 +281,19 @@ const SubscriptionCreate = () => {
 
       const response = await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
       
-      // Apply referral if present
-      if (appliedReferral) {
+      // Apply referral commission if referral code was used
+      if (appliedDiscount?.type === 'referral' && appliedDiscount.referrer_id) {
         try {
           await axios.post(`${API}/referrals/apply`, null, {
             params: {
-              code: appliedReferral.code,
+              code: appliedDiscount.code,
               user_id: user.id,
               order_id: response.data.id,
               order_amount: calculateTotal()
             }
           });
         } catch (err) {
-          console.log('Referral application failed:', err);
+          console.log('Referral commission tracking:', err);
         }
       }
 
