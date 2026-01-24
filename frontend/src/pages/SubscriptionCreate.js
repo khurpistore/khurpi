@@ -195,7 +195,8 @@ const SubscriptionCreate = () => {
     );
   };
 
-  const calculateSubtotal = () => {
+  // Calculate per-tray cost (single delivery)
+  const calculatePerTrayPrice = () => {
     let total = 0;
     selectedProducts.forEach(item => {
       const product = products.find(p => p.id === item.product_id);
@@ -206,9 +207,17 @@ const SubscriptionCreate = () => {
     return total;
   };
 
+  // Calculate weekly subtotal (per tray × deliveries per week)
+  const calculateWeeklySubtotal = () => {
+    const perTray = calculatePerTrayPrice();
+    const deliveriesPerWeek = selectedPlan?.deliveries_per_week || 1;
+    return perTray * deliveriesPerWeek;
+  };
+
+  // Calculate discount on weekly subtotal
   const calculateDiscount = () => {
     if (!selectedPlan) return 0;
-    return (calculateSubtotal() * selectedPlan.discount) / 100;
+    return (calculateWeeklySubtotal() * selectedPlan.discount) / 100;
   };
 
   const getDeliveryFee = () => {
@@ -220,12 +229,13 @@ const SubscriptionCreate = () => {
     return appliedDiscount.discount || 0;
   };
 
+  // Calculate total weekly cost
   const calculateTotal = () => {
-    const subtotal = calculateSubtotal();
+    const weeklySubtotal = calculateWeeklySubtotal();
     const planDiscount = calculateDiscount();
     const delivery = getDeliveryFee();
     const codeDiscount = getDiscountCodeSavings();
-    return Math.max(0, subtotal - planDiscount + delivery - codeDiscount);
+    return Math.max(0, weeklySubtotal - planDiscount + delivery - codeDiscount);
   };
 
   // Apply discount code (works for both coupons and referral codes)
@@ -237,7 +247,7 @@ const SubscriptionCreate = () => {
 
     setDiscountLoading(true);
     try {
-      const orderAmount = calculateSubtotal() - calculateDiscount() + getDeliveryFee();
+      const orderAmount = calculateWeeklySubtotal() - calculateDiscount() + getDeliveryFee();
       const response = await axios.post(`${API}/discount/validate?code=${discountCode}&order_amount=${orderAmount}`);
       setAppliedDiscount(response.data);
       toast.success(response.data.message);
