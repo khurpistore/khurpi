@@ -15,7 +15,6 @@ import {
   ShoppingCart, 
   Menu, 
   X, 
-  Sparkles, 
   Bell, 
   User, 
   Package, 
