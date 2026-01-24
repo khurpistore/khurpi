@@ -749,7 +749,7 @@ const SubscriptionCreate = () => {
               <CardContent className="p-4 sm:p-6">
                 <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
                   <Package className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Weekly Order Summary
+                  Monthly Order Summary
                 </h4>
                 
                 {/* Products per delivery */}
@@ -781,24 +781,28 @@ const SubscriptionCreate = () => {
                       <span className="text-muted-foreground">Deliveries per week</span>
                       <span className="font-medium">{selectedPlan.deliveries_per_week}×</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Weeks per month</span>
+                      <span className="font-medium">4×</span>
+                    </div>
                     <div className="flex justify-between bg-gray-50 p-2 rounded -mx-2">
-                      <span className="font-medium">Weekly Subtotal</span>
-                      <span className="font-medium">₹{calculatePerTrayPrice().toFixed(2)} × {selectedPlan.deliveries_per_week} = ₹{calculateWeeklySubtotal().toFixed(2)}</span>
+                      <span className="font-medium">Monthly Subtotal</span>
+                      <span className="font-medium">₹{calculatePerTrayPrice().toFixed(2)} × {selectedPlan.deliveries_per_week} × 4 = ₹{calculateMonthlySubtotal().toFixed(2)}</span>
                     </div>
                     {selectedPlan.discount > 0 && (
                       <div className="flex justify-between text-green-600">
                         <span>Plan Discount ({selectedPlan.discount}%)</span>
                         <span>-₹{calculateDiscount().toFixed(2)}</span>
                       </div>
-                    )}}
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground flex items-center gap-1">
-                        <Truck className="w-3 h-3" /> Delivery
+                        <Truck className="w-3 h-3" /> Delivery (4 weeks)
                       </span>
                       {getDeliveryFee() === 0 ? (
                         <span className="text-green-600 font-medium">FREE</span>
                       ) : (
-                        <span>₹{getDeliveryFee()}</span>
+                        <span>₹{(getDeliveryFee() * 4).toFixed(2)}</span>
                       )}
                     </div>
                     {appliedDiscount && (
@@ -814,8 +818,8 @@ const SubscriptionCreate = () => {
                       </div>
                     )}
                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
-                      <span>Total Amount</span>
-                      <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
+                      <span>Monthly Total</span>
+                      <span className="text-primary">₹{calculateTotal().toFixed(2)}/month</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Delivery Day</span>
