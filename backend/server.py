@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import math
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
@@ -24,6 +25,91 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Shop Configuration - Default values (can be overridden from DB)
+SHOP_CONFIG = {
+    "name": "Khurpi Microgreens",
+    "address": "E-312, ACE City, Noida Extension, 201306",
+    "latitude": 28.5672,  # ACE City Noida Extension coordinates
+    "longitude": 77.4538,
+    "phone": "+91 98765 43210",
+    "email": "hello@khurpi.com"
+}
+
+# Default Delivery Pricing (distance in km)
+DEFAULT_DELIVERY_PRICING = [
+    {"max_distance": 1, "fee": 0, "label": "Free Delivery"},
+    {"max_distance": 5, "fee": 50, "label": "₹50 Delivery"},
+    {"max_distance": 10, "fee": 100, "label": "₹100 Delivery"},
+    {"max_distance": 999, "fee": 150, "label": "₹150 Delivery"}  # All other NOIDA locations
+]
+
+# Default Subscription Plans with discounts
+DEFAULT_SUBSCRIPTION_PLANS = [
+    {"id": "weekly", "name": "Weekly (1x/week)", "frequency": "weekly", "deliveries_per_week": 1, "discount": 5, "description": "Perfect for trying out"},
+    {"id": "twice_weekly", "name": "Twice Weekly (2x/week)", "frequency": "twice_weekly", "deliveries_per_week": 2, "discount": 10, "description": "Most popular choice"},
+    {"id": "six_days", "name": "Daily (6 days/week)", "frequency": "six_days", "deliveries_per_week": 6, "discount": 25, "description": "Best value - Maximum freshness"}
+]
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """Calculate distance between two coordinates using Haversine formula"""
+    R = 6371  # Earth's radius in kilometers
+    
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lon = math.radians(lon2 - lon1)
+    
+    a = math.sin(delta_lat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    
+    return R * c
+
+async def get_shop_config():
+    """Get shop configuration from DB or return defaults"""
+    config = await db.settings.find_one({"type": "shop_config"}, {"_id": 0})
+    if config:
+        return config.get("data", SHOP_CONFIG)
+    return SHOP_CONFIG
+
+async def get_delivery_pricing():
+    """Get delivery pricing from DB or return defaults"""
+    pricing = await db.settings.find_one({"type": "delivery_pricing"}, {"_id": 0})
+    if pricing:
+        return pricing.get("data", DEFAULT_DELIVERY_PRICING)
+    return DEFAULT_DELIVERY_PRICING
+
+async def get_subscription_plans():
+    """Get subscription plans from DB or return defaults"""
+    plans = await db.settings.find_one({"type": "subscription_plans"}, {"_id": 0})
+    if plans:
+        return plans.get("data", DEFAULT_SUBSCRIPTION_PLANS)
+    return DEFAULT_SUBSCRIPTION_PLANS
+
+async def calculate_delivery_fee(customer_lat, customer_lon):
+    """Calculate delivery fee based on distance from shop"""
+    shop = await get_shop_config()
+    pricing = await get_delivery_pricing()
+    
+    distance = calculate_distance(
+        shop["latitude"], shop["longitude"],
+        customer_lat, customer_lon
+    )
+    
+    for tier in sorted(pricing, key=lambda x: x["max_distance"]):
+        if distance <= tier["max_distance"]:
+            return {
+                "distance": round(distance, 2),
+                "fee": tier["fee"],
+                "label": tier["label"]
+            }
+    
+    # Default to highest tier
+    return {
+        "distance": round(distance, 2),
+        "fee": pricing[-1]["fee"],
+        "label": pricing[-1]["label"]
+    }
 
 class Address(BaseModel):
     model_config = ConfigDict(extra="ignore")
