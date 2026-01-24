@@ -135,16 +135,37 @@ const Addresses = () => {
 
   const handleEdit = (address) => {
     setEditingAddress(address);
+    
+    // Parse address fields - use stored fields if available, otherwise try to parse from address_line
+    let name = address.name || '';
+    let address_line_1 = address.address_line_1 || '';
+    let address_line_2 = address.address_line_2 || '';
+    let area = address.area || '';
+    let pincode = address.pincode || '';
+    
+    // If individual fields are not stored, try to parse from address_line
+    if (!address_line_1 && address.address_line) {
+      const parts = address.address_line.split(',').map(p => p.trim());
+      if (parts.length >= 1) address_line_1 = parts[0];
+      if (parts.length >= 2) address_line_2 = parts.slice(1, -2).join(', ');
+      // Try to extract pincode (6 digits at end)
+      const pincodeMatch = address.address_line.match(/\d{6}/);
+      if (pincodeMatch) pincode = pincodeMatch[0];
+      // Try to extract area/sector
+      const areaMatch = address.address_line.match(/Sector\s*\d+/i);
+      if (areaMatch) area = areaMatch[0];
+    }
+    
     setFormData({
-      name: address.name || '',
-      address_line_1: address.address_line_1 || address.address_line || '',
-      address_line_2: address.address_line_2 || '',
-      area: address.area || '',
+      name: name,
+      address_line_1: address_line_1,
+      address_line_2: address_line_2,
+      area: area,
       city: address.city || 'NOIDA',
-      pincode: address.pincode || '',
-      latitude: address.latitude,
-      longitude: address.longitude,
-      is_default: address.is_default
+      pincode: pincode,
+      latitude: address.latitude || null,
+      longitude: address.longitude || null,
+      is_default: address.is_default || false
     });
     setIsAddDialogOpen(true);
   };
