@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap, Popup } from 're
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MapPin, X, Navigation } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
@@ -60,9 +60,7 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
 }
 
 const LocationPicker = ({ 
-  initialAddress = '', 
-  initialLat = null, 
-  initialLng = null,
+  initialData = null,
   onSave, 
   onCancel,
   loading = false,
@@ -71,28 +69,38 @@ const LocationPicker = ({
   isDefault = false
 }) => {
   const [position, setPosition] = useState(
-    initialLat && initialLng ? [initialLat, initialLng] : NOIDA_CENTER
+    initialData?.latitude && initialData?.longitude 
+      ? [initialData.latitude, initialData.longitude] 
+      : NOIDA_CENTER
   );
-  const [addressText, setAddressText] = useState(initialAddress);
+  const [formData, setFormData] = useState({
+    addressLine1: initialData?.address_line1 || '',
+    addressLine2: initialData?.address_line2 || '',
+    city: 'NOIDA',
+    pincode: initialData?.pincode || '',
+    landmark: initialData?.landmark || ''
+  });
   const [setAsDefault, setSetAsDefault] = useState(isDefault);
   const [locating, setLocating] = useState(false);
 
+  // Parse existing address if editing
   useEffect(() => {
-    setAddressText(initialAddress);
-    if (initialLat && initialLng) {
-      setPosition([initialLat, initialLng]);
+    if (initialData?.address_line && !initialData?.address_line1) {
+      // Try to parse the full address line
+      const parts = initialData.address_line.split(',').map(p => p.trim());
+      if (parts.length >= 2) {
+        setFormData(prev => ({
+          ...prev,
+          addressLine1: parts[0] || '',
+          addressLine2: parts.slice(1, -2).join(', ') || '',
+          pincode: parts[parts.length - 1]?.match(/\d{6}/)?.[0] || ''
+        }));
+      }
     }
-  }, [initialAddress, initialLat, initialLng]);
+  }, [initialData]);
 
   const handleLocationSelect = (lat, lng) => {
-    // Append coordinates to address if not already there
-    const coordsText = `(Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)})`;
-    if (!addressText.includes('Lat:')) {
-      setAddressText(prev => prev ? `${prev}\n${coordsText}` : coordsText);
-    } else {
-      // Replace existing coordinates
-      setAddressText(prev => prev.replace(/\(Lat: [\d.]+, Lng: [\d.]+\)/, coordsText));
-    }
+    setPosition([lat, lng]);
   };
 
   const handleUseCurrentLocation = () => {
@@ -105,10 +113,8 @@ const LocationPicker = ({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        // Check if within NOIDA bounds
         if (latitude >= 28.4 && latitude <= 28.7 && longitude >= 77.2 && longitude <= 77.5) {
           setPosition([latitude, longitude]);
-          handleLocationSelect(latitude, longitude);
         } else {
           alert('Your current location is outside NOIDA. Please select a location within NOIDA.');
         }
@@ -123,19 +129,31 @@ const LocationPicker = ({
   };
 
   const handleSave = () => {
-    if (!addressText.trim()) {
-      alert('Please enter an address');
+    if (!formData.addressLine1.trim()) {
+      alert('Please enter Address Line 1');
       return;
     }
-    
-    // Validate NOIDA
-    if (!addressText.toUpperCase().includes('NOIDA')) {
-      alert('Please include NOIDA in your address. We currently deliver only in NOIDA area.');
+    if (!formData.pincode.trim() || !/^\d{6}$/.test(formData.pincode)) {
+      alert('Please enter a valid 6-digit pincode');
       return;
     }
 
+    // Construct full address
+    const fullAddress = [
+      formData.addressLine1,
+      formData.addressLine2,
+      formData.landmark,
+      formData.city,
+      `UP ${formData.pincode}`
+    ].filter(Boolean).join(', ');
+
     onSave({
-      address_line: addressText.trim(),
+      address_line: fullAddress,
+      address_line1: formData.addressLine1,
+      address_line2: formData.addressLine2,
+      city: formData.city,
+      pincode: formData.pincode,
+      landmark: formData.landmark,
       latitude: position[0],
       longitude: position[1],
       is_default: setAsDefault
@@ -158,7 +176,7 @@ const LocationPicker = ({
             <p className="text-xs text-muted-foreground mb-2">
               Click on the map to pin your delivery location in NOIDA
             </p>
-            <div className="rounded-lg overflow-hidden border border-green-200" style={{ height: '250px' }}>
+            <div className="rounded-lg overflow-hidden border border-green-200" style={{ height: '200px' }}>
               <MapContainer
                 center={position || NOIDA_CENTER}
                 zoom={13}
@@ -192,20 +210,63 @@ const LocationPicker = ({
             {locating ? 'Locating...' : 'Use My Current Location'}
           </Button>
 
-          {/* Address Text */}
-          <div>
-            <Label htmlFor="address-input" className="text-sm">Complete Address</Label>
-            <Textarea
-              id="address-input"
-              data-testid="address-input"
-              placeholder="Enter house/flat number, sector, landmarks in NOIDA"
-              value={addressText}
-              onChange={(e) => setAddressText(e.target.value)}
-              className="mt-1 min-h-[80px] sm:min-h-[100px] text-sm"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              * We currently deliver only in NOIDA area
-            </p>
+          {/* Address Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <Label htmlFor="addressLine1" className="text-sm">Address Line 1 *</Label>
+              <Input
+                id="addressLine1"
+                data-testid="address-line1-input"
+                placeholder="House/Flat No., Building Name"
+                value={formData.addressLine1}
+                onChange={(e) => setFormData({...formData, addressLine1: e.target.value})}
+                className="mt-1"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label htmlFor="addressLine2" className="text-sm">Address Line 2</Label>
+              <Input
+                id="addressLine2"
+                data-testid="address-line2-input"
+                placeholder="Street, Area, Sector"
+                value={formData.addressLine2}
+                onChange={(e) => setFormData({...formData, addressLine2: e.target.value})}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="city" className="text-sm">City</Label>
+              <Input
+                id="city"
+                value="NOIDA"
+                disabled
+                className="mt-1 bg-gray-100"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Currently serving NOIDA only</p>
+            </div>
+            <div>
+              <Label htmlFor="pincode" className="text-sm">Pincode *</Label>
+              <Input
+                id="pincode"
+                data-testid="pincode-input"
+                placeholder="201301"
+                maxLength={6}
+                value={formData.pincode}
+                onChange={(e) => setFormData({...formData, pincode: e.target.value.replace(/\D/g, '')})}
+                className="mt-1"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label htmlFor="landmark" className="text-sm">Landmark</Label>
+              <Input
+                id="landmark"
+                data-testid="landmark-input"
+                placeholder="Near School, Behind Mall, etc."
+                value={formData.landmark}
+                onChange={(e) => setFormData({...formData, landmark: e.target.value})}
+                className="mt-1"
+              />
+            </div>
           </div>
 
           {/* Set as Default */}
@@ -227,7 +288,7 @@ const LocationPicker = ({
             <Button
               data-testid="save-address-button"
               onClick={handleSave}
-              disabled={loading || !addressText.trim()}
+              disabled={loading || !formData.addressLine1.trim() || !formData.pincode.trim()}
               className="bg-primary hover:bg-primary/90 rounded-full flex-1 sm:flex-none text-sm"
             >
               {loading ? 'Saving...' : (isEdit ? 'Update Address' : 'Save Address')}
