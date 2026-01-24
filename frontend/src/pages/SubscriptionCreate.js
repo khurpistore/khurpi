@@ -512,12 +512,6 @@ const SubscriptionCreate = () => {
           <div>
             {/* Combined: Selected Products + Monthly Price Preview */}
             <Card className="mb-6 border-2 border-primary/20 bg-gradient-to-br from-green-50/50 to-white overflow-hidden">
-              <div className="bg-primary/10 px-4 py-3 border-b border-primary/20">
-                <h4 className="font-semibold text-primary flex items-center gap-2">
-                  <Package className="w-4 h-4" />
-                  Your Order Summary
-                </h4>
-              </div>
               <CardContent className="p-4">
                 {/* Selected Products */}
                 <div className="space-y-3 mb-4">
