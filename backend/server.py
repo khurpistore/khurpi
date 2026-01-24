@@ -441,13 +441,19 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     if not has_address:
         raise HTTPException(status_code=400, detail="Please add a delivery address in your profile first")
     
-    # Get the default address or first address for validation and delivery fee
-    default_address = next((a for a in addresses if a.get("is_default")), None)
-    if not default_address and addresses:
-        default_address = addresses[0]
+    # Get the selected address or default address
+    selected_address = None
+    if sub_data.address_id:
+        selected_address = next((a for a in addresses if a.get("id") == sub_data.address_id), None)
+    
+    if not selected_address:
+        # Fall back to default address or first address
+        selected_address = next((a for a in addresses if a.get("is_default")), None)
+        if not selected_address and addresses:
+            selected_address = addresses[0]
     
     # Check NOIDA validation
-    address_to_check = default_address.get("address_line", "") if default_address else user.get("address", "")
+    address_to_check = selected_address.get("address_line", "") if selected_address else user.get("address", "")
     if "NOIDA" not in address_to_check.upper():
         raise HTTPException(
             status_code=400, 
@@ -456,9 +462,35 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     
     # Calculate delivery fee based on address location
     delivery_fee = 0
-    if default_address and default_address.get("latitude") and default_address.get("longitude"):
-        delivery_info = await calculate_delivery_fee(default_address["latitude"], default_address["longitude"])
+    delivery_distance = 0
+    if selected_address and selected_address.get("latitude") and selected_address.get("longitude"):
+        delivery_info = await calculate_delivery_fee(selected_address["latitude"], selected_address["longitude"])
         delivery_fee = delivery_info["fee"]
+        delivery_distance = delivery_info.get("distance", 0)
+    
+    # Get subscription plan discount
+    plans = await get_subscription_plans()
+    selected_plan = None
+    if sub_data.plan_id:
+        selected_plan = next((p for p in plans if p.get("id") == sub_data.plan_id), None)
+    if not selected_plan:
+        # Try to match by frequency
+        selected_plan = next((p for p in plans if p.get("frequency") == sub_data.frequency), None)
+    
+    discount_percent = selected_plan.get("discount", 0) if selected_plan else 0
+    
+    # Calculate subtotal from products
+    subtotal = 0
+    for item in sub_data.items:
+        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        if product:
+            subtotal += product["price"] * item.quantity
+    
+    # Calculate discount amount
+    discount_amount = (subtotal * discount_percent) / 100
+    
+    # Calculate final total
+    final_total = subtotal - discount_amount + delivery_fee
     
     # Check stock availability and calculate earliest delivery date for ALL products
     today = datetime.now(timezone.utc).date()
@@ -514,7 +546,12 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "start_date": sub_data.start_date,
         "status": "active",
         "tray_count": sub_data.tray_count,
-        "total_price": sub_data.total_price,
+        "subtotal": subtotal,
+        "discount_percent": discount_percent,
+        "discount_amount": discount_amount,
+        "delivery_fee": delivery_fee,
+        "total_price": final_total,
+        "address_id": selected_address.get("id") if selected_address else None,
         "next_delivery_date": sub_data.start_date,
         "skipped_deliveries": [],
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -543,7 +580,7 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "id": str(uuid.uuid4()),
         "subscription_id": subscription_doc["id"],
         "user_id": user_id,
-        "amount": sub_data.total_price,
+        "amount": final_total,
         "status": "success",
         "payment_date": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
