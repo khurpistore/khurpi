@@ -943,7 +943,7 @@ const SubscriptionCreate = () => {
                   <div className="flex items-center gap-2 text-green-800">
                     <Sparkles className="w-5 h-5" />
                     <span className="font-bold">
-                      Total Savings: ₹{(calculateDiscount() + getDiscountCodeSavings()).toFixed(2)}
+                      Total Monthly Savings: ₹{(calculateDiscount() + getDiscountCodeSavings()).toFixed(2)}
                     </span>
                   </div>
                   <p className="text-sm text-green-700 mt-1">
