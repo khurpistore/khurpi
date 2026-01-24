@@ -269,6 +269,9 @@ class Order(BaseModel):
     user_id: str
     address_id: str
     items: List[OrderItem]
+    subtotal: float
+    delivery_fee: float = 0
+    delivery_distance: Optional[float] = None
     total: float
     status: str = "pending"
     order_type: str = "one_time"
@@ -278,6 +281,8 @@ class OrderCreate(BaseModel):
     user_id: str
     address_id: str
     items: List[OrderItem]
+    subtotal: float
+    delivery_fee: float = 0
     total: float
     order_type: str = "one_time"
 
