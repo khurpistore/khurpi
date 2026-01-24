@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight, Sparkles, Tag, Truck, CreditCard, Gift, X, Loader2 } from 'lucide-react';
+import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight, Sparkles, Tag, Truck, CreditCard, Gift, X, Loader2, MapPin, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
