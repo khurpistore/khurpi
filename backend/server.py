@@ -46,9 +46,9 @@ DEFAULT_DELIVERY_PRICING = [
 
 # Default Subscription Plans with discounts
 DEFAULT_SUBSCRIPTION_PLANS = [
-    {"id": "weekly", "name": "Weekly (1x/week)", "frequency": "weekly", "deliveries_per_week": 1, "discount": 5, "description": "Perfect for trying out"},
-    {"id": "twice_weekly", "name": "Twice Weekly (2x/week)", "frequency": "twice_weekly", "deliveries_per_week": 2, "discount": 10, "description": "Most popular choice"},
-    {"id": "six_days", "name": "Daily (6 days/week)", "frequency": "six_days", "deliveries_per_week": 6, "discount": 25, "description": "Best value - Maximum freshness"}
+    {"id": "weekly", "name": "Weekly (1 tray/week)", "frequency": "weekly", "deliveries_per_week": 1, "discount": 0, "trays_per_month": 4, "description": "Perfect for trying out"},
+    {"id": "twice_weekly", "name": "Twice Weekly (2x/week)", "frequency": "twice_weekly", "deliveries_per_week": 2, "discount": 10, "trays_per_month": 8, "description": "Most popular choice"},
+    {"id": "four_days", "name": "4 Days a Week", "frequency": "four_days", "deliveries_per_week": 4, "discount": 50, "trays_per_month": 16, "description": "Best value - Maximum freshness"}
 ]
 
 def calculate_distance(lat1, lon1, lat2, lon2):
