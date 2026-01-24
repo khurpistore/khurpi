@@ -395,7 +395,7 @@ const SubscriptionCreate = () => {
                 <span className="font-semibold text-green-800">Subscription Benefits</span>
               </div>
               <ul className="text-sm text-green-700 space-y-1">
-                <li>✓ Save up to 25% on every delivery</li>
+                <li>✓ Save up to 50% on every delivery</li>
                 <li>✓ Free delivery on subscriptions (within 1 km)</li>
                 <li>✓ Pause or skip anytime</li>
                 <li>✓ Freshly harvested just for you</li>
@@ -414,7 +414,7 @@ const SubscriptionCreate = () => {
                     key={plan.id}
                     className={`cursor-pointer transition-all ${
                       selectedPlan?.id === plan.id ? 'border-2 border-primary shadow-md' : 'border'
-                    } ${plan.discount >= 20 ? 'bg-gradient-to-r from-green-50 to-amber-50' : ''}`}
+                    } ${plan.discount >= 40 ? 'bg-gradient-to-r from-green-50 to-amber-50' : ''}`}
                     onClick={() => setSelectedPlan(plan)}
                   >
                     <CardContent className="p-4 sm:p-6">
@@ -426,20 +426,29 @@ const SubscriptionCreate = () => {
                               {plan.name}
                             </Label>
                             <div className="flex items-center gap-2">
-                              {plan.discount >= 20 && (
+                              {plan.discount >= 40 && (
                                 <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
                                   BEST VALUE
                                 </span>
                               )}
-                              <span className="px-3 py-1 bg-green-100 text-green-800 font-bold rounded-full">
-                                {plan.discount}% OFF
-                              </span>
+                              {plan.discount > 0 && (
+                                <span className="px-3 py-1 bg-green-100 text-green-800 font-bold rounded-full">
+                                  {plan.discount}% OFF
+                                </span>
+                              )}
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
-                          <p className="text-sm mt-2">
-                            <span className="font-medium">{plan.deliveries_per_week} delivery{plan.deliveries_per_week > 1 ? 'ies' : ''}</span> per week
-                          </p>
+                          <div className="flex flex-wrap gap-4 text-sm mt-2">
+                            <span>
+                              <span className="font-medium">{plan.deliveries_per_week}</span> {plan.deliveries_per_week > 1 ? 'deliveries' : 'delivery'}/week
+                            </span>
+                            {plan.trays_per_month && (
+                              <span className="text-primary font-medium">
+                                ~{plan.trays_per_month} trays/month
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -458,10 +467,12 @@ const SubscriptionCreate = () => {
                       <span>Subtotal</span>
                       <span>₹{calculateSubtotal().toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({selectedPlan.discount}%)</span>
-                      <span>-₹{calculateDiscount().toFixed(2)}</span>
-                    </div>
+                    {selectedPlan.discount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount ({selectedPlan.discount}%)</span>
+                        <span>-₹{calculateDiscount().toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="flex items-center gap-1">
                         <Truck className="w-3 h-3" /> Delivery
