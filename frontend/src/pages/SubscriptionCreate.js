@@ -571,19 +571,6 @@ const SubscriptionCreate = () => {
               </CardContent>
             </Card>
 
-            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-5 h-5 text-green-600" />
-                <span className="font-semibold text-green-800">Subscription Benefits</span>
-              </div>
-              <ul className="text-sm text-green-700 space-y-1">
-                <li>✓ Save up to 50% on every delivery</li>
-                <li>✓ Free delivery on subscriptions (within 1 km)</li>
-                <li>✓ Pause or skip anytime</li>
-                <li>✓ Freshly harvested just for you</li>
-              </ul>
-            </div>
-
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Tag className="w-5 h-5 text-primary" />
               Select Your Plan
