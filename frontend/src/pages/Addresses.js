@@ -202,85 +202,117 @@ const Addresses = () => {
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <MapPin className="w-5 h-5 text-primary" />
                   {editingAddress ? 'Edit Address' : 'Add New Address'}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label>Address Name / Label *</Label>
+              <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+                {/* Address Label */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <Home className="w-4 h-4" />
+                    Address Label
+                  </div>
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="e.g., Home, Office, Mom's Place"
                     required
-                    className="mt-1"
+                    className="bg-white"
+                    data-testid="address-name-input"
                   />
                 </div>
 
-                <div>
-                  <Label>Address Line 1 *</Label>
-                  <Input
-                    value={formData.address_line_1}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address_line_1: e.target.value }))}
-                    placeholder="House/Flat No., Building Name"
-                    required
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label>Address Line 2</Label>
-                  <Input
-                    value={formData.address_line_2}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address_line_2: e.target.value }))}
-                    placeholder="Street, Landmark (optional)"
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                {/* Address Details */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <Building2 className="w-4 h-4" />
+                    Address Details
+                  </div>
+                  
                   <div>
-                    <Label>Area / Sector *</Label>
+                    <Label className="text-xs text-muted-foreground">House/Flat No., Building Name *</Label>
                     <Input
-                      value={formData.area}
-                      onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
-                      placeholder="e.g., Sector 62"
+                      value={formData.address_line_1}
+                      onChange={(e) => setFormData(prev => ({ ...prev, address_line_1: e.target.value }))}
+                      placeholder="e.g., B-42, Sunrise Apartments"
                       required
-                      className="mt-1"
+                      className="mt-1 bg-white"
+                      data-testid="address-line1-input"
                     />
                   </div>
+
                   <div>
-                    <Label>City</Label>
+                    <Label className="text-xs text-muted-foreground">Street, Landmark (optional)</Label>
                     <Input
-                      value={formData.city}
-                      disabled
-                      className="mt-1 bg-gray-50"
+                      value={formData.address_line_2}
+                      onChange={(e) => setFormData(prev => ({ ...prev, address_line_2: e.target.value }))}
+                      placeholder="e.g., Near City Mall, Main Road"
+                      className="mt-1 bg-white"
+                      data-testid="address-line2-input"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      We currently deliver only in NOIDA
-                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Area / Sector *</Label>
+                      <Input
+                        value={formData.area}
+                        onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
+                        placeholder="e.g., Sector 62"
+                        required
+                        className="mt-1 bg-white"
+                        data-testid="address-area-input"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">PIN Code *</Label>
+                      <Input
+                        value={formData.pincode}
+                        onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                        placeholder="e.g., 201301"
+                        required
+                        maxLength={6}
+                        className="mt-1 bg-white"
+                        data-testid="address-pincode-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">City</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        value={formData.city}
+                        disabled
+                        className="bg-gray-100 flex-1"
+                      />
+                      <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded">
+                        Delivery Area
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <Label>PIN Code *</Label>
-                  <Input
-                    value={formData.pincode}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
-                    placeholder="e.g., 201301"
-                    required
-                    maxLength={6}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label>Pin Location on Map (Optional)</Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Click on the map to set your exact delivery location for accurate delivery
+                {/* Map Location */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Navigation className="w-4 h-4" />
+                      Pin on Map
+                    </div>
+                    {formData.latitude && formData.longitude && (
+                      <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        Location Set
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Click on the map to set exact delivery location for accurate delivery
                   </p>
-                  <div className="h-48 rounded-lg overflow-hidden border">
+                  <div className="h-48 rounded-lg overflow-hidden border-2 border-dashed border-gray-300">
                     <LocationPicker
                       onLocationSelect={handleLocationSelect}
                       initialLocation={formData.latitude && formData.longitude ? {
@@ -289,27 +321,32 @@ const Addresses = () => {
                       } : null}
                     />
                   </div>
-                  {formData.latitude && formData.longitude && (
-                    <p className="text-xs text-green-600 mt-1">
-                      ✓ Location pinned on map
-                    </p>
-                  )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="is_default"
-                    checked={formData.is_default}
-                    onChange={(e) => setFormData(prev => ({ ...prev, is_default: e.target.checked }))}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="is_default" className="cursor-pointer">
-                    Set as default delivery address
-                  </Label>
+                {/* Default Address Toggle */}
+                <div 
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    formData.is_default 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setFormData(prev => ({ ...prev, is_default: !prev.is_default }))}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      formData.is_default ? 'border-primary bg-primary' : 'border-gray-300'
+                    }`}>
+                      {formData.is_default && <CheckCircle className="w-3 h-3 text-white" />}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Set as default address</p>
+                      <p className="text-xs text-muted-foreground">This will be your primary delivery address</p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -317,12 +354,18 @@ const Addresses = () => {
                       setIsAddDialogOpen(false);
                       resetForm();
                     }}
-                    className="flex-1"
+                    className="flex-1 rounded-full"
+                    data-testid="cancel-address-btn"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={loading} className="flex-1">
-                    {loading ? 'Saving...' : editingAddress ? 'Update' : 'Add Address'}
+                  <Button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="flex-1 rounded-full"
+                    data-testid="save-address-btn"
+                  >
+                    {loading ? 'Saving...' : editingAddress ? 'Update Address' : 'Save Address'}
                   </Button>
                 </div>
               </form>
