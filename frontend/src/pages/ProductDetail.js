@@ -109,8 +109,8 @@ const ProductDetail = () => {
                 {product.name}
               </h1>
               <div className="flex items-center gap-4 mb-6">
-                <div className="text-4xl font-bold text-primary">\u20b9{product.price}</div>
-                <div className="text-muted-foreground">per 5\u00d77 inch tray</div>
+                <div className="text-4xl font-bold text-primary">₹{product.price}</div>
+                <div className="text-muted-foreground">per 5×7 inch tray</div>
               </div>
               <div className="flex items-center gap-4 text-muted-foreground">
                 <div className="flex items-center gap-2">
