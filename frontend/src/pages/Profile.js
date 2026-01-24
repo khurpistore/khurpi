@@ -1,301 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { User, MapPin, CreditCard, Plus, Trash2, Edit2, Star } from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
-import { format } from 'date-fns';
-import LocationPicker from '@/components/LocationPicker';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { User, MapPin, ShoppingBag, CalendarCheck, ChevronRight } from 'lucide-react';
 
 const Profile = () => {
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showAddAddress, setShowAddAddress] = useState(false);
-  const [editingAddress, setEditingAddress] = useState(null);
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { user, addresses, addAddress, updateAddressById, deleteAddress, setDefaultAddress, logout, fetchAddresses } = useAuth();
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    fetchPayments();
-    fetchAddresses();
-  }, [user, navigate]);
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
 
-  const fetchPayments = async () => {
-    try {
-      const response = await axios.get(`${API}/payments?user_id=${user.id}`);
-      setPayments(response.data);
-    } catch (error) {
-      console.error('Failed to load payments');
-    }
-  };
-
-  const handleAddAddress = async (addressData) => {
-    setLoading(true);
-    try {
-      await addAddress(addressData);
-      setShowAddAddress(false);
-      toast.success('Address added successfully');
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add address');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateAddress = async (addressData) => {
-    if (!editingAddress) return;
-    setLoading(true);
-    try {
-      await updateAddressById(editingAddress.id, addressData);
-      setEditingAddress(null);
-      toast.success('Address updated successfully');
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update address');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteAddress = async (addressId) => {
-    if (!window.confirm('Are you sure you want to delete this address?')) return;
-    try {
-      await deleteAddress(addressId);
-      toast.success('Address deleted successfully');
-    } catch (error) {
-      toast.error('Failed to delete address');
-    }
-  };
-
-  const handleSetDefault = async (addressId) => {
-    try {
-      await setDefaultAddress(addressId);
-      toast.success('Default address updated');
-    } catch (error) {
-      toast.error('Failed to set default address');
-    }
-  };
-
-  const handleLogout = () => {
-    logout();
-    toast.success('Logged out successfully');
-    navigate('/');
-  };
+  const quickLinks = [
+    { label: 'My Orders', icon: ShoppingBag, path: '/orders', description: 'View your order history' },
+    { label: 'My Subscriptions', icon: CalendarCheck, path: '/subscriptions', description: 'Manage your subscriptions' },
+    { label: 'My Addresses', icon: MapPin, path: '/addresses', description: 'Manage delivery addresses' },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-        <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8 heading-text">My Profile</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-6 sm:mb-8 flex items-center gap-2">
+          <User className="w-7 h-7" />
+          My Profile
+        </h1>
 
         <div className="space-y-4 sm:space-y-6">
           {/* Personal Information */}
           <Card>
             <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <h3 className="text-lg sm:text-xl font-semibold text-primary heading-text">Personal Information</h3>
-              </div>
+              <h3 className="text-lg font-semibold text-primary mb-4">Personal Information</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm">Full Name</Label>
-                  <Input value={user?.name || ''} disabled className="mt-1" />
+                  <Label className="text-sm text-muted-foreground">Full Name</Label>
+                  <Input value={user?.name || ''} disabled className="mt-1 bg-gray-50" />
                 </div>
                 <div>
-                  <Label className="text-sm">Phone Number</Label>
-                  <Input value={user?.phone || ''} disabled className="mt-1" />
+                  <Label className="text-sm text-muted-foreground">Phone Number</Label>
+                  <Input value={user?.phone || ''} disabled className="mt-1 bg-gray-50" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Delivery Addresses */}
+          {/* Quick Links */}
           <Card>
             <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                  <h3 className="text-lg sm:text-xl font-semibold text-primary heading-text">Delivery Addresses</h3>
-                </div>
-                {!showAddAddress && !editingAddress && (
+              <h3 className="text-lg font-semibold text-primary mb-4">Quick Links</h3>
+              <div className="space-y-2">
+                {quickLinks.map((link) => (
                   <Button
-                    data-testid="add-address-button"
-                    onClick={() => setShowAddAddress(true)}
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 rounded-full w-full sm:w-auto"
+                    key={link.path}
+                    variant="ghost"
+                    className="w-full justify-between p-4 h-auto hover:bg-green-50"
+                    onClick={() => navigate(link.path)}
                   >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Address
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <link.icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-medium">{link.label}</p>
+                        <p className="text-sm text-muted-foreground">{link.description}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </Button>
-                )}
+                ))}
               </div>
-
-              {/* Add New Address Form */}
-              {showAddAddress && (
-                <div className="mb-4">
-                  <LocationPicker
-                    onSave={handleAddAddress}
-                    onCancel={() => setShowAddAddress(false)}
-                    loading={loading}
-                    showSetDefault={addresses.length > 0}
-                    isDefault={addresses.length === 0}
-                  />
-                </div>
-              )}
-
-              {/* Edit Address Form */}
-              {editingAddress && (
-                <div className="mb-4">
-                  <LocationPicker
-                    initialData={{
-                      address_line: editingAddress.address_line,
-                      latitude: editingAddress.latitude,
-                      longitude: editingAddress.longitude
-                    }}
-                    onSave={handleUpdateAddress}
-                    onCancel={() => setEditingAddress(null)}
-                    loading={loading}
-                    isEdit={true}
-                    showSetDefault={true}
-                    isDefault={editingAddress.is_default}
-                  />
-                </div>
-              )}
-
-              {/* Address List */}
-              {!showAddAddress && !editingAddress && (
-                <div className="space-y-3">
-                  {addresses.length === 0 ? (
-                    <div className="text-center py-6 sm:py-8 bg-green-50 rounded-lg">
-                      <MapPin className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground text-sm sm:text-base">No addresses added yet</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">Add your first delivery address</p>
-                    </div>
-                  ) : (
-                    addresses.map((addr) => (
-                      <div
-                        key={addr.id}
-                        data-testid={`address-${addr.id}`}
-                        className={`p-3 sm:p-4 rounded-lg border ${
-                          addr.is_default ? 'border-primary bg-green-50' : 'border-gray-200 bg-white'
-                        }`}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              {addr.is_default && (
-                                <Badge className="bg-primary text-white text-xs">
-                                  <Star className="w-3 h-3 mr-1" />
-                                  Default
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line break-words">
-                              {addr.address_line}
-                            </p>
-                            {addr.latitude && addr.longitude && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Location: {addr.latitude.toFixed(4)}, {addr.longitude.toFixed(4)}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex flex-row sm:flex-col gap-2">
-                            {!addr.is_default && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleSetDefault(addr.id)}
-                                className="text-xs flex-1 sm:flex-none"
-                              >
-                                Set Default
-                              </Button>
-                            )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingAddress(addr)}
-                              className="text-xs flex-1 sm:flex-none"
-                            >
-                              <Edit2 className="w-3 h-3 mr-1" />
-                              Edit
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeleteAddress(addr.id)}
-                              className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 flex-1 sm:flex-none"
-                            >
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
 
-          {/* Payment History */}
+          {/* Account Created */}
           <Card>
             <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <h3 className="text-lg sm:text-xl font-semibold text-primary heading-text">Payment History</h3>
+              <div className="text-center text-sm text-muted-foreground">
+                <p>Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : 'N/A'}</p>
               </div>
-              {payments.length === 0 ? (
-                <div className="text-center py-6 bg-gray-50 rounded-lg">
-                  <p className="text-muted-foreground text-sm sm:text-base">No payment history yet</p>
-                </div>
-              ) : (
-                <div className="space-y-3" data-testid="payment-history">
-                  {payments.map((payment) => (
-                    <div
-                      key={payment.id}
-                      data-testid={`payment-${payment.id}`}
-                      className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium text-primary text-sm sm:text-base">₹{payment.amount}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          {format(new Date(payment.payment_date), 'PPP')}
-                        </p>
-                      </div>
-                      <Badge
-                        className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-                      >
-                        {payment.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Logout */}
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <Button
-                data-testid="logout-button"
-                onClick={handleLogout}
-                variant="destructive"
-                className="w-full rounded-full"
-              >
-                Logout
-              </Button>
             </CardContent>
           </Card>
         </div>
