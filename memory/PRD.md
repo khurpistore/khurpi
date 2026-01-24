@@ -23,8 +23,22 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - **Subscription Creation:** 3-step wizard with plan selection and discounts
 - **Profile:** Manage personal info, multiple addresses with map selection
 - **My Subscriptions:** View and manage active subscriptions
+- **My Orders:** View order history with status, items, and delivery details
+- **Addresses Page:** Dedicated page to manage multiple delivery addresses with map picker
 
-### 2. Admin Panel
+### 2. Navigation & UX
+- **Header Menu (Desktop):**
+  - Subscribe & Save (prominent CTA)
+  - Products
+  - Notification bell with unread count badge
+  - User dropdown menu (My Orders, My Subscriptions, Addresses, Profile, Logout)
+  - Cart icon with item count badge
+- **Header Menu (Mobile):**
+  - Notification bell icon
+  - Cart icon
+  - Hamburger menu with full navigation
+
+### 3. Admin Panel
 - **Dashboard:** Key metrics (subscriptions, revenue, deliveries)
 - **User Management:** CRUD operations for users
 - **Product Management:** CRUD for microgreens (name, price, stock, growth days)
@@ -34,7 +48,7 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - **Inventory Planning:** Stock requirements based on subscriptions
 - **Settings Management:** Shop config, delivery pricing, subscription plans
 
-### 3. Pricing System
+### 4. Pricing System
 
 #### Delivery Pricing (Distance-Based)
 | Distance from Shop | Delivery Fee |
