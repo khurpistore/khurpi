@@ -1155,7 +1155,13 @@ async def add_user_address(user_id: str, address_data: AddressCreate):
     address_doc = {
         "id": str(uuid.uuid4()),
         "user_id": user_id,
+        "name": address_data.name,
         "address_line": address_data.address_line,
+        "address_line_1": address_data.address_line_1,
+        "address_line_2": address_data.address_line_2,
+        "area": address_data.area,
+        "city": address_data.city or "NOIDA",
+        "pincode": address_data.pincode,
         "latitude": address_data.latitude,
         "longitude": address_data.longitude,
         "is_default": address_data.is_default or existing_count == 0,  # First address is always default
