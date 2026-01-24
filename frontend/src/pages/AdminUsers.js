@@ -12,46 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { LayoutDashboard, Package, Users, TrendingUp, Search, Pencil, Trash2, UserPlus } from 'lucide-react';
+import { Search, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-const AdminSidebar = ({ active, navigate }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-    { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
-    { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
-    { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
-    { id: 'payments', label: 'Payments', icon: TrendingUp, path: '/admin/payments' },
-    { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
-  ];
-
-  return (
-    <div className="w-64 bg-primary text-white min-h-screen p-6">
-      <h2 className="text-2xl font-bold mb-8 heading-text">Khurpi Admin</h2>
-      <nav className="space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                active === item.id ? 'bg-white/20' : 'hover:bg-white/10'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
-};
 
 const UserDialog = ({ user, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -81,7 +47,7 @@ const UserDialog = ({ user, onClose, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="name">Name</Label>
+        <Label htmlFor="name" className="text-sm">Name</Label>
         <Input
           id="name"
           data-testid="user-name-input"
@@ -92,7 +58,7 @@ const UserDialog = ({ user, onClose, onSuccess }) => {
         />
       </div>
       <div>
-        <Label htmlFor="phone">Phone</Label>
+        <Label htmlFor="phone" className="text-sm">Phone</Label>
         <Input
           id="phone"
           data-testid="user-phone-input"
@@ -103,7 +69,7 @@ const UserDialog = ({ user, onClose, onSuccess }) => {
         />
       </div>
       <div>
-        <Label htmlFor="address">Address</Label>
+        <Label htmlFor="address" className="text-sm">Address</Label>
         <Textarea
           id="address"
           data-testid="user-address-input"
@@ -113,7 +79,7 @@ const UserDialog = ({ user, onClose, onSuccess }) => {
         />
       </div>
       <div>
-        <Label htmlFor="role">Role</Label>
+        <Label htmlFor="role" className="text-sm">Role</Label>
         <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
           <SelectTrigger data-testid="user-role-select" className="mt-1">
             <SelectValue />
@@ -205,153 +171,150 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <AdminSidebar active="users" navigate={navigate} />
-      <div className="flex-1 p-8 bg-background">
-        <h1 className="text-4xl font-bold text-primary mb-8 heading-text">User Management</h1>
-
-        <div className="mb-6 flex gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              data-testid="search-users-input"
-              placeholder="Search by name, phone, or user ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger data-testid="role-filter-select" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="customer">Customer</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
+    <AdminLayout active="users" title="User Management">
+      {/* Filters */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+          <Input
+            data-testid="search-users-input"
+            placeholder="Search by name, phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 sm:pl-10"
+          />
         </div>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger data-testid="role-filter-select" className="w-full sm:w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Roles</SelectItem>
+            <SelectItem value="customer">Customer</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {loading ? (
-          <p className="text-muted-foreground">Loading users...</p>
-        ) : filteredUsers.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-muted-foreground">
-                {searchTerm || roleFilter !== 'all' ? 'No users match your filters' : 'No users found'}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="admin-users-grid">
-            {filteredUsers.map((u) => (
-              <Card key={u.id} data-testid={`admin-user-card-${u.id}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-primary heading-text">{u.name}</h3>
-                      <Badge className={u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
-                        {u.role}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-2 text-sm mb-4">
-                    <div>
-                      <p className="text-muted-foreground">Phone</p>
-                      <p className="font-medium">{u.phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Address</p>
-                      <p className="font-medium">{u.address || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Joined</p>
-                      <p className="font-medium">{format(new Date(u.created_at), 'PP')}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Dialog open={dialogOpen && selectedUser?.id === u.id} onOpenChange={setDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          data-testid={`edit-user-button-${u.id}`}
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openDialog(u)}
-                          className="flex-1 rounded-full"
-                        >
-                          <Pencil className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle className="heading-text">Edit User</DialogTitle>
-                        </DialogHeader>
-                        {selectedUser && (
-                          <UserDialog
-                            user={selectedUser}
-                            onClose={() => setDialogOpen(false)}
-                            onSuccess={fetchUsers}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          data-testid={`delete-user-button-${u.id}`}
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 rounded-full text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete User?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete {u.name} and all associated data. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(u.id)}
-                            className="bg-destructive text-destructive-foreground"
-                          >
-                            Delete User
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      {/* Stats Summary - Mobile Friendly */}
+      <div className="mb-6 p-3 sm:p-4 bg-white rounded-lg border border-border">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-primary">{users.length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
           </div>
-        )}
-
-        <div className="mt-6 p-4 bg-background rounded-lg border border-border">
-          <div className="grid md:grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-primary">{users.length}</p>
-              <p className="text-sm text-muted-foreground">Total Users</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-600">{users.filter(u => u.role === 'customer').length}</p>
-              <p className="text-sm text-muted-foreground">Customers</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-600">{users.filter(u => u.role === 'admin').length}</p>
-              <p className="text-sm text-muted-foreground">Admins</p>
-            </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-blue-600">{users.filter(u => u.role === 'customer').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Customers</p>
+          </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-purple-600">{users.filter(u => u.role === 'admin').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Admins</p>
           </div>
         </div>
       </div>
-    </div>
+
+      {loading ? (
+        <p className="text-muted-foreground">Loading users...</p>
+      ) : filteredUsers.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 sm:p-12 text-center">
+            <p className="text-muted-foreground">
+              {searchTerm || roleFilter !== 'all' ? 'No users match your filters' : 'No users found'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" data-testid="admin-users-grid">
+          {filteredUsers.map((u) => (
+            <Card key={u.id} data-testid={`admin-user-card-${u.id}`}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-xl font-semibold text-primary heading-text truncate">{u.name}</h3>
+                    <Badge className={`mt-1 ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                      {u.role}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="space-y-2 text-xs sm:text-sm mb-3 sm:mb-4">
+                  <div>
+                    <p className="text-muted-foreground">Phone</p>
+                    <p className="font-medium truncate">{u.phone}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Address</p>
+                    <p className="font-medium line-clamp-2">{u.address || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Joined</p>
+                    <p className="font-medium">{format(new Date(u.created_at), 'PP')}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Dialog open={dialogOpen && selectedUser?.id === u.id} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        data-testid={`edit-user-button-${u.id}`}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDialog(u)}
+                        className="flex-1 rounded-full text-xs sm:text-sm"
+                      >
+                        <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        Edit
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+                      <DialogHeader>
+                        <DialogTitle className="heading-text">Edit User</DialogTitle>
+                      </DialogHeader>
+                      {selectedUser && (
+                        <UserDialog
+                          user={selectedUser}
+                          onClose={() => setDialogOpen(false)}
+                          onSuccess={fetchUsers}
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        data-testid={`delete-user-button-${u.id}`}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 rounded-full text-destructive text-xs sm:text-sm"
+                      >
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="mx-4 sm:mx-auto">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete User?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete {u.name} and all associated data.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(u.id)}
+                          className="bg-destructive text-destructive-foreground"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </AdminLayout>
   );
 };
 

@@ -10,45 +10,11 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, LayoutDashboard, Package, Users, TrendingUp, CreditCard } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-const AdminSidebar = ({ active, navigate }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-    { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
-    { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
-    { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
-    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-    { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' }
-  ];
-
-  return (
-    <div className="w-64 bg-primary text-white min-h-screen p-6">
-      <h2 className="text-2xl font-bold mb-8 heading-text">Khurpi Admin</h2>
-      <nav className="space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                active === item.id ? 'bg-white/20' : 'hover:bg-white/10'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
-};
 
 const ProductDialog = ({ product, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -85,9 +51,9 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 max-h-[70vh] overflow-y-auto">
       <div>
-        <Label htmlFor="name">Product Name</Label>
+        <Label htmlFor="name" className="text-sm">Product Name</Label>
         <Input
           id="name"
           data-testid="product-name-input"
@@ -98,7 +64,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
         />
       </div>
       <div>
-        <Label htmlFor="image">Image URL</Label>
+        <Label htmlFor="image" className="text-sm">Image URL</Label>
         <Input
           id="image"
           data-testid="product-image-input"
@@ -109,30 +75,30 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
         />
       </div>
       <div>
-        <Label htmlFor="benefit">Health Benefit</Label>
+        <Label htmlFor="benefit" className="text-sm">Health Benefit</Label>
         <Textarea
           id="benefit"
           data-testid="product-benefit-input"
           value={formData.benefit}
           onChange={(e) => setFormData({ ...formData, benefit: e.target.value })}
           required
-          className="mt-1"
+          className="mt-1 min-h-[60px]"
         />
       </div>
       <div>
-        <Label htmlFor="nutrients">Nutritional Profile (Format: Category: Values | Category: Values)</Label>
+        <Label htmlFor="nutrients" className="text-sm">Nutritional Profile</Label>
         <Textarea
           id="nutrients"
           data-testid="product-nutrients-input"
           value={formData.nutrients}
           onChange={(e) => setFormData({ ...formData, nutrients: e.target.value })}
-          placeholder="Vitamins: A, C, K | Minerals: Calcium, Iron | Protein: 7g per 100g"
-          className="mt-1"
+          placeholder="Vitamins: A, C, K | Minerals: Calcium, Iron"
+          className="mt-1 min-h-[60px]"
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <Label htmlFor="price">Price (₹)</Label>
+          <Label htmlFor="price" className="text-sm">Price (₹)</Label>
           <Input
             id="price"
             data-testid="product-price-input"
@@ -145,7 +111,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           />
         </div>
         <div>
-          <Label htmlFor="growth_days">Growth Days</Label>
+          <Label htmlFor="growth_days" className="text-sm">Growth Days</Label>
           <Input
             id="growth_days"
             data-testid="product-growth-days-input"
@@ -158,7 +124,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
         </div>
       </div>
       <div>
-        <Label htmlFor="stock">Stock Quantity</Label>
+        <Label htmlFor="stock" className="text-sm">Stock Quantity</Label>
         <Input
           id="stock"
           data-testid="product-stock-input"
@@ -176,7 +142,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           checked={formData.active}
           onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
         />
-        <Label>Active</Label>
+        <Label className="text-sm">Active</Label>
       </div>
       <Button
         data-testid="save-product-button"
@@ -235,96 +201,92 @@ const AdminProducts = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <AdminSidebar active="products" navigate={navigate} />
-      <div className="flex-1 p-8 bg-background">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-primary heading-text">Manage Products</h1>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                data-testid="add-product-button"
-                onClick={() => openDialog()}
-                className="bg-primary hover:bg-primary/90 rounded-full"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Product
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="heading-text">
-                  {selectedProduct ? 'Edit Product' : 'Add New Product'}
-                </DialogTitle>
-              </DialogHeader>
-              <ProductDialog
-                product={selectedProduct}
-                onClose={() => setDialogOpen(false)}
-                onSuccess={fetchProducts}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {loading ? (
-          <p className="text-muted-foreground">Loading products...</p>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="admin-products-grid">
-            {products.map((product) => (
-              <Card key={product.id} data-testid={`admin-product-card-${product.id}`}>
-                <CardContent className="p-6">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-40 object-cover rounded-lg mb-4"
-                  />
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-primary heading-text">{product.name}</h3>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {product.active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">{product.benefit}</p>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-2xl font-bold text-primary">₹{product.price}</span>
-                    <span className="text-sm text-muted-foreground">{product.growth_days} days</span>
-                  </div>
-                  <div className="mb-4">
-                    <span className={`text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
-                      Stock: {product.stock} trays
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      data-testid={`edit-product-button-${product.id}`}
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openDialog(product)}
-                      className="flex-1 rounded-full"
-                    >
-                      <Pencil className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      data-testid={`delete-product-button-${product.id}`}
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(product.id)}
-                      className="flex-1 rounded-full text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+    <AdminLayout active="products" title="Manage Products">
+      <div className="flex flex-col sm:flex-row sm:justify-end gap-4 mb-6">
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              data-testid="add-product-button"
+              onClick={() => openDialog()}
+              className="bg-primary hover:bg-primary/90 rounded-full w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Product
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+            <DialogHeader>
+              <DialogTitle className="heading-text">
+                {selectedProduct ? 'Edit Product' : 'Add New Product'}
+              </DialogTitle>
+            </DialogHeader>
+            <ProductDialog
+              product={selectedProduct}
+              onClose={() => setDialogOpen(false)}
+              onSuccess={fetchProducts}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
-    </div>
+
+      {loading ? (
+        <p className="text-muted-foreground">Loading products...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" data-testid="admin-products-grid">
+          {products.map((product) => (
+            <Card key={product.id} data-testid={`admin-product-card-${product.id}`}>
+              <CardContent className="p-4 sm:p-6">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-32 sm:h-40 object-cover rounded-lg mb-3 sm:mb-4"
+                />
+                <div className="flex items-start justify-between mb-2 gap-2">
+                  <h3 className="text-base sm:text-xl font-semibold text-primary heading-text truncate">{product.name}</h3>
+                  <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                    product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {product.active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{product.benefit}</p>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-lg sm:text-2xl font-bold text-primary">₹{product.price}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">{product.growth_days} days</span>
+                </div>
+                <div className="mb-3 sm:mb-4">
+                  <span className={`text-xs sm:text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
+                    Stock: {product.stock} trays
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    data-testid={`edit-product-button-${product.id}`}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openDialog(product)}
+                    className="flex-1 rounded-full text-xs sm:text-sm"
+                  >
+                    <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    data-testid={`delete-product-button-${product.id}`}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDelete(product.id)}
+                    className="flex-1 rounded-full text-destructive text-xs sm:text-sm"
+                  >
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </AdminLayout>
   );
 };
 
