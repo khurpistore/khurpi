@@ -1678,6 +1678,91 @@ async def apply_referral_code(code: str, user_id: str, order_id: str, order_amou
         "commission_earned": commission_amount
     }
 
+# ============ CUSTOMER REFERRAL APIs ============
+
+@api_router.get("/user/{user_id}/referral")
+async def get_user_referral(user_id: str):
+    """Get customer's own referral code and stats"""
+    # Check if user has a referral code (stored in referrers collection with user_id link)
+    referrer = await db.referrers.find_one({"user_id": user_id}, {"_id": 0})
+    
+    if not referrer:
+        raise HTTPException(status_code=404, detail="No referral code found")
+    
+    # Calculate stats
+    referrals = await db.referrals.find({"referrer_id": referrer["id"]}, {"_id": 0}).to_list(1000)
+    total_referrals = len(referrals)
+    total_earned = sum(r.get("commission_amount", 0) for r in referrals)
+    pending_amount = sum(r.get("commission_amount", 0) for r in referrals if not r.get("is_paid"))
+    
+    return {
+        "referral_code": referrer["referral_code"],
+        "commission_rate": referrer["commission_rate"],
+        "total_referrals": total_referrals,
+        "total_earned": total_earned,
+        "pending_amount": pending_amount,
+        "is_active": referrer["is_active"],
+        "created_at": referrer["created_at"]
+    }
+
+@api_router.post("/user/{user_id}/referral/generate")
+async def generate_user_referral(user_id: str):
+    """Generate a referral code for a customer"""
+    import uuid
+    import random
+    import string
+    
+    # Get user details
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user already has a referral code
+    existing = await db.referrers.find_one({"user_id": user_id}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have a referral code")
+    
+    # Generate unique referral code based on user's name
+    name_prefix = ''.join(c for c in user.get("name", "USER")[:4].upper() if c.isalpha())
+    if len(name_prefix) < 3:
+        name_prefix = "REF"
+    
+    # Add random suffix
+    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    referral_code = f"{name_prefix}{suffix}"
+    
+    # Ensure uniqueness
+    while await db.referrers.find_one({"referral_code": referral_code}):
+        suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+        referral_code = f"{name_prefix}{suffix}"
+    
+    # Create referrer entry linked to user
+    referrer_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "name": user.get("name", "Customer"),
+        "phone": user.get("phone", ""),
+        "email": user.get("email"),
+        "commission_rate": 10,  # Default 10% commission for customers
+        "referral_code": referral_code,
+        "is_active": True,
+        "is_customer": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.referrers.insert_one(referrer_doc)
+    
+    return {
+        "referral_code": referral_code,
+        "commission_rate": 10,
+        "total_referrals": 0,
+        "total_earned": 0,
+        "pending_amount": 0,
+        "is_active": True,
+        "created_at": referrer_doc["created_at"],
+        "message": "Referral code generated successfully!"
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
