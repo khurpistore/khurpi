@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight, Sparkles, Tag, Truck } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
@@ -18,23 +19,24 @@ const API = `${BACKEND_URL}/api`;
 
 const STEPS = [
   { id: 1, title: 'Select Products' },
-  { id: 2, title: 'Schedule' },
-  { id: 3, title: 'Review & Confirm' }
+  { id: 2, title: 'Choose Plan' },
+  { id: 3, title: 'Schedule & Review' }
 ];
 
 const SubscriptionCreate = () => {
   const [step, setStep] = useState(1);
   const [products, setProducts] = useState([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
-  const [trayCount, setTrayCount] = useState(1);
-  const [frequency, setFrequency] = useState('weekly');
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [deliveryDay, setDeliveryDay] = useState('Monday');
   const [startDate, setStartDate] = useState(null);
   const [loading, setLoading] = useState(false);
   const [stockWarning, setStockWarning] = useState(null);
   const [minStartDate, setMinStartDate] = useState(new Date());
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, addresses } = useAuth();
 
   useEffect(() => {
     if (!user) {
@@ -42,6 +44,8 @@ const SubscriptionCreate = () => {
       return;
     }
     fetchProducts();
+    fetchSubscriptionPlans();
+    fetchDeliveryInfo();
   }, [user, navigate]);
 
   useEffect(() => {
@@ -59,6 +63,38 @@ const SubscriptionCreate = () => {
       setProducts(response.data);
     } catch (error) {
       toast.error('Failed to load products');
+    }
+  };
+
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const response = await axios.get(`${API}/settings/subscription-plans`);
+      setSubscriptionPlans(response.data);
+      // Select the first plan by default
+      if (response.data.length > 0) {
+        setSelectedPlan(response.data[0]);
+      }
+    } catch (error) {
+      // Use default plans
+      setSubscriptionPlans([
+        { id: 'weekly', name: 'Weekly (1x/week)', frequency: 'weekly', deliveries_per_week: 1, discount: 5, description: 'Perfect for trying out' },
+        { id: 'twice_weekly', name: 'Twice Weekly (2x/week)', frequency: 'twice_weekly', deliveries_per_week: 2, discount: 10, description: 'Most popular choice' },
+        { id: 'six_days', name: 'Daily (6 days/week)', frequency: 'six_days', deliveries_per_week: 6, discount: 25, description: 'Best value - Maximum freshness' }
+      ]);
+    }
+  };
+
+  const fetchDeliveryInfo = async () => {
+    const defaultAddress = addresses?.find(a => a.is_default);
+    if (defaultAddress?.latitude && defaultAddress?.longitude) {
+      try {
+        const response = await axios.post(
+          `${API}/settings/calculate-delivery-fee?lat=${defaultAddress.latitude}&lon=${defaultAddress.longitude}`
+        );
+        setDeliveryInfo(response.data);
+      } catch (error) {
+        console.error('Failed to calculate delivery');
+      }
     }
   };
 
@@ -114,12 +150,12 @@ const SubscriptionCreate = () => {
   const updateQuantity = (productId, quantity) => {
     setSelectedProducts(
       selectedProducts.map(p =>
-        p.product_id === productId ? { ...p, quantity: parseInt(quantity) } : p
+        p.product_id === productId ? { ...p, quantity: parseInt(quantity) || 1 } : p
       )
     );
   };
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     let total = 0;
     selectedProducts.forEach(item => {
       const product = products.find(p => p.id === item.product_id);
@@ -130,8 +166,17 @@ const SubscriptionCreate = () => {
     return total;
   };
 
+  const calculateDiscount = () => {
+    if (!selectedPlan) return 0;
+    return (calculateSubtotal() * selectedPlan.discount) / 100;
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal() - calculateDiscount();
+  };
+
   const handleSubmit = async () => {
-    if (!user?.address) {
+    if (!user?.address && addresses.length === 0) {
       toast.error('Please add your address in profile before subscribing');
       navigate('/profile');
       return;
@@ -147,16 +192,22 @@ const SubscriptionCreate = () => {
       return;
     }
 
+    if (!selectedPlan) {
+      toast.error('Please select a subscription plan');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const subscriptionData = {
-        frequency,
+        frequency: selectedPlan.frequency,
         delivery_day: deliveryDay,
         start_date: format(startDate, 'yyyy-MM-dd'),
-        tray_count: trayCount,
+        tray_count: selectedProducts.reduce((sum, p) => sum + p.quantity, 0),
         items: selectedProducts,
-        total_price: calculateTotal()
+        total_price: calculateTotal(),
+        plan_id: selectedPlan.id
       };
 
       await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
@@ -165,10 +216,6 @@ const SubscriptionCreate = () => {
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 'Failed to create subscription';
       toast.error(errorMsg);
-      
-      if (errorMsg.includes('out of stock')) {
-        toast.info('Please select a later start date for out-of-stock products');
-      }
     } finally {
       setLoading(false);
     }
@@ -176,7 +223,7 @@ const SubscriptionCreate = () => {
 
   const canGoNext = () => {
     if (step === 1) return selectedProducts.length > 0;
-    if (step === 2) return startDate !== null;
+    if (step === 2) return selectedPlan !== null;
     return true;
   };
 
@@ -219,7 +266,7 @@ const SubscriptionCreate = () => {
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || !startDate}
                 className="bg-primary hover:bg-primary/90 rounded-full"
               >
                 {loading ? 'Processing...' : 'Confirm'}
@@ -265,9 +312,10 @@ const SubscriptionCreate = () => {
       {/* Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <p className="text-xs sm:text-sm text-muted-foreground mb-6">
-          Delivering fresh microgreens in NOIDA area • Save 15% with subscription
+          Delivering fresh microgreens in NOIDA area • Free delivery on subscriptions within 1 km
         </p>
 
+        {/* Step 1: Select Products */}
         {step === 1 && (
           <div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
@@ -328,7 +376,95 @@ const SubscriptionCreate = () => {
           </div>
         )}
 
+        {/* Step 2: Choose Plan */}
         {step === 2 && (
+          <div>
+            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-green-600" />
+                <span className="font-semibold text-green-800">Subscription Benefits</span>
+              </div>
+              <ul className="text-sm text-green-700 space-y-1">
+                <li>✓ Save up to 25% on every delivery</li>
+                <li>✓ Free delivery on subscriptions (within 1 km)</li>
+                <li>✓ Pause or skip anytime</li>
+                <li>✓ Freshly harvested just for you</li>
+              </ul>
+            </div>
+
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Tag className="w-5 h-5 text-primary" />
+              Select Your Plan
+            </h3>
+
+            <RadioGroup value={selectedPlan?.id} onValueChange={(id) => setSelectedPlan(subscriptionPlans.find(p => p.id === id))}>
+              <div className="space-y-4">
+                {subscriptionPlans.map((plan) => (
+                  <Card 
+                    key={plan.id}
+                    className={`cursor-pointer transition-all ${
+                      selectedPlan?.id === plan.id ? 'border-2 border-primary shadow-md' : 'border'
+                    } ${plan.discount >= 20 ? 'bg-gradient-to-r from-green-50 to-amber-50' : ''}`}
+                    onClick={() => setSelectedPlan(plan)}
+                  >
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex items-start gap-4">
+                        <RadioGroupItem value={plan.id} id={plan.id} className="mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <Label htmlFor={plan.id} className="text-lg font-semibold cursor-pointer">
+                              {plan.name}
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              {plan.discount >= 20 && (
+                                <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+                                  BEST VALUE
+                                </span>
+                              )}
+                              <span className="px-3 py-1 bg-green-100 text-green-800 font-bold rounded-full">
+                                {plan.discount}% OFF
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
+                          <p className="text-sm mt-2">
+                            <span className="font-medium">{plan.deliveries_per_week} delivery{plan.deliveries_per_week > 1 ? 'ies' : ''}</span> per week
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </RadioGroup>
+
+            {/* Price Preview */}
+            {selectedPlan && selectedProducts.length > 0 && (
+              <Card className="mt-6 border-primary/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-3">Price Preview (per delivery)</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>₹{calculateSubtotal().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({selectedPlan.discount}%)</span>
+                      <span>-₹{calculateDiscount().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                      <span>You Pay</span>
+                      <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Step 3: Schedule & Review */}
+        {step === 3 && (
           <div>
             {stockWarning && (
               <Card className="mb-4 sm:mb-6 border-amber-200 bg-amber-50">
@@ -348,62 +484,10 @@ const SubscriptionCreate = () => {
                 </CardContent>
               </Card>
             )}
-            
-            <Card className="mb-4 sm:mb-6 border-secondary/30 bg-secondary/5">
-              <CardContent className="p-4 sm:p-6">
-                <h4 className="font-semibold text-primary mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
-                  <Package className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Selected Products
-                </h4>
-                <div className="space-y-2 sm:space-y-3">
-                  {selectedProducts.map((item) => {
-                    const product = products.find(p => p.id === item.product_id);
-                    return product ? (
-                      <div
-                        key={item.product_id}
-                        className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 bg-white rounded-lg border border-border"
-                      >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h5 className="font-semibold text-primary text-sm sm:text-base truncate">{product.name}</h5>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            {item.quantity} tray{item.quantity > 1 ? 's' : ''} × ₹{product.price}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-primary text-sm sm:text-base">₹{(product.price * item.quantity).toFixed(2)}</p>
-                        </div>
-                      </div>
-                    ) : null;
-                  })}
-                  <div className="border-t pt-3 flex justify-between items-center">
-                    <span className="font-semibold text-primary text-sm sm:text-base">Total per delivery</span>
-                    <span className="text-xl sm:text-2xl font-bold text-primary">₹{calculateTotal()}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                <div>
-                  <Label className="text-sm">Delivery Frequency</Label>
-                  <Select value={frequency} onValueChange={setFrequency}>
-                    <SelectTrigger data-testid="frequency-select" className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
+            {/* Schedule */}
+            <Card className="mb-6">
+              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div>
                   <Label className="text-sm">Preferred Delivery Day</Label>
                   <Select value={deliveryDay} onValueChange={setDeliveryDay}>
@@ -447,60 +531,86 @@ const SubscriptionCreate = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
 
-        {step === 3 && (
-          <div>
-            <Card className="mb-4 sm:mb-6">
+            {/* Order Summary */}
+            <Card className="mb-6">
               <CardContent className="p-4 sm:p-6">
-                <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4">Order Summary</h4>
-                <div className="space-y-2 sm:space-y-3">
+                <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Order Summary
+                </h4>
+                
+                {/* Products */}
+                <div className="space-y-2 mb-4">
                   {selectedProducts.map((item) => {
                     const product = products.find(p => p.id === item.product_id);
                     return product ? (
-                      <div key={item.product_id} className="flex justify-between text-sm sm:text-base">
-                        <span className="truncate pr-2">
-                          {product.name} × {item.quantity}
-                        </span>
-                        <span className="font-semibold flex-shrink-0">₹{product.price * item.quantity}</span>
+                      <div key={item.product_id} className="flex justify-between text-sm">
+                        <span>{product.name} × {item.quantity}</span>
+                        <span>₹{(product.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ) : null;
                   })}
-                  <div className="border-t pt-3 flex justify-between text-base sm:text-lg font-bold">
-                    <span>Total per delivery</span>
-                    <span data-testid="total-price">₹{calculateTotal()}</span>
-                  </div>
                 </div>
 
-                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t space-y-2">
-                  <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Frequency:</span>
-                    <span className="font-medium capitalize">{frequency}</span>
+                {/* Plan Details */}
+                {selectedPlan && (
+                  <div className="border-t pt-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Plan</span>
+                      <span className="font-medium">{selectedPlan.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span>₹{calculateSubtotal().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({selectedPlan.discount}%)</span>
+                      <span>-₹{calculateDiscount().toFixed(2)}</span>
+                    </div>
+                    {deliveryInfo && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Delivery</span>
+                        {deliveryInfo.fee === 0 ? (
+                          <span className="text-green-600">FREE</span>
+                        ) : (
+                          <span>₹{deliveryInfo.fee}</span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                      <span>Per Delivery Total</span>
+                      <span className="text-primary">₹{calculateTotal().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Delivery Day</span>
+                      <span className="font-medium">{deliveryDay}</span>
+                    </div>
+                    {startDate && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Start Date</span>
+                        <span className="font-medium">{format(startDate, 'PPP')}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Delivery Day:</span>
-                    <span className="font-medium">{deliveryDay}</span>
-                  </div>
-                  <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Start Date:</span>
-                    <span className="font-medium">{startDate ? format(startDate, 'PPP') : ''}</span>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="bg-green-50 border-green-200">
-              <CardContent className="p-4 sm:p-6">
-                <h4 className="font-semibold text-green-800 mb-2">Subscription Benefits</h4>
-                <ul className="text-sm text-green-700 space-y-1">
-                  <li>✓ Save 15% on every delivery</li>
-                  <li>✓ Free delivery on all orders</li>
-                  <li>✓ Pause or skip anytime</li>
-                  <li>✓ Freshly harvested just for you</li>
-                </ul>
-              </CardContent>
-            </Card>
+            {/* Savings Highlight */}
+            {selectedPlan && (
+              <Card className="bg-gradient-to-r from-green-100 to-green-50 border-green-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 text-green-800">
+                    <Sparkles className="w-5 h-5" />
+                    <span className="font-bold">You're saving ₹{calculateDiscount().toFixed(2)} per delivery!</span>
+                  </div>
+                  <p className="text-sm text-green-700 mt-1">
+                    That's ₹{(calculateDiscount() * 4).toFixed(2)} savings per month with {selectedPlan.name}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </div>
