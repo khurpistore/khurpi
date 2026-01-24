@@ -173,10 +173,13 @@ const SubscriptionCreate = () => {
     <div className="min-h-screen bg-background py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h2 className="text-4xl font-bold text-primary mb-4 heading-text">
+          <h2 className="text-4xl font-bold text-primary mb-2 heading-text">
             Create Your Subscription
           </h2>
-          <div className="flex gap-2">
+          <p className="text-sm text-muted-foreground">
+            🚚 Delivering fresh microgreens in NOIDA area
+          </p>
+          <div className="flex gap-2 mt-4">
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
