@@ -171,12 +171,17 @@ const SubscriptionCreate = () => {
     return (calculateSubtotal() * selectedPlan.discount) / 100;
   };
 
+  const getDeliveryFee = () => {
+    return deliveryInfo?.fee || 0;
+  };
+
   const calculateTotal = () => {
-    return calculateSubtotal() - calculateDiscount();
+    return calculateSubtotal() - calculateDiscount() + getDeliveryFee();
   };
 
   const handleSubmit = async () => {
-    if (!user?.address && addresses.length === 0) {
+    // Check if user has any addresses (new way) or legacy address
+    if (addresses.length === 0 && !user?.address) {
       toast.error('Please add your address in profile before subscribing');
       navigate('/profile');
       return;
@@ -200,6 +205,9 @@ const SubscriptionCreate = () => {
     setLoading(true);
 
     try {
+      // Get the default address id
+      const defaultAddress = addresses.find(a => a.is_default) || addresses[0];
+
       const subscriptionData = {
         frequency: selectedPlan.frequency,
         delivery_day: deliveryDay,
@@ -207,7 +215,8 @@ const SubscriptionCreate = () => {
         tray_count: selectedProducts.reduce((sum, p) => sum + p.quantity, 0),
         items: selectedProducts,
         total_price: calculateTotal(),
-        plan_id: selectedPlan.id
+        plan_id: selectedPlan.id,
+        address_id: defaultAddress?.id || null
       };
 
       await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
