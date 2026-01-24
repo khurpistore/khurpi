@@ -197,19 +197,19 @@ const ProductDetail = () => {
               <h4 className="font-semibold text-primary mb-3">Why Choose Khurpi Microgreens?</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span className="text-secondary mt-0.5">\u2713</span>
+                  <span className="text-secondary mt-0.5">✓</span>
                   <span>Harvested within 24 hours of delivery</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-secondary mt-0.5">\u2713</span>
+                  <span className="text-secondary mt-0.5">✓</span>
                   <span>Grown without pesticides or chemicals</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-secondary mt-0.5">\u2713</span>
+                  <span className="text-secondary mt-0.5">✓</span>
                   <span>Packed with nutrients - up to 40x more than mature plants</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-secondary mt-0.5">\u2713</span>
+                  <span className="text-secondary mt-0.5">✓</span>
                   <span>Flexible subscription with pause/skip options</span>
                 </li>
               </ul>
