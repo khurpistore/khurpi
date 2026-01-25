@@ -405,8 +405,15 @@ class OTPVerifyRequest(BaseModel):
     otp: str
     name: Optional[str] = None
 
-# Whitelisted phone numbers for testing (always receive OTP)
-WHITELISTED_PHONES = ["9971818259"]
+# Default whitelisted phone numbers for testing
+DEFAULT_WHITELISTED_PHONES = ["9971818259"]
+
+async def get_whitelisted_phones():
+    """Get whitelisted phones from DB or use defaults"""
+    settings = await db.settings.find_one({"type": "otp_whitelist"}, {"_id": 0})
+    if settings and settings.get("phones"):
+        return settings["phones"]
+    return DEFAULT_WHITELISTED_PHONES
 
 @api_router.post("/auth/send-otp")
 async def send_otp(data: OTPSendRequest):
@@ -416,6 +423,10 @@ async def send_otp(data: OTPSendRequest):
     # Validate phone number (Indian format)
     if not phone.isdigit() or len(phone) != 10:
         raise HTTPException(status_code=400, detail="Invalid phone number. Enter 10-digit mobile number.")
+    
+    # Check if phone is whitelisted
+    whitelisted_phones = await get_whitelisted_phones()
+    is_whitelisted = phone in whitelisted_phones
     
     # Generate 6-digit OTP
     otp = str(random.randint(100000, 999999))
