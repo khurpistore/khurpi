@@ -131,42 +131,89 @@ const MySubscriptions = () => {
           </Card>
         ) : (
           <div className="space-y-6" data-testid="subscriptions-list">
-            {subscriptions.map((subscription) => (
+            {subscriptions.map((subscription) => {
+              // Calculate monthly values
+              const deliveriesPerWeek = subscription.deliveries_per_week || getDeliveriesPerWeek(subscription.frequency);
+              const weeksPerMonth = 4;
+              const totalDeliveriesPerMonth = deliveriesPerWeek * weeksPerMonth;
+              const traysPerDelivery = subscription.tray_count || 1;
+              const totalTraysPerMonth = traysPerDelivery * totalDeliveriesPerMonth;
+              const planDiscount = subscription.plan_discount || getPlanDiscount(subscription.frequency);
+              const monthlyTotal = subscription.total_price || 0;
+              
+              return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`}>
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
+                  {/* Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-primary heading-text">
+                        <h3 className="text-lg sm:text-xl font-semibold text-primary">
                           Subscription #{subscription.id.slice(0, 8)}
                         </h3>
                         {getStatusBadge(subscription.status)}
                       </div>
-                      <div className="flex gap-6 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{getPlanDisplayName(subscription.frequency)}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>{subscription.delivery_day}</span>
-                        </div>
-                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Started {format(new Date(subscription.start_date || subscription.created_at), 'PP')}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">₹{subscription.total_price}</p>
-                      <p className="text-sm text-muted-foreground">per month</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-primary">₹{monthlyTotal}</p>
+                      <p className="text-xs text-muted-foreground">per month</p>
                     </div>
                   </div>
 
-                  {subscription.next_delivery_date && (
-                    <div className="bg-secondary/10 rounded-lg p-4 mb-4">
+                  {/* Monthly Breakdown */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                          <Clock className="w-3 h-3" />
+                          <span className="text-xs">Plan</span>
+                        </div>
+                        <p className="font-semibold text-sm">{getPlanDisplayName(subscription.frequency)}</p>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                          <Truck className="w-3 h-3" />
+                          <span className="text-xs">Deliveries</span>
+                        </div>
+                        <p className="font-semibold text-sm">{totalDeliveriesPerMonth}/month</p>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                          <Package className="w-3 h-3" />
+                          <span className="text-xs">Total Trays</span>
+                        </div>
+                        <p className="font-semibold text-sm">{totalTraysPerMonth}/month</p>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                          <Calendar className="w-3 h-3" />
+                          <span className="text-xs">Delivery Day</span>
+                        </div>
+                        <p className="font-semibold text-sm">{subscription.delivery_day}</p>
+                      </div>
+                    </div>
+                    
+                    {planDiscount > 0 && (
+                      <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-green-600">
+                        <Tag className="w-4 h-4" />
+                        <span className="text-sm font-medium">{planDiscount}% Plan Discount Applied</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Next Delivery */}
+                  {subscription.next_delivery_date && subscription.status === 'active' && (
+                    <div className="bg-primary/10 rounded-lg p-3 mb-4">
                       <p className="text-sm font-medium text-primary">
-                        Next Delivery: {format(new Date(subscription.next_delivery_date), 'PPP')}
+                        📦 Next Delivery: {format(new Date(subscription.next_delivery_date), 'PPPP')}
                       </p>
                     </div>
                   )}
 
+                  {/* Actions */}
                   <div className="flex gap-2 flex-wrap">
                     <Button
                       data-testid={`view-details-button-${subscription.id}`}
@@ -250,7 +297,8 @@ const MySubscriptions = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
