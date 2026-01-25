@@ -887,8 +887,8 @@ const SubscriptionCreate = () => {
                       <span className="text-primary">₹{calculateTotal().toFixed(2)}/month</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Delivery Day</span>
-                      <span className="font-medium">{deliveryDay}</span>
+                      <span className="text-muted-foreground">Delivery Days</span>
+                      <span className="font-medium">{deliveryDays.join(', ')}</span>
                     </div>
                     {startDate && (
                       <div className="flex justify-between text-sm">
