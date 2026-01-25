@@ -611,7 +611,7 @@ const SubscriptionCreate = () => {
               Select Your Plan
             </h3>
 
-            <RadioGroup value={selectedPlan?.id} onValueChange={(id) => setSelectedPlan(subscriptionPlans.find(p => p.id === id))}>
+            <RadioGroup value={selectedPlan?.id} onValueChange={(id) => handlePlanChange(subscriptionPlans.find(p => p.id === id))}>
               <div className="space-y-4">
                 {subscriptionPlans.map((plan) => (
                   <Card 
@@ -619,7 +619,7 @@ const SubscriptionCreate = () => {
                     className={`cursor-pointer transition-all ${
                       selectedPlan?.id === plan.id ? 'border-2 border-primary shadow-md' : 'border'
                     } ${plan.discount >= 40 ? 'bg-gradient-to-r from-green-50 to-amber-50' : ''}`}
-                    onClick={() => setSelectedPlan(plan)}
+                    onClick={() => handlePlanChange(plan)}
                   >
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex items-start gap-4">
