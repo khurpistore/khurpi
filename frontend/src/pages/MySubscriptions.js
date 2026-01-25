@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Calendar, Package, Clock } from 'lucide-react';
+import { Calendar, Package, Clock, Truck, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -24,6 +24,32 @@ const getPlanDisplayName = (frequency) => {
     'four_days': '4 Days a Week'
   };
   return planNames[frequency] || frequency;
+};
+
+// Get deliveries per week based on frequency
+const getDeliveriesPerWeek = (frequency) => {
+  const deliveries = {
+    'once_week': 1,
+    'twice_week': 2,
+    'four_days_week': 4,
+    'weekly': 1,
+    'twice_weekly': 2,
+    'four_days': 4
+  };
+  return deliveries[frequency] || 1;
+};
+
+// Get plan discount
+const getPlanDiscount = (frequency) => {
+  const discounts = {
+    'once_week': 0,
+    'twice_week': 10,
+    'four_days_week': 50,
+    'weekly': 0,
+    'twice_weekly': 10,
+    'four_days': 50
+  };
+  return discounts[frequency] || 0;
 };
 
 const MySubscriptions = () => {
