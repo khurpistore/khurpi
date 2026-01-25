@@ -405,9 +405,12 @@ class OTPVerifyRequest(BaseModel):
     otp: str
     name: Optional[str] = None
 
+# Whitelisted phone numbers for testing (always receive OTP)
+WHITELISTED_PHONES = ["9971818259"]
+
 @api_router.post("/auth/send-otp")
 async def send_otp(data: OTPSendRequest):
-    """Send OTP via MSG91 WhatsApp"""
+    """Send OTP via MSG91"""
     phone = data.phone.strip()
     
     # Validate phone number (Indian format)
@@ -429,6 +432,9 @@ async def send_otp(data: OTPSendRequest):
     # Remove any existing OTPs for this phone
     await db.otps.delete_many({"phone": phone})
     await db.otps.insert_one(otp_doc)
+    
+    # Check if phone is whitelisted (for testing)
+    is_whitelisted = phone in WHITELISTED_PHONES
     
     # Send OTP via MSG91
     if MSG91_AUTH_KEY:
