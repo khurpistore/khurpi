@@ -873,12 +873,12 @@ const SubscriptionCreate = () => {
                     )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground flex items-center gap-1">
-                        <Truck className="w-3 h-3" /> Delivery (4 weeks)
+                        <Truck className="w-3 h-3" /> Delivery ({deliveryDays.length}×/week × 4 weeks)
                       </span>
-                      {getDeliveryFee() === 0 ? (
+                      {getMonthlyDeliveryFee() === 0 ? (
                         <span className="text-green-600 font-medium">FREE</span>
                       ) : (
-                        <span>₹{(getDeliveryFee() * 4).toFixed(2)}</span>
+                        <span>₹{getMonthlyDeliveryFee().toFixed(2)}</span>
                       )}
                     </div>
                     {appliedDiscount && (
