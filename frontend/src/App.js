@@ -6,6 +6,7 @@ import { CartProvider } from '@/context/CartContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import '@/App.css';
 
 import Landing from '@/pages/Landing';
@@ -46,34 +47,38 @@ function App() {
             <Header />
             <main className="flex-1">
               <Routes>
+                {/* Public Routes */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/addresses" element={<Addresses />} />
-                <Route path="/subscription/create" element={<SubscriptionCreate />} />
-                <Route path="/subscriptions" element={<MySubscriptions />} />
-                <Route path="/subscription/:id" element={<SubscriptionDetail />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/refer" element={<ReferAndEarn />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 
+                {/* Protected Customer Routes */}
+                <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+                <Route path="/addresses" element={<ProtectedRoute><Addresses /></ProtectedRoute>} />
+                <Route path="/subscription/create" element={<ProtectedRoute><SubscriptionCreate /></ProtectedRoute>} />
+                <Route path="/subscriptions" element={<ProtectedRoute><MySubscriptions /></ProtectedRoute>} />
+                <Route path="/subscription/:id" element={<ProtectedRoute><SubscriptionDetail /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/refer" element={<ProtectedRoute><ReferAndEarn /></ProtectedRoute>} />
+                
+                {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/products" element={<AdminProducts />} />
-                <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
-                <Route path="/admin/deliveries" element={<AdminDeliveries />} />
-                <Route path="/admin/payments" element={<AdminPayments />} />
-                <Route path="/admin/inventory" element={<AdminInventory />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/coupons" element={<AdminCoupons />} />
-                <Route path="/admin/referrals" element={<AdminReferrals />} />
+                <Route path="/admin/dashboard" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
+                <Route path="/admin/products" element={<ProtectedRoute requireAdmin><AdminProducts /></ProtectedRoute>} />
+                <Route path="/admin/subscriptions" element={<ProtectedRoute requireAdmin><AdminSubscriptions /></ProtectedRoute>} />
+                <Route path="/admin/deliveries" element={<ProtectedRoute requireAdmin><AdminDeliveries /></ProtectedRoute>} />
+                <Route path="/admin/payments" element={<ProtectedRoute requireAdmin><AdminPayments /></ProtectedRoute>} />
+                <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><AdminInventory /></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
+                <Route path="/admin/coupons" element={<ProtectedRoute requireAdmin><AdminCoupons /></ProtectedRoute>} />
+                <Route path="/admin/referrals" element={<ProtectedRoute requireAdmin><AdminReferrals /></ProtectedRoute>} />
                 
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
