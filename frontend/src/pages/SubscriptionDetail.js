@@ -93,6 +93,19 @@ const SubscriptionDetail = () => {
     return planNames[frequency] || frequency;
   };
 
+  // Get plan discount percentage
+  const getPlanDiscountPercent = (frequency) => {
+    const discounts = {
+      'once_week': 0,
+      'twice_week': 10,
+      'four_days_week': 50,
+      'weekly': 0,
+      'twice_weekly': 10,
+      'four_days': 50
+    };
+    return discounts[frequency] || 0;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
@@ -103,28 +116,32 @@ const SubscriptionDetail = () => {
 
   if (!subscription) return null;
 
-  // Calculate pricing breakdown
-  const itemsTotal = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0);
-  const deliveriesPerWeek = subscription.deliveries_per_week || 1;
+  // Calculate pricing - total_price in DB is PER DELIVERY price
+  const deliveriesPerWeek = subscription.delivery_days?.length || 1;
   const weeksPerMonth = 4;
+  const totalDeliveriesPerMonth = deliveriesPerWeek * weeksPerMonth;
   
-  // Use stored total_price if available, otherwise calculate
-  const storedMonthlyTotal = subscription.total_price || 0;
-  const monthlySubtotal = itemsTotal > 0 ? itemsTotal * deliveriesPerWeek * weeksPerMonth : storedMonthlyTotal;
+  // Per delivery values from subscription
+  const perDeliveryTotal = subscription.total_price || 0;
+  const perDeliverySubtotal = subscription.subtotal || 0;
+  const perDeliveryFee = subscription.delivery_fee || 0;
   
-  const planDiscount = subscription.plan_discount || 0;
-  const planDiscountAmount = (monthlySubtotal * planDiscount) / 100;
-  const deliveryFee = subscription.delivery_fee || 0;
-  const monthlyDeliveryFee = deliveryFee * weeksPerMonth;
-  const couponDiscount = subscription.coupon_discount || 0;
-  const referralDiscount = subscription.referral_discount || 0;
-  const totalDiscount = planDiscountAmount + couponDiscount + referralDiscount;
+  // Calculate per tray price from items or stored subtotal
+  const itemsTotal = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0);
+  const trayCount = subscription.tray_count || 1;
+  const perTrayPrice = itemsTotal > 0 ? Math.round(itemsTotal / trayCount) : (perDeliverySubtotal > 0 ? Math.round(perDeliverySubtotal / trayCount) : 0);
   
-  // Final monthly total
-  const monthlyTotal = storedMonthlyTotal > 0 ? storedMonthlyTotal : Math.max(0, monthlySubtotal - planDiscountAmount + monthlyDeliveryFee - couponDiscount - referralDiscount);
+  // Monthly calculations
+  const monthlySubtotal = perDeliverySubtotal * totalDeliveriesPerMonth;
+  const monthlyDeliveryFee = perDeliveryFee * totalDeliveriesPerMonth;
+  const monthlyTotal = perDeliveryTotal * totalDeliveriesPerMonth;
   
-  // Per tray cost (for display)
-  const perTrayPrice = itemsTotal > 0 ? itemsTotal : (storedMonthlyTotal / (deliveriesPerWeek * weeksPerMonth));
+  // Discounts
+  const planDiscountPercent = subscription.discount_percent || getPlanDiscountPercent(subscription.frequency);
+  const planDiscountAmount = subscription.discount_amount ? subscription.discount_amount * totalDeliveriesPerMonth : 0;
+  const couponDiscount = (subscription.coupon_discount || 0) * totalDeliveriesPerMonth;
+  const referralDiscount = (subscription.referral_discount || 0) * totalDeliveriesPerMonth;
+  const totalSavings = planDiscountAmount + couponDiscount + referralDiscount;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
