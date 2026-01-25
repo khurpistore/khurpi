@@ -444,9 +444,6 @@ async def send_otp(data: OTPSendRequest):
     await db.otps.delete_many({"phone": phone})
     await db.otps.insert_one(otp_doc)
     
-    # Check if phone is whitelisted (for testing)
-    is_whitelisted = phone in WHITELISTED_PHONES
-    
     # Send OTP via MSG91
     if MSG91_AUTH_KEY:
         try:
