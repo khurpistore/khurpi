@@ -29,7 +29,7 @@ const SubscriptionCreate = () => {
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [deliveryDay, setDeliveryDay] = useState('Monday');
+  const [deliveryDays, setDeliveryDays] = useState(['Monday']); // Changed to array for multiple days
   const [startDate, setStartDate] = useState(null);
   const [loading, setLoading] = useState(false);
   const [stockWarning, setStockWarning] = useState(null);
@@ -51,6 +51,41 @@ const SubscriptionCreate = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, addresses, fetchAddresses } = useAuth();
+
+  const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  // Toggle delivery day selection
+  const toggleDeliveryDay = (day) => {
+    const maxDays = selectedPlan?.deliveries_per_week || 1;
+    
+    if (deliveryDays.includes(day)) {
+      // Remove day if already selected (but keep at least 1)
+      if (deliveryDays.length > 1) {
+        setDeliveryDays(deliveryDays.filter(d => d !== day));
+      }
+    } else {
+      // Add day if under max limit
+      if (deliveryDays.length < maxDays) {
+        setDeliveryDays([...deliveryDays, day].sort((a, b) => WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b)));
+      } else {
+        // Replace oldest selection if at max
+        const newDays = [...deliveryDays.slice(1), day].sort((a, b) => WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b));
+        setDeliveryDays(newDays);
+      }
+    }
+  };
+
+  // Reset delivery days when plan changes
+  const handlePlanChange = (plan) => {
+    setSelectedPlan(plan);
+    // Reset to appropriate number of days
+    const defaultDays = plan.deliveries_per_week === 4 
+      ? ['Monday', 'Tuesday', 'Thursday', 'Friday']
+      : plan.deliveries_per_week === 2 
+        ? ['Monday', 'Thursday'] 
+        : ['Monday'];
+    setDeliveryDays(defaultDays);
+  };
 
   // Save subscription state to localStorage before navigating away
   const saveSubscriptionState = () => {
