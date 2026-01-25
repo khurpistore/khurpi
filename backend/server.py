@@ -1108,17 +1108,48 @@ async def update_subscription_plans(data: List[dict]):
     )
     return {"success": True, "data": data}
 
+# Page Content Management (Privacy Policy, Terms of Service)
+@api_router.get("/settings/pages/{page_slug}")
+async def get_page_content(page_slug: str):
+    """Get page content by slug (privacy-policy, terms-of-service)"""
+    page = await db.pages.find_one({"slug": page_slug}, {"_id": 0})
+    if page:
+        return page
+    return {"slug": page_slug, "content": "", "last_updated": None}
+
+@api_router.put("/admin/settings/pages/{page_slug}")
+async def update_page_content(page_slug: str, data: dict):
+    """Update page content (admin only)"""
+    await db.pages.update_one(
+        {"slug": page_slug},
+        {"$set": {
+            "slug": page_slug,
+            "content": data.get("content", ""),
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    return {"success": True, "slug": page_slug}
+
+@api_router.get("/admin/settings/pages")
+async def get_all_pages():
+    """Get all page contents for admin"""
+    pages = await db.pages.find({}, {"_id": 0}).to_list(100)
+    return pages
+
 @api_router.get("/admin/settings/all")
 async def get_all_admin_settings():
     """Get all settings for admin panel"""
     shop = await get_shop_config()
     delivery = await get_delivery_pricing()
     plans = await get_subscription_plans()
+    pages = await db.pages.find({}, {"_id": 0}).to_list(100)
     
     return {
         "shop_config": shop,
         "delivery_pricing": delivery,
-        "subscription_plans": plans
+        "subscription_plans": plans,
+        "pages": pages
     }
 
 @api_router.put("/users/{user_id}/address")
