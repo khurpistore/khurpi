@@ -169,15 +169,6 @@ const MySubscriptions = () => {
                     </div>
                   </div>
 
-                  {/* Compact Breakdown */}
-                  <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-                      <span>{totalTraysPerMonth} trays × ₹{perTrayPrice} = ₹{monthlySubtotal}</span>
-                      {discountAmount > 0 && <span className="text-green-600">-₹{discountAmount} discount</span>}
-                      {monthlyDeliveryFee > 0 ? <span>+₹{monthlyDeliveryFee} delivery</span> : <span className="text-green-600">FREE delivery</span>}
-                    </div>
-                  </div>
-
                   {/* Next Delivery */}
                   {subscription.next_delivery_date && subscription.status === 'active' && (
                     <div className="bg-primary/10 rounded-lg p-3 mb-4">
