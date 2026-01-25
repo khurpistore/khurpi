@@ -93,7 +93,7 @@ const SubscriptionCreate = () => {
       step,
       selectedProducts,
       selectedPlan,
-      deliveryDay,
+      deliveryDays,
       startDate: startDate ? startDate.toISOString() : null,
       selectedAddressId,
       discountCode,
@@ -112,7 +112,7 @@ const SubscriptionCreate = () => {
         if (state.selectedProducts?.length > 0) {
           setSelectedProducts(state.selectedProducts);
           setSelectedPlan(state.selectedPlan);
-          setDeliveryDay(state.deliveryDay || 'Monday');
+          setDeliveryDays(state.deliveryDays || ['Monday']);
           setStartDate(state.startDate ? new Date(state.startDate) : null);
           setSelectedAddressId(state.selectedAddressId);
           setDiscountCode(state.discountCode || '');
