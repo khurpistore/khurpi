@@ -210,6 +210,8 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 January 25, 2025
 
 ## Change Log
+- **Jan 25, 2025:** Reorganized Subscription Detail page: Subscription Details → Products → Monthly Cost (cleaner layout)
+- **Jan 25, 2025:** Fixed monthly total calculation: now correctly calculates as `perDeliveryTotal × deliveriesPerWeek × 4`
 - **Jan 25, 2025:** Added `delivery_days` array to backend models to store multiple selected delivery days
 - **Jan 25, 2025:** Updated My Subscriptions & Subscription Detail pages to display selected delivery days (e.g., "Monday, Thursday" for twice a week)
 - **Jan 25, 2025:** Verified "My Subscriptions" page cleanup - calculation breakdown removed, simplified UI shows only plan info and monthly total
