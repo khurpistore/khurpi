@@ -121,28 +121,15 @@ const MySubscriptions = () => {
         ) : (
           <div className="space-y-6" data-testid="subscriptions-list">
             {[...subscriptions].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map((subscription) => {
-              // Calculate monthly values
-              const deliveriesPerWeek = subscription.deliveries_per_week || getDeliveriesPerWeek(subscription.frequency);
+              // Calculate monthly values - use delivery_days array if available
+              const deliveriesPerWeek = subscription.delivery_days?.length || subscription.deliveries_per_week || getDeliveriesPerWeek(subscription.frequency);
               const weeksPerMonth = 4;
               const totalDeliveriesPerMonth = deliveriesPerWeek * weeksPerMonth;
               const traysPerDelivery = subscription.tray_count || 1;
               const totalTraysPerMonth = traysPerDelivery * totalDeliveriesPerMonth;
-              const planDiscount = subscription.plan_discount || subscription.discount_percent || getPlanDiscount(subscription.frequency);
               
-              // Per delivery values from subscription
-              const perDeliverySubtotal = subscription.subtotal || 0;
-              const perDeliveryFee = subscription.delivery_fee || 0;
+              // Per delivery total from subscription (this is what's stored in DB)
               const perDeliveryTotal = subscription.total_price || 0;
-              
-              // Calculate per tray price from subtotal
-              const perTrayPrice = traysPerDelivery > 0 ? Math.round(perDeliverySubtotal / traysPerDelivery) : 0;
-              
-              // Monthly calculations
-              const monthlySubtotal = perDeliverySubtotal * totalDeliveriesPerMonth;
-              const monthlyDeliveryFee = perDeliveryFee * totalDeliveriesPerMonth;
-              const discountAmount = subscription.discount_amount ? subscription.discount_amount * totalDeliveriesPerMonth : Math.round(monthlySubtotal * planDiscount / 100);
-              const couponDiscount = (subscription.coupon_discount || 0) * totalDeliveriesPerMonth;
-              const referralDiscount = (subscription.referral_discount || 0) * totalDeliveriesPerMonth;
               
               // Monthly total = per delivery total × deliveries per month
               const monthlyTotal = perDeliveryTotal * totalDeliveriesPerMonth;
