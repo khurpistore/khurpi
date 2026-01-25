@@ -689,21 +689,37 @@ const SubscriptionCreate = () => {
             <Card className="mb-6">
               <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div>
-                  <Label className="text-sm">Preferred Delivery Day</Label>
-                  <Select value={deliveryDay} onValueChange={setDeliveryDay}>
-                    <SelectTrigger data-testid="delivery-day-select" className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Monday">Monday</SelectItem>
-                      <SelectItem value="Tuesday">Tuesday</SelectItem>
-                      <SelectItem value="Wednesday">Wednesday</SelectItem>
-                      <SelectItem value="Thursday">Thursday</SelectItem>
-                      <SelectItem value="Friday">Friday</SelectItem>
-                      <SelectItem value="Saturday">Saturday</SelectItem>
-                      <SelectItem value="Sunday">Sunday</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-sm mb-2 block">
+                    Select Delivery Days 
+                    <span className="text-primary font-medium ml-1">
+                      ({deliveryDays.length}/{selectedPlan?.deliveries_per_week || 1} selected)
+                    </span>
+                  </Label>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Choose {selectedPlan?.deliveries_per_week || 1} day{(selectedPlan?.deliveries_per_week || 1) > 1 ? 's' : ''} for your weekly deliveries
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {WEEKDAYS.map((day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        data-testid={`delivery-day-${day.toLowerCase()}`}
+                        onClick={() => toggleDeliveryDay(day)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          deliveryDays.includes(day)
+                            ? 'bg-primary text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {day.slice(0, 3)}
+                      </button>
+                    ))}
+                  </div>
+                  {deliveryDays.length > 0 && (
+                    <p className="text-sm text-primary mt-2 font-medium">
+                      Deliveries: {deliveryDays.join(', ')}
+                    </p>
+                  )}
                 </div>
 
                 <div>
