@@ -210,6 +210,13 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 January 25, 2025
 
 ## Change Log
+- **Jan 25, 2025:** Added ScrollToTop component - pages now scroll to top on navigation
+- **Jan 25, 2025:** Added "Refer & Earn" to header menu, removed from Profile page
+- **Jan 25, 2025:** Removed Quick Links section from Profile page, simplified profile layout
+- **Jan 25, 2025:** Updated Footer contact info: +919971818259, khurpi.store@gmail.com
+- **Jan 25, 2025:** Added Privacy Policy & Terms of Service pages with default content
+- **Jan 25, 2025:** Added admin panel controls for Privacy Policy & Terms of Service content
+- **Jan 25, 2025:** Updated Orders page to show subscription orders with tabs (All, One-time, Subscriptions)
 - **Jan 25, 2025:** Reorganized Subscription Detail page: Subscription Details → Products → Monthly Cost (cleaner layout)
 - **Jan 25, 2025:** Fixed monthly total calculation: now correctly calculates as `perDeliveryTotal × deliveriesPerWeek × 4`
 - **Jan 25, 2025:** Added `delivery_days` array to backend models to store multiple selected delivery days
