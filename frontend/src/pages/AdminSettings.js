@@ -414,6 +414,64 @@ const AdminSettings = () => {
             </CardContent>
           </Card>
 
+          {/* Privacy Policy */}
+          <Card>
+            <CardHeader className="p-4 sm:p-6 pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="w-5 h-5" />
+                Privacy Policy
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-2">
+              <p className="text-sm text-muted-foreground mb-4">
+                Edit the Privacy Policy content. Use markdown formatting (## for headings, ### for subheadings, - for bullet points).
+              </p>
+              <Textarea
+                value={pages['privacy-policy']}
+                onChange={(e) => setPages({ ...pages, 'privacy-policy': e.target.value })}
+                className="min-h-[300px] font-mono text-sm"
+                placeholder="## Privacy Policy&#10;&#10;### 1. Information We Collect&#10;- Your name and contact details&#10;- Order history..."
+              />
+              <Button
+                onClick={() => handleSavePage('privacy-policy')}
+                disabled={saving}
+                className="mt-4 bg-primary hover:bg-primary/90 rounded-full"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Privacy Policy
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Terms of Service */}
+          <Card>
+            <CardHeader className="p-4 sm:p-6 pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="w-5 h-5" />
+                Terms of Service
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-2">
+              <p className="text-sm text-muted-foreground mb-4">
+                Edit the Terms of Service content. Use markdown formatting (## for headings, ### for subheadings, - for bullet points).
+              </p>
+              <Textarea
+                value={pages['terms-of-service']}
+                onChange={(e) => setPages({ ...pages, 'terms-of-service': e.target.value })}
+                className="min-h-[300px] font-mono text-sm"
+                placeholder="## Terms of Service&#10;&#10;### 1. Acceptance of Terms&#10;By using our service, you agree to..."
+              />
+              <Button
+                onClick={() => handleSavePage('terms-of-service')}
+                disabled={saving}
+                className="mt-4 bg-primary hover:bg-primary/90 rounded-full"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Terms of Service
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Preview */}
           <Card className="border-green-200 bg-green-50">
             <CardHeader className="p-4 sm:p-6 pb-2">
