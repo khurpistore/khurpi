@@ -125,6 +125,18 @@ const AdminSettings = () => {
     }
   };
 
+  const handleSaveReferralSettings = async () => {
+    setSaving(true);
+    try {
+      await axios.put(`${API}/admin/settings/referral-program`, referralSettings);
+      toast.success('Referral program settings saved');
+    } catch (error) {
+      toast.error('Failed to save referral settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const addDeliveryTier = () => {
     setDeliveryPricing([...deliveryPricing, { max_distance: 0, fee: 0, label: '' }]);
   };
