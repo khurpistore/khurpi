@@ -585,6 +585,7 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "user_id": user_id,
         "frequency": sub_data.frequency,
         "delivery_day": sub_data.delivery_day,
+        "delivery_days": sub_data.delivery_days or [sub_data.delivery_day],  # Store array of selected days
         "start_date": sub_data.start_date,
         "status": "active",
         "tray_count": sub_data.tray_count,
