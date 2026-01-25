@@ -239,4 +239,4 @@ January 25, 2025
 - Fixed subscription steps with sticky header and prev/next buttons
 
 ## Known Issues
-- **Login Redirect Race Condition (P2):** Direct navigation to protected routes may fail due to auth state hydration timing. Workaround: Navigate from homepage and click through UI.
+- ~~**Login Redirect Race Condition (P2):** Direct navigation to protected routes may fail due to auth state hydration timing.~~ **FIXED** - Added ProtectedRoute component with loading state
