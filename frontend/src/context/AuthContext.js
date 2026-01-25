@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }) => {
     const userData = response.data;
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
     return userData;
   };
 
@@ -65,7 +66,15 @@ export const AuthProvider = ({ children }) => {
     const userData = response.data;
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
     return userData;
+  };
+
+  // Login with OTP verification
+  const loginWithOTP = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
   };
 
   const adminLogin = async (username, password) => {
@@ -73,6 +82,7 @@ export const AuthProvider = ({ children }) => {
     const userData = { ...response.data, id: 'admin', role: 'admin' };
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
     return userData;
   };
 
@@ -80,6 +90,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setAddresses([]);
     localStorage.removeItem('user');
+    localStorage.removeItem('sessionExpiry');
   };
 
   const updateAddress = async (address) => {
