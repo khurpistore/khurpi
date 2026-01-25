@@ -440,6 +440,128 @@ const AdminSettings = () => {
             </CardContent>
           </Card>
 
+          {/* Referral Program Settings */}
+          <Card className="border-2 border-purple-200">
+            <CardHeader className="p-4 sm:p-6 pb-2 bg-purple-50/50">
+              <CardTitle className="flex items-center gap-2 text-lg text-purple-800">
+                <Gift className="w-5 h-5" />
+                Customer Referral Program
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Configure how the customer referral program works. These settings apply to customers who generate their own referral codes.
+              </p>
+              
+              {/* Program Status Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4">
+                <div>
+                  <p className="font-medium">Program Status</p>
+                  <p className="text-sm text-muted-foreground">Enable or disable the referral program</p>
+                </div>
+                <Switch
+                  checked={referralSettings.is_active}
+                  onCheckedChange={(checked) => setReferralSettings(prev => ({ ...prev, is_active: checked }))}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Customer Commission Rate (%)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={referralSettings.customer_commission_rate}
+                    onChange={(e) => setReferralSettings(prev => ({ ...prev, customer_commission_rate: parseFloat(e.target.value) || 10 }))}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Commission % the referrer earns on each referred order
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">New User Discount (%)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={referralSettings.referee_discount_percent}
+                    onChange={(e) => setReferralSettings(prev => ({ ...prev, referee_discount_percent: parseFloat(e.target.value) || 10 }))}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Discount % for users who use a referral code
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Max Discount Amount (₹)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={referralSettings.max_referee_discount}
+                    onChange={(e) => setReferralSettings(prev => ({ ...prev, max_referee_discount: parseFloat(e.target.value) || 100 }))}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Maximum discount a referred user can get
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Minimum Order Amount (₹)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={referralSettings.min_order_amount}
+                    onChange={(e) => setReferralSettings(prev => ({ ...prev, min_order_amount: parseFloat(e.target.value) || 0 }))}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Min order value for referral code to apply (0 = no minimum)
+                  </p>
+                </div>
+              </div>
+
+              {/* First Order Only Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mt-4">
+                <div>
+                  <p className="font-medium">First Order Only</p>
+                  <p className="text-sm text-muted-foreground">Referral discount only applies to new customer's first order</p>
+                </div>
+                <Switch
+                  checked={referralSettings.first_order_only}
+                  onCheckedChange={(checked) => setReferralSettings(prev => ({ ...prev, first_order_only: checked }))}
+                />
+              </div>
+
+              {/* Current Rules Preview */}
+              <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <p className="font-medium text-purple-800 mb-2">Current Rules:</p>
+                <ul className="text-sm text-purple-700 space-y-1">
+                  <li>• Status: <strong>{referralSettings.is_active ? 'Active' : 'Inactive'}</strong></li>
+                  <li>• Referrer earns <strong>{referralSettings.customer_commission_rate}%</strong> commission</li>
+                  <li>• New user gets <strong>{referralSettings.referee_discount_percent}%</strong> off (max ₹{referralSettings.max_referee_discount})</li>
+                  {referralSettings.min_order_amount > 0 && (
+                    <li>• Minimum order: <strong>₹{referralSettings.min_order_amount}</strong></li>
+                  )}
+                  <li>• {referralSettings.first_order_only ? 'First order only' : 'Applies to all orders'}</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={handleSaveReferralSettings}
+                disabled={saving}
+                className="mt-4 bg-purple-600 hover:bg-purple-700 rounded-full"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Referral Settings
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Privacy Policy */}
           <Card>
             <CardHeader className="p-4 sm:p-6 pb-2">
