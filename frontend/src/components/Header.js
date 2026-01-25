@@ -22,7 +22,8 @@ import {
   ShoppingBag,
   LogOut,
   ChevronDown,
-  CalendarCheck
+  CalendarCheck,
+  Gift
 } from 'lucide-react';
 
 const Header = () => {
@@ -53,6 +54,7 @@ const Header = () => {
   const menuItems = [
     { label: 'My Orders', icon: ShoppingBag, path: '/orders' },
     { label: 'My Subscriptions', icon: CalendarCheck, path: '/subscriptions' },
+    { label: 'Refer & Earn', icon: Gift, path: '/refer' },
     { label: 'Addresses', icon: MapPin, path: '/addresses' },
     { label: 'Profile', icon: User, path: '/profile' },
   ];
