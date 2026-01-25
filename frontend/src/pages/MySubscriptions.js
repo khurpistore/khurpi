@@ -346,6 +346,7 @@ const MySubscriptions = () => {
                       </AlertDialog>
                     )}
                   </div>
+                  </div>
                 </CardContent>
               </Card>
               );
