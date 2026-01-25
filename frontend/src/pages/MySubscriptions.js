@@ -141,77 +141,128 @@ const MySubscriptions = () => {
               const planDiscount = subscription.plan_discount || getPlanDiscount(subscription.frequency);
               const monthlyTotal = subscription.total_price || 0;
               
+              // Calculate breakdown (estimated from stored total)
+              const deliveryFee = subscription.delivery_fee || 0;
+              const monthlyDeliveryFee = deliveryFee * weeksPerMonth;
+              const couponDiscount = subscription.coupon_discount || 0;
+              const referralDiscount = subscription.referral_discount || 0;
+              
+              // Estimate per tray price from total
+              const estimatedSubtotal = monthlyTotal + (monthlyTotal * planDiscount / 100) - monthlyDeliveryFee + couponDiscount + referralDiscount;
+              const perTrayPrice = totalTraysPerMonth > 0 ? Math.round(estimatedSubtotal / totalTraysPerMonth) : 0;
+              const monthlySubtotal = perTrayPrice * totalTraysPerMonth;
+              const discountAmount = Math.round(monthlySubtotal * planDiscount / 100);
+              
               return (
-              <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`}>
-                <CardContent className="p-4 sm:p-6">
+              <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
+                <CardContent className="p-0">
                   {/* Header */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg sm:text-xl font-semibold text-primary">
-                          Subscription #{subscription.id.slice(0, 8)}
-                        </h3>
-                        {getStatusBadge(subscription.status)}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Started {format(new Date(subscription.start_date || subscription.created_at), 'PP')}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl sm:text-3xl font-bold text-primary">₹{monthlyTotal}</p>
-                      <p className="text-xs text-muted-foreground">per month</p>
-                    </div>
-                  </div>
-
-                  {/* Monthly Breakdown */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                  <div className="p-4 sm:p-6 pb-0">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg sm:text-xl font-semibold text-primary">
+                            Subscription #{subscription.id.slice(0, 8)}
+                          </h3>
+                          {getStatusBadge(subscription.status)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Started {format(new Date(subscription.start_date || subscription.created_at), 'PP')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Subscription Info */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                           <Clock className="w-3 h-3" />
                           <span className="text-xs">Plan</span>
                         </div>
                         <p className="font-semibold text-sm">{getPlanDisplayName(subscription.frequency)}</p>
                       </div>
-                      <div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                           <Truck className="w-3 h-3" />
                           <span className="text-xs">Deliveries</span>
                         </div>
                         <p className="font-semibold text-sm">{totalDeliveriesPerMonth}/month</p>
                       </div>
-                      <div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                           <Package className="w-3 h-3" />
-                          <span className="text-xs">Total Trays</span>
+                          <span className="text-xs">Trays</span>
                         </div>
                         <p className="font-semibold text-sm">{totalTraysPerMonth}/month</p>
                       </div>
-                      <div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                           <Calendar className="w-3 h-3" />
-                          <span className="text-xs">Delivery Day</span>
+                          <span className="text-xs">Day</span>
                         </div>
                         <p className="font-semibold text-sm">{subscription.delivery_day}</p>
                       </div>
                     </div>
-                    
-                    {planDiscount > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-green-600">
-                        <Tag className="w-4 h-4" />
-                        <span className="text-sm font-medium">{planDiscount}% Plan Discount Applied</span>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Next Delivery */}
-                  {subscription.next_delivery_date && subscription.status === 'active' && (
-                    <div className="bg-primary/10 rounded-lg p-3 mb-4">
-                      <p className="text-sm font-medium text-primary">
-                        📦 Next Delivery: {format(new Date(subscription.next_delivery_date), 'PPPP')}
-                      </p>
+                  {/* Monthly Payment Breakdown */}
+                  <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 sm:p-6 border-t">
+                    <h4 className="text-sm font-semibold text-primary mb-3 flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      Monthly Payment Breakdown
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{totalTraysPerMonth} trays × ₹{perTrayPrice}/tray</span>
+                        <span>₹{monthlySubtotal}</span>
+                      </div>
+                      {planDiscount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Plan Discount ({planDiscount}%)</span>
+                          <span>-₹{discountAmount}</span>
+                        </div>
+                      )}
+                      {monthlyDeliveryFee > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Delivery ({totalDeliveriesPerMonth} deliveries)</span>
+                          <span>₹{monthlyDeliveryFee}</span>
+                        </div>
+                      )}
+                      {monthlyDeliveryFee === 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Delivery</span>
+                          <span className="text-green-600">FREE</span>
+                        </div>
+                      )}
+                      {couponDiscount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Coupon ({subscription.coupon_code})</span>
+                          <span>-₹{couponDiscount}</span>
+                        </div>
+                      )}
+                      {referralDiscount > 0 && (
+                        <div className="flex justify-between text-blue-600">
+                          <span>Referral ({subscription.referral_code})</span>
+                          <span>-₹{referralDiscount}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center pt-2 border-t border-primary/20 mt-2">
+                        <span className="font-bold text-primary">Monthly Total</span>
+                        <span className="font-bold text-2xl text-primary">₹{monthlyTotal}<span className="text-sm font-normal">/mo</span></span>
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Next Delivery & Actions */}
+                  <div className="p-4 sm:p-6 pt-4">
+                    {/* Next Delivery */}
+                    {subscription.next_delivery_date && subscription.status === 'active' && (
+                      <div className="bg-primary/10 rounded-lg p-3 mb-4">
+                        <p className="text-sm font-medium text-primary">
+                          📦 Next Delivery: {format(new Date(subscription.next_delivery_date), 'PPPP')}
+                        </p>
+                      </div>
+                    )}
 
                   {/* Actions */}
                   <div className="flex gap-2 flex-wrap">
