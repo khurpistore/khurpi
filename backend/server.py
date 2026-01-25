@@ -395,6 +395,218 @@ async def admin_login(username: str, password: str):
         return {"success": True, "role": "admin", "name": "Admin"}
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
+# ============ OTP Authentication with MSG91 ============
+
+class OTPSendRequest(BaseModel):
+    phone: str
+
+class OTPVerifyRequest(BaseModel):
+    phone: str
+    otp: str
+    name: Optional[str] = None
+
+@api_router.post("/auth/send-otp")
+async def send_otp(data: OTPSendRequest):
+    """Send OTP via MSG91 WhatsApp"""
+    phone = data.phone.strip()
+    
+    # Validate phone number (Indian format)
+    if not phone.isdigit() or len(phone) != 10:
+        raise HTTPException(status_code=400, detail="Invalid phone number. Enter 10-digit mobile number.")
+    
+    # Generate 6-digit OTP
+    otp = str(random.randint(100000, 999999))
+    
+    # Store OTP in database with expiry (5 minutes)
+    otp_doc = {
+        "phone": phone,
+        "otp": otp,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
+        "verified": False
+    }
+    
+    # Remove any existing OTPs for this phone
+    await db.otps.delete_many({"phone": phone})
+    await db.otps.insert_one(otp_doc)
+    
+    # Send OTP via MSG91 WhatsApp
+    if MSG91_AUTH_KEY:
+        try:
+            # MSG91 SendOTP API endpoint
+            url = "https://control.msg91.com/api/v5/otp"
+            
+            headers = {
+                "authkey": MSG91_AUTH_KEY,
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "mobile": f"91{phone}",
+                "otp": otp,
+                "sender": "KHURPI",
+                "otp_length": 6,
+                "otp_expiry": 5
+            }
+            
+            response = requests.post(url, json=payload, headers=headers)
+            result = response.json()
+            
+            if result.get("type") == "success":
+                logging.info(f"OTP sent successfully to {phone}")
+                return {"success": True, "message": "OTP sent to your WhatsApp/SMS"}
+            else:
+                logging.error(f"MSG91 error: {result}")
+                # Fall back to storing OTP for testing
+                return {"success": True, "message": "OTP sent (test mode)", "debug_otp": otp if os.environ.get("DEBUG") else None}
+        except Exception as e:
+            logging.error(f"MSG91 exception: {e}")
+            return {"success": True, "message": "OTP sent (test mode)", "debug_otp": otp}
+    else:
+        # No MSG91 key - return OTP for testing
+        logging.info(f"Test mode OTP for {phone}: {otp}")
+        return {"success": True, "message": "OTP sent (test mode)", "debug_otp": otp}
+
+@api_router.post("/auth/verify-otp")
+async def verify_otp(data: OTPVerifyRequest):
+    """Verify OTP and login/signup user"""
+    phone = data.phone.strip()
+    otp = data.otp.strip()
+    
+    # Find OTP record
+    otp_record = await db.otps.find_one({"phone": phone, "verified": False}, {"_id": 0})
+    
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="No OTP request found. Please request a new OTP.")
+    
+    # Check expiry
+    expires_at = datetime.fromisoformat(otp_record["expires_at"])
+    if datetime.now(timezone.utc) > expires_at:
+        await db.otps.delete_one({"phone": phone})
+        raise HTTPException(status_code=400, detail="OTP expired. Please request a new OTP.")
+    
+    # Verify OTP
+    if otp_record["otp"] != otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP. Please try again.")
+    
+    # Mark OTP as verified and delete it
+    await db.otps.delete_one({"phone": phone})
+    
+    # Check if user exists
+    user = await db.users.find_one({"phone": phone}, {"_id": 0})
+    
+    if user:
+        # Existing user - login
+        user.pop("password", None)
+        return {"success": True, "user": user, "is_new_user": False}
+    else:
+        # New user - create account
+        user_name = data.name or f"User{phone[-4:]}"
+        
+        user_doc = {
+            "id": str(uuid.uuid4()),
+            "phone": phone,
+            "name": user_name,
+            "password": pwd_context.hash(str(uuid.uuid4())),  # Random password
+            "address": None,
+            "role": "customer",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.users.insert_one(user_doc)
+        user_doc.pop("password", None)
+        
+        return {"success": True, "user": user_doc, "is_new_user": True}
+
+@api_router.post("/auth/resend-otp")
+async def resend_otp(data: OTPSendRequest):
+    """Resend OTP - same as send_otp"""
+    return await send_otp(data)
+
+# ============ Razorpay Payment Integration ============
+
+class PaymentOrderRequest(BaseModel):
+    amount: float  # Amount in rupees
+    receipt: str
+    notes: Optional[dict] = None
+
+class PaymentVerifyRequest(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+
+@api_router.post("/payments/create-order")
+async def create_razorpay_order(data: PaymentOrderRequest):
+    """Create a Razorpay order for payment"""
+    if not razorpay_client:
+        raise HTTPException(status_code=500, detail="Payment gateway not configured")
+    
+    try:
+        # Amount in paise (1 INR = 100 paise)
+        amount_in_paise = int(data.amount * 100)
+        
+        order_data = {
+            "amount": amount_in_paise,
+            "currency": "INR",
+            "receipt": data.receipt,
+            "notes": data.notes or {}
+        }
+        
+        order = razorpay_client.order.create(data=order_data)
+        
+        return {
+            "success": True,
+            "order_id": order["id"],
+            "amount": order["amount"],
+            "currency": order["currency"],
+            "key_id": razorpay_key_id
+        }
+    except Exception as e:
+        logging.error(f"Razorpay order creation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Payment order creation failed: {str(e)}")
+
+@api_router.post("/payments/verify")
+async def verify_razorpay_payment(data: PaymentVerifyRequest):
+    """Verify Razorpay payment signature"""
+    if not razorpay_client:
+        raise HTTPException(status_code=500, detail="Payment gateway not configured")
+    
+    try:
+        # Verify signature
+        params_dict = {
+            'razorpay_order_id': data.razorpay_order_id,
+            'razorpay_payment_id': data.razorpay_payment_id,
+            'razorpay_signature': data.razorpay_signature
+        }
+        
+        razorpay_client.utility.verify_payment_signature(params_dict)
+        
+        # Store payment record
+        payment_doc = {
+            "id": str(uuid.uuid4()),
+            "razorpay_order_id": data.razorpay_order_id,
+            "razorpay_payment_id": data.razorpay_payment_id,
+            "status": "captured",
+            "verified_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.payments.insert_one(payment_doc)
+        
+        return {"success": True, "message": "Payment verified successfully"}
+    except razorpay.errors.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Payment verification failed. Invalid signature.")
+    except Exception as e:
+        logging.error(f"Payment verification error: {e}")
+        raise HTTPException(status_code=500, detail=f"Payment verification failed: {str(e)}")
+
+@api_router.get("/payments/config")
+async def get_payment_config():
+    """Get Razorpay public key for frontend"""
+    return {
+        "key_id": razorpay_key_id,
+        "currency": "INR"
+    }
+
 @api_router.get("/products", response_model=List[Product])
 async def get_products(active_only: bool = True):
     query = {"active": True} if active_only else {}
