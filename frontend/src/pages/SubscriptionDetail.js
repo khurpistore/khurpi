@@ -175,103 +175,6 @@ const SubscriptionDetail = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Monthly Cost Breakdown Card */}
-          <Card className="border-2 border-primary/20 bg-gradient-to-br from-green-50/50 to-white overflow-hidden">
-            <div className="bg-primary/10 px-4 py-3 border-b border-primary/20">
-              <h3 className="font-semibold text-primary flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Monthly Subscription Cost
-              </h3>
-            </div>
-            <CardContent className="p-4">
-              {/* Calculation Formula */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100 mb-4">
-                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Price Calculation</p>
-                <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
-                  <div className="text-center px-3 py-2 bg-gray-50 rounded-lg">
-                    <p className="font-bold text-primary">₹{perTrayPrice.toFixed(0)}</p>
-                    <p className="text-xs text-muted-foreground">per tray</p>
-                  </div>
-                  <span className="text-muted-foreground font-bold">×</span>
-                  <div className="text-center px-3 py-2 bg-gray-50 rounded-lg">
-                    <p className="font-bold text-primary">{deliveriesPerWeek}</p>
-                    <p className="text-xs text-muted-foreground">days/week</p>
-                  </div>
-                  <span className="text-muted-foreground font-bold">×</span>
-                  <div className="text-center px-3 py-2 bg-gray-50 rounded-lg">
-                    <p className="font-bold text-primary">4</p>
-                    <p className="text-xs text-muted-foreground">weeks</p>
-                  </div>
-                  <span className="text-muted-foreground font-bold">=</span>
-                  <div className="text-center px-3 py-2 bg-primary/10 rounded-lg">
-                    <p className="font-bold text-primary">₹{monthlySubtotal.toFixed(0)}</p>
-                    <p className="text-xs text-muted-foreground">subtotal</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Breakdown */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between py-1">
-                  <span className="text-muted-foreground">Monthly Subtotal ({deliveriesPerWeek}×/week × 4 weeks)</span>
-                  <span className="font-medium">₹{monthlySubtotal.toFixed(2)}</span>
-                </div>
-                
-                {planDiscount > 0 && (
-                  <div className="flex justify-between py-1 text-green-600 bg-green-50 px-2 -mx-2 rounded">
-                    <span className="flex items-center gap-1">
-                      <Tag className="w-3 h-3" />
-                      Plan Discount ({planDiscount}%)
-                    </span>
-                    <span className="font-medium">-₹{planDiscountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                
-                <div className="flex justify-between py-1">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Truck className="w-3 h-3" /> Delivery (4 weeks)
-                  </span>
-                  {monthlyDeliveryFee === 0 ? (
-                    <span className="text-green-600 font-medium">FREE</span>
-                  ) : (
-                    <span className="font-medium">₹{monthlyDeliveryFee.toFixed(2)}</span>
-                  )}
-                </div>
-
-                {couponDiscount > 0 && (
-                  <div className="flex justify-between py-1 text-green-600 bg-green-50 px-2 -mx-2 rounded">
-                    <span className="flex items-center gap-1">
-                      <Tag className="w-3 h-3" />
-                      Coupon ({subscription.coupon_code})
-                    </span>
-                    <span className="font-medium">-₹{couponDiscount.toFixed(2)}</span>
-                  </div>
-                )}
-
-                {referralDiscount > 0 && (
-                  <div className="flex justify-between py-1 text-blue-600 bg-blue-50 px-2 -mx-2 rounded">
-                    <span className="flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      Referral ({subscription.referral_code})
-                    </span>
-                    <span className="font-medium">-₹{referralDiscount.toFixed(2)}</span>
-                  </div>
-                )}
-                
-                {/* Total */}
-                <div className="flex justify-between items-center pt-3 mt-2 border-t-2 border-dashed border-primary/30">
-                  <div>
-                    <span className="font-bold text-lg">Monthly Total</span>
-                    {totalDiscount > 0 && (
-                      <p className="text-xs text-green-600">You save ₹{totalDiscount.toFixed(0)}/month!</p>
-                    )}
-                  </div>
-                  <span className="font-bold text-2xl text-primary">₹{monthlyTotal.toFixed(0)}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Subscription Info */}
           <Card>
             <CardHeader className="pb-2">
@@ -350,6 +253,80 @@ const SubscriptionDetail = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Monthly Cost Summary - Clean Design */}
+          <Card className="border-2 border-primary/20 overflow-hidden">
+            <div className="bg-primary/5 px-4 py-3 border-b border-primary/10">
+              <h3 className="font-semibold text-primary flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Monthly Cost
+              </h3>
+            </div>
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                {/* Summary Line */}
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{trayCount} tray{trayCount > 1 ? 's' : ''} × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
+                  <span>₹{monthlySubtotal.toFixed(0)}</span>
+                </div>
+
+                {/* Discounts */}
+                {planDiscountPercent > 0 && planDiscountAmount > 0 && (
+                  <div className="flex items-center justify-between text-sm text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      Plan Discount ({planDiscountPercent}%)
+                    </span>
+                    <span>-₹{planDiscountAmount.toFixed(0)}</span>
+                  </div>
+                )}
+
+                {monthlyDeliveryFee > 0 && (
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Truck className="w-3 h-3" />
+                      Delivery ({totalDeliveriesPerMonth} deliveries)
+                    </span>
+                    <span>+₹{monthlyDeliveryFee.toFixed(0)}</span>
+                  </div>
+                )}
+
+                {couponDiscount > 0 && (
+                  <div className="flex items-center justify-between text-sm text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      Coupon ({subscription.coupon_code})
+                    </span>
+                    <span>-₹{couponDiscount.toFixed(0)}</span>
+                  </div>
+                )}
+
+                {referralDiscount > 0 && (
+                  <div className="flex items-center justify-between text-sm text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Referral
+                    </span>
+                    <span>-₹{referralDiscount.toFixed(0)}</span>
+                  </div>
+                )}
+
+                {/* Total */}
+                <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                  <div>
+                    <p className="font-semibold text-lg">Monthly Total</p>
+                    {totalSavings > 0 && (
+                      <p className="text-xs text-green-600">You save ₹{totalSavings.toFixed(0)}/month</p>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{monthlyTotal.toFixed(0)}
+                    <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
