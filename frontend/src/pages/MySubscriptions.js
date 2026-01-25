@@ -160,7 +160,12 @@ const MySubscriptions = () => {
                         {getStatusBadge(subscription.status)}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {totalTraysPerMonth} trays • {totalDeliveriesPerMonth} deliveries • {subscription.delivery_day}s
+                        {totalTraysPerMonth} trays • {totalDeliveriesPerMonth} deliveries/month
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        📅 {subscription.delivery_days && subscription.delivery_days.length > 0 
+                          ? subscription.delivery_days.join(', ')
+                          : subscription.delivery_day || 'Not set'}
                       </p>
                     </div>
                     <div className="text-right">

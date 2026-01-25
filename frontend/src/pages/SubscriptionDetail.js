@@ -272,8 +272,12 @@ const SubscriptionDetail = () => {
                 <div className="flex items-start gap-3">
                   <Calendar className="w-5 h-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Delivery Day</p>
-                    <p className="font-medium">{subscription.delivery_day}</p>
+                    <p className="text-xs text-muted-foreground">Delivery Days</p>
+                    <p className="font-medium">
+                      {subscription.delivery_days && subscription.delivery_days.length > 0 
+                        ? subscription.delivery_days.join(', ')
+                        : subscription.delivery_day || 'Not set'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
