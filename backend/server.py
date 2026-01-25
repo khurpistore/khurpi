@@ -212,6 +212,7 @@ class Subscription(BaseModel):
     user_id: str
     frequency: str
     delivery_day: str
+    delivery_days: Optional[List[str]] = None  # Array of selected days
     start_date: str
     status: str = "active"
     tray_count: int
