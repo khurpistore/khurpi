@@ -6,15 +6,28 @@ const AuthContext = createContext();
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Session duration: 24 hours in milliseconds
+const SESSION_DURATION = 24 * 60 * 60 * 1000;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [addresses, setAddresses] = useState([]);
 
   useEffect(() => {
+    // Hydrate user from localStorage on mount
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const sessionExpiry = localStorage.getItem('sessionExpiry');
+    
+    if (storedUser && sessionExpiry) {
+      const expiryTime = parseInt(sessionExpiry, 10);
+      if (Date.now() < expiryTime) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        // Session expired - clear storage
+        localStorage.removeItem('user');
+        localStorage.removeItem('sessionExpiry');
+      }
     }
     setLoading(false);
   }, []);
