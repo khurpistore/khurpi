@@ -339,21 +339,45 @@ const AdminReferrals = () => {
         {/* Referrers Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Registered Referrers</CardTitle>
+            <CardTitle>Referral Program Members</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-4">
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="all" className="flex items-center gap-2">
+                  All ({referrers.length})
+                </TabsTrigger>
+                <TabsTrigger value="customers" className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4" />
+                  Customers ({customerReferrers.length})
+                </TabsTrigger>
+                <TabsTrigger value="external" className="flex items-center gap-2">
+                  <Building className="w-4 h-4" />
+                  External ({externalReferrers.length})
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
             {loading ? (
               <div className="p-8 text-center text-muted-foreground">Loading...</div>
-            ) : referrers.length === 0 ? (
+            ) : filteredReferrers.length === 0 ? (
               <div className="p-8 text-center">
                 <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No referrers registered yet</p>
+                <p className="text-muted-foreground">
+                  {activeTab === 'customers' 
+                    ? 'No customers have generated referral codes yet'
+                    : activeTab === 'external'
+                      ? 'No external referrers registered yet'
+                      : 'No referrers registered yet'}
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Type</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Referral Code</TableHead>
                       <TableHead className="hidden sm:table-cell">Phone</TableHead>
@@ -366,8 +390,17 @@ const AdminReferrals = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {referrers.map((referrer) => (
+                    {filteredReferrers.map((referrer) => (
                       <TableRow key={referrer.id}>
+                        <TableCell>
+                          <Badge variant="outline" className={referrer.is_customer || referrer.user_id ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-purple-200 bg-purple-50 text-purple-700'}>
+                            {referrer.is_customer || referrer.user_id ? (
+                              <><UserCheck className="w-3 h-3 mr-1" />Customer</>
+                            ) : (
+                              <><Building className="w-3 h-3 mr-1" />External</>
+                            )}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="font-medium">{referrer.name}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
