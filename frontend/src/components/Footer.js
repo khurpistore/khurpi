@@ -45,13 +45,13 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <button onClick={() => navigate('/cart')} className="hover:text-white transition-colors">
-                  Cart
+                <button onClick={() => navigate('/refer')} className="hover:text-white transition-colors">
+                  Refer & Earn
                 </button>
               </li>
               <li>
-                <button onClick={() => navigate('/profile')} className="hover:text-white transition-colors">
-                  My Profile
+                <button onClick={() => navigate('/cart')} className="hover:text-white transition-colors">
+                  Cart
                 </button>
               </li>
             </ul>
@@ -63,11 +63,11 @@ const Footer = () => {
             <ul className="space-y-3 text-sm text-white/80">
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>+91 98765 43210</span>
+                <a href="tel:+919971818259" className="hover:text-white transition-colors">+91 9971818259</a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <span>hello@khurpi.com</span>
+                <a href="mailto:khurpi.store@gmail.com" className="hover:text-white transition-colors">khurpi.store@gmail.com</a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5" />
@@ -92,8 +92,8 @@ const Footer = () => {
         <div className="border-t border-white/20 mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-white/60">
           <p>© 2025 Khurpi. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <button className="hover:text-white transition-colors">Privacy Policy</button>
-            <button className="hover:text-white transition-colors">Terms of Service</button>
+            <button onClick={() => navigate('/privacy-policy')} className="hover:text-white transition-colors">Privacy Policy</button>
+            <button onClick={() => navigate('/terms-of-service')} className="hover:text-white transition-colors">Terms of Service</button>
           </div>
         </div>
       </div>
