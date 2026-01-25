@@ -1155,6 +1155,34 @@ async def get_all_pages():
     pages = await db.pages.find({}, {"_id": 0}).to_list(100)
     return pages
 
+# Referral Program Settings
+@api_router.get("/settings/referral-program")
+async def get_referral_program_settings():
+    """Get referral program settings (public)"""
+    settings = await get_referral_settings()
+    # Return only public-facing info
+    return {
+        "is_active": settings.get("is_active", True),
+        "referee_discount_percent": settings.get("referee_discount_percent", 10),
+        "max_referee_discount": settings.get("max_referee_discount", 100),
+        "customer_commission_rate": settings.get("customer_commission_rate", 10)
+    }
+
+@api_router.get("/admin/settings/referral-program")
+async def get_admin_referral_settings():
+    """Get all referral program settings (admin)"""
+    return await get_referral_settings()
+
+@api_router.put("/admin/settings/referral-program")
+async def update_referral_settings(data: dict):
+    """Update referral program settings"""
+    await db.settings.update_one(
+        {"type": "referral_settings"},
+        {"$set": {"type": "referral_settings", "data": data}},
+        upsert=True
+    )
+    return {"success": True, "data": data}
+
 @api_router.get("/admin/settings/all")
 async def get_all_admin_settings():
     """Get all settings for admin panel"""
@@ -1162,12 +1190,14 @@ async def get_all_admin_settings():
     delivery = await get_delivery_pricing()
     plans = await get_subscription_plans()
     pages = await db.pages.find({}, {"_id": 0}).to_list(100)
+    referral = await get_referral_settings()
     
     return {
         "shop_config": shop,
         "delivery_pricing": delivery,
         "subscription_plans": plans,
-        "pages": pages
+        "pages": pages,
+        "referral_settings": referral
     }
 
 @api_router.put("/users/{user_id}/address")
