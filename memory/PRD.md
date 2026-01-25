@@ -207,13 +207,22 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 ---
 
 ## Last Updated
-January 24, 2025
+January 25, 2025
 
 ## Change Log
+- **Jan 25, 2025:** Verified "My Subscriptions" page cleanup - calculation breakdown removed, simplified UI shows only plan info and monthly total
+- **Jan 24, 2025:** Converted all subscription billing from weekly to monthly
+- **Jan 24, 2025:** Implemented dynamic multi-day delivery selection based on plan
+- **Jan 24, 2025:** Updated address model to store individual fields (name, line1, line2, area, city, pincode)
+- **Jan 24, 2025:** Created SimpleMapPicker component for cleaner address form
+- **Jan 24, 2025:** Removed Pause/Cancel buttons from My Subscriptions list
 - Added shop location and distance-based delivery pricing
-- Added subscription plans with discounts (5%, 10%, 25%)
+- Added subscription plans with discounts (0%, 10%, 50%)
 - Added Admin Settings page for managing pricing and plans
 - Added cart and checkout for one-time purchases
 - Added shared Header/Footer with Khurpi logo
 - Added structured address form (Line 1, Line 2, City, Pincode, Landmark)
 - Fixed subscription steps with sticky header and prev/next buttons
+
+## Known Issues
+- **Login Redirect Race Condition (P2):** Direct navigation to protected routes may fail due to auth state hydration timing. Workaround: Navigate from homepage and click through UI.
