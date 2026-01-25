@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Store, Truck, Tag, Plus, Trash2, Save } from 'lucide-react';
+import { Store, Truck, Tag, Plus, Trash2, Save, FileText, Shield } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -26,6 +27,10 @@ const AdminSettings = () => {
   });
   const [deliveryPricing, setDeliveryPricing] = useState([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const [pages, setPages] = useState({
+    'privacy-policy': '',
+    'terms-of-service': ''
+  });
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -43,6 +48,14 @@ const AdminSettings = () => {
       setShopConfig(response.data.shop_config);
       setDeliveryPricing(response.data.delivery_pricing);
       setSubscriptionPlans(response.data.subscription_plans);
+      
+      // Load pages content
+      const pagesData = response.data.pages || [];
+      const pagesMap = {};
+      pagesData.forEach(p => {
+        pagesMap[p.slug] = p.content || '';
+      });
+      setPages(prev => ({ ...prev, ...pagesMap }));
     } catch (error) {
       toast.error('Failed to load settings');
     } finally {
@@ -81,6 +94,18 @@ const AdminSettings = () => {
       toast.success('Subscription plans saved');
     } catch (error) {
       toast.error('Failed to save subscription plans');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSavePage = async (slug) => {
+    setSaving(true);
+    try {
+      await axios.put(`${API}/admin/settings/pages/${slug}`, { content: pages[slug] });
+      toast.success(`${slug === 'privacy-policy' ? 'Privacy Policy' : 'Terms of Service'} saved`);
+    } catch (error) {
+      toast.error('Failed to save page content');
     } finally {
       setSaving(false);
     }
