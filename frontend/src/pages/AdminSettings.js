@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Store, Truck, Tag, Plus, Trash2, Save, FileText, Shield } from 'lucide-react';
+import { Store, Truck, Tag, Plus, Trash2, Save, FileText, Shield, Gift } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -30,6 +31,14 @@ const AdminSettings = () => {
   const [pages, setPages] = useState({
     'privacy-policy': '',
     'terms-of-service': ''
+  });
+  const [referralSettings, setReferralSettings] = useState({
+    is_active: true,
+    customer_commission_rate: 10,
+    referee_discount_percent: 10,
+    max_referee_discount: 100,
+    min_order_amount: 0,
+    first_order_only: true
   });
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -56,6 +65,11 @@ const AdminSettings = () => {
         pagesMap[p.slug] = p.content || '';
       });
       setPages(prev => ({ ...prev, ...pagesMap }));
+      
+      // Load referral settings
+      if (response.data.referral_settings) {
+        setReferralSettings(prev => ({ ...prev, ...response.data.referral_settings }));
+      }
     } catch (error) {
       toast.error('Failed to load settings');
     } finally {
