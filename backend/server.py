@@ -1438,6 +1438,27 @@ async def update_referral_settings(data: dict):
     )
     return {"success": True, "data": data}
 
+# OTP Whitelist Management
+@api_router.get("/admin/settings/otp-whitelist")
+async def get_otp_whitelist():
+    """Get whitelisted phone numbers for OTP testing"""
+    phones = await get_whitelisted_phones()
+    return {"phones": phones}
+
+@api_router.put("/admin/settings/otp-whitelist")
+async def update_otp_whitelist(data: dict):
+    """Update whitelisted phone numbers"""
+    phones = data.get("phones", [])
+    # Validate all phones are 10 digits
+    phones = [p.strip() for p in phones if p.strip().isdigit() and len(p.strip()) == 10]
+    
+    await db.settings.update_one(
+        {"type": "otp_whitelist"},
+        {"$set": {"type": "otp_whitelist", "phones": phones}},
+        upsert=True
+    )
+    return {"success": True, "phones": phones}
+
 @api_router.get("/admin/settings/all")
 async def get_all_admin_settings():
     """Get all settings for admin panel"""
@@ -1446,13 +1467,15 @@ async def get_all_admin_settings():
     plans = await get_subscription_plans()
     pages = await db.pages.find({}, {"_id": 0}).to_list(100)
     referral = await get_referral_settings()
+    otp_whitelist = await get_whitelisted_phones()
     
     return {
         "shop_config": shop,
         "delivery_pricing": delivery,
         "subscription_plans": plans,
         "pages": pages,
-        "referral_settings": referral
+        "referral_settings": referral,
+        "otp_whitelist": otp_whitelist
     }
 
 @api_router.put("/users/{user_id}/address")
