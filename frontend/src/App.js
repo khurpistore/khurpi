@@ -5,6 +5,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ScrollToTop from '@/components/ScrollToTop';
 import '@/App.css';
 
 import Landing from '@/pages/Landing';
@@ -20,6 +21,9 @@ import SubscriptionCreate from '@/pages/SubscriptionCreate';
 import MySubscriptions from '@/pages/MySubscriptions';
 import SubscriptionDetail from '@/pages/SubscriptionDetail';
 import Profile from '@/pages/Profile';
+import ReferAndEarn from '@/pages/ReferAndEarn';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfService from '@/pages/TermsOfService';
 import AdminLogin from '@/pages/AdminLogin';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminUsers from '@/pages/AdminUsers';
@@ -37,6 +41,7 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <div className="App min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
@@ -54,6 +59,9 @@ function App() {
                 <Route path="/subscriptions" element={<MySubscriptions />} />
                 <Route path="/subscription/:id" element={<SubscriptionDetail />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/refer" element={<ReferAndEarn />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
                 
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
