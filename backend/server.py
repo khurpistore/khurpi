@@ -1800,6 +1800,13 @@ async def generate_user_referral(user_id: str):
     import random
     import string
     
+    # Get referral settings
+    ref_settings = await get_referral_settings()
+    
+    # Check if referral program is active
+    if not ref_settings.get("is_active", True):
+        raise HTTPException(status_code=400, detail="Referral program is currently inactive")
+    
     # Get user details
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not user:
@@ -1824,6 +1831,9 @@ async def generate_user_referral(user_id: str):
         suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
         referral_code = f"{name_prefix}{suffix}"
     
+    # Get commission rate from settings
+    commission_rate = ref_settings.get("customer_commission_rate", 10)
+    
     # Create referrer entry linked to user
     referrer_doc = {
         "id": str(uuid.uuid4()),
@@ -1831,7 +1841,7 @@ async def generate_user_referral(user_id: str):
         "name": user.get("name", "Customer"),
         "phone": user.get("phone", ""),
         "email": user.get("email"),
-        "commission_rate": 10,  # Default 10% commission for customers
+        "commission_rate": commission_rate,
         "referral_code": referral_code,
         "is_active": True,
         "is_customer": True,
