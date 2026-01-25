@@ -1585,11 +1585,22 @@ async def validate_discount_code(code: str, order_amount: float):
     referrer = await db.referrers.find_one({"referral_code": code_upper, "is_active": True}, {"_id": 0})
     
     if referrer:
-        # Referral code gives customer a discount (10% or as configured) 
-        # AND referrer earns commission
-        customer_discount_percent = 10  # Customer gets 10% off when using referral
+        # Get referral program settings
+        ref_settings = await get_referral_settings()
+        
+        # Check if referral program is active
+        if not ref_settings.get("is_active", True):
+            raise HTTPException(status_code=400, detail="Referral program is currently inactive")
+        
+        # Check minimum order amount
+        min_order = ref_settings.get("min_order_amount", 0)
+        if order_amount < min_order:
+            raise HTTPException(status_code=400, detail=f"Minimum order amount for referral is ₹{min_order}")
+        
+        # Calculate discount using configured values
+        customer_discount_percent = ref_settings.get("referee_discount_percent", 10)
         customer_discount = (order_amount * customer_discount_percent) / 100
-        max_referral_discount = 100  # Max ₹100 discount for referral
+        max_referral_discount = ref_settings.get("max_referee_discount", 100)
         customer_discount = min(customer_discount, max_referral_discount)
         
         return {
