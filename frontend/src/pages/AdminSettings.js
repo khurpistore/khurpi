@@ -529,7 +529,7 @@ const AdminSettings = () => {
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mt-4">
                 <div>
                   <p className="font-medium">First Order Only</p>
-                  <p className="text-sm text-muted-foreground">Referral discount only applies to new customer's first order</p>
+                  <p className="text-sm text-muted-foreground">Referral discount only applies to new customer&apos;s first order</p>
                 </div>
                 <Switch
                   checked={referralSettings.first_order_only}
