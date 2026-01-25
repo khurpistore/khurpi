@@ -76,16 +76,6 @@ const MySubscriptions = () => {
     }
   };
 
-  const handleStatusChange = async (subscriptionId, newStatus) => {
-    try {
-      await axios.put(`${API}/subscriptions/${subscriptionId}`, { status: newStatus });
-      toast.success(`Subscription ${newStatus}`);
-      fetchSubscriptions();
-    } catch (error) {
-      toast.error('Failed to update subscription');
-    }
-  };
-
   const getStatusBadge = (status) => {
     const colors = {
       active: 'bg-green-100 text-green-800',
