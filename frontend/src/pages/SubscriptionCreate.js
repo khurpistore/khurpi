@@ -402,6 +402,8 @@ const SubscriptionCreate = () => {
     setProcessingPayment(true);
 
     try {
+      const totalAmount = calculateTotal();
+      
       const subscriptionData = {
         frequency: selectedPlan.frequency,
         delivery_days: deliveryDays,
@@ -410,7 +412,7 @@ const SubscriptionCreate = () => {
         start_date: format(startDate, 'yyyy-MM-dd'),
         tray_count: selectedProducts.reduce((sum, p) => sum + p.quantity, 0),
         items: selectedProducts,
-        total_price: calculateTotal(),
+        total_price: totalAmount,
         subtotal: calculatePerTrayPrice(), // Per delivery subtotal
         delivery_fee: getDeliveryFeePerDelivery(), // Per delivery fee
         monthly_delivery_fee: getMonthlyDeliveryFee(), // Total monthly delivery
@@ -424,10 +426,15 @@ const SubscriptionCreate = () => {
         payment_method: paymentMethod
       };
 
-      // Simulate payment processing for non-COD
-      if (paymentMethod !== 'cod') {
-        toast.info('Processing payment...');
-        await new Promise(resolve => setTimeout(resolve, 1500));
+      // Handle online payment with Razorpay
+      if (paymentMethod === 'online') {
+        const paymentSuccess = await handleRazorpayPayment(totalAmount, subscriptionData);
+        if (!paymentSuccess) {
+          setLoading(false);
+          setProcessingPayment(false);
+          return;
+        }
+        subscriptionData.payment_status = 'paid';
       }
 
       const response = await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
@@ -440,7 +447,7 @@ const SubscriptionCreate = () => {
               code: appliedDiscount.code,
               user_id: user.id,
               order_id: response.data.id,
-              order_amount: calculateTotal()
+              order_amount: totalAmount
             }
           });
         } catch (err) {
@@ -457,6 +464,79 @@ const SubscriptionCreate = () => {
       setLoading(false);
       setProcessingPayment(false);
     }
+  };
+
+  // Razorpay payment handler
+  const handleRazorpayPayment = async (amount, subscriptionData) => {
+    return new Promise(async (resolve) => {
+      try {
+        // Create Razorpay order
+        const orderResponse = await axios.post(`${API}/payments/create-order`, {
+          amount: amount,
+          receipt: `sub_${user.id}_${Date.now()}`,
+          notes: {
+            user_id: user.id,
+            plan: subscriptionData.frequency,
+            type: 'subscription'
+          }
+        });
+
+        const { order_id, key_id, amount: orderAmount } = orderResponse.data;
+
+        // Load Razorpay script if not loaded
+        if (!window.Razorpay) {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.async = true;
+          document.body.appendChild(script);
+          await new Promise(res => script.onload = res);
+        }
+
+        // Open Razorpay checkout
+        const options = {
+          key: key_id,
+          amount: orderAmount,
+          currency: 'INR',
+          name: 'Khurpi Microgreens',
+          description: `Monthly Subscription - ${selectedPlan?.name || 'Plan'}`,
+          order_id: order_id,
+          handler: async function (response) {
+            try {
+              // Verify payment
+              await axios.post(`${API}/payments/verify`, {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              });
+              toast.success('Payment successful!');
+              resolve(true);
+            } catch (err) {
+              toast.error('Payment verification failed');
+              resolve(false);
+            }
+          },
+          prefill: {
+            name: user?.name || '',
+            contact: user?.phone || ''
+          },
+          theme: {
+            color: '#16a34a'
+          },
+          modal: {
+            ondismiss: function () {
+              toast.info('Payment cancelled');
+              resolve(false);
+            }
+          }
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      } catch (error) {
+        toast.error('Failed to initialize payment');
+        resolve(false);
+      }
+    });
   };
 
   const canGoNext = () => {
