@@ -232,6 +232,7 @@ class Subscription(BaseModel):
 class SubscriptionCreate(BaseModel):
     frequency: str
     delivery_day: str
+    delivery_days: Optional[List[str]] = None  # Array of selected days (e.g., ["Monday", "Wednesday"])
     start_date: str
     tray_count: int
     items: List[SubscriptionItem]
@@ -247,6 +248,7 @@ class SubscriptionUpdate(BaseModel):
     status: Optional[str] = None
     frequency: Optional[str] = None
     delivery_day: Optional[str] = None
+    delivery_days: Optional[List[str]] = None
     tray_count: Optional[int] = None
     next_delivery_date: Optional[str] = None
 
