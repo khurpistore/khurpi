@@ -51,6 +51,24 @@ DEFAULT_SUBSCRIPTION_PLANS = [
     {"id": "four_days_week", "name": "4 Days a Week", "frequency": "four_days_week", "deliveries_per_week": 4, "discount": 50, "trays_per_month": 16, "description": "Best value - Maximum freshness"}
 ]
 
+# Default Referral Program Settings
+DEFAULT_REFERRAL_SETTINGS = {
+    "is_active": True,
+    "customer_commission_rate": 10,  # % commission customers earn
+    "referee_discount_percent": 10,  # % discount for new users using referral code
+    "max_referee_discount": 100,     # Max ₹ discount for referred user
+    "min_order_amount": 0,           # Minimum order amount for referral to apply
+    "first_order_only": True,        # Referral discount only on first order
+    "allow_self_referral": False     # Prevent users from using their own code
+}
+
+async def get_referral_settings():
+    """Get referral program settings from DB or return defaults"""
+    settings = await db.settings.find_one({"type": "referral_settings"}, {"_id": 0})
+    if settings and settings.get("data"):
+        return {**DEFAULT_REFERRAL_SETTINGS, **settings["data"]}
+    return DEFAULT_REFERRAL_SETTINGS
+
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Calculate distance between two coordinates using Haversine formula"""
     R = 6371  # Earth's radius in kilometers
