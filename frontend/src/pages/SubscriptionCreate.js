@@ -353,7 +353,7 @@ const SubscriptionCreate = () => {
 
     setDiscountLoading(true);
     try {
-      const orderAmount = calculateMonthlySubtotal() - calculateDiscount() + (getDeliveryFee() * 4);
+      const orderAmount = calculateMonthlySubtotal() - calculateDiscount() + getMonthlyDeliveryFee();
       const response = await axios.post(`${API}/discount/validate?code=${discountCode}&order_amount=${orderAmount}`);
       setAppliedDiscount(response.data);
       toast.success(response.data.message);
