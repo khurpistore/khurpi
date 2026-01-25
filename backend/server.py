@@ -6,6 +6,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import math
+import uuid
+import hmac
+import hashlib
+import random
+import requests
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
@@ -13,6 +18,7 @@ from datetime import datetime, timezone, timedelta
 import io
 import csv
 from passlib.context import CryptContext
+import razorpay
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,6 +26,14 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Razorpay client initialization
+razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID', '')
+razorpay_key_secret = os.environ.get('RAZORPAY_KEY_SECRET', '')
+razorpay_client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret)) if razorpay_key_id else None
+
+# MSG91 Configuration
+MSG91_AUTH_KEY = os.environ.get('MSG91_AUTH_KEY', '')
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
