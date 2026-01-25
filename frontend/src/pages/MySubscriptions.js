@@ -120,7 +120,7 @@ const MySubscriptions = () => {
           </Card>
         ) : (
           <div className="space-y-6" data-testid="subscriptions-list">
-            {subscriptions.map((subscription) => {
+            {[...subscriptions].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map((subscription) => {
               // Calculate monthly values
               const deliveriesPerWeek = subscription.deliveries_per_week || getDeliveriesPerWeek(subscription.frequency);
               const weeksPerMonth = 4;
