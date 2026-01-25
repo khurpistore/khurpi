@@ -317,8 +317,17 @@ const SubscriptionCreate = () => {
     return (calculateMonthlySubtotal() * selectedPlan.discount) / 100;
   };
 
-  const getDeliveryFee = () => {
+  // Get delivery fee per single delivery
+  const getDeliveryFeePerDelivery = () => {
     return deliveryInfo?.fee || 0;
+  };
+
+  // Calculate total monthly delivery fee based on selected days
+  const getMonthlyDeliveryFee = () => {
+    const perDeliveryFee = getDeliveryFeePerDelivery();
+    const deliveriesPerWeek = deliveryDays.length;
+    const weeksPerMonth = 4;
+    return perDeliveryFee * deliveriesPerWeek * weeksPerMonth;
   };
 
   const getDiscountCodeSavings = () => {
@@ -330,9 +339,9 @@ const SubscriptionCreate = () => {
   const calculateTotal = () => {
     const monthlySubtotal = calculateMonthlySubtotal();
     const planDiscount = calculateDiscount();
-    const delivery = getDeliveryFee() * 4; // Delivery fee per month (4 weeks)
+    const monthlyDelivery = getMonthlyDeliveryFee();
     const codeDiscount = getDiscountCodeSavings();
-    return Math.max(0, monthlySubtotal - planDiscount + delivery - codeDiscount);
+    return Math.max(0, monthlySubtotal - planDiscount + monthlyDelivery - codeDiscount);
   };
 
   // Apply discount code (works for both coupons and referral codes)
