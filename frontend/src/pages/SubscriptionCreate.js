@@ -395,11 +395,16 @@ const SubscriptionCreate = () => {
     try {
       const subscriptionData = {
         frequency: selectedPlan.frequency,
-        delivery_day: deliveryDay,
+        delivery_days: deliveryDays,
+        delivery_day: deliveryDays[0], // Keep for backwards compatibility
+        deliveries_per_week: selectedPlan.deliveries_per_week,
         start_date: format(startDate, 'yyyy-MM-dd'),
         tray_count: selectedProducts.reduce((sum, p) => sum + p.quantity, 0),
         items: selectedProducts,
         total_price: calculateTotal(),
+        subtotal: calculateMonthlySubtotal() / 4, // Per delivery subtotal
+        delivery_fee: getDeliveryFee(),
+        plan_discount: selectedPlan.discount,
         plan_id: selectedPlan.id,
         address_id: selectedAddressId,
         coupon_code: appliedDiscount?.code || null,
