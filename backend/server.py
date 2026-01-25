@@ -461,8 +461,17 @@ async def send_otp(data: OTPSendRequest):
             
             if result.get("type") == "success":
                 logging.info(f"OTP sent successfully to {phone}: {otp}")
-                # Always return debug_otp until MSG91 DLT template is configured
-                # Remove debug_otp in production after configuring MSG91 DLT template
+                
+                # For whitelisted numbers, always show OTP
+                if is_whitelisted:
+                    return {
+                        "success": True, 
+                        "message": f"OTP sent to +91 {phone}",
+                        "debug_otp": otp,
+                        "whitelisted": True
+                    }
+                
+                # For non-whitelisted, show OTP in test mode until DLT configured
                 return {
                     "success": True, 
                     "message": "OTP sent to your phone",
