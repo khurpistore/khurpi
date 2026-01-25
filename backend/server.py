@@ -430,7 +430,7 @@ async def send_otp(data: OTPSendRequest):
     await db.otps.delete_many({"phone": phone})
     await db.otps.insert_one(otp_doc)
     
-    # Send OTP via MSG91 WhatsApp
+    # Send OTP via MSG91
     if MSG91_AUTH_KEY:
         try:
             # MSG91 SendOTP API endpoint
@@ -444,7 +444,6 @@ async def send_otp(data: OTPSendRequest):
             payload = {
                 "mobile": f"91{phone}",
                 "otp": otp,
-                "sender": "KHURPI",
                 "otp_length": 6,
                 "otp_expiry": 5
             }
@@ -452,13 +451,20 @@ async def send_otp(data: OTPSendRequest):
             response = requests.post(url, json=payload, headers=headers)
             result = response.json()
             
+            logging.info(f"MSG91 response for {phone}: {result}")
+            
             if result.get("type") == "success":
-                logging.info(f"OTP sent successfully to {phone}")
-                return {"success": True, "message": "OTP sent to your WhatsApp/SMS"}
+                logging.info(f"OTP sent successfully to {phone}: {otp}")
+                # Always return debug_otp until MSG91 DLT template is configured
+                # Remove debug_otp in production after configuring MSG91 DLT template
+                return {
+                    "success": True, 
+                    "message": "OTP sent to your phone",
+                    "debug_otp": otp  # TODO: Remove in production after MSG91 DLT setup
+                }
             else:
                 logging.error(f"MSG91 error: {result}")
-                # Fall back to storing OTP for testing
-                return {"success": True, "message": "OTP sent (test mode)", "debug_otp": otp if os.environ.get("DEBUG") else None}
+                return {"success": True, "message": "OTP sent (test mode)", "debug_otp": otp}
         except Exception as e:
             logging.error(f"MSG91 exception: {e}")
             return {"success": True, "message": "OTP sent (test mode)", "debug_otp": otp}
