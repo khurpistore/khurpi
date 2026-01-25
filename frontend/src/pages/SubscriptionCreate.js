@@ -471,9 +471,14 @@ const SubscriptionCreate = () => {
     return new Promise(async (resolve) => {
       try {
         // Create Razorpay order
+        // Receipt max 40 chars - use short format
+        const shortUserId = user.id.slice(0, 8);
+        const timestamp = Date.now().toString().slice(-8);
+        const receipt = `sub_${shortUserId}_${timestamp}`;
+        
         const orderResponse = await axios.post(`${API}/payments/create-order`, {
           amount: amount,
-          receipt: `sub_${user.id}_${Date.now()}`,
+          receipt: receipt,
           notes: {
             user_id: user.id,
             plan: subscriptionData.frequency,
