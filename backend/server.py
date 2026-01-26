@@ -1145,17 +1145,52 @@ async def get_admin_dashboard():
 
 @api_router.get("/admin/subscriptions")
 async def get_all_subscriptions_admin():
-    subscriptions = await db.subscriptions.find({}, {"_id": 0}).to_list(1000)
+    # Sort by created_at descending to show recent subscriptions first
+    subscriptions = await db.subscriptions.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
     result = []
     for sub in subscriptions:
         user = await db.users.find_one({"id": sub["user_id"]}, {"_id": 0})
         items = await db.subscription_items.find({"subscription_id": sub["id"]}, {"_id": 0}).to_list(100)
         
+        # Calculate proper monthly total
+        # Get product prices and calculate per-delivery total
+        per_delivery_total = 0
+        for item in items:
+            product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+            if product:
+                per_delivery_total += product["price"] * item["quantity"]
+        
+        # Determine deliveries per week based on frequency
+        frequency = sub.get("frequency", "once_week")
+        deliveries_per_week = 1
+        discount_percent = 0
+        if frequency == "once_week":
+            deliveries_per_week = 1
+            discount_percent = 0
+        elif frequency == "twice_week":
+            deliveries_per_week = 2
+            discount_percent = 10
+        elif frequency == "four_days_week":
+            deliveries_per_week = 4
+            discount_percent = 50
+        
+        # Monthly calculation: per_delivery × deliveries_per_week × 4 weeks
+        monthly_subtotal = per_delivery_total * deliveries_per_week * 4
+        discount_amount = (monthly_subtotal * discount_percent) / 100
+        delivery_fee = sub.get("delivery_fee", 0) * deliveries_per_week * 4  # Monthly delivery fee
+        monthly_total = monthly_subtotal - discount_amount + delivery_fee
+        
         result.append({
             **sub,
             "user": user,
-            "items_count": len(items)
+            "items_count": len(items),
+            "per_delivery_total": per_delivery_total,
+            "monthly_subtotal": monthly_subtotal,
+            "discount_percent": discount_percent,
+            "discount_amount": discount_amount,
+            "monthly_delivery_fee": delivery_fee,
+            "monthly_total": round(monthly_total, 2)
         })
     
     return result
