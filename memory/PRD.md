@@ -248,3 +248,14 @@ January 25, 2025
 
 ## Known Issues
 - ~~**Login Redirect Race Condition (P2):** Direct navigation to protected routes may fail due to auth state hydration timing.~~ **FIXED** - Added ProtectedRoute component with loading state
+
+## Last Updated
+January 26, 2025
+
+## Change Log
+- **Jan 26, 2025:** Reverted from OTP to Password-based authentication per user request
+- **Jan 26, 2025:** Removed "Forgot Password" page and link
+- **Jan 26, 2025:** Added "Change Password" feature to Profile page (Security section)
+- **Jan 26, 2025:** Added "Reset Password" feature to Admin Users page
+- **Jan 26, 2025:** Added backend APIs: `/auth/change-password`, `/admin/users/{id}/reset-password`
+- **Jan 25, 2025:** Implemented Phone + OTP authentication via MSG91 WhatsApp (later reverted)
