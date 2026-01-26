@@ -56,21 +56,43 @@ const Products = () => {
     <div className="bg-gradient-to-b from-green-50 to-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Subscribe Banner */}
-        <div className="mb-8 sm:mb-12 bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-4 sm:p-6 text-white shadow-lg">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h3 className="text-lg sm:text-xl font-bold flex items-center justify-center sm:justify-start gap-2">
-                <Sparkles className="w-5 h-5" />
-                Subscribe & Save 15%
-              </h3>
-              <p className="text-sm opacity-90 mt-1">Get regular deliveries and never run out of fresh greens</p>
+        <div className="mb-8 sm:mb-12 bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 rounded-2xl p-5 sm:p-8 text-white shadow-xl overflow-hidden relative">
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          </div>
+          
+          <div className="relative flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6">
+            <div className="text-center lg:text-left flex-1">
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+                <Zap className="w-6 h-6 text-yellow-300" />
+                <h3 className="text-xl sm:text-2xl font-bold">
+                  Subscribe & Unlock Premium Benefits
+                </h3>
+              </div>
+              <p className="text-base sm:text-lg opacity-95 mb-4">
+                Why pay more? Get fresh microgreens delivered on autopilot.
+              </p>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-3">
+                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
+                  <Truck className="w-4 h-4" /> FREE Delivery
+                </span>
+                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
+                  <Tag className="w-4 h-4" /> Up to 50% OFF
+                </span>
+                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
+                  <Sparkles className="w-4 h-4" /> Priority Harvest
+                </span>
+              </div>
             </div>
             <Button
               data-testid="subscribe-banner-button"
               onClick={handleStartSubscription}
-              className="bg-white text-green-700 hover:bg-gray-100 rounded-full px-6 font-semibold whitespace-nowrap"
+              size="lg"
+              className="bg-white text-green-700 hover:bg-yellow-50 hover:text-green-800 rounded-full px-8 py-6 font-bold text-base shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
             >
-              Start Subscription
+              Start Saving Today →
             </Button>
           </div>
         </div>
