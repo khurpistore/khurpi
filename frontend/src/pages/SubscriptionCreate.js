@@ -381,17 +381,27 @@ const SubscriptionCreate = () => {
     return (calculateMonthlySubtotal() * selectedPlan.discount) / 100;
   };
 
-  // Get delivery fee per single delivery
+  // Get delivery fee per single delivery (would be charged for single orders)
   const getDeliveryFeePerDelivery = () => {
     return deliveryInfo?.fee || 0;
   };
 
-  // Calculate total monthly delivery fee based on selected days
-  const getMonthlyDeliveryFee = () => {
+  // Calculate what delivery would cost without subscription (for showing savings)
+  const getWouldBeMonthlyDeliveryFee = () => {
     const perDeliveryFee = getDeliveryFeePerDelivery();
     const deliveriesPerWeek = deliveryDays.length;
     const weeksPerMonth = 4;
     return perDeliveryFee * deliveriesPerWeek * weeksPerMonth;
+  };
+
+  // Subscription gets FREE delivery
+  const getMonthlyDeliveryFee = () => {
+    return 0; // Free delivery for all subscriptions
+  };
+
+  // Calculate delivery savings (what they would have paid)
+  const getDeliverySavings = () => {
+    return getWouldBeMonthlyDeliveryFee();
   };
 
   const getDiscountCodeSavings = () => {
@@ -399,11 +409,16 @@ const SubscriptionCreate = () => {
     return appliedDiscount.discount || 0;
   };
 
+  // Calculate total savings (plan discount + delivery savings + coupon)
+  const getTotalSavings = () => {
+    return calculateDiscount() + getDeliverySavings() + getDiscountCodeSavings();
+  };
+
   // Calculate total monthly cost
   const calculateTotal = () => {
     const monthlySubtotal = calculateMonthlySubtotal();
     const planDiscount = calculateDiscount();
-    const monthlyDelivery = getMonthlyDeliveryFee();
+    const monthlyDelivery = getMonthlyDeliveryFee(); // Always 0 for subscriptions
     const codeDiscount = getDiscountCodeSavings();
     return Math.max(0, monthlySubtotal - planDiscount + monthlyDelivery - codeDiscount);
   };
