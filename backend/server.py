@@ -818,7 +818,7 @@ async def send_otp(data: OTPSendRequest):
 
 @api_router.post("/auth/verify-otp")
 async def verify_otp(data: OTPVerifyRequest):
-    """Verify OTP and login/signup user"""
+    """Verify OTP and login/signup user (for customers only)"""
     phone = data.phone.strip()
     otp = data.otp.strip()
     
@@ -841,15 +841,15 @@ async def verify_otp(data: OTPVerifyRequest):
     # Mark OTP as verified and delete it
     await db.otps.delete_one({"phone": phone})
     
-    # Check if user exists
-    user = await db.users.find_one({"phone": phone}, {"_id": 0})
+    # Check if customer user exists (same phone can be delivery boy separately)
+    user = await db.users.find_one({"phone": phone, "role": "customer"}, {"_id": 0})
     
     if user:
-        # Existing user - login
+        # Existing customer - login
         user.pop("password", None)
         return {"success": True, "user": user, "is_new_user": False}
     else:
-        # New user - create account
+        # New customer - create account
         user_name = data.name or f"User{phone[-4:]}"
         
         user_doc = {
