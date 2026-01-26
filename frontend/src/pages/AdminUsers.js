@@ -260,8 +260,154 @@ const AdminUsers = () => {
     setDialogOpen(true);
   };
 
+  const handleAddDeliveryBoy = async (e) => {
+    e.preventDefault();
+    if (!newDeliveryBoy.name || !newDeliveryBoy.phone || !newDeliveryBoy.password) {
+      toast.error('Please fill all fields');
+      return;
+    }
+    if (newDeliveryBoy.phone.length !== 10) {
+      toast.error('Please enter a valid 10-digit phone number');
+      return;
+    }
+    if (newDeliveryBoy.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    
+    setAddingDeliveryBoy(true);
+    try {
+      await axios.post(`${API}/admin/delivery-boys`, newDeliveryBoy);
+      toast.success('Delivery boy added successfully');
+      setNewDeliveryBoy({ name: '', phone: '', password: '' });
+      setShowAddDeliveryBoy(false);
+      fetchUsers();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to add delivery boy');
+    } finally {
+      setAddingDeliveryBoy(false);
+    }
+  };
+
+  // Separate delivery boys from other users
+  const deliveryBoys = users.filter(u => u.role === 'delivery_boy');
+  const regularUsers = filteredUsers.filter(u => u.role !== 'delivery_boy');
+
   return (
     <AdminLayout active="users" title="User Management">
+      {/* Delivery Boys Section */}
+      <Card className="mb-6 border-blue-200 bg-blue-50/30">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Truck className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-800">Delivery Partners</h3>
+              <Badge className="bg-blue-100 text-blue-800">{deliveryBoys.length}</Badge>
+            </div>
+            <Dialog open={showAddDeliveryBoy} onOpenChange={setShowAddDeliveryBoy}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Delivery Partner</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleAddDeliveryBoy} className="space-y-4">
+                  <div>
+                    <Label>Name</Label>
+                    <Input
+                      placeholder="Full name"
+                      value={newDeliveryBoy.name}
+                      onChange={(e) => setNewDeliveryBoy({...newDeliveryBoy, name: e.target.value})}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <Input
+                      placeholder="10-digit phone"
+                      value={newDeliveryBoy.phone}
+                      onChange={(e) => setNewDeliveryBoy({...newDeliveryBoy, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+                      className="mt-1"
+                      maxLength={10}
+                    />
+                  </div>
+                  <div>
+                    <Label>Password</Label>
+                    <Input
+                      type="password"
+                      placeholder="Min 6 characters"
+                      value={newDeliveryBoy.password}
+                      onChange={(e) => setNewDeliveryBoy({...newDeliveryBoy, password: e.target.value})}
+                      className="mt-1"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full rounded-full" disabled={addingDeliveryBoy}>
+                    {addingDeliveryBoy ? 'Adding...' : 'Add Delivery Partner'}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          {deliveryBoys.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No delivery partners yet</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {deliveryBoys.map((db) => (
+                <div key={db.id} className="flex items-center justify-between bg-white p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium">{db.name}</p>
+                    <p className="text-sm text-muted-foreground">{db.phone}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setUserToResetPassword(db);
+                        setResetPasswordDialogOpen(true);
+                      }}
+                    >
+                      <KeyRound className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="ghost" className="text-red-600">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Delivery Partner?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will remove {db.name} from the system.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(db.id)}
+                            className="bg-destructive text-destructive-foreground"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground mt-3">
+            Login URL: <code className="bg-blue-100 px-1 rounded">/delivery/login</code>
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="flex-1 relative">
@@ -290,7 +436,7 @@ const AdminUsers = () => {
       <div className="mb-6 p-3 sm:p-4 bg-white rounded-lg border border-border">
         <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
           <div>
-            <p className="text-lg sm:text-2xl font-bold text-primary">{users.length}</p>
+            <p className="text-lg sm:text-2xl font-bold text-primary">{regularUsers.length}</p>
             <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
           </div>
           <div>
@@ -306,7 +452,7 @@ const AdminUsers = () => {
 
       {loading ? (
         <p className="text-muted-foreground">Loading users...</p>
-      ) : filteredUsers.length === 0 ? (
+      ) : regularUsers.length === 0 ? (
         <Card>
           <CardContent className="p-8 sm:p-12 text-center">
             <p className="text-muted-foreground">
