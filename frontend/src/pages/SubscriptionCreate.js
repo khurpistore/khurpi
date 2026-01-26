@@ -1042,15 +1042,16 @@ const SubscriptionCreate = () => {
                         <span>-₹{calculateDiscount().toFixed(2)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center bg-green-50 p-2 rounded -mx-2">
                       <span className="text-muted-foreground flex items-center gap-1">
-                        <Truck className="w-3 h-3" /> Delivery ({deliveryDays.length}×/week × 4 weeks)
+                        <Truck className="w-3 h-3 text-green-600" /> Delivery ({deliveryDays.length}×/week × 4 weeks)
                       </span>
-                      {getMonthlyDeliveryFee() === 0 ? (
-                        <span className="text-green-600 font-medium">FREE</span>
-                      ) : (
-                        <span>₹{getMonthlyDeliveryFee().toFixed(2)}</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {getWouldBeMonthlyDeliveryFee() > 0 && (
+                          <span className="text-xs text-muted-foreground line-through">₹{getWouldBeMonthlyDeliveryFee().toFixed(2)}</span>
+                        )}
+                        <span className="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-medium">FREE</span>
+                      </div>
                     </div>
                     {appliedDiscount && (
                       <div className="flex justify-between text-green-600">
