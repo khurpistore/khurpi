@@ -221,23 +221,37 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <Button
-                data-testid="start-subscription-detail-button"
-                size="lg"
-                variant="outline"
-                onClick={() => {
-                  if (!user) {
-                    toast.error('Please login to start a subscription');
-                    navigate('/login');
-                    return;
-                  }
-                  navigate('/subscription/create');
-                }}
-                className="w-full rounded-full py-5 text-lg border-2 border-green-500 text-green-700 hover:bg-green-50"
-              >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Subscribe & Save 15%
-              </Button>
+              {/* Subscribe & Save Section */}
+              <div className="bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 rounded-xl p-4 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-5 h-5 text-yellow-300" />
+                  <span className="font-bold text-lg">Subscribe & Save More!</span>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium">
+                    <Truck className="w-3 h-3" /> FREE Delivery
+                  </span>
+                  <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium">
+                    <Tag className="w-3 h-3" /> Up to 50% OFF
+                  </span>
+                </div>
+                <Button
+                  data-testid="start-subscription-detail-button"
+                  size="lg"
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to start a subscription');
+                      navigate('/login');
+                      return;
+                    }
+                    navigate('/subscription/create');
+                  }}
+                  className="w-full bg-white text-green-700 hover:bg-yellow-50 hover:text-green-800 rounded-full py-5 text-base font-bold shadow-lg"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Start Subscription →
+                </Button>
+              </div>
             </div>
 
             <div className="bg-secondary/10 rounded-xl p-4 sm:p-6">
