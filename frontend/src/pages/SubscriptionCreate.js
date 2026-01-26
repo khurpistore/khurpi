@@ -355,8 +355,8 @@ const SubscriptionCreate = () => {
     );
   };
 
-  // Calculate per-tray cost (single delivery)
-  const calculatePerTrayPrice = () => {
+  // Calculate per-pack cost (single delivery)
+  const calculatePerPackPrice = () => {
     let total = 0;
     selectedProducts.forEach(item => {
       const product = products.find(p => p.id === item.product_id);
