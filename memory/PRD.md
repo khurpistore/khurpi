@@ -197,8 +197,7 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 ## Future Roadmap
 
 ### P0 (High Priority)
-- Real Phone + OTP authentication
-- Razorpay subscription payments integration
+- Razorpay subscription payments integration (partially done, test mode)
 - Payment failure retry logic
 
 ### P1 (Medium Priority)
