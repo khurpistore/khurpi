@@ -86,8 +86,40 @@ const SubscriptionCreate = () => {
     }
   }, [deliveryDays, minStartDate]);
 
+  // Get next available weekday (excluding Sunday)
+  const getNextAvailableWeekday = (count = 1) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const result = [];
+    let daysChecked = 0;
+    let currentDate = new Date(today);
+    currentDate.setDate(currentDate.getDate() + 1); // Start from tomorrow
+    
+    while (result.length < count && daysChecked < 14) {
+      const dayIndex = currentDate.getDay();
+      // Skip Sunday (dayIndex === 0)
+      if (dayIndex !== 0) {
+        const dayName = WEEKDAYS[dayIndex === 0 ? 6 : dayIndex - 1];
+        if (!result.includes(dayName)) {
+          result.push(dayName);
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+      daysChecked++;
+    }
+    
+    return result;
+  };
+
   // Toggle delivery day selection
   const toggleDeliveryDay = (day) => {
+    // Don't allow Sunday
+    if (day === 'Sunday') {
+      toast.error('Sunday delivery is not available');
+      return;
+    }
+    
     const maxDays = selectedPlan?.deliveries_per_week || 1;
     
     if (deliveryDays.includes(day)) {
@@ -107,16 +139,12 @@ const SubscriptionCreate = () => {
     }
   };
 
-  // Reset delivery days when plan changes
+  // Reset delivery days when plan changes - use next available weekdays
   const handlePlanChange = (plan) => {
     setSelectedPlan(plan);
-    // Reset to appropriate number of days
-    const defaultDays = plan.deliveries_per_week === 4 
-      ? ['Monday', 'Tuesday', 'Thursday', 'Friday']
-      : plan.deliveries_per_week === 2 
-        ? ['Monday', 'Thursday'] 
-        : ['Monday'];
-    setDeliveryDays(defaultDays);
+    // Auto-select next available weekdays based on plan
+    const nextDays = getNextAvailableWeekday(plan.deliveries_per_week);
+    setDeliveryDays(nextDays);
   };
 
   // Save subscription state to localStorage before navigating away
