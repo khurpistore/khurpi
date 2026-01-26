@@ -48,7 +48,9 @@ const AdminReferrals = () => {
   const fetchReferrers = async () => {
     try {
       const response = await axios.get(`${API}/admin/referrers`);
-      setReferrers(response.data);
+      // Sort by created_at descending (recent first)
+      const sorted = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setReferrers(sorted);
     } catch (error) {
       console.error('Failed to fetch referrers:', error);
     } finally {
