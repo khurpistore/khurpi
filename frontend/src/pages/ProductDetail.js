@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, Minus, Plus, ShoppingCart, Sparkles } from 'lucide-react';
+import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, Minus, Plus, ShoppingCart, Sparkles, Truck, Tag, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
