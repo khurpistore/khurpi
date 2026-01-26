@@ -1,14 +1,143 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
-import { User } from 'lucide-react';
+import { toast } from 'sonner';
+import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+const ChangePasswordDialog = ({ user, open, onOpenChange }) => {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await axios.post(`${API}/auth/change-password?user_id=${user.id}`, {
+        current_password: currentPassword,
+        new_password: newPassword
+      });
+      toast.success('Password changed successfully!');
+      onOpenChange(false);
+      // Reset form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md mx-4 sm:mx-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            Change Password
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="currentPassword">Current Password</Label>
+            <div className="relative mt-1">
+              <Input
+                id="currentPassword"
+                data-testid="current-password-input"
+                type={showPasswords ? 'text' : 'password'}
+                placeholder="Enter current password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(!showPasswords)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="newPassword">New Password</Label>
+            <Input
+              id="newPassword"
+              data-testid="new-password-input"
+              type={showPasswords ? 'text' : 'password'}
+              placeholder="Enter new password (min 6 characters)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              className="mt-1"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <Input
+              id="confirmPassword"
+              data-testid="confirm-new-password-input"
+              type={showPasswords ? 'text' : 'password'}
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="mt-1"
+            />
+          </div>
+
+          <Button
+            data-testid="change-password-submit"
+            type="submit"
+            className="w-full bg-primary hover:bg-primary/90 rounded-full"
+            disabled={loading || !currentPassword || newPassword.length < 6}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Changing Password...
+              </>
+            ) : (
+              'Change Password'
+            )}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   if (!user) {
     navigate('/login');
@@ -41,6 +170,28 @@ const Profile = () => {
             </CardContent>
           </Card>
 
+          {/* Security Section */}
+          <Card>
+            <CardContent className="p-4 sm:p-6">
+              <h3 className="text-lg font-semibold text-primary mb-4">Security</h3>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Password</p>
+                  <p className="text-sm text-muted-foreground">Change your account password</p>
+                </div>
+                <Button
+                  data-testid="open-change-password-btn"
+                  variant="outline"
+                  onClick={() => setPasswordDialogOpen(true)}
+                  className="rounded-full"
+                >
+                  <Lock className="w-4 h-4 mr-2" />
+                  Change Password
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Account Created */}
           <Card>
             <CardContent className="p-4 sm:p-6">
@@ -51,6 +202,13 @@ const Profile = () => {
           </Card>
         </div>
       </div>
+
+      {/* Change Password Dialog */}
+      <ChangePasswordDialog 
+        user={user} 
+        open={passwordDialogOpen} 
+        onOpenChange={setPasswordDialogOpen} 
+      />
     </div>
   );
 };
