@@ -115,7 +115,6 @@ const SubscriptionCreate = () => {
           setSelectedAddressId(state.selectedAddressId);
           setDiscountCode(state.discountCode || '');
           setAppliedDiscount(state.appliedDiscount);
-          setPaymentMethod(state.paymentMethod || 'cod');
           setStep(state.step || 1);
           // Clear the saved state after restoring
           localStorage.removeItem('subscriptionDraft');
