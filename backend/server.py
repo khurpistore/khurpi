@@ -439,8 +439,137 @@ async def admin_reset_password(user_id: str, data: AdminResetPasswordRequest):
 @api_router.post("/admin/login")
 async def admin_login(username: str, password: str):
     if username == "admin" and password == "admin":
-        return {"success": True, "role": "admin", "name": "Admin"}
+        return {"success": True, "role": "admin", "name": "Admin", "id": "admin"}
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+# ============ Delivery Boy Management ============
+
+class DeliveryBoyCreate(BaseModel):
+    name: str
+    phone: str
+    password: str
+
+class DeliveryBoyLogin(BaseModel):
+    phone: str
+    password: str
+
+@api_router.post("/delivery-boy/login")
+async def delivery_boy_login(data: DeliveryBoyLogin):
+    """Login for delivery boys"""
+    user = await db.users.find_one({"phone": data.phone, "role": "delivery_boy"}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not pwd_context.verify(data.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    user.pop("password", None)
+    return {"success": True, "user": user}
+
+@api_router.get("/delivery-boy/deliveries")
+async def get_delivery_boy_deliveries(delivery_boy_id: str):
+    """Get today's deliveries for delivery boy"""
+    today = datetime.now(timezone.utc).date().isoformat()
+    deliveries = await db.deliveries.find({"delivery_date": today}, {"_id": 0}).to_list(500)
+    
+    result = []
+    for delivery in deliveries:
+        subscription = await db.subscriptions.find_one({"id": delivery["subscription_id"]}, {"_id": 0})
+        if subscription:
+            user = await db.users.find_one({"id": subscription["user_id"]}, {"_id": 0})
+            items = await db.subscription_items.find({"subscription_id": subscription["id"]}, {"_id": 0}).to_list(100)
+            
+            # Get address
+            address = None
+            if subscription.get("address_id"):
+                address = await db.addresses.find_one({"id": subscription["address_id"]}, {"_id": 0})
+            
+            product_details = []
+            for item in items:
+                product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+                if product:
+                    product_details.append({
+                        "name": product["name"],
+                        "quantity": item["quantity"]
+                    })
+            
+            # Format address
+            delivery_address = "No address"
+            if address:
+                parts = [address.get("address_line_1", ""), address.get("address_line_2", ""), 
+                        address.get("area", ""), address.get("city", "")]
+                delivery_address = ", ".join([p for p in parts if p])
+                if address.get("pincode"):
+                    delivery_address += f" - {address['pincode']}"
+            elif user and user.get("address"):
+                delivery_address = user["address"]
+            
+            result.append({
+                "id": delivery["id"],
+                "status": delivery["status"],
+                "customer_name": user["name"] if user else "Unknown",
+                "customer_phone": user["phone"] if user else "N/A",
+                "delivery_address": delivery_address,
+                "products": product_details,
+                "subscription_status": subscription.get("status", "active"),
+                "is_skipped": today in subscription.get("skipped_deliveries", [])
+            })
+    
+    # Sort: scheduled first, then delivered, then others
+    status_order = {"scheduled": 0, "delivered": 1, "skipped": 2, "failed": 3, "cancelled": 4}
+    result.sort(key=lambda x: status_order.get(x["status"], 5))
+    
+    return result
+
+@api_router.put("/delivery-boy/deliveries/{delivery_id}")
+async def update_delivery_status_by_delivery_boy(delivery_id: str, status: str):
+    """Update delivery status by delivery boy"""
+    valid_statuses = ["delivered", "failed", "skipped"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Status must be one of: {', '.join(valid_statuses)}")
+    
+    result = await db.deliveries.update_one({"id": delivery_id}, {"$set": {"status": status}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Delivery not found")
+    
+    return {"success": True, "message": f"Delivery marked as {status}"}
+
+@api_router.post("/admin/delivery-boys")
+async def create_delivery_boy(data: DeliveryBoyCreate):
+    """Create a new delivery boy (admin only)"""
+    existing = await db.users.find_one({"phone": data.phone}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+    
+    hashed_password = pwd_context.hash(data.password)
+    
+    user_doc = {
+        "id": str(uuid.uuid4()),
+        "phone": data.phone,
+        "name": data.name,
+        "password": hashed_password,
+        "address": None,
+        "role": "delivery_boy",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    user_doc.pop("password")
+    return user_doc
+
+@api_router.get("/admin/delivery-boys")
+async def get_all_delivery_boys():
+    """Get all delivery boys (admin only)"""
+    delivery_boys = await db.users.find({"role": "delivery_boy"}, {"_id": 0, "password": 0}).to_list(100)
+    return delivery_boys
+
+@api_router.delete("/admin/delivery-boys/{user_id}")
+async def delete_delivery_boy(user_id: str):
+    """Delete a delivery boy (admin only)"""
+    result = await db.users.delete_one({"id": user_id, "role": "delivery_boy"})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Delivery boy not found")
+    return {"success": True}
 
 # ============ OTP Authentication with MSG91 ============
 
