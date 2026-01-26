@@ -396,6 +396,46 @@ async def login(login_data: UserLogin):
     user.pop("password")
     return User(**user)
 
+# ============ Password Change & Reset ============
+
+@api_router.post("/auth/change-password")
+async def change_password(user_id: str, data: ChangePasswordRequest):
+    """Allow user to change their own password"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not pwd_context.verify(data.current_password, user["password"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Validate new password
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+    
+    # Hash and update password
+    hashed_password = pwd_context.hash(data.new_password)
+    await db.users.update_one({"id": user_id}, {"$set": {"password": hashed_password}})
+    
+    return {"success": True, "message": "Password changed successfully"}
+
+@api_router.post("/admin/users/{user_id}/reset-password")
+async def admin_reset_password(user_id: str, data: AdminResetPasswordRequest):
+    """Allow admin to reset any user's password"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Validate new password
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    # Hash and update password
+    hashed_password = pwd_context.hash(data.new_password)
+    await db.users.update_one({"id": user_id}, {"$set": {"password": hashed_password}})
+    
+    return {"success": True, "message": f"Password reset successfully for {user['name']}"}
+
 @api_router.post("/admin/login")
 async def admin_login(username: str, password: str):
     if username == "admin" and password == "admin":
