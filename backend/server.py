@@ -40,6 +40,11 @@ MSG91_AUTH_KEY = os.environ.get('MSG91_AUTH_KEY', '')
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# Health check endpoint for Kubernetes deployment
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "khurpi-backend"}
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Shop Configuration - Default values (can be overridden from DB)
