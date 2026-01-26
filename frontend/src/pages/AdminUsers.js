@@ -19,6 +19,91 @@ import AdminLayout from '@/components/AdminLayout';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const ResetPasswordDialog = ({ user, open, onOpenChange, onSuccess }) => {
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await axios.post(`${API}/admin/users/${user.id}/reset-password`, {
+        new_password: newPassword
+      });
+      toast.success(`Password reset for ${user.name}`);
+      onOpenChange(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to reset password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md mx-4 sm:mx-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <KeyRound className="w-5 h-5" />
+            Reset Password for {user?.name}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="newPassword">New Password</Label>
+            <Input
+              id="newPassword"
+              data-testid="admin-reset-password-input"
+              type="password"
+              placeholder="Enter new password (min 6 characters)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              data-testid="admin-reset-confirm-input"
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="mt-1"
+            />
+          </div>
+          <Button
+            data-testid="admin-reset-password-submit"
+            type="submit"
+            className="w-full bg-primary hover:bg-primary/90 rounded-full"
+            disabled={loading || newPassword.length < 6}
+          >
+            {loading ? 'Resetting...' : 'Reset Password'}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const UserDialog = ({ user, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
