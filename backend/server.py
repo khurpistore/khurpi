@@ -679,10 +679,11 @@ async def update_delivery_status_by_delivery_boy(delivery_id: str, status: str):
 
 @api_router.post("/admin/delivery-boys")
 async def create_delivery_boy(data: DeliveryBoyCreate):
-    """Create a new delivery boy (admin only)"""
-    existing = await db.users.find_one({"phone": data.phone}, {"_id": 0})
+    """Create a new delivery boy (admin only) - same phone can be customer and delivery boy"""
+    # Allow same phone to have different roles (customer vs delivery_boy)
+    existing = await db.users.find_one({"phone": data.phone, "role": "delivery_boy"}, {"_id": 0})
     if existing:
-        raise HTTPException(status_code=400, detail="Phone number already registered")
+        raise HTTPException(status_code=400, detail="Phone number already registered as delivery boy")
     
     hashed_password = pwd_context.hash(data.password)
     
