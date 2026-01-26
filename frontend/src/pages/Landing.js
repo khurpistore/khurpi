@@ -21,7 +21,7 @@ const Landing = () => {
                 Freshness Delivered to Your Doorstep
               </h1>
               <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-4 body-text">
-                Subscribe to premium microgreens grown with care. Get fresh, nutrient-rich trays delivered on your schedule.
+                Subscribe to premium microgreens grown with care. Get fresh, nutrient-rich 80g packs delivered on your schedule.
               </p>
               {/* FREE Delivery Highlight */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-6 sm:mb-8">

@@ -125,8 +125,8 @@ const MySubscriptions = () => {
               const deliveriesPerWeek = subscription.delivery_days?.length || subscription.deliveries_per_week || getDeliveriesPerWeek(subscription.frequency);
               const weeksPerMonth = 4;
               const totalDeliveriesPerMonth = deliveriesPerWeek * weeksPerMonth;
-              const traysPerDelivery = subscription.tray_count || 1;
-              const totalTraysPerMonth = traysPerDelivery * totalDeliveriesPerMonth;
+              const packsPerDelivery = subscription.tray_count || 1;
+              const totalPacksPerMonth = packsPerDelivery * totalDeliveriesPerMonth;
               
               // Per delivery total from subscription (this is what's stored in DB)
               const perDeliveryTotal = subscription.total_price || 0;
@@ -147,7 +147,7 @@ const MySubscriptions = () => {
                         {getStatusBadge(subscription.status)}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {totalTraysPerMonth} trays • {totalDeliveriesPerMonth} deliveries/month
+                        {totalPacksPerMonth} packs • {totalDeliveriesPerMonth} deliveries/month
                       </p>
                       <p className="text-sm text-muted-foreground">
                         📅 {subscription.delivery_days && subscription.delivery_days.length > 0 
