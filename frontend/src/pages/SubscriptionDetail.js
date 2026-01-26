@@ -204,7 +204,7 @@ const SubscriptionDetail = () => {
                   <Package className="w-5 h-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-xs text-muted-foreground">Trays per Delivery</p>
-                    <p className="font-medium">{subscription.tray_count} trays</p>
+                    <p className="font-medium">{subscription.tray_count} pack{subscription.tray_count > 1 ? 's' : ''}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -245,7 +245,7 @@ const SubscriptionDetail = () => {
                     />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-sm truncate">{item.product?.name}</h4>
-                      <p className="text-xs text-muted-foreground">₹{item.product?.price}/tray</p>
+                      <p className="text-xs text-muted-foreground">₹{item.product?.price}/pack</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">×{item.quantity}</p>
@@ -269,7 +269,7 @@ const SubscriptionDetail = () => {
               <div className="space-y-3">
                 {/* Summary Line */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>{trayCount} tray{trayCount > 1 ? 's' : ''} × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
+                  <span>{trayCount} pack{trayCount > 1 ? 's' : ''} × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
                   <span>₹{monthlySubtotal.toFixed(0)}</span>
                 </div>
 
