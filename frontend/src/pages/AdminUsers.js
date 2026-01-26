@@ -195,6 +195,8 @@ const AdminUsers = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
+  const [userToResetPassword, setUserToResetPassword] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
