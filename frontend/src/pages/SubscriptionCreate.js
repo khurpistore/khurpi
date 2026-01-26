@@ -208,6 +208,12 @@ const SubscriptionCreate = () => {
       restoreSubscriptionState();
       // Clean up URL
       navigate('/subscription/create', { replace: true });
+    } else {
+      // Set initial delivery day to next available weekday
+      const nextDay = getNextAvailableWeekday(1);
+      if (nextDay.length > 0) {
+        setDeliveryDays(nextDay);
+      }
     }
     
     fetchProducts();
