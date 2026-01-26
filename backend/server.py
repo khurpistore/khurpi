@@ -463,6 +463,43 @@ async def admin_login(username: str, password: str):
         return {"success": True, "role": "admin", "name": "Admin", "id": "admin"}
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
+@api_router.post("/admin/clear-database")
+async def clear_database(username: str, password: str, confirm: str):
+    """Clear all user data from database (admin only) - keeps products and settings"""
+    # Verify admin credentials
+    if username != admin_username or password != admin_password:
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    
+    # Require confirmation
+    if confirm != "CLEAR_ALL_DATA":
+        raise HTTPException(status_code=400, detail="Please provide confirm='CLEAR_ALL_DATA' to proceed")
+    
+    collections_to_clear = [
+        "users",
+        "subscriptions", 
+        "subscription_items",
+        "orders",
+        "order_items",
+        "deliveries",
+        "payments",
+        "addresses",
+        "coupons",
+        "referrers",
+        "otps"
+    ]
+    
+    results = {}
+    for col_name in collections_to_clear:
+        result = await db[col_name].delete_many({})
+        results[col_name] = result.deleted_count
+    
+    return {
+        "success": True,
+        "message": "Database cleared successfully",
+        "deleted": results,
+        "kept": ["products", "settings"]
+    }
+
 # ============ Delivery Boy Management ============
 
 class DeliveryBoyCreate(BaseModel):
