@@ -203,7 +203,7 @@ const SubscriptionDetail = () => {
                 <div className="flex items-start gap-3">
                   <Package className="w-5 h-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Trays per Delivery</p>
+                    <p className="text-xs text-muted-foreground">Packs per Delivery</p>
                     <p className="font-medium">{subscription.tray_count} pack{subscription.tray_count > 1 ? 's' : ''}</p>
                   </div>
                 </div>
@@ -269,7 +269,7 @@ const SubscriptionDetail = () => {
               <div className="space-y-3">
                 {/* Summary Line */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>{trayCount} pack{trayCount > 1 ? 's' : ''} × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
+                  <span>{packCount} pack{packCount > 1 ? 's' : ''} × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
                   <span>₹{monthlySubtotal.toFixed(0)}</span>
                 </div>
 
