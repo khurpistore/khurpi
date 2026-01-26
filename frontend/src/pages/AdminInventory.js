@@ -59,15 +59,15 @@ const AdminInventory = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Weekly:</span>
-                    <span className="font-semibold">{item.weekly_demand} trays</span>
+                    <span className="font-semibold">{item.weekly_demand} packs</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Bi-Weekly:</span>
-                    <span className="font-semibold">{item.bi_weekly_demand} trays</span>
+                    <span className="font-semibold">{item.bi_weekly_demand} packs</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Monthly:</span>
-                    <span className="font-semibold">{item.monthly_demand} trays</span>
+                    <span className="font-semibold">{item.monthly_demand} packs</span>
                   </div>
                   <div className="border-t pt-2 sm:pt-3 flex justify-between">
                     <span className="font-medium">Total Needed:</span>
