@@ -807,7 +807,7 @@ const SubscriptionCreate = () => {
                             <Label htmlFor={plan.id} className="text-lg font-semibold cursor-pointer">
                               {plan.name}
                             </Label>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               {plan.discount >= 40 && (
                                 <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
                                   BEST VALUE
@@ -818,6 +818,9 @@ const SubscriptionCreate = () => {
                                   {plan.discount}% OFF
                                 </span>
                               )}
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full flex items-center gap-1">
+                                <Truck className="w-3 h-3" /> FREE DELIVERY
+                              </span>
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
