@@ -95,6 +95,12 @@ function App() {
             <Footer />
             <Toaster position="top-center" />
           </div>
+          
+          {/* Delivery Boy Routes - Separate from main layout */}
+          <Routes>
+            <Route path="/delivery/login" element={<DeliveryLayout><DeliveryBoyLogin /></DeliveryLayout>} />
+            <Route path="/delivery" element={<DeliveryLayout><DeliveryDashboard /></DeliveryLayout>} />
+          </Routes>
         </BrowserRouter>
       </CartProvider>
     </AuthProvider>
