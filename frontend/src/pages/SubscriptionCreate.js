@@ -853,10 +853,10 @@ const SubscriptionCreate = () => {
                     </span>
                   </Label>
                   <p className="text-xs text-muted-foreground mb-3">
-                    Choose {selectedPlan?.deliveries_per_week || 1} day{(selectedPlan?.deliveries_per_week || 1) > 1 ? 's' : ''} for your weekly deliveries
+                    Choose {selectedPlan?.deliveries_per_week || 1} day{(selectedPlan?.deliveries_per_week || 1) > 1 ? 's' : ''} for your weekly deliveries (Sunday unavailable)
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {WEEKDAYS.map((day) => (
+                    {WEEKDAYS.filter(day => day !== 'Sunday').map((day) => (
                       <button
                         key={day}
                         type="button"
@@ -873,8 +873,8 @@ const SubscriptionCreate = () => {
                     ))}
                   </div>
                   {deliveryDays.length > 0 && (
-                    <p className="text-sm text-primary mt-2 font-medium">
-                      Deliveries: {deliveryDays.join(', ')}
+                    <p className="text-sm text-green-600 mt-2 font-medium">
+                      ✓ Next available: {deliveryDays.join(', ')}
                     </p>
                   )}
                 </div>
