@@ -262,8 +262,8 @@ const AdminSubscriptions = () => {
                         <p className="font-medium">{subscription.items_count} products</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Total</p>
-                        <p className="font-medium text-primary">₹{subscription.total_price}</p>
+                        <p className="text-muted-foreground">Monthly Total</p>
+                        <p className="font-medium text-primary">₹{subscription.monthly_total || subscription.total_price}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Delivery Day</p>
