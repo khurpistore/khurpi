@@ -36,6 +36,15 @@ import AdminInventory from '@/pages/AdminInventory';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminCoupons from '@/pages/AdminCoupons';
 import AdminReferrals from '@/pages/AdminReferrals';
+import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
+import DeliveryDashboard from '@/pages/DeliveryDashboard';
+
+// Wrapper for delivery routes without header/footer
+const DeliveryLayout = ({ children }) => (
+  <div className="min-h-screen">
+    {children}
+  </div>
+);
 
 function App() {
   return (
