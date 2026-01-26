@@ -421,19 +421,17 @@ const SubscriptionCreate = () => {
         coupon_code: appliedDiscount?.code || null,
         coupon_discount: appliedDiscount?.discount || 0,
         referral_code: appliedDiscount?.type === 'referral' ? appliedDiscount.code : null,
-        payment_method: paymentMethod
+        payment_method: 'online'
       };
 
       // Handle online payment with Razorpay
-      if (paymentMethod === 'online') {
-        const paymentSuccess = await handleRazorpayPayment(totalAmount, subscriptionData);
-        if (!paymentSuccess) {
-          setLoading(false);
-          setProcessingPayment(false);
-          return;
-        }
-        subscriptionData.payment_status = 'paid';
+      const paymentSuccess = await handleRazorpayPayment(totalAmount, subscriptionData);
+      if (!paymentSuccess) {
+        setLoading(false);
+        setProcessingPayment(false);
+        return;
       }
+      subscriptionData.payment_status = 'paid';
 
       const response = await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
       
