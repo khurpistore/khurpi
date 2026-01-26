@@ -1207,21 +1207,51 @@ async def get_today_deliveries():
             user = await db.users.find_one({"id": subscription["user_id"]}, {"_id": 0})
             items = await db.subscription_items.find({"subscription_id": subscription["id"]}, {"_id": 0}).to_list(100)
             
+            # Get address details if available
+            address = None
+            if subscription.get("address_id"):
+                address = await db.addresses.find_one({"id": subscription["address_id"]}, {"_id": 0})
+            
             product_details = []
+            total_items = 0
             for item in items:
                 product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
                 if product:
                     product_details.append({
                         "name": product["name"],
-                        "quantity": item["quantity"]
+                        "quantity": item["quantity"],
+                        "price": product["price"]
                     })
+                    total_items += item["quantity"]
+            
+            # Format address for display
+            delivery_address = "No address"
+            if address:
+                parts = [address.get("address_line_1", ""), address.get("address_line_2", ""), 
+                        address.get("area", ""), address.get("city", "")]
+                delivery_address = ", ".join([p for p in parts if p])
+                if address.get("pincode"):
+                    delivery_address += f" - {address['pincode']}"
+            elif user and user.get("address"):
+                delivery_address = user["address"]
             
             result.append({
                 **delivery,
                 "subscription": subscription,
+                "subscription_status": subscription.get("status", "active"),
+                "subscription_frequency": subscription.get("frequency", ""),
+                "delivery_days": subscription.get("delivery_days", []),
+                "skipped_deliveries": subscription.get("skipped_deliveries", []),
+                "is_skipped": today in subscription.get("skipped_deliveries", []),
                 "user": user,
-                "products": product_details
+                "delivery_address": delivery_address,
+                "products": product_details,
+                "total_items": total_items,
+                "monthly_total": subscription.get("total_price", 0)
             })
+    
+    # Sort: scheduled first, then by user name
+    result.sort(key=lambda x: (0 if x["status"] == "scheduled" else 1, x["user"]["name"] if x.get("user") else ""))
     
     return result
 
