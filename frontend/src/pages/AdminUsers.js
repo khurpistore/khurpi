@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Search, Pencil, Trash2, KeyRound } from 'lucide-react';
+import { Search, Pencil, Trash2, KeyRound, Truck, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import AdminLayout from '@/components/AdminLayout';
 
