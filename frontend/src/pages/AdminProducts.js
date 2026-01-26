@@ -133,7 +133,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
           required
           className="mt-1"
-          placeholder="Number of trays available"
+          placeholder="Number of packs available"
         />
       </div>
       <div className="flex items-center gap-2">
@@ -258,7 +258,7 @@ const AdminProducts = () => {
                 </div>
                 <div className="mb-3 sm:mb-4">
                   <span className={`text-xs sm:text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
-                    Stock: {product.stock} trays
+                    Stock: {product.stock} packs
                   </span>
                 </div>
                 <div className="flex gap-2">

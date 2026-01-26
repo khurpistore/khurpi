@@ -225,7 +225,7 @@ const Orders = () => {
                         </div>
                         
                         <p className="text-sm text-muted-foreground">
-                          {item.tray_count} tray{item.tray_count > 1 ? 's' : ''} • {item.delivery_days?.join(', ') || item.delivery_day}
+                          {item.tray_count} pack{item.tray_count > 1 ? 's' : ''} • {item.delivery_days?.join(', ') || item.delivery_day}
                         </p>
 
                         {item.next_delivery_date && item.status === 'active' && (
