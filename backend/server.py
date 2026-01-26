@@ -30,6 +30,8 @@ db = client[os.environ['DB_NAME']]
 # Razorpay client initialization
 razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID', '')
 razorpay_key_secret = os.environ.get('RAZORPAY_KEY_SECRET', '')
+admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+admin_password = os.environ.get('ADMIN_PASSWORD', 'admin')
 razorpay_client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret)) if razorpay_key_id else None
 
 # MSG91 Configuration
