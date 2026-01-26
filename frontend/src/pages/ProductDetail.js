@@ -87,7 +87,7 @@ const ProductDetail = () => {
               </h1>
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="text-3xl sm:text-4xl font-bold text-primary">₹{product.price}</div>
-                <div className="text-muted-foreground">per 5×7 inch tray</div>
+                <div className="text-muted-foreground">per 80g pack</div>
               </div>
               
               {product.stock <= 0 ? (
@@ -101,12 +101,12 @@ const ProductDetail = () => {
               ) : product.stock < 10 ? (
                 <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-amber-800 font-semibold">
-                    Only {product.stock} trays left in stock!
+                    Only {product.stock} packs left in stock!
                   </p>
                 </div>
               ) : (
                 <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 font-semibold">In Stock - {product.stock} trays available</p>
+                  <p className="text-green-800 font-semibold">In Stock - {product.stock} packs available</p>
                 </div>
               )}
               

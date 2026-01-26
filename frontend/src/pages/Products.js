@@ -102,7 +102,7 @@ const Products = () => {
             Our Premium Microgreens
           </h1>
           <p className="text-sm sm:text-lg text-muted-foreground body-text">
-            All trays are 5×7 inches, freshly harvested and delivered to your door
+            All packs are 80 grams, freshly harvested and delivered to your door
           </p>
         </div>
 
@@ -139,7 +139,7 @@ const Products = () => {
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">per 5×7 tray</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">per 80g pack</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs sm:text-sm text-muted-foreground">Ready in</p>
