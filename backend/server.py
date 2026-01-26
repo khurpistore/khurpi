@@ -402,7 +402,8 @@ async def signup(user_data: UserCreate):
 
 @api_router.post("/auth/login", response_model=User)
 async def login(login_data: UserLogin):
-    user = await db.users.find_one({"phone": login_data.phone}, {"_id": 0})
+    # Login only for customers (not delivery boys or admin)
+    user = await db.users.find_one({"phone": login_data.phone, "role": "customer"}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
