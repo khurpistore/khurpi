@@ -376,9 +376,10 @@ class OrderCreate(BaseModel):
 
 @api_router.post("/auth/signup", response_model=User)
 async def signup(user_data: UserCreate):
-    existing = await db.users.find_one({"phone": user_data.phone}, {"_id": 0})
+    # Allow same phone to have different roles (customer vs delivery_boy)
+    existing = await db.users.find_one({"phone": user_data.phone, "role": "customer"}, {"_id": 0})
     if existing:
-        raise HTTPException(status_code=400, detail="Phone already registered")
+        raise HTTPException(status_code=400, detail="Phone already registered as customer")
     
     from datetime import datetime
     import uuid
