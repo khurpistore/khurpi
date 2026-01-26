@@ -338,7 +338,7 @@ const AdminUsers = () => {
                     <p className="font-medium">{format(new Date(u.created_at), 'PP')}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Dialog open={dialogOpen && selectedUser?.id === u.id} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
                       <Button
@@ -365,6 +365,19 @@ const AdminUsers = () => {
                       )}
                     </DialogContent>
                   </Dialog>
+                  <Button
+                    data-testid={`reset-password-button-${u.id}`}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setUserToResetPassword(u);
+                      setResetPasswordDialogOpen(true);
+                    }}
+                    className="flex-1 rounded-full text-xs sm:text-sm"
+                  >
+                    <KeyRound className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    Reset Pwd
+                  </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
@@ -400,6 +413,16 @@ const AdminUsers = () => {
             </Card>
           ))}
         </div>
+      )}
+      
+      {/* Reset Password Dialog */}
+      {userToResetPassword && (
+        <ResetPasswordDialog
+          user={userToResetPassword}
+          open={resetPasswordDialogOpen}
+          onOpenChange={setResetPasswordDialogOpen}
+          onSuccess={fetchUsers}
+        />
       )}
     </AdminLayout>
   );
