@@ -1115,7 +1115,7 @@ const SubscriptionCreate = () => {
                 ) : (
                   <>
                     <CreditCard className="w-5 h-5 mr-2" />
-                    {paymentMethod === 'cod' ? `Place Order - ₹${calculateTotal().toFixed(2)}/month` : `Pay ₹${calculateTotal().toFixed(2)}/month`}
+                    Pay ₹{calculateTotal().toFixed(2)}/month
                   </>
                 )}
               </Button>
