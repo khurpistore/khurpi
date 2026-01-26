@@ -12,7 +12,6 @@ const Signup = () => {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -41,11 +40,6 @@ const Signup = () => {
     
     if (!password || password.length < 6) {
       toast.error('Password must be at least 6 characters');
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
       return;
     }
     
