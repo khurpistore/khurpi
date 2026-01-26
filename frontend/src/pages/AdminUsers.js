@@ -197,6 +197,9 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const [userToResetPassword, setUserToResetPassword] = useState(null);
+  const [showAddDeliveryBoy, setShowAddDeliveryBoy] = useState(false);
+  const [newDeliveryBoy, setNewDeliveryBoy] = useState({ name: '', phone: '', password: '' });
+  const [addingDeliveryBoy, setAddingDeliveryBoy] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
