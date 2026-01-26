@@ -1037,7 +1037,7 @@ const SubscriptionCreate = () => {
                     </div>
                     <div className="flex justify-between bg-gray-50 p-2 rounded -mx-2">
                       <span className="font-medium">Monthly Subtotal</span>
-                      <span className="font-medium">₹{calculatePerTrayPrice().toFixed(2)} × {selectedPlan.deliveries_per_week} × 4 = ₹{calculateMonthlySubtotal().toFixed(2)}</span>
+                      <span className="font-medium">₹{calculatePerPackPrice().toFixed(2)} × {selectedPlan.deliveries_per_week} × 4 = ₹{calculateMonthlySubtotal().toFixed(2)}</span>
                     </div>
                     {selectedPlan.discount > 0 && (
                       <div className="flex justify-between text-green-600">
