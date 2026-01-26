@@ -115,6 +115,9 @@ const AdminPayments = () => {
       filtered = filtered.filter(p => p.status === statusFilter);
     }
 
+    // Sort by created_at descending (recent first)
+    filtered = filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
     setFilteredPayments(filtered);
   };
 
