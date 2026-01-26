@@ -49,7 +49,9 @@ const AdminCoupons = () => {
   const fetchCoupons = async () => {
     try {
       const response = await axios.get(`${API}/admin/coupons`);
-      setCoupons(response.data);
+      // Sort by created_at descending (recent first)
+      const sorted = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setCoupons(sorted);
     } catch (error) {
       console.error('Failed to fetch coupons:', error);
     } finally {
