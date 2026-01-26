@@ -1016,7 +1016,7 @@ const SubscriptionCreate = () => {
                   })}
                   <div className="flex justify-between text-sm font-medium border-t pt-2 mt-2">
                     <span>Per Tray Cost</span>
-                    <span>₹{calculatePerTrayPrice().toFixed(2)}</span>
+                    <span>₹{calculatePerPackPrice().toFixed(2)}</span>
                   </div>
                 </div>
 
