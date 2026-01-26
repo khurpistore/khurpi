@@ -248,30 +248,38 @@ const AdminSubscriptions = () => {
                       </h3>
                       {getStatusBadge(subscription.status)}
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 text-xs sm:text-sm">
                       <div>
                         <p className="text-muted-foreground">Phone</p>
                         <p className="font-medium truncate">{subscription.user?.phone || 'N/A'}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Frequency</p>
-                        <p className="font-medium capitalize">{subscription.frequency}</p>
+                        <p className="text-muted-foreground">Plan</p>
+                        <p className="font-medium capitalize">{subscription.frequency?.replace(/_/g, ' ')}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Items</p>
                         <p className="font-medium">{subscription.items_count} products</p>
                       </div>
                       <div>
+                        <p className="text-muted-foreground">Per Delivery</p>
+                        <p className="font-medium">₹{subscription.per_delivery_total || '-'}</p>
+                      </div>
+                      <div>
                         <p className="text-muted-foreground">Monthly Total</p>
                         <p className="font-medium text-primary">₹{subscription.monthly_total || subscription.total_price}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Delivery Day</p>
-                        <p className="font-medium">{subscription.delivery_day}</p>
+                        <p className="text-muted-foreground">Delivery Days</p>
+                        <p className="font-medium">{subscription.delivery_days?.join(', ') || subscription.delivery_day}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Start Date</p>
                         <p className="font-medium">{format(new Date(subscription.start_date), 'PP')}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Created</p>
+                        <p className="font-medium">{format(new Date(subscription.created_at), 'PP')}</p>
                       </div>
                       {subscription.next_delivery_date && subscription.status === 'active' && (
                         <div>
