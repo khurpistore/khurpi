@@ -440,7 +440,7 @@ async def admin_reset_password(user_id: str, data: AdminResetPasswordRequest):
 
 @api_router.post("/admin/login")
 async def admin_login(username: str, password: str):
-    if username == "admin" and password == "admin":
+    if username == admin_username and password == admin_password:
         return {"success": True, "role": "admin", "name": "Admin", "id": "admin"}
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
