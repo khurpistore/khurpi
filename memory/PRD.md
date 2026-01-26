@@ -215,10 +215,15 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 ---
 
 ## Last Updated
-January 25, 2025
+January 26, 2025
 
 ## Change Log
-- **Jan 25, 2025:** Implemented Phone + OTP authentication via MSG91 WhatsApp
+- **Jan 26, 2025:** Reverted from OTP to Password-based authentication per user request
+- **Jan 26, 2025:** Removed "Forgot Password" page and link
+- **Jan 26, 2025:** Added "Change Password" feature to Profile page (Security section)
+- **Jan 26, 2025:** Added "Reset Password" feature to Admin Users page
+- **Jan 26, 2025:** Added backend APIs: `/auth/change-password`, `/admin/users/{id}/reset-password`
+- **Jan 25, 2025:** Implemented Phone + OTP authentication via MSG91 WhatsApp (later reverted)
 - **Jan 25, 2025:** Integrated Razorpay payment gateway for online subscription payments
 - **Jan 25, 2025:** Fixed Login Redirect Race Condition with ProtectedRoute component and 24hr session
 - **Jan 25, 2025:** Added ScrollToTop component - pages now scroll to top on navigation
