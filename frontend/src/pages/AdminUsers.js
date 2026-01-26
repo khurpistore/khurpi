@@ -464,102 +464,108 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" data-testid="admin-users-grid">
+        <div className="space-y-2" data-testid="admin-users-list">
+          {/* Table Header */}
+          <div className="hidden md:grid md:grid-cols-12 gap-4 px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium text-muted-foreground">
+            <div className="col-span-3">Name</div>
+            <div className="col-span-2">Phone</div>
+            <div className="col-span-3">Address</div>
+            <div className="col-span-2">Joined</div>
+            <div className="col-span-2 text-right">Actions</div>
+          </div>
+          
           {regularUsers.map((u) => (
-            <Card key={u.id} data-testid={`admin-user-card-${u.id}`}>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
-                  <div className="min-w-0">
-                    <h3 className="text-base sm:text-xl font-semibold text-primary heading-text truncate">{u.name}</h3>
-                    <Badge className={`mt-1 ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+            <Card key={u.id} data-testid={`admin-user-row-${u.id}`} className="hover:bg-gray-50">
+              <CardContent className="p-3 sm:p-4">
+                {/* Desktop List View */}
+                <div className="hidden md:grid md:grid-cols-12 gap-4 items-center">
+                  <div className="col-span-3 flex items-center gap-2">
+                    <div>
+                      <p className="font-medium text-primary">{u.name}</p>
+                      <Badge className={`text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {u.role}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="col-span-2 text-sm">{u.phone}</div>
+                  <div className="col-span-3 text-sm text-muted-foreground truncate">{u.address || '-'}</div>
+                  <div className="col-span-2 text-sm text-muted-foreground">{format(new Date(u.created_at), 'PP')}</div>
+                  <div className="col-span-2 flex justify-end gap-1">
+                    <Dialog open={dialogOpen && selectedUser?.id === u.id} onOpenChange={setDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="ghost" onClick={() => openDialog(u)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-lg">
+                        <DialogHeader>
+                          <DialogTitle>Edit User</DialogTitle>
+                        </DialogHeader>
+                        {selectedUser && (
+                          <UserDialog user={selectedUser} onClose={() => setDialogOpen(false)} onSuccess={fetchUsers} />
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    <Button size="sm" variant="ghost" onClick={() => { setUserToResetPassword(u); setResetPasswordDialogOpen(true); }}>
+                      <KeyRound className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="ghost" className="text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete User?</AlertDialogTitle>
+                          <AlertDialogDescription>This will permanently delete {u.name}.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(u.id)} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+                
+                {/* Mobile Card View */}
+                <div className="md:hidden">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-medium text-primary">{u.name}</p>
+                      <p className="text-sm text-muted-foreground">{u.phone}</p>
+                    </div>
+                    <Badge className={`text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
                       {u.role}
                     </Badge>
                   </div>
-                </div>
-                <div className="space-y-2 text-xs sm:text-sm mb-3 sm:mb-4">
-                  <div>
-                    <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium truncate">{u.phone}</p>
+                  <p className="text-xs text-muted-foreground mb-2">Joined {format(new Date(u.created_at), 'PP')}</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => openDialog(u)}>
+                      <Pencil className="w-3 h-3 mr-1" /> Edit
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => { setUserToResetPassword(u); setResetPasswordDialogOpen(true); }}>
+                      <KeyRound className="w-3 h-3 mr-1" /> Reset
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="text-destructive text-xs">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="mx-4">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete User?</AlertDialogTitle>
+                          <AlertDialogDescription>This will permanently delete {u.name}.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(u.id)} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Address</p>
-                    <p className="font-medium line-clamp-2">{u.address || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Joined</p>
-                    <p className="font-medium">{format(new Date(u.created_at), 'PP')}</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Dialog open={dialogOpen && selectedUser?.id === u.id} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        data-testid={`edit-user-button-${u.id}`}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openDialog(u)}
-                        className="flex-1 rounded-full text-xs sm:text-sm"
-                      >
-                        <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        Edit
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-lg mx-4 sm:mx-auto">
-                      <DialogHeader>
-                        <DialogTitle className="heading-text">Edit User</DialogTitle>
-                      </DialogHeader>
-                      {selectedUser && (
-                        <UserDialog
-                          user={selectedUser}
-                          onClose={() => setDialogOpen(false)}
-                          onSuccess={fetchUsers}
-                        />
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                  <Button
-                    data-testid={`reset-password-button-${u.id}`}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setUserToResetPassword(u);
-                      setResetPasswordDialogOpen(true);
-                    }}
-                    className="flex-1 rounded-full text-xs sm:text-sm"
-                  >
-                    <KeyRound className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    Reset Pwd
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        data-testid={`delete-user-button-${u.id}`}
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 rounded-full text-destructive text-xs sm:text-sm"
-                      >
-                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="mx-4 sm:mx-auto">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete User?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete {u.name} and all associated data.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(u.id)}
-                          className="bg-destructive text-destructive-foreground"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
