@@ -462,7 +462,7 @@ const AdminUsers = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" data-testid="admin-users-grid">
-          {filteredUsers.map((u) => (
+          {regularUsers.map((u) => (
             <Card key={u.id} data-testid={`admin-user-card-${u.id}`}>
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
