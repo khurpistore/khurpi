@@ -172,10 +172,19 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 
 ---
 
+## Authentication System
+- **Phone + Password based login/signup** (OTP was removed per user request)
+- 24-hour session persistence
+- **User Password Management:**
+  - Users can change their own password from Profile page (requires current password)
+- **Admin Password Management:**
+  - Admins can reset any user's password from Admin Users page
+
+---
+
 ## MOCKED Features (To Be Implemented)
-1. **Phone + OTP Authentication** - Currently using phone + password
-2. **Razorpay Payments** - Currently using Cash on Delivery
-3. **Real-time Stock Updates** - Manual stock management for now
+1. **Razorpay Payments** - Currently using Cash on Delivery
+2. **Real-time Stock Updates** - Manual stock management for now
 
 ---
 
