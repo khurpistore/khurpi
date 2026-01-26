@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Download, Pencil } from 'lucide-react';
+import { Download, Pencil, Phone, MapPin, Package, Calendar, AlertTriangle, PauseCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import AdminLayout from '@/components/AdminLayout';
 
@@ -115,23 +115,53 @@ const AdminDeliveries = () => {
     setDialogOpen(true);
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
-      scheduled: 'bg-blue-100 text-blue-800',
-      delivered: 'bg-green-100 text-green-800',
-      skipped: 'bg-yellow-100 text-yellow-800',
-      failed: 'bg-red-100 text-red-800',
-      cancelled: 'bg-gray-100 text-gray-800'
+  const getStatusBadge = (status) => {
+    const config = {
+      scheduled: { color: 'bg-blue-100 text-blue-800', label: 'Scheduled' },
+      delivered: { color: 'bg-green-100 text-green-800', label: 'Delivered' },
+      skipped: { color: 'bg-yellow-100 text-yellow-800', label: 'Skipped' },
+      failed: { color: 'bg-red-100 text-red-800', label: 'Failed' },
+      cancelled: { color: 'bg-gray-100 text-gray-800', label: 'Cancelled' }
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    const { color, label } = config[status] || config.cancelled;
+    return <Badge className={color}>{label}</Badge>;
   };
+
+  const getSubscriptionStatusBadge = (status) => {
+    const config = {
+      active: { color: 'bg-green-50 text-green-700 border-green-200', label: 'Active Sub' },
+      paused: { color: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Paused Sub' },
+      cancelled: { color: 'bg-red-50 text-red-700 border-red-200', label: 'Cancelled Sub' }
+    };
+    const { color, label } = config[status] || config.active;
+    return <Badge variant="outline" className={`${color} text-xs`}>{label}</Badge>;
+  };
+
+  const formatFrequency = (frequency) => {
+    const map = {
+      'once_week': '1x/week',
+      'twice_week': '2x/week',
+      'four_days_week': '4x/week'
+    };
+    return map[frequency] || frequency;
+  };
+
+  // Count stats
+  const scheduledCount = deliveries.filter(d => d.status === 'scheduled').length;
+  const deliveredCount = deliveries.filter(d => d.status === 'delivered').length;
+  const skippedCount = deliveries.filter(d => d.status === 'skipped' || d.is_skipped).length;
+  const pausedSubCount = deliveries.filter(d => d.subscription_status === 'paused').length;
 
   return (
     <AdminLayout active="deliveries" title="Today's Deliveries">
+      {/* Header with Export */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-        <p className="text-sm text-muted-foreground">
-          {deliveries.length} deliveries scheduled for today
-        </p>
+        <div>
+          <p className="text-lg font-medium">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+          <p className="text-sm text-muted-foreground">
+            {deliveries.length} total deliveries
+          </p>
+        </div>
         <Button
           data-testid="export-deliveries-button"
           onClick={handleExport}
@@ -142,50 +172,127 @@ const AdminDeliveries = () => {
         </Button>
       </div>
 
+      {/* Stats Summary */}
+      <div className="mb-6 p-4 bg-white rounded-lg border border-border">
+        <div className="grid grid-cols-4 gap-4 text-center">
+          <div>
+            <p className="text-2xl font-bold text-blue-600">{scheduledCount}</p>
+            <p className="text-xs text-muted-foreground">Scheduled</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-green-600">{deliveredCount}</p>
+            <p className="text-xs text-muted-foreground">Delivered</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-amber-600">{skippedCount}</p>
+            <p className="text-xs text-muted-foreground">Skipped</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-orange-600">{pausedSubCount}</p>
+            <p className="text-xs text-muted-foreground">Paused Subs</p>
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <p className="text-muted-foreground">Loading deliveries...</p>
       ) : deliveries.length === 0 ? (
         <Card>
-          <CardContent className="p-8 sm:p-12 text-center">
+          <CardContent className="p-12 text-center">
+            <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">No deliveries scheduled for today</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3 sm:space-y-4" data-testid="deliveries-list">
+        <div className="space-y-4" data-testid="deliveries-list">
           {deliveries.map((delivery) => (
-            <Card key={delivery.id} data-testid={`delivery-card-${delivery.id}`}>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+            <Card 
+              key={delivery.id} 
+              data-testid={`delivery-card-${delivery.id}`}
+              className={`${delivery.subscription_status === 'paused' ? 'border-amber-300 bg-amber-50/30' : ''} 
+                         ${delivery.is_skipped || delivery.status === 'skipped' ? 'border-yellow-300 bg-yellow-50/30' : ''}`}
+            >
+              <CardContent className="p-5">
+                {/* Alerts for paused/skipped */}
+                {(delivery.subscription_status === 'paused' || delivery.is_skipped) && (
+                  <div className={`flex items-center gap-2 mb-3 p-2 rounded-lg text-sm
+                    ${delivery.subscription_status === 'paused' ? 'bg-amber-100 text-amber-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {delivery.subscription_status === 'paused' ? (
+                      <>
+                        <PauseCircle className="w-4 h-4" />
+                        <span>Subscription is PAUSED - Confirm before delivery</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>Customer requested to SKIP this delivery</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
+                  {/* Customer Info */}
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                      <h3 className="text-base sm:text-lg font-semibold text-primary">
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <h3 className="text-lg font-semibold text-primary">
                         {delivery.user?.name || 'Unknown'}
                       </h3>
-                      <Badge className={getStatusColor(delivery.status)}>{delivery.status}</Badge>
+                      {getStatusBadge(delivery.status)}
+                      {getSubscriptionStatusBadge(delivery.subscription_status)}
                     </div>
-                    <div className="space-y-1 text-xs sm:text-sm mb-3">
-                      <p className="text-muted-foreground">
-                        <span className="font-medium">Phone:</span> {delivery.user?.phone || 'N/A'}
-                      </p>
-                      <p className="text-muted-foreground">
-                        <span className="font-medium">Address:</span> {delivery.user?.address || 'No address provided'}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-xs sm:text-sm font-medium mb-2">Products:</p>
-                      <div className="space-y-1">
-                        {delivery.products?.map((product, idx) => (
-                          <p key={idx} className="text-xs sm:text-sm text-muted-foreground">
-                            {product.name} × {product.quantity}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                      {/* Contact */}
+                      <div className="flex items-start gap-2">
+                        <Phone className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">{delivery.user?.phone || 'N/A'}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Plan */}
+                      <div className="flex items-start gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm">
+                            <span className="font-medium">{formatFrequency(delivery.subscription_frequency)}</span>
+                            {delivery.delivery_days?.length > 0 && (
+                              <span className="text-muted-foreground"> • {delivery.delivery_days.join(', ')}</span>
+                            )}
                           </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className="flex items-start gap-2 mb-4">
+                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-muted-foreground">{delivery.delivery_address}</p>
+                    </div>
+
+                    {/* Products */}
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Package className="w-4 h-4 text-primary" />
+                        <p className="text-sm font-medium">Products ({delivery.total_items} items)</p>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {delivery.products?.map((product, idx) => (
+                          <div key={idx} className="text-sm bg-white rounded px-2 py-1 border">
+                            <span className="font-medium">{product.name}</span>
+                            <span className="text-muted-foreground"> × {product.quantity}</span>
+                          </div>
                         ))}
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="text-xs sm:text-sm text-right lg:text-left mb-2">
-                      <p className="text-muted-foreground">Subscription ID</p>
-                      <p className="font-mono">{delivery.subscription_id.slice(0, 8)}</p>
+
+                  {/* Actions */}
+                  <div className="flex flex-row lg:flex-col gap-2 lg:min-w-[140px]">
+                    <div className="text-sm mb-2 hidden lg:block">
+                      <p className="text-muted-foreground text-xs">Monthly Value</p>
+                      <p className="font-semibold text-primary">₹{delivery.monthly_total}</p>
                     </div>
                     <Dialog open={dialogOpen && selectedDelivery?.id === delivery.id} onOpenChange={setDialogOpen}>
                       <DialogTrigger asChild>
@@ -194,15 +301,15 @@ const AdminDeliveries = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => openDialog(delivery)}
-                          className="rounded-full text-xs sm:text-sm"
+                          className="flex-1 lg:w-full rounded-full"
                         >
-                          <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <Pencil className="w-4 h-4 mr-1" />
                           Update Status
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-lg mx-4 sm:mx-auto">
                         <DialogHeader>
-                          <DialogTitle className="heading-text">Update Delivery Status</DialogTitle>
+                          <DialogTitle>Update Delivery Status</DialogTitle>
                         </DialogHeader>
                         {selectedDelivery && (
                           <DeliveryDialog
