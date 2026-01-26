@@ -96,8 +96,7 @@ const SubscriptionCreate = () => {
       startDate: startDate ? startDate.toISOString() : null,
       selectedAddressId,
       discountCode,
-      appliedDiscount,
-      paymentMethod
+      appliedDiscount
     };
     localStorage.setItem('subscriptionDraft', JSON.stringify(state));
   };
