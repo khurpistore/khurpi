@@ -756,7 +756,7 @@ const SubscriptionCreate = () => {
                             )}
                           </div>
                           <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 line-clamp-2">{product.benefit}</p>
-                          <p className="text-base sm:text-lg font-bold text-primary">₹{product.price}/tray</p>
+                          <p className="text-base sm:text-lg font-bold text-primary">₹{product.price}/pack</p>
                         </div>
                       </div>
                       {isSelected && (
@@ -828,9 +828,9 @@ const SubscriptionCreate = () => {
                             <span>
                               <span className="font-medium">{plan.deliveries_per_week}</span> {plan.deliveries_per_week > 1 ? 'deliveries' : 'delivery'}/week
                             </span>
-                            {plan.trays_per_month && (
+                            {plan.packs_per_month && (
                               <span className="text-primary font-medium">
-                                ~{plan.trays_per_month} trays/month
+                                ~{plan.packs_per_month} packs/month
                               </span>
                             )}
                           </div>
@@ -1004,7 +1004,7 @@ const SubscriptionCreate = () => {
                 
                 {/* Products per delivery */}
                 <div className="space-y-2 mb-4">
-                  <p className="text-xs text-muted-foreground mb-2">Per tray/delivery:</p>
+                  <p className="text-xs text-muted-foreground mb-2">Per 80g pack/delivery:</p>
                   {selectedProducts.map((item) => {
                     const product = products.find(p => p.id === item.product_id);
                     return product ? (
