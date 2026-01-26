@@ -291,6 +291,13 @@ class UserUpdate(BaseModel):
     address: Optional[str] = None
     role: Optional[str] = None
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class AdminResetPasswordRequest(BaseModel):
+    new_password: str
+
 class DeliveryUpdate(BaseModel):
     status: Optional[str] = None
     delivery_date: Optional[str] = None
