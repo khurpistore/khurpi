@@ -130,22 +130,6 @@ const Signup = () => {
                 </button>
               </div>
             </div>
-
-            <div>
-              <Label htmlFor="confirmPassword" className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Confirm Password
-              </Label>
-              <Input
-                id="confirmPassword"
-                data-testid="signup-confirm-password-input"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1"
-              />
-            </div>
             
             <Button
               data-testid="signup-submit-button"
