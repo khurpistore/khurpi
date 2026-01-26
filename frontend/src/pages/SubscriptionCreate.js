@@ -1170,21 +1170,37 @@ const SubscriptionCreate = () => {
               </CardContent>
             </Card>
 
-            {/* Savings Highlight */}
-            {selectedPlan && (calculateDiscount() > 0 || getDiscountCodeSavings() > 0) && (
-              <Card className="bg-gradient-to-r from-green-100 to-green-50 border-green-200">
+            {/* Savings Highlight - Always show for subscriptions */}
+            {selectedPlan && (
+              <Card className="bg-gradient-to-r from-green-100 to-green-50 border-green-200 mb-4">
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-green-800">
+                  <div className="flex items-center gap-2 text-green-800 mb-2">
                     <Sparkles className="w-5 h-5" />
-                    <span className="font-bold">
-                      Total Monthly Savings: ₹{(calculateDiscount() + getDiscountCodeSavings()).toFixed(2)}
+                    <span className="font-bold text-lg">
+                      Total Monthly Savings: ₹{getTotalSavings().toFixed(2)}
                     </span>
                   </div>
-                  <p className="text-sm text-green-700 mt-1">
-                    {selectedPlan.discount > 0 && `₹${calculateDiscount().toFixed(2)} from ${selectedPlan.name}`}
-                    {selectedPlan.discount > 0 && appliedDiscount && ' + '}
-                    {appliedDiscount && `₹${getDiscountCodeSavings().toFixed(2)} from ${appliedDiscount.type === 'referral' ? 'referral' : 'coupon'}`}
-                  </p>
+                  <div className="space-y-1 text-sm text-green-700">
+                    {/* Free Delivery Savings */}
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-4 h-4" />
+                      <span>₹{getDeliverySavings().toFixed(2)} - <strong>FREE Delivery</strong> (worth ₹{getWouldBeMonthlyDeliveryFee().toFixed(2)}/month)</span>
+                    </div>
+                    {/* Plan Discount */}
+                    {selectedPlan.discount > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4" />
+                        <span>₹{calculateDiscount().toFixed(2)} - {selectedPlan.discount}% {selectedPlan.name} discount</span>
+                      </div>
+                    )}
+                    {/* Coupon/Referral Discount */}
+                    {appliedDiscount && (
+                      <div className="flex items-center gap-2">
+                        <Gift className="w-4 h-4" />
+                        <span>₹{getDiscountCodeSavings().toFixed(2)} - {appliedDiscount.type === 'referral' ? 'Referral' : 'Coupon'} discount</span>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )}
