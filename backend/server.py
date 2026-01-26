@@ -48,6 +48,11 @@ api_router = APIRouter(prefix="/api")
 async def health_check():
     return {"status": "healthy", "service": "khurpi-backend"}
 
+# Also add health check under /api prefix for production routing
+@app.get("/api/health")
+async def api_health_check():
+    return {"status": "healthy", "service": "khurpi-backend"}
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Shop Configuration - Default values (can be overridden from DB)
