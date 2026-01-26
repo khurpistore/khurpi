@@ -492,7 +492,7 @@ const SubscriptionCreate = () => {
         tray_count: selectedProducts.reduce((sum, p) => sum + p.quantity, 0),
         items: selectedProducts,
         total_price: totalAmount,
-        subtotal: calculatePerTrayPrice(), // Per delivery subtotal
+        subtotal: calculatePerPackPrice(), // Per delivery subtotal
         delivery_fee: getDeliveryFeePerDelivery(), // Per delivery fee
         monthly_delivery_fee: getMonthlyDeliveryFee(), // Total monthly delivery
         plan_discount: selectedPlan.discount,
