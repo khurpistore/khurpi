@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Check, Plus, Truck, AlertCircle } from 'lucide-react';
+import { MapPin, CreditCard, Plus, Truck, AlertCircle, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -41,6 +41,7 @@ const Checkout = () => {
       return;
     }
     fetchShopConfig();
+    loadRazorpayScript();
     // Set default address
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
@@ -55,6 +56,15 @@ const Checkout = () => {
       calculateDeliveryFee();
     }
   }, [selectedAddressId]);
+
+  const loadRazorpayScript = () => {
+    if (document.getElementById('razorpay-script')) return;
+    const script = document.createElement('script');
+    script.id = 'razorpay-script';
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+  };
 
   const fetchShopConfig = async () => {
     try {
@@ -78,7 +88,6 @@ const Checkout = () => {
         setDeliveryInfo({ fee: 150, distance: 0, label: 'Standard Delivery' });
       }
     } else {
-      // Default fee if no coordinates
       setDeliveryInfo({ fee: 150, distance: 0, label: 'Standard Delivery' });
     }
   };
@@ -113,7 +122,7 @@ const Checkout = () => {
     }
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePayment = async () => {
     if (!selectedAddressId) {
       toast.error('Please select a delivery address');
       return;
@@ -121,28 +130,70 @@ const Checkout = () => {
 
     setLoading(true);
     try {
-      const orderData = {
-        user_id: user.id,
-        address_id: selectedAddressId,
-        items: cartItems.map(item => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-          price: item.product.price
-        })),
-        subtotal: getCartTotal(),
-        delivery_fee: deliveryInfo?.fee || 0,
-        total: getCartTotal() + (deliveryInfo?.fee || 0),
-        order_type: 'one_time'
+      // Create Razorpay order
+      const orderResponse = await axios.post(`${API}/orders/create-razorpay-order`, {
+        amount: total,
+        user_id: user.id
+      });
+
+      const { razorpay_order_id, amount: orderAmount, currency } = orderResponse.data;
+
+      const options = {
+        key: 'rzp_test_S8AsbpEyrVluaZ',
+        amount: orderAmount,
+        currency: currency,
+        name: 'Khurpi Microgreens',
+        description: 'Order Payment',
+        order_id: razorpay_order_id,
+        handler: async function (response) {
+          try {
+            // Verify payment and create order
+            const orderData = {
+              user_id: user.id,
+              address_id: selectedAddressId,
+              items: cartItems.map(item => ({
+                product_id: item.product.id,
+                quantity: item.quantity,
+                price: item.product.price
+              })),
+              subtotal: getCartTotal(),
+              delivery_fee: deliveryInfo?.fee || 0,
+              total: total,
+              order_type: 'one_time',
+              payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              payment_status: 'paid'
+            };
+
+            await axios.post(`${API}/orders`, orderData);
+            clearCart();
+            toast.success('Payment successful! Order placed.');
+            navigate('/orders');
+          } catch (error) {
+            toast.error('Order creation failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: user.name,
+          contact: user.phone
+        },
+        theme: {
+          color: '#16a34a'
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
+            toast.error('Payment cancelled');
+          }
+        }
       };
 
-      await axios.post(`${API}/orders`, orderData);
-      
-      clearCart();
-      toast.success('Order placed successfully!');
-      navigate('/profile');
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+      setLoading(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to place order');
-    } finally {
+      toast.error(error.response?.data?.detail || 'Failed to initiate payment');
       setLoading(false);
     }
   };
@@ -314,21 +365,40 @@ const Checkout = () => {
             </Card>
           )}
 
-          {/* Payment - Mocked */}
+          {/* Payment Information */}
           <Card>
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Payment Method</h2>
+                <h2 className="text-lg font-semibold">Payment</h2>
               </div>
-              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <span className="font-medium text-green-800">Cash on Delivery</span>
+              
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src="https://razorpay.com/assets/razorpay-logo.svg" 
+                      alt="Razorpay" 
+                      className="h-5"
+                    />
+                    <span className="font-medium text-blue-800">Online Payment</span>
+                  </div>
+                  <Shield className="w-5 h-5 text-blue-600" />
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Pay when your order arrives
+                <p className="text-sm text-blue-700 mb-3">
+                  Pay securely using UPI, Cards, Net Banking, or Wallets
                 </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs bg-white px-2 py-1 rounded border">UPI</span>
+                  <span className="text-xs bg-white px-2 py-1 rounded border">Cards</span>
+                  <span className="text-xs bg-white px-2 py-1 rounded border">Net Banking</span>
+                  <span className="text-xs bg-white px-2 py-1 rounded border">Wallets</span>
+                </div>
+              </div>
+              
+              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                <Shield className="w-4 h-4" />
+                <span>Your payment information is encrypted and secure</span>
               </div>
             </CardContent>
           </Card>
@@ -374,13 +444,24 @@ const Checkout = () => {
               </div>
 
               <Button
-                data-testid="place-order-button"
-                onClick={handlePlaceOrder}
+                data-testid="pay-now-button"
+                onClick={handlePayment}
                 disabled={loading || !selectedAddressId}
                 className="w-full bg-primary hover:bg-primary/90 rounded-full"
               >
-                {loading ? 'Placing Order...' : 'Place Order'}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  `Pay ₹${total.toFixed(2)}`
+                )}
               </Button>
+              
+              <p className="text-xs text-center text-muted-foreground mt-3">
+                By placing this order, you agree to our Terms & Conditions
+              </p>
             </CardContent>
           </Card>
         </div>
