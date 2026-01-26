@@ -23,9 +23,23 @@ import razorpay
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-mongo_url = os.environ['MONGO_URL']
+# MongoDB Configuration - Uses Atlas in production, local in preview
+PROD_MONGO_URL = "mongodb+srv://khurpistore_db:WVxUM23pHdUYFDxT@cluster0.brcr3ym.mongodb.net/?appName=Cluster0"
+PROD_DB_NAME = "khurpi_prod"
+
+# Check if running in production (Emergent deployment sets this)
+is_production = os.environ.get('EMERGENT_DEPLOYMENT', 'false').lower() == 'true'
+
+# Use production Atlas or local MongoDB based on environment
+if is_production:
+    mongo_url = os.environ.get('MONGO_URL', PROD_MONGO_URL)
+    db_name = os.environ.get('DB_NAME', PROD_DB_NAME)
+else:
+    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.environ.get('DB_NAME', 'khurpi_test')
+
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[db_name]
 
 # Razorpay client initialization
 razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID', '')
