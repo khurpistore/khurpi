@@ -175,7 +175,9 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`${API}/products?active_only=false`);
-      setProducts(response.data);
+      // Sort by created_at descending (recent first)
+      const sorted = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setProducts(sorted);
     } catch (error) {
       toast.error('Failed to load products');
     } finally {
