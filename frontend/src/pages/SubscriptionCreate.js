@@ -46,6 +46,7 @@ const SubscriptionCreate = () => {
   
   // Payment state
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   
   const navigate = useNavigate();
   const location = useLocation();
