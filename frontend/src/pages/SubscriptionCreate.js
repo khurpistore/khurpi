@@ -1054,37 +1054,29 @@ const SubscriptionCreate = () => {
               <CardContent className="p-4">
                 <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-primary" />
-                  Payment Method
+                  Payment
                 </h4>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <div className="space-y-3">
-                    <div 
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        paymentMethod === 'cod' ? 'border-primary bg-green-50' : 'border-gray-200 hover:bg-gray-50'
-                      }`}
-                      onClick={() => setPaymentMethod('cod')}
-                    >
-                      <RadioGroupItem value="cod" id="cod" />
-                      <div className="flex-1">
-                        <Label htmlFor="cod" className="font-medium cursor-pointer">Cash on Delivery</Label>
-                        <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
-                      </div>
-                    </div>
-                    <div 
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        paymentMethod === 'online' ? 'border-primary bg-green-50' : 'border-gray-200 hover:bg-gray-50'
-                      }`}
-                      onClick={() => setPaymentMethod('online')}
-                    >
-                      <RadioGroupItem value="online" id="online" />
-                      <div className="flex-1">
-                        <Label htmlFor="online" className="font-medium cursor-pointer">Pay Online</Label>
-                        <p className="text-xs text-muted-foreground">UPI, Cards, Net Banking (Razorpay)</p>
-                      </div>
-                      <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">Coming Soon</span>
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src="https://razorpay.com/assets/razorpay-logo.svg" 
+                        alt="Razorpay" 
+                        className="h-5"
+                      />
+                      <span className="font-medium text-blue-800">Online Payment</span>
                     </div>
                   </div>
-                </RadioGroup>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Pay securely using UPI, Cards, Net Banking, or Wallets
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-xs bg-white px-2 py-1 rounded border">UPI</span>
+                    <span className="text-xs bg-white px-2 py-1 rounded border">Cards</span>
+                    <span className="text-xs bg-white px-2 py-1 rounded border">Net Banking</span>
+                    <span className="text-xs bg-white px-2 py-1 rounded border">Wallets</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
