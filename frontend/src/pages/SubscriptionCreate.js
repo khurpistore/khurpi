@@ -367,12 +367,12 @@ const SubscriptionCreate = () => {
     return total;
   };
 
-  // Calculate monthly subtotal (per tray × deliveries per week × 4 weeks)
+  // Calculate monthly subtotal (per pack × deliveries per week × 4 weeks)
   const calculateMonthlySubtotal = () => {
-    const perTray = calculatePerTrayPrice();
+    const perPack = calculatePerPackPrice();
     const deliveriesPerWeek = selectedPlan?.deliveries_per_week || 1;
     const weeksPerMonth = 4;
-    return perTray * deliveriesPerWeek * weeksPerMonth;
+    return perPack * deliveriesPerWeek * weeksPerMonth;
   };
 
   // Calculate discount on monthly subtotal
