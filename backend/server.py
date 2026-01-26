@@ -554,8 +554,8 @@ async def create_delivery_boy(data: DeliveryBoyCreate):
     }
     
     await db.users.insert_one(user_doc)
-    user_doc.pop("password")
-    return user_doc
+    # Return without _id and password
+    return {k: v for k, v in user_doc.items() if k not in ['_id', 'password']}
 
 @api_router.get("/admin/delivery-boys")
 async def get_all_delivery_boys():
