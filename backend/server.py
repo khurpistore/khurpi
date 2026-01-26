@@ -489,6 +489,80 @@ async def clear_database(username: str, password: str, confirm: str):
         "kept": ["products", "settings"]
     }
 
+@api_router.post("/admin/seed-database")
+async def seed_database(username: str, password: str):
+    """Seed production database with initial products and settings (admin only)"""
+    # Verify admin credentials
+    if username != admin_username or password != admin_password:
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    
+    # Initial Products Data
+    initial_products = [
+        {"id": str(uuid.uuid4()), "name": "Basil Microgreens", "description": "Fresh basil microgreens with aromatic flavor, perfect for Italian dishes and salads.", "price": 190.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1518568403628-df55701ade9e?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Green Pea Shoot Microgreens", "description": "Tender pea shoots with sweet, fresh pea flavor. Great for stir-fries and garnishing.", "price": 150.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Sunflower Microgreens", "description": "Crunchy sunflower microgreens packed with nutrients and a nutty taste.", "price": 170.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1509223197845-458d87a6c1a4?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Radish Microgreens", "description": "Spicy radish microgreens that add a peppery kick to any dish.", "price": 160.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Mustard Microgreens", "description": "Bold and zesty mustard microgreens with a distinctive tangy flavor.", "price": 165.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Broccoli Microgreens", "description": "Nutrient-dense broccoli microgreens with mild, slightly bitter taste.", "price": 180.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Red Amaranth Microgreens", "description": "Beautiful red-colored microgreens with earthy flavor and stunning presentation.", "price": 190.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1518568403628-df55701ade9e?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+        {"id": str(uuid.uuid4()), "name": "Wheatgrass", "description": "Classic wheatgrass for juicing and smoothies. Rich in chlorophyll.", "price": 140.0, "stock": 50, "is_active": True, "image_url": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400", "created_at": datetime.now(timezone.utc).isoformat()},
+    ]
+    
+    # Initial Settings Data
+    initial_settings = [
+        {
+            "type": "shop_config",
+            "data": {
+                "address": "E-312, ACE City, Noida Extension, 201306",
+                "latitude": 28.5672,
+                "longitude": 77.4538,
+                "phone": "+91 9876543210",
+                "email": "hello@khurpistore.in",
+                "delivery_radius_km": 15
+            }
+        },
+        {
+            "type": "delivery_pricing",
+            "data": {
+                "tiers": [
+                    {"min_distance": 0, "max_distance": 1, "fee": 0, "label": "Free Delivery"},
+                    {"min_distance": 1, "max_distance": 3, "fee": 30, "label": "Nearby"},
+                    {"min_distance": 3, "max_distance": 5, "fee": 50, "label": "Standard"},
+                    {"min_distance": 5, "max_distance": 10, "fee": 80, "label": "Extended"},
+                    {"min_distance": 10, "max_distance": 15, "fee": 120, "label": "Far"}
+                ]
+            }
+        },
+        {
+            "type": "subscription_plans",
+            "data": [
+                {"id": "once_week", "name": "Once a Week", "frequency": "once_week", "deliveries_per_week": 1, "discount": 0, "description": "Perfect for trying out"},
+                {"id": "twice_week", "name": "Twice a Week", "frequency": "twice_week", "deliveries_per_week": 2, "discount": 10, "description": "Most popular choice"},
+                {"id": "four_days_week", "name": "4 Days a Week", "frequency": "four_days_week", "deliveries_per_week": 4, "discount": 50, "description": "Best value - Maximum freshness"}
+            ]
+        }
+    ]
+    
+    results = {"products": 0, "settings": 0}
+    
+    # Clear and insert products
+    await db.products.delete_many({})
+    if initial_products:
+        await db.products.insert_many(initial_products)
+        results["products"] = len(initial_products)
+    
+    # Clear and insert settings
+    await db.settings.delete_many({})
+    if initial_settings:
+        await db.settings.insert_many(initial_settings)
+        results["settings"] = len(initial_settings)
+    
+    return {
+        "success": True,
+        "message": "Database seeded successfully",
+        "inserted": results
+    }
+
 # ============ Delivery Boy Management ============
 
 class DeliveryBoyCreate(BaseModel):
