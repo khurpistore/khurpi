@@ -131,23 +131,31 @@ const Checkout = () => {
     setLoading(true);
     try {
       // Create Razorpay order
-      const orderResponse = await axios.post(`${API}/orders/create-razorpay-order`, {
+      const orderResponse = await axios.post(`${API}/payments/create-order`, {
         amount: total,
-        user_id: user.id
+        receipt: `order_${user.id}_${Date.now()}`.slice(0, 40),
+        notes: { user_id: user.id, type: 'single_order' }
       });
 
-      const { razorpay_order_id, amount: orderAmount, currency } = orderResponse.data;
+      const { order_id, amount: orderAmount, currency, key_id } = orderResponse.data;
 
       const options = {
-        key: 'rzp_test_S8AsbpEyrVluaZ',
+        key: key_id,
         amount: orderAmount,
         currency: currency,
         name: 'Khurpi Microgreens',
         description: 'Order Payment',
-        order_id: razorpay_order_id,
+        order_id: order_id,
         handler: async function (response) {
           try {
-            // Verify payment and create order
+            // Verify payment
+            await axios.post(`${API}/payments/verify`, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            // Create order after successful payment
             const orderData = {
               user_id: user.id,
               address_id: selectedAddressId,
@@ -162,7 +170,6 @@ const Checkout = () => {
               order_type: 'one_time',
               payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
               payment_status: 'paid'
             };
 
