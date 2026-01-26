@@ -54,6 +54,38 @@ const SubscriptionCreate = () => {
 
   const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+  // Calculate next available start date based on delivery days
+  const getNextAvailableDate = (selectedDays, minDate = new Date()) => {
+    const today = new Date(minDate);
+    today.setHours(0, 0, 0, 0);
+    
+    // Add 1 day buffer for preparation
+    const startFrom = new Date(today);
+    startFrom.setDate(startFrom.getDate() + 1);
+    
+    // Find the next day that matches one of the selected delivery days
+    for (let i = 0; i < 7; i++) {
+      const checkDate = new Date(startFrom);
+      checkDate.setDate(checkDate.getDate() + i);
+      const dayName = WEEKDAYS[checkDate.getDay() === 0 ? 6 : checkDate.getDay() - 1];
+      
+      if (selectedDays.includes(dayName)) {
+        return checkDate;
+      }
+    }
+    
+    // Fallback to tomorrow if no match found
+    return startFrom;
+  };
+
+  // Auto-select next available date when delivery days change
+  useEffect(() => {
+    if (deliveryDays.length > 0) {
+      const nextDate = getNextAvailableDate(deliveryDays, minStartDate);
+      setStartDate(nextDate);
+    }
+  }, [deliveryDays, minStartDate]);
+
   // Toggle delivery day selection
   const toggleDeliveryDay = (day) => {
     const maxDays = selectedPlan?.deliveries_per_week || 1;
