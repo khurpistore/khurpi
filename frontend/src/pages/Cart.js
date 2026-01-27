@@ -61,7 +61,7 @@ const Cart = () => {
                       {item.product.name}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-2">
-                      ₹{item.product.price} per 80g pack
+                      ₹{item.product.price} per {item.product.pack_size || '80g'} pack
                     </p>
                     
                     {/* Quantity Controls */}
