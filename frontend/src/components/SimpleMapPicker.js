@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -15,8 +15,6 @@ L.Icon.Default.mergeOptions({
 const NOIDA_CENTER = [28.5355, 77.3910];
 
 function LocationMarker({ position, setPosition, onLocationSelect }) {
-  const map = useMap();
-  
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
@@ -25,25 +23,26 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
     },
   });
 
-  useEffect(() => {
-    if (position) {
-      map.flyTo(position, 15);
-    }
-  }, [position, map]);
-
   return position ? <Marker position={position} /> : null;
 }
 
-// Component to update map view when external location changes
-function MapUpdater({ externalPosition, setPosition }) {
+// Component to handle external location updates (from search)
+function ExternalLocationHandler({ externalLocation, setPosition, lastExternalRef }) {
   const map = useMap();
   
   useEffect(() => {
-    if (externalPosition) {
-      setPosition(externalPosition);
-      map.flyTo(externalPosition, 15);
+    if (externalLocation) {
+      const locationKey = `${externalLocation.lat}-${externalLocation.lng}`;
+      
+      // Only update if this is a new external location
+      if (lastExternalRef.current !== locationKey) {
+        lastExternalRef.current = locationKey;
+        const newPos = [externalLocation.lat, externalLocation.lng];
+        setPosition(newPos);
+        map.flyTo(newPos, 15, { duration: 1 });
+      }
     }
-  }, [externalPosition, map, setPosition]);
+  }, [externalLocation, map, setPosition, lastExternalRef]);
   
   return null;
 }
@@ -52,9 +51,9 @@ const SimpleMapPicker = ({ onLocationSelect, initialLocation, externalLocation }
   const [position, setPosition] = useState(
     initialLocation ? [initialLocation.lat, initialLocation.lng] : null
   );
-
-  // Convert external location to array format
-  const externalPosition = externalLocation ? [externalLocation.lat, externalLocation.lng] : null;
+  
+  // Track the last external location to prevent repeated updates
+  const lastExternalRef = useRef(null);
 
   return (
     <MapContainer
@@ -72,9 +71,10 @@ const SimpleMapPicker = ({ onLocationSelect, initialLocation, externalLocation }
         setPosition={setPosition} 
         onLocationSelect={onLocationSelect}
       />
-      <MapUpdater 
-        externalPosition={externalPosition}
+      <ExternalLocationHandler 
+        externalLocation={externalLocation}
         setPosition={setPosition}
+        lastExternalRef={lastExternalRef}
       />
     </MapContainer>
   );
