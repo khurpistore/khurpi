@@ -74,6 +74,7 @@ const Addresses = () => {
     setEditingAddress(null);
     setSearchQuery('');
     setSearchResults([]);
+    setSearchedLocation(null);
   };
 
   const handleLocationSelect = (location) => {
