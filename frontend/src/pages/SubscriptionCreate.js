@@ -761,7 +761,7 @@ const SubscriptionCreate = () => {
                       </div>
                       {isSelected && (
                         <div className="mt-3 sm:mt-4" onClick={(e) => e.stopPropagation()}>
-                          <Label className="text-xs sm:text-sm">Trays per delivery</Label>
+                          <Label className="text-xs sm:text-sm">Packs per delivery ({product.pack_size || '80g'})</Label>
                           <Input
                             data-testid={`quantity-input-${product.id}`}
                             type="number"
