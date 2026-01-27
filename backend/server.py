@@ -565,6 +565,156 @@ async def seed_database(username: str, password: str):
                 {"id": "twice_week", "name": "Twice a Week", "frequency": "twice_week", "deliveries_per_week": 2, "discount": 10, "description": "Most popular choice"},
                 {"id": "four_days_week", "name": "4 Days a Week", "frequency": "four_days_week", "deliveries_per_week": 4, "discount": 50, "description": "Best value - Maximum freshness"}
             ]
+        },
+        {
+            "type": "privacy_policy",
+            "data": {
+                "title": "Privacy Policy",
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "content": """# Privacy Policy
+
+**Last Updated: January 2026**
+
+At Khurpi Microgreens, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information.
+
+## Information We Collect
+
+### Personal Information
+- **Contact Details:** Name, phone number, email address
+- **Delivery Address:** Complete address with location coordinates for accurate delivery
+- **Payment Information:** Transaction details processed securely through Razorpay
+
+### Usage Information
+- Order history and preferences
+- Device information and IP address for security purposes
+
+## How We Use Your Information
+
+1. **Order Processing:** To fulfill your orders and manage deliveries
+2. **Communication:** Order updates, delivery notifications, and promotional offers (with consent)
+3. **Improvement:** To enhance our products and services
+4. **Security:** To prevent fraud and ensure safe transactions
+
+## Data Security
+
+- All payment transactions are encrypted and processed through Razorpay
+- We use industry-standard security measures to protect your data
+- Access to personal information is restricted to authorized personnel only
+
+## Your Rights
+
+- **Access:** Request a copy of your personal data
+- **Correction:** Update inaccurate information
+- **Deletion:** Request removal of your data (subject to legal requirements)
+- **Opt-out:** Unsubscribe from marketing communications
+
+## Contact Us
+
+For privacy-related queries, contact us at:
+- **Email:** hello@khurpistore.in
+- **Phone:** +91 9876543210
+
+## Changes to This Policy
+
+We may update this policy periodically. Significant changes will be communicated via email or app notification."""
+            }
+        },
+        {
+            "type": "terms_conditions",
+            "data": {
+                "title": "Terms and Conditions",
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "content": """# Terms and Conditions
+
+**Last Updated: January 2026**
+
+Welcome to Khurpi Microgreens. By using our website and services, you agree to these terms.
+
+## 1. Products and Orders
+
+### Product Quality
+- All microgreens are freshly grown and harvested before delivery
+- Product images are representative; actual appearance may vary slightly
+- Pack sizes are clearly mentioned (e.g., 80g pack)
+
+### Ordering
+- Orders are subject to availability
+- Prices are in Indian Rupees (INR) and inclusive of applicable taxes
+- We reserve the right to refuse or cancel orders
+
+## 2. Delivery Policy
+
+### Delivery Area
+- We currently deliver only in **Noida** and nearby areas
+- Delivery fees vary based on distance from our store
+- Subscription orders include **FREE delivery**
+
+### Delivery Schedule
+- Same-day delivery for orders placed before 10 AM
+- Standard delivery within 24-48 hours
+- Subscription deliveries on selected days
+
+### Delivery Issues
+- Contact us immediately if you don't receive your order
+- We are not responsible for delays due to incorrect address or unavailability
+
+## 3. Payment Terms
+
+### Payment Methods
+- All payments are processed securely through **Razorpay**
+- We accept UPI, Credit/Debit Cards, Net Banking, and Wallets
+- Cash on Delivery is **not available**
+
+### Subscription Payments
+- Monthly billing cycle
+- Auto-renewal unless cancelled
+- Cancel anytime from your profile
+
+## 4. Return and Refund Policy
+
+### Quality Guarantee
+- If you receive damaged or poor-quality products, contact us within 2 hours of delivery
+- Share photos of the issue via WhatsApp or email
+
+### Refunds
+- Valid complaints will be resolved with replacement or full refund
+- Refunds are processed within 5-7 business days
+- Refunds are credited to the original payment method
+
+### Non-Refundable
+- Orders cancelled after dispatch
+- Perishable items after 2 hours of delivery
+- Change of mind after delivery
+
+## 5. Subscription Terms
+
+### Subscription Plans
+- Choose from weekly delivery frequencies
+- Discounts based on frequency (up to 50% off)
+- Modify or cancel subscriptions from your profile
+
+### Cancellation
+- Cancel anytime without penalty
+- Cancellation effective from next billing cycle
+- Pending deliveries will be completed
+
+## 6. User Responsibilities
+
+- Provide accurate delivery information
+- Ensure someone is available to receive orders
+- Report issues promptly
+
+## 7. Contact Information
+
+**Khurpi Microgreens**
+- Email: hello@khurpistore.in
+- Phone: +91 9876543210
+- Address: E-312, ACE City, Noida Extension, 201306
+
+## 8. Changes to Terms
+
+We may modify these terms at any time. Continued use of our services constitutes acceptance of updated terms."""
+            }
         }
     ]
     
