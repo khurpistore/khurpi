@@ -2158,6 +2158,52 @@ async def update_terms_conditions(data: dict):
     )
     return {"success": True, "data": update_data}
 
+@api_router.get("/pages/shipping-policy")
+async def get_shipping_policy():
+    """Get shipping policy content (public)"""
+    setting = await db.settings.find_one({"type": "shipping_policy"}, {"_id": 0})
+    if setting and setting.get("data"):
+        return setting["data"]
+    return {"title": "Shipping Policy", "content": "", "last_updated": None}
+
+@api_router.put("/admin/pages/shipping-policy")
+async def update_shipping_policy(data: dict):
+    """Update shipping policy (admin only)"""
+    update_data = {
+        "title": data.get("title", "Shipping Policy"),
+        "content": data.get("content", ""),
+        "last_updated": datetime.now(timezone.utc).isoformat()
+    }
+    await db.settings.update_one(
+        {"type": "shipping_policy"},
+        {"$set": {"type": "shipping_policy", "data": update_data}},
+        upsert=True
+    )
+    return {"success": True, "data": update_data}
+
+@api_router.get("/pages/cancellation-refund")
+async def get_cancellation_refund():
+    """Get cancellation and refund policy content (public)"""
+    setting = await db.settings.find_one({"type": "cancellation_refund"}, {"_id": 0})
+    if setting and setting.get("data"):
+        return setting["data"]
+    return {"title": "Cancellations and Refunds", "content": "", "last_updated": None}
+
+@api_router.put("/admin/pages/cancellation-refund")
+async def update_cancellation_refund(data: dict):
+    """Update cancellation and refund policy (admin only)"""
+    update_data = {
+        "title": data.get("title", "Cancellations and Refunds"),
+        "content": data.get("content", ""),
+        "last_updated": datetime.now(timezone.utc).isoformat()
+    }
+    await db.settings.update_one(
+        {"type": "cancellation_refund"},
+        {"$set": {"type": "cancellation_refund", "data": update_data}},
+        upsert=True
+    )
+    return {"success": True, "data": update_data}
+
 @api_router.get("/settings/pages/{page_slug}")
 async def get_page_content(page_slug: str):
     """Get page content by slug (privacy-policy, terms-of-service)"""
