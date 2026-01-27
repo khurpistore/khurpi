@@ -427,17 +427,6 @@ const Addresses = () => {
                   {!formData.latitude && !formData.longitude && (
                     <p className="text-xs text-red-500 mt-2">Click on the map to pin your delivery location</p>
                   )}
-                  
-                  {/* Noida Warning */}
-                  {formData.latitude && !isNoidaLocation && (
-                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
-                      <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-amber-800">Outside Delivery Area</p>
-                        <p className="text-xs text-amber-700">We currently deliver only in Noida. You can save this address but won't be able to place orders to this location.</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Address Label */}
