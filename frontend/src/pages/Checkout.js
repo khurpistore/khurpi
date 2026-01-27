@@ -58,15 +58,6 @@ const Checkout = () => {
     document.body.appendChild(script);
   };
 
-  const fetchShopConfig = async () => {
-    try {
-      const response = await axios.get(`${API}/settings/shop`);
-      setShopConfig(response.data);
-    } catch (error) {
-      console.error('Failed to fetch shop config');
-    }
-  };
-
   const calculateDeliveryFee = async () => {
     const selectedAddress = addresses.find(a => a.id === selectedAddressId);
     if (selectedAddress?.latitude && selectedAddress?.longitude) {
