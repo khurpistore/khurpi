@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -15,6 +15,7 @@ const menuItems = [
   { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' },
   { id: 'coupons', label: 'Discount Coupons', icon: Tag, path: '/admin/coupons' },
   { id: 'referrals', label: 'Referral Program', icon: Gift, path: '/admin/referrals' },
+  { id: 'pages', label: 'Page Content', icon: FileText, path: '/admin/pages' },
   { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' }
 ];
 
