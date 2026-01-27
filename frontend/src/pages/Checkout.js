@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Plus, Truck, AlertCircle, Shield, Loader2 } from 'lucide-react';
+import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -17,19 +16,10 @@ const API = `${BACKEND_URL}/api`;
 const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems, getCartTotal, clearCart } = useCart();
-  const { user, addresses, addAddress } = useAuth();
+  const { user, addresses } = useAuth();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showNewAddress, setShowNewAddress] = useState(false);
-  const [deliveryInfo, setDeliveryInfo] = useState(null);
-  const [shopConfig, setShopConfig] = useState(null);
-  const [newAddress, setNewAddress] = useState({
-    address_line1: '',
-    address_line2: '',
-    city: 'NOIDA',
-    pincode: '',
-    landmark: ''
-  });
+  const [isNoidaAddress, setIsNoidaAddress] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -40,22 +30,17 @@ const Checkout = () => {
       navigate('/cart');
       return;
     }
-    fetchShopConfig();
     loadRazorpayScript();
     // Set default address
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
       setSelectedAddressId(defaultAddr.id);
+      checkNoidaDelivery(defaultAddr);
     } else if (addresses.length > 0) {
       setSelectedAddressId(addresses[0].id);
+      checkNoidaDelivery(addresses[0]);
     }
   }, [user, cartItems, addresses, navigate]);
-
-  useEffect(() => {
-    if (selectedAddressId) {
-      calculateDeliveryFee();
-    }
-  }, [selectedAddressId]);
 
   const loadRazorpayScript = () => {
     if (document.getElementById('razorpay-script')) return;
@@ -66,65 +51,38 @@ const Checkout = () => {
     document.body.appendChild(script);
   };
 
-  const fetchShopConfig = async () => {
-    try {
-      const response = await axios.get(`${API}/settings/shop`);
-      setShopConfig(response.data);
-    } catch (error) {
-      console.error('Failed to fetch shop config');
+  const checkNoidaDelivery = (address) => {
+    if (address?.address_line) {
+      const isNoida = address.address_line.toLowerCase().includes('noida') || 
+                      address.city?.toLowerCase() === 'noida';
+      setIsNoidaAddress(isNoida);
     }
   };
 
-  const calculateDeliveryFee = async () => {
-    const selectedAddress = addresses.find(a => a.id === selectedAddressId);
-    if (selectedAddress?.latitude && selectedAddress?.longitude) {
-      try {
-        const response = await axios.post(
-          `${API}/settings/calculate-delivery-fee?lat=${selectedAddress.latitude}&lon=${selectedAddress.longitude}`
-        );
-        setDeliveryInfo(response.data);
-      } catch (error) {
-        console.error('Failed to calculate delivery fee');
-        setDeliveryInfo({ fee: 150, distance: 0, label: 'Standard Delivery' });
-      }
-    } else {
-      setDeliveryInfo({ fee: 150, distance: 0, label: 'Standard Delivery' });
-    }
+  const handleAddressSelect = (addressId) => {
+    setSelectedAddressId(addressId);
+    const selectedAddr = addresses.find(a => a.id === addressId);
+    checkNoidaDelivery(selectedAddr);
   };
 
-  const handleAddNewAddress = async () => {
-    if (!newAddress.address_line1 || !newAddress.pincode) {
-      toast.error('Please fill in required address fields');
-      return;
-    }
-
-    const fullAddress = [
-      newAddress.address_line1,
-      newAddress.address_line2,
-      newAddress.landmark,
-      newAddress.city,
-      `UP ${newAddress.pincode}`
-    ].filter(Boolean).join(', ');
-
-    try {
-      const response = await addAddress({
-        address_line: fullAddress,
-        latitude: 28.5355,
-        longitude: 77.3910,
-        is_default: addresses.length === 0
-      });
-      setSelectedAddressId(response.id);
-      setShowNewAddress(false);
-      setNewAddress({ address_line1: '', address_line2: '', city: 'NOIDA', pincode: '', landmark: '' });
-      toast.success('Address added successfully');
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add address');
-    }
+  const handleAddAddress = () => {
+    // Save cart state before navigating
+    localStorage.setItem('checkoutReturn', 'true');
+    navigate('/addresses');
   };
 
   const handlePayment = async () => {
     if (!selectedAddressId) {
-      toast.error('Please select a delivery address');
+      toast.error('Please select a delivery address', {
+        description: 'You need to select an address to proceed with checkout'
+      });
+      return;
+    }
+
+    if (!isNoidaAddress) {
+      toast.error('Delivery not available', {
+        description: 'We currently deliver only in Noida. Please add a Noida address.'
+      });
       return;
     }
 
@@ -165,7 +123,7 @@ const Checkout = () => {
                 price: item.product.price
               })),
               subtotal: getCartTotal(),
-              delivery_fee: deliveryInfo?.fee || 0,
+              delivery_fee: 0,
               total: total,
               order_type: 'one_time',
               payment_id: response.razorpay_payment_id,
@@ -175,10 +133,14 @@ const Checkout = () => {
 
             await axios.post(`${API}/orders`, orderData);
             clearCart();
-            toast.success('Payment successful! Order placed.');
+            toast.success('Order Placed Successfully!', {
+              description: 'Your fresh microgreens will be delivered soon.'
+            });
             navigate('/orders');
           } catch (error) {
-            toast.error('Order creation failed. Please contact support.');
+            toast.error('Order creation failed', {
+              description: 'Please contact support with your payment ID.'
+            });
           }
         },
         prefill: {
@@ -191,7 +153,9 @@ const Checkout = () => {
         modal: {
           ondismiss: function() {
             setLoading(false);
-            toast.error('Payment cancelled');
+            toast.info('Payment Cancelled', {
+              description: 'Your cart items are still saved.'
+            });
           }
         }
       };
@@ -200,7 +164,9 @@ const Checkout = () => {
       razorpay.open();
       setLoading(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to initiate payment');
+      toast.error('Payment Failed', {
+        description: error.response?.data?.detail || 'Failed to initiate payment. Please try again.'
+      });
       setLoading(false);
     }
   };
@@ -210,8 +176,7 @@ const Checkout = () => {
   }
 
   const subtotal = getCartTotal();
-  const deliveryFee = deliveryInfo?.fee || 0;
-  const total = subtotal + deliveryFee;
+  const total = subtotal; // No delivery fee
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
@@ -222,35 +187,53 @@ const Checkout = () => {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <MapPin className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Delivery Address</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold">Delivery Address</h2>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddAddress}
+                  className="rounded-full"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  {addresses.length > 0 ? 'Manage' : 'Add Address'}
+                </Button>
               </div>
 
-              {shopConfig && (
-                <div className="mb-4 p-3 bg-green-50 rounded-lg text-sm">
-                  <p className="font-medium text-green-800">Delivering from:</p>
-                  <p className="text-green-700">{shopConfig.address}</p>
+              {addresses.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <MapPin className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                  <p className="text-muted-foreground mb-4">No delivery address found</p>
+                  <Button onClick={handleAddAddress} className="rounded-full">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Your First Address
+                  </Button>
                 </div>
-              )}
-
-              {addresses.length > 0 && !showNewAddress && (
-                <RadioGroup value={selectedAddressId} onValueChange={setSelectedAddressId}>
+              ) : (
+                <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
                   <div className="space-y-3">
                     {addresses.map((addr) => (
                       <div
                         key={addr.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedAddressId === addr.id ? 'border-primary bg-green-50' : 'border-gray-200'
+                        className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+                          selectedAddressId === addr.id 
+                            ? 'border-primary bg-green-50 shadow-sm' 
+                            : 'border-gray-200 hover:border-gray-300'
                         }`}
-                        onClick={() => setSelectedAddressId(addr.id)}
+                        onClick={() => handleAddressSelect(addr.id)}
                       >
                         <RadioGroupItem value={addr.id} id={addr.id} className="mt-1" />
                         <Label htmlFor={addr.id} className="flex-1 cursor-pointer">
-                          <p className="text-sm">{addr.address_line}</p>
-                          {addr.is_default && (
-                            <span className="text-xs text-primary font-medium">Default</span>
-                          )}
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium">{addr.name || 'Address'}</span>
+                            {addr.is_default && (
+                              <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">Default</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{addr.address_line}</p>
                         </Label>
                       </div>
                     ))}
@@ -258,119 +241,17 @@ const Checkout = () => {
                 </RadioGroup>
               )}
 
-              {!showNewAddress && (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowNewAddress(true)}
-                  className="mt-4 w-full sm:w-auto"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Address
-                </Button>
-              )}
-
-              {showNewAddress && (
-                <div className="space-y-4 mt-4 p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-medium">New Address</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="sm:col-span-2">
-                      <Label htmlFor="address_line1">Address Line 1 *</Label>
-                      <Input
-                        id="address_line1"
-                        placeholder="House/Flat No., Building Name"
-                        value={newAddress.address_line1}
-                        onChange={(e) => setNewAddress({...newAddress, address_line1: e.target.value})}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Label htmlFor="address_line2">Address Line 2</Label>
-                      <Input
-                        id="address_line2"
-                        placeholder="Street, Area, Sector"
-                        value={newAddress.address_line2}
-                        onChange={(e) => setNewAddress({...newAddress, address_line2: e.target.value})}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value="NOIDA"
-                        disabled
-                        className="mt-1 bg-gray-100"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">Currently serving NOIDA only</p>
-                    </div>
-                    <div>
-                      <Label htmlFor="pincode">Pincode *</Label>
-                      <Input
-                        id="pincode"
-                        placeholder="201301"
-                        value={newAddress.pincode}
-                        onChange={(e) => setNewAddress({...newAddress, pincode: e.target.value})}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Label htmlFor="landmark">Landmark</Label>
-                      <Input
-                        id="landmark"
-                        placeholder="Near School, Behind Mall, etc."
-                        value={newAddress.landmark}
-                        onChange={(e) => setNewAddress({...newAddress, landmark: e.target.value})}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button onClick={handleAddNewAddress} className="bg-primary hover:bg-primary/90">
-                      Save Address
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowNewAddress(false)}>
-                      Cancel
-                    </Button>
+              {!isNoidaAddress && selectedAddressId && (
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-amber-800">Delivery Not Available</p>
+                    <p className="text-sm text-amber-700">We currently deliver only in Noida. Please select or add a Noida address.</p>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
-
-          {/* Delivery Info */}
-          {deliveryInfo && (
-            <Card className={deliveryInfo.fee === 0 ? 'border-green-200 bg-green-50' : ''}>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Truck className="w-5 h-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Delivery Information</h2>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{deliveryInfo.label}</p>
-                    {deliveryInfo.distance > 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Distance: {deliveryInfo.distance.toFixed(1)} km from shop
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    {deliveryInfo.fee === 0 ? (
-                      <span className="text-lg font-bold text-green-600">FREE</span>
-                    ) : (
-                      <span className="text-lg font-bold">₹{deliveryInfo.fee}</span>
-                    )}
-                  </div>
-                </div>
-                {deliveryInfo.fee > 0 && (
-                  <div className="mt-3 p-2 bg-amber-50 rounded text-xs text-amber-700 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>Move closer to our shop (within 1 km) to get free delivery!</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Payment Information */}
           <Card>
@@ -433,14 +314,6 @@ const Checkout = () => {
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>₹{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery</span>
-                  {deliveryFee === 0 ? (
-                    <span className="text-green-600 font-medium">FREE</span>
-                  ) : (
-                    <span>₹{deliveryFee}</span>
-                  )}
-                </div>
               </div>
               
               <div className="border-t pt-4 mb-6">
@@ -453,7 +326,7 @@ const Checkout = () => {
               <Button
                 data-testid="pay-now-button"
                 onClick={handlePayment}
-                disabled={loading || !selectedAddressId}
+                disabled={loading || !selectedAddressId || !isNoidaAddress}
                 className="w-full bg-primary hover:bg-primary/90 rounded-full"
               >
                 {loading ? (
