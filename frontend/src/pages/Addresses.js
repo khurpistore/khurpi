@@ -128,37 +128,76 @@ const Addresses = () => {
     let city = '';
     let pincode = '';
     let area = '';
+    let address_line_1 = '';
+    let address_line_2 = '';
     
-    // Look for Noida or other city names
-    parts.forEach(part => {
-      if (part.toLowerCase().includes('noida')) city = 'NOIDA';
-      else if (part.toLowerCase().includes('delhi')) city = 'Delhi';
-      else if (part.toLowerCase().includes('gurgaon') || part.toLowerCase().includes('gurugram')) city = 'Gurugram';
-      else if (part.toLowerCase().includes('ghaziabad')) city = 'Ghaziabad';
+    // Look for Noida or other city names and extract details
+    parts.forEach((part, index) => {
+      const lowerPart = part.toLowerCase();
+      
+      // City detection
+      if (lowerPart.includes('noida')) city = 'NOIDA';
+      else if (lowerPart.includes('delhi')) city = 'Delhi';
+      else if (lowerPart.includes('gurgaon') || lowerPart.includes('gurugram')) city = 'Gurugram';
+      else if (lowerPart.includes('ghaziabad')) city = 'Ghaziabad';
+      else if (lowerPart.includes('greater noida')) city = 'Greater Noida';
       
       // Check for pincode (6 digits)
       const pincodeMatch = part.match(/\d{6}/);
       if (pincodeMatch) pincode = pincodeMatch[0];
       
-      // Check for sector
-      if (part.toLowerCase().includes('sector')) area = part;
+      // Check for sector/area
+      if (lowerPart.includes('sector') || lowerPart.includes('block') || lowerPart.includes('phase')) {
+        area = part;
+      }
     });
+
+    // Build address lines from parts
+    // First part is usually the specific location/building
+    if (parts.length > 0) {
+      address_line_1 = parts[0];
+    }
+    
+    // Second and third parts are usually street/area details
+    if (parts.length > 1) {
+      const middleParts = parts.slice(1, Math.min(4, parts.length - 3)).filter(p => {
+        const lower = p.toLowerCase();
+        return !lower.includes('india') && 
+               !lower.includes('uttar pradesh') && 
+               !lower.match(/^\d{6}$/) &&
+               !lower.includes('district');
+      });
+      address_line_2 = middleParts.join(', ');
+    }
+
+    // If no area found from sector detection, use a middle part
+    if (!area && parts.length > 2) {
+      area = parts[1] || '';
+    }
+
+    // If no city found, try to find from parts
+    if (!city && parts.length > 3) {
+      city = parts[parts.length - 3] || '';
+    }
 
     setFormData(prev => ({
       ...prev,
-      address_line_1: parts[0] || '',
-      address_line_2: parts.slice(1, 3).join(', ') || '',
-      area: area || parts[1] || '',
-      city: city || parts[parts.length - 3] || '',
+      address_line_1: address_line_1,
+      address_line_2: address_line_2,
+      area: area,
+      city: city,
       pincode: pincode,
       latitude: lat,
       longitude: lng
     }));
 
+    // Show selected address in search box
+    setSearchQuery(displayName);
+    
     // Set searched location to update map marker
     setSearchedLocation({ lat, lng });
 
-    setSearchQuery('');
+    // Clear dropdown results
     setSearchResults([]);
   };
 
