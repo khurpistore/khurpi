@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle } from 'lucide-react';
+import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -20,6 +20,8 @@ const Checkout = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isNoidaAddress, setIsNoidaAddress] = useState(true);
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
+  const [shopConfig, setShopConfig] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -31,6 +33,7 @@ const Checkout = () => {
       return;
     }
     loadRazorpayScript();
+    fetchShopConfig();
     // Set default address
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
@@ -42,6 +45,12 @@ const Checkout = () => {
     }
   }, [user, cartItems, addresses, navigate]);
 
+  useEffect(() => {
+    if (selectedAddressId) {
+      calculateDeliveryFee();
+    }
+  }, [selectedAddressId]);
+
   const loadRazorpayScript = () => {
     if (document.getElementById('razorpay-script')) return;
     const script = document.createElement('script');
@@ -49,6 +58,32 @@ const Checkout = () => {
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     document.body.appendChild(script);
+  };
+
+  const fetchShopConfig = async () => {
+    try {
+      const response = await axios.get(`${API}/settings/shop`);
+      setShopConfig(response.data);
+    } catch (error) {
+      console.error('Failed to fetch shop config');
+    }
+  };
+
+  const calculateDeliveryFee = async () => {
+    const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+    if (selectedAddress?.latitude && selectedAddress?.longitude) {
+      try {
+        const response = await axios.post(
+          `${API}/settings/calculate-delivery-fee?lat=${selectedAddress.latitude}&lon=${selectedAddress.longitude}`
+        );
+        setDeliveryInfo(response.data);
+      } catch (error) {
+        console.error('Failed to calculate delivery fee');
+        setDeliveryInfo({ fee: 50, distance: 0, label: 'Standard Delivery' });
+      }
+    } else {
+      setDeliveryInfo({ fee: 50, distance: 0, label: 'Standard Delivery' });
+    }
   };
 
   const checkNoidaDelivery = (address) => {
@@ -123,7 +158,7 @@ const Checkout = () => {
                 price: item.product.price
               })),
               subtotal: getCartTotal(),
-              delivery_fee: 0,
+              delivery_fee: deliveryFee,
               total: total,
               order_type: 'one_time',
               payment_id: response.razorpay_payment_id,
@@ -176,7 +211,8 @@ const Checkout = () => {
   }
 
   const subtotal = getCartTotal();
-  const total = subtotal; // No delivery fee
+  const deliveryFee = deliveryInfo?.fee || 0;
+  const total = subtotal + deliveryFee;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
@@ -202,6 +238,13 @@ const Checkout = () => {
                   {addresses.length > 0 ? 'Manage' : 'Add Address'}
                 </Button>
               </div>
+
+              {shopConfig && (
+                <div className="mb-4 p-3 bg-green-50 rounded-lg text-sm">
+                  <p className="font-medium text-green-800">Delivering from:</p>
+                  <p className="text-green-700">{shopConfig.address}</p>
+                </div>
+              )}
 
               {addresses.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
@@ -252,6 +295,41 @@ const Checkout = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Delivery Info */}
+          {deliveryInfo && isNoidaAddress && (
+            <Card className={deliveryInfo.fee === 0 ? 'border-green-200 bg-green-50' : ''}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Truck className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold">Delivery Information</h2>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{deliveryInfo.label}</p>
+                    {deliveryInfo.distance > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Distance: {deliveryInfo.distance.toFixed(1)} km from shop
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    {deliveryInfo.fee === 0 ? (
+                      <span className="text-lg font-bold text-green-600">FREE</span>
+                    ) : (
+                      <span className="text-lg font-bold">₹{deliveryInfo.fee}</span>
+                    )}
+                  </div>
+                </div>
+                {deliveryInfo.fee > 0 && (
+                  <div className="mt-3 p-2 bg-amber-50 rounded text-xs text-amber-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Subscribe for FREE delivery on all orders!</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Payment Information */}
           <Card>
@@ -313,6 +391,14 @@ const Checkout = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delivery</span>
+                  {deliveryFee === 0 ? (
+                    <span className="text-green-600 font-medium">FREE</span>
+                  ) : (
+                    <span>₹{deliveryFee}</span>
+                  )}
                 </div>
               </div>
               
