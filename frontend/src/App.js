@@ -25,6 +25,8 @@ import Profile from '@/pages/Profile';
 import ReferAndEarn from '@/pages/ReferAndEarn';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsConditions from '@/pages/TermsConditions';
+import ShippingPolicy from '@/pages/ShippingPolicy';
+import CancellationRefund from '@/pages/CancellationRefund';
 import AdminLogin from '@/pages/AdminLogin';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminUsers from '@/pages/AdminUsers';
