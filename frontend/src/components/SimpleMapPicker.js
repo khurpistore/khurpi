@@ -20,30 +20,41 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
-      // Check if click is within NOIDA bounds
-      if (lat >= 28.4 && lat <= 28.7 && lng >= 77.2 && lng <= 77.5) {
-        setPosition([lat, lng]);
-        onLocationSelect && onLocationSelect({ lat, lng });
-      }
+      setPosition([lat, lng]);
+      onLocationSelect && onLocationSelect({ lat, lng });
     },
   });
 
   useEffect(() => {
     if (position) {
-      map.flyTo(position, 14);
+      map.flyTo(position, 15);
     }
   }, [position, map]);
 
   return position ? <Marker position={position} /> : null;
 }
 
-const SimpleMapPicker = ({ onLocationSelect, initialLocation }) => {
-  // Use a key to force remount when initialLocation changes
-  const initialKey = initialLocation ? `${initialLocation.lat}-${initialLocation.lng}` : 'default';
+// Component to update map view when external location changes
+function MapUpdater({ externalPosition, setPosition }) {
+  const map = useMap();
   
+  useEffect(() => {
+    if (externalPosition) {
+      setPosition(externalPosition);
+      map.flyTo(externalPosition, 15);
+    }
+  }, [externalPosition, map, setPosition]);
+  
+  return null;
+}
+
+const SimpleMapPicker = ({ onLocationSelect, initialLocation, externalLocation }) => {
   const [position, setPosition] = useState(
     initialLocation ? [initialLocation.lat, initialLocation.lng] : null
   );
+
+  // Convert external location to array format
+  const externalPosition = externalLocation ? [externalLocation.lat, externalLocation.lng] : null;
 
   return (
     <MapContainer
@@ -60,6 +71,10 @@ const SimpleMapPicker = ({ onLocationSelect, initialLocation }) => {
         position={position} 
         setPosition={setPosition} 
         onLocationSelect={onLocationSelect}
+      />
+      <MapUpdater 
+        externalPosition={externalPosition}
+        setPosition={setPosition}
       />
     </MapContainer>
   );
