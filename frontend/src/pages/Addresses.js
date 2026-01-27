@@ -11,13 +11,6 @@ import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Buildi
 import { toast } from 'sonner';
 import SimpleMapPicker from '@/components/SimpleMapPicker';
 
-const NOIDA_BOUNDS = {
-  minLat: 28.45,
-  maxLat: 28.65,
-  minLng: 77.25,
-  maxLng: 77.55
-};
-
 const Addresses = () => {
   const { user, addresses, addAddress, updateAddressById, deleteAddress, setDefaultAddress, fetchAddresses } = useAuth();
   const navigate = useNavigate();
