@@ -599,8 +599,6 @@ const Addresses = () => {
         ) : (
           <div className="grid gap-4">
             {addresses.map((address) => {
-              const isNoida = address.address_line?.toLowerCase().includes('noida') || 
-                             address.city?.toLowerCase() === 'noida';
               return (
                 <Card 
                   key={address.id} 
@@ -622,11 +620,6 @@ const Addresses = () => {
                               <Badge className="ml-2 bg-primary text-white">
                                 <Star className="w-3 h-3 mr-1" />
                                 Default
-                              </Badge>
-                            )}
-                            {!isNoida && (
-                              <Badge variant="outline" className="ml-2 text-amber-600 border-amber-300">
-                                Outside Delivery Area
                               </Badge>
                             )}
                           </div>
