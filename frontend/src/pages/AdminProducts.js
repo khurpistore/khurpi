@@ -24,6 +24,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     nutrients: product?.nutrients || '',
     price: product?.price || '',
     growth_days: product?.growth_days || '',
+    pack_size: product?.pack_size || '80g',
     stock: product?.stock || 50,
     active: product?.active !== false
   });
@@ -36,15 +37,21 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     try {
       if (product) {
         await axios.put(`${API}/products/${product.id}`, formData);
-        toast.success('Product updated successfully');
+        toast.success('Product updated successfully', {
+          description: `${formData.name} has been saved.`
+        });
       } else {
         await axios.post(`${API}/products`, formData);
-        toast.success('Product created successfully');
+        toast.success('Product created successfully', {
+          description: `${formData.name} is now available.`
+        });
       }
       onSuccess();
       onClose();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Operation failed');
+      toast.error('Operation failed', {
+        description: error.response?.data?.detail || 'Please try again.'
+      });
     } finally {
       setLoading(false);
     }
