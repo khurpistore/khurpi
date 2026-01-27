@@ -1919,7 +1919,53 @@ async def update_subscription_plans(data: List[dict]):
     )
     return {"success": True, "data": data}
 
-# Page Content Management (Privacy Policy, Terms of Service)
+# Page Content Management (Privacy Policy, Terms & Conditions)
+@api_router.get("/pages/privacy-policy")
+async def get_privacy_policy():
+    """Get privacy policy content (public)"""
+    setting = await db.settings.find_one({"type": "privacy_policy"}, {"_id": 0})
+    if setting and setting.get("data"):
+        return setting["data"]
+    return {"title": "Privacy Policy", "content": "", "last_updated": None}
+
+@api_router.get("/pages/terms-conditions")
+async def get_terms_conditions():
+    """Get terms and conditions content (public)"""
+    setting = await db.settings.find_one({"type": "terms_conditions"}, {"_id": 0})
+    if setting and setting.get("data"):
+        return setting["data"]
+    return {"title": "Terms and Conditions", "content": "", "last_updated": None}
+
+@api_router.put("/admin/pages/privacy-policy")
+async def update_privacy_policy(data: dict):
+    """Update privacy policy (admin only)"""
+    update_data = {
+        "title": data.get("title", "Privacy Policy"),
+        "content": data.get("content", ""),
+        "last_updated": datetime.now(timezone.utc).isoformat()
+    }
+    await db.settings.update_one(
+        {"type": "privacy_policy"},
+        {"$set": {"type": "privacy_policy", "data": update_data}},
+        upsert=True
+    )
+    return {"success": True, "data": update_data}
+
+@api_router.put("/admin/pages/terms-conditions")
+async def update_terms_conditions(data: dict):
+    """Update terms and conditions (admin only)"""
+    update_data = {
+        "title": data.get("title", "Terms and Conditions"),
+        "content": data.get("content", ""),
+        "last_updated": datetime.now(timezone.utc).isoformat()
+    }
+    await db.settings.update_one(
+        {"type": "terms_conditions"},
+        {"$set": {"type": "terms_conditions", "data": update_data}},
+        upsert=True
+    )
+    return {"success": True, "data": update_data}
+
 @api_router.get("/settings/pages/{page_slug}")
 async def get_page_content(page_slug: str):
     """Get page content by slug (privacy-policy, terms-of-service)"""
