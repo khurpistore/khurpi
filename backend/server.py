@@ -225,6 +225,7 @@ class Product(BaseModel):
     nutrients: Optional[str] = None
     price: float
     growth_days: int
+    pack_size: str = "80g"  # Configurable pack size
     stock: int = 100
     active: bool = True
     created_at: str
@@ -236,6 +237,7 @@ class ProductCreate(BaseModel):
     nutrients: Optional[str] = None
     price: float
     growth_days: int
+    pack_size: str = "80g"  # Configurable pack size
     stock: int = 100
     active: bool = True
 
@@ -246,6 +248,7 @@ class ProductUpdate(BaseModel):
     nutrients: Optional[str] = None
     price: Optional[float] = None
     growth_days: Optional[int] = None
+    pack_size: Optional[str] = None  # Configurable pack size
     stock: Optional[int] = None
     active: Optional[bool] = None
 
