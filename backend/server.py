@@ -670,50 +670,242 @@ Welcome to Khurpi Microgreens. By using our website and services, you agree to t
 - Auto-renewal unless cancelled
 - Cancel anytime from your profile
 
-## 4. Return and Refund Policy
-
-### Quality Guarantee
-- If you receive damaged or poor-quality products, contact us within 2 hours of delivery
-- Share photos of the issue via WhatsApp or email
-
-### Refunds
-- Valid complaints will be resolved with replacement or full refund
-- Refunds are processed within 5-7 business days
-- Refunds are credited to the original payment method
-
-### Non-Refundable
-- Orders cancelled after dispatch
-- Perishable items after 2 hours of delivery
-- Change of mind after delivery
-
-## 5. Subscription Terms
-
-### Subscription Plans
-- Choose from weekly delivery frequencies
-- Discounts based on frequency (up to 50% off)
-- Modify or cancel subscriptions from your profile
-
-### Cancellation
-- Cancel anytime without penalty
-- Cancellation effective from next billing cycle
-- Pending deliveries will be completed
-
-## 6. User Responsibilities
+## 4. User Responsibilities
 
 - Provide accurate delivery information
 - Ensure someone is available to receive orders
 - Report issues promptly
 
-## 7. Contact Information
+## 5. Contact Information
 
 **Khurpi Microgreens**
 - Email: hello@khurpistore.in
 - Phone: +91 9876543210
 - Address: E-312, ACE City, Noida Extension, 201306
 
-## 8. Changes to Terms
+## 6. Changes to Terms
 
 We may modify these terms at any time. Continued use of our services constitutes acceptance of updated terms."""
+            }
+        },
+        {
+            "type": "shipping_policy",
+            "data": {
+                "title": "Shipping Policy",
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "content": """# Shipping Policy
+
+**Last Updated: January 2026**
+
+At Khurpi Microgreens, we are committed to delivering fresh, healthy microgreens right to your doorstep.
+
+## Delivery Areas
+
+### Currently Serving
+- **Noida** (All Sectors)
+- **Greater Noida** (Selected Areas)
+- **Noida Extension**
+
+### Coming Soon
+- Ghaziabad
+- Delhi NCR
+
+## Delivery Charges
+
+### Single Orders
+| Distance from Store | Delivery Fee |
+|---------------------|--------------|
+| 0-1 km | FREE |
+| 1-3 km | ₹30 |
+| 3-5 km | ₹50 |
+| 5-10 km | ₹80 |
+| 10-15 km | ₹120 |
+
+### Subscription Orders
+- **FREE Delivery** on all subscription plans
+- No minimum order value required
+
+## Delivery Schedule
+
+### Order Timings
+- Orders placed before **10:00 AM** - Same day delivery
+- Orders placed after **10:00 AM** - Next day delivery
+
+### Delivery Days
+- **Monday to Saturday**: 8:00 AM - 8:00 PM
+- **Sunday**: No deliveries
+
+### Subscription Deliveries
+- Delivered on your selected days
+- Morning deliveries (8:00 AM - 12:00 PM)
+- You'll receive a notification before delivery
+
+## Packaging
+
+- **Eco-friendly packaging** to maintain freshness
+- Sealed containers to preserve nutrients
+- Temperature-controlled delivery bags
+- Recyclable materials used
+
+## Delivery Process
+
+1. **Order Confirmation**: You'll receive an SMS/notification
+2. **Dispatch Notification**: When your order leaves our facility
+3. **Delivery**: Our delivery partner will contact you
+4. **Completion**: Confirm receipt of fresh products
+
+## Important Notes
+
+### Address Accuracy
+- Please ensure your delivery address is accurate
+- Include landmarks for easy location
+- Provide correct phone number for delivery updates
+
+### Recipient Availability
+- Someone must be available to receive the order
+- Fresh microgreens cannot be left unattended
+- Rescheduling available if you're unavailable
+
+### Quality Guarantee
+- Products are checked before dispatch
+- Report any issues within 2 hours of delivery
+- Photos required for quality complaints
+
+## Contact for Delivery Issues
+
+If you face any delivery-related issues:
+- **WhatsApp**: +91 9971818259
+- **Email**: khurpi.store@gmail.com
+- **Response Time**: Within 1 hour during business hours"""
+            }
+        },
+        {
+            "type": "cancellation_refund",
+            "data": {
+                "title": "Cancellations and Refunds",
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "content": """# Cancellations and Refunds Policy
+
+**Last Updated: January 2026**
+
+We want you to be completely satisfied with your Khurpi Microgreens purchase.
+
+## Order Cancellation
+
+### Single Orders
+
+#### Before Dispatch
+- **Full refund** if cancelled before order is dispatched
+- Cancel from your Orders page or contact us
+- Refund processed within 24 hours
+
+#### After Dispatch
+- Orders cannot be cancelled once dispatched
+- Fresh products are perishable and prepared specifically for you
+- Contact us for exceptional circumstances
+
+### Subscription Cancellation
+
+#### How to Cancel
+1. Go to **My Subscriptions** in your profile
+2. Click on the subscription you want to cancel
+3. Select **Cancel Subscription**
+4. Confirm cancellation
+
+#### Cancellation Terms
+- Cancel anytime without penalty
+- Cancellation effective from **next billing cycle**
+- Current cycle deliveries will be completed
+- No partial refunds for current cycle
+
+#### Pause Option
+- Instead of cancelling, you can **pause** your subscription
+- Pause for up to 4 weeks
+- Resume anytime from your profile
+
+## Refund Policy
+
+### Eligible for Refund
+
+✅ **Quality Issues**
+- Damaged or wilted microgreens
+- Wrong product delivered
+- Missing items from order
+- Contaminated products
+
+✅ **Delivery Issues**
+- Order not delivered
+- Significant delay (more than 24 hours)
+- Delivered to wrong address (our error)
+
+### Not Eligible for Refund
+
+❌ **Customer Reasons**
+- Change of mind after delivery
+- Ordered wrong product
+- Not available to receive delivery
+- Incorrect address provided by customer
+
+❌ **After Time Limit**
+- Complaints raised after 2 hours of delivery
+- Products already consumed
+- No photo evidence provided
+
+## How to Request Refund
+
+### Step 1: Report Issue
+- Contact us within **2 hours** of delivery
+- WhatsApp: +91 9971818259
+- Email: khurpi.store@gmail.com
+
+### Step 2: Provide Details
+- Order ID
+- Description of issue
+- Clear photos of the problem
+- Photos of packaging (if relevant)
+
+### Step 3: Verification
+- Our team will review within 2 hours
+- We may ask for additional information
+- Decision communicated via WhatsApp/Email
+
+### Step 4: Resolution
+- **Replacement**: Fresh delivery at no extra cost
+- **Refund**: Processed to original payment method
+- **Store Credit**: For future purchases
+
+## Refund Timeline
+
+| Payment Method | Refund Time |
+|----------------|-------------|
+| UPI | 24-48 hours |
+| Credit/Debit Card | 5-7 business days |
+| Net Banking | 5-7 business days |
+| Wallet | 24-48 hours |
+
+## Subscription Refunds
+
+### Monthly Billing
+- No refunds for partially used subscription months
+- Unused deliveries cannot be carried forward
+- Credit may be offered for service issues
+
+### Prepaid Plans
+- Pro-rata refund for cancelled prepaid subscriptions
+- Calculated based on deliveries completed
+- Processing time: 7-10 business days
+
+## Contact Us
+
+For any cancellation or refund queries:
+
+- **WhatsApp** (Fastest): +91 9971818259
+- **Email**: khurpi.store@gmail.com
+- **Response Time**: Within 1 hour (9 AM - 8 PM)
+
+## Our Commitment
+
+We stand behind the quality of our microgreens. If you're not satisfied, we'll make it right - whether through replacement or refund. Your trust is our priority."""
             }
         }
     ]
