@@ -87,7 +87,7 @@ const ProductDetail = () => {
               </h1>
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="text-3xl sm:text-4xl font-bold text-primary">₹{product.price}</div>
-                <div className="text-muted-foreground">per 80g pack</div>
+                <div className="text-muted-foreground">per {product.pack_size || '80g'} pack</div>
               </div>
               
               {product.stock <= 0 ? (
