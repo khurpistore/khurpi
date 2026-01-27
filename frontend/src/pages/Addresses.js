@@ -32,7 +32,6 @@ const Addresses = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [isNoidaLocation, setIsNoidaLocation] = useState(true);
   
   // Check if coming from checkout or subscription flow
   const params = new URLSearchParams(location.search);
