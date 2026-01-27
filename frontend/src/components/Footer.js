@@ -91,9 +91,11 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-white/20 mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-white/60">
           <p>© 2025 Khurpi. All rights reserved.</p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <button onClick={() => navigate('/privacy-policy')} className="hover:text-white transition-colors">Privacy Policy</button>
             <button onClick={() => navigate('/terms-conditions')} className="hover:text-white transition-colors">Terms & Conditions</button>
+            <button onClick={() => navigate('/shipping-policy')} className="hover:text-white transition-colors">Shipping Policy</button>
+            <button onClick={() => navigate('/cancellation-refund')} className="hover:text-white transition-colors">Cancellations & Refunds</button>
           </div>
         </div>
       </div>
