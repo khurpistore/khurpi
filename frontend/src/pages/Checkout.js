@@ -21,7 +21,6 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [isNoidaAddress, setIsNoidaAddress] = useState(true);
   const [deliveryInfo, setDeliveryInfo] = useState(null);
-  const [shopConfig, setShopConfig] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -33,7 +32,6 @@ const Checkout = () => {
       return;
     }
     loadRazorpayScript();
-    fetchShopConfig();
     // Set default address
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
