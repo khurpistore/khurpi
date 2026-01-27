@@ -258,10 +258,6 @@ const Addresses = () => {
       longitude: address.longitude || null,
       is_default: address.is_default || false
     });
-
-    if (address.latitude && address.longitude) {
-      checkNoidaLocation(address.latitude, address.longitude);
-    }
     
     setIsAddDialogOpen(true);
   };
