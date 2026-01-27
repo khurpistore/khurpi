@@ -73,15 +73,6 @@ const Addresses = () => {
     setEditingAddress(null);
     setSearchQuery('');
     setSearchResults([]);
-    setIsNoidaLocation(true);
-  };
-
-  // Check if location is in Noida
-  const checkNoidaLocation = (lat, lng) => {
-    const isNoida = lat >= NOIDA_BOUNDS.minLat && lat <= NOIDA_BOUNDS.maxLat &&
-                    lng >= NOIDA_BOUNDS.minLng && lng <= NOIDA_BOUNDS.maxLng;
-    setIsNoidaLocation(isNoida);
-    return isNoida;
   };
 
   const handleLocationSelect = (location) => {
@@ -90,7 +81,6 @@ const Addresses = () => {
       latitude: location.lat,
       longitude: location.lng
     }));
-    checkNoidaLocation(location.lat, location.lng);
   };
 
   // Debounced search for addresses
