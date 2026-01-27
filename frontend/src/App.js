@@ -76,7 +76,8 @@ function App() {
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/terms-conditions" element={<TermsConditions />} />
+              <Route path="/terms-of-service" element={<TermsConditions />} />
               
               {/* Protected Customer Routes */}
               <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
