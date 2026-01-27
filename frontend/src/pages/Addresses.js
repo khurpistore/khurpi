@@ -402,6 +402,7 @@ const Addresses = () => {
                         lat: formData.latitude,
                         lng: formData.longitude
                       } : null}
+                      externalLocation={searchedLocation}
                     />
                   </div>
                   {!formData.latitude && !formData.longitude && (
