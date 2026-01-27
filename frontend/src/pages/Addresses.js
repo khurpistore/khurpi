@@ -211,9 +211,7 @@ const Addresses = () => {
       } else {
         await addAddress(addressData);
         toast.success('Address Added', {
-          description: isNoidaLocation 
-            ? 'Your address is ready for delivery!' 
-            : 'Address saved. Note: Delivery is only available in Noida.'
+          description: 'Your address has been saved successfully.'
         });
       }
       setIsAddDialogOpen(false);
