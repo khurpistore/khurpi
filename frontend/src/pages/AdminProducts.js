@@ -130,18 +130,31 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           />
         </div>
       </div>
-      <div>
-        <Label htmlFor="stock" className="text-sm">Stock Quantity</Label>
-        <Input
-          id="stock"
-          data-testid="product-stock-input"
-          type="number"
-          value={formData.stock}
-          onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-          required
-          className="mt-1"
-          placeholder="Number of packs available"
-        />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div>
+          <Label htmlFor="pack_size" className="text-sm">Pack Size</Label>
+          <Input
+            id="pack_size"
+            data-testid="product-pack-size-input"
+            value={formData.pack_size}
+            onChange={(e) => setFormData({ ...formData, pack_size: e.target.value })}
+            placeholder="e.g., 80g, 100g, 50g"
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="stock" className="text-sm">Stock Quantity</Label>
+          <Input
+            id="stock"
+            data-testid="product-stock-input"
+            type="number"
+            value={formData.stock}
+            onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
+            required
+            className="mt-1"
+            placeholder="Number of packs"
+          />
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <Switch
