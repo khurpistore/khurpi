@@ -80,6 +80,8 @@ function App() {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/terms-of-service" element={<TermsConditions />} />
+              <Route path="/shipping-policy" element={<ShippingPolicy />} />
+              <Route path="/cancellation-refund" element={<CancellationRefund />} />
               
               {/* Protected Customer Routes */}
               <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
