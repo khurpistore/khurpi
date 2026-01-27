@@ -239,13 +239,6 @@ const Checkout = () => {
                 </Button>
               </div>
 
-              {shopConfig && (
-                <div className="mb-4 p-3 bg-green-50 rounded-lg text-sm">
-                  <p className="font-medium text-green-800">Delivering from:</p>
-                  <p className="text-green-700">{shopConfig.address}</p>
-                </div>
-              )}
-
               {addresses.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   <MapPin className="w-12 h-12 mx-auto text-gray-400 mb-3" />
