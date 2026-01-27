@@ -24,7 +24,7 @@ import SubscriptionDetail from '@/pages/SubscriptionDetail';
 import Profile from '@/pages/Profile';
 import ReferAndEarn from '@/pages/ReferAndEarn';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import TermsOfService from '@/pages/TermsOfService';
+import TermsConditions from '@/pages/TermsConditions';
 import AdminLogin from '@/pages/AdminLogin';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminUsers from '@/pages/AdminUsers';
@@ -36,6 +36,7 @@ import AdminInventory from '@/pages/AdminInventory';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminCoupons from '@/pages/AdminCoupons';
 import AdminReferrals from '@/pages/AdminReferrals';
+import AdminPages from '@/pages/AdminPages';
 import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
 
