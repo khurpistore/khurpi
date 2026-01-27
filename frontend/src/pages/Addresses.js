@@ -155,6 +155,9 @@ const Addresses = () => {
       longitude: lng
     }));
 
+    // Set searched location to update map marker
+    setSearchedLocation({ lat, lng });
+
     setSearchQuery('');
     setSearchResults([]);
   };
