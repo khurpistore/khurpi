@@ -153,7 +153,6 @@ const Addresses = () => {
       longitude: lng
     }));
 
-    checkNoidaLocation(lat, lng);
     setSearchQuery('');
     setSearchResults([]);
   };
