@@ -575,11 +575,10 @@ const Addresses = () => {
           </Dialog>
         </div>
 
-        {/* Delivery Area Notice */}
-        <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800">
-            <strong>📍 Delivery Area:</strong> We currently deliver only in <strong>Noida</strong>. 
-            You can add any address but delivery will only be available for Noida locations.
+        {/* Info Notice */}
+        <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>💡 Tip:</strong> You can add any address. Search by typing or pin your location on the map.
           </p>
         </div>
 
