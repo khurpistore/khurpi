@@ -590,6 +590,11 @@ const SubscriptionCreate = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature
               });
+              
+              // Store payment IDs in subscriptionData for subscription creation
+              subscriptionData.payment_id = response.razorpay_payment_id;
+              subscriptionData.razorpay_order_id = response.razorpay_order_id;
+              
               toast.success('Payment successful!');
               resolve(true);
             } catch (err) {
