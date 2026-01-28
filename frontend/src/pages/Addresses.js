@@ -470,6 +470,29 @@ const Addresses = () => {
                   />
                 </div>
 
+                {/* Phone Number */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <Phone className="w-4 h-4" />
+                    Phone Number *
+                  </div>
+                  <div className="flex">
+                    <div className="flex items-center px-3 bg-gray-100 border border-r-0 rounded-l-lg text-sm text-muted-foreground">
+                      +91
+                    </div>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                      placeholder="10-digit mobile number"
+                      required
+                      maxLength={10}
+                      className="bg-white rounded-l-none"
+                      data-testid="address-phone-input"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">This number will be used for delivery updates</p>
+                </div>
+
                 {/* Address Details */}
                 <div className="bg-gray-50 p-4 rounded-lg space-y-4">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
