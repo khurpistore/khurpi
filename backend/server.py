@@ -375,6 +375,8 @@ class Order(BaseModel):
     subtotal: float
     delivery_fee: float = 0
     delivery_distance: Optional[float] = None
+    coupon_code: Optional[str] = None
+    coupon_discount: float = 0
     total: float
     status: str = "pending"
     order_type: str = "one_time"
@@ -389,6 +391,8 @@ class OrderCreate(BaseModel):
     items: List[OrderItem]
     subtotal: float
     delivery_fee: float = 0
+    coupon_code: Optional[str] = None
+    coupon_discount: float = 0
     total: float
     order_type: str = "one_time"
     payment_id: Optional[str] = None
