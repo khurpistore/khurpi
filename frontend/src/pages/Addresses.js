@@ -224,6 +224,14 @@ const Addresses = () => {
       });
       return;
     }
+
+    // Validate phone number
+    if (!formData.phone || formData.phone.length !== 10) {
+      toast.error('Phone Number Required', {
+        description: 'Please enter a valid 10-digit phone number.'
+      });
+      return;
+    }
     
     const fullAddress = buildAddressLine();
 
