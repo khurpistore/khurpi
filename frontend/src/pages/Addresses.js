@@ -277,6 +277,7 @@ const Addresses = () => {
     
     // Parse address fields
     let name = address.name || '';
+    let phone = address.phone || '';
     let address_line_1 = address.address_line_1 || '';
     let address_line_2 = address.address_line_2 || '';
     let area = address.area || '';
@@ -296,6 +297,7 @@ const Addresses = () => {
     
     setFormData({
       name: name,
+      phone: phone,
       address_line_1: address_line_1,
       address_line_2: address_line_2,
       area: area,
