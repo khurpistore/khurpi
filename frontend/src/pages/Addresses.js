@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,9 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2, Phone } from 'lucide-react';
+import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2, Phone, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import SimpleMapPicker from '@/components/SimpleMapPicker';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const Addresses = () => {
   const { user, addresses, addAddress, updateAddressById, deleteAddress, setDefaultAddress, fetchAddresses } = useAuth();
@@ -34,11 +37,36 @@ const Addresses = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchedLocation, setSearchedLocation] = useState(null);
+  const [deliveryFees, setDeliveryFees] = useState({});
   
   // Check if coming from checkout or subscription flow
   const params = new URLSearchParams(location.search);
   const returnTo = params.get('returnTo');
   const fromCheckout = localStorage.getItem('checkoutReturn') === 'true';
+
+  // Calculate delivery fees for all addresses
+  useEffect(() => {
+    const calculateFees = async () => {
+      const fees = {};
+      for (const address of addresses) {
+        if (address.latitude && address.longitude) {
+          try {
+            const response = await axios.post(
+              `${API}/settings/calculate-delivery-fee?lat=${address.latitude}&lon=${address.longitude}`
+            );
+            fees[address.id] = response.data;
+          } catch (error) {
+            fees[address.id] = { fee: 0, label: 'Unable to calculate' };
+          }
+        }
+      }
+      setDeliveryFees(fees);
+    };
+    
+    if (addresses.length > 0) {
+      calculateFees();
+    }
+  }, [addresses]);
 
   // Handle return navigation
   const handleBack = () => {
