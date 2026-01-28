@@ -252,15 +252,19 @@ January 26, 2025
 - Fixed subscription steps with sticky header and prev/next buttons
 
 ## Known Issues
-- ~~**Login Redirect Race Condition (P2):** Direct navigation to protected routes may fail due to auth state hydration timing.~~ **FIXED** - Added ProtectedRoute component with loading state
+- None
 
 ## Last Updated
-January 26, 2025
+January 28, 2025
 
 ## Change Log
+- **Jan 28, 2025:** FIXED - Critical payment flow bug where orders weren't being created after successful Razorpay payments
+- **Jan 28, 2025:** Fixed `calculate_delivery_fee` function to handle both flat list and nested `{"tiers": [...]}` formats from DB
+- **Jan 28, 2025:** Added Admin Orders page (`/admin/orders`) for comprehensive order management with status updates
+- **Jan 28, 2025:** Added search, filter, and order detail expansion in Admin Orders page
+- **Jan 28, 2025:** All backend tests passing (18/18) - Order creation, user orders, admin payments verified
+- **Jan 27, 2025:** Added dynamic pack size field to products (configurable from Admin Panel)
+- **Jan 27, 2025:** Added CMS for static pages: Privacy Policy, Terms & Conditions, Shipping Policy, Cancellations & Refunds
+- **Jan 27, 2025:** Enhanced Address Management with location search bar and dynamic map pins
+- **Jan 27, 2025:** Unified user roles - same phone can register as both customer and delivery_boy
 - **Jan 26, 2025:** Reverted from OTP to Password-based authentication per user request
-- **Jan 26, 2025:** Removed "Forgot Password" page and link
-- **Jan 26, 2025:** Added "Change Password" feature to Profile page (Security section)
-- **Jan 26, 2025:** Added "Reset Password" feature to Admin Users page
-- **Jan 26, 2025:** Added backend APIs: `/auth/change-password`, `/admin/users/{id}/reset-password`
-- **Jan 25, 2025:** Implemented Phone + OTP authentication via MSG91 WhatsApp (later reverted)
