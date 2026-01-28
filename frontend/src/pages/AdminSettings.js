@@ -247,6 +247,19 @@ const AdminSettings = () => {
                     className="mt-1"
                   />
                 </div>
+                <div className="sm:col-span-2">
+                  <Label>Free Delivery Threshold (₹)</Label>
+                  <Input
+                    type="number"
+                    value={shopConfig.free_delivery_threshold || 1000}
+                    onChange={(e) => setShopConfig({...shopConfig, free_delivery_threshold: parseInt(e.target.value) || 0})}
+                    className="mt-1"
+                    placeholder="Orders above this amount get free delivery"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Orders above ₹{shopConfig.free_delivery_threshold || 1000} will get free delivery
+                  </p>
+                </div>
               </div>
               <Button
                 onClick={handleSaveShopConfig}
