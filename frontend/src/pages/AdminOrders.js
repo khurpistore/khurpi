@@ -264,6 +264,9 @@ const AdminOrders = () => {
                         <div className="bg-white p-3 rounded-lg text-sm">
                           <div className="font-medium">{order.address.name || 'Address'}</div>
                           <div className="text-muted-foreground">{order.address.address_line}</div>
+                          {order.address.phone && (
+                            <div className="text-muted-foreground font-medium">📞 +91 {order.address.phone}</div>
+                          )}
                           {order.address.city && (
                             <div className="text-muted-foreground">{order.address.city} - {order.address.pincode}</div>
                           )}
