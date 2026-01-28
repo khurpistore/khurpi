@@ -366,6 +366,9 @@ class Order(BaseModel):
     total: float
     status: str = "pending"
     order_type: str = "one_time"
+    payment_id: Optional[str] = None
+    razorpay_order_id: Optional[str] = None
+    payment_status: str = "pending"
     created_at: str
 
 class OrderCreate(BaseModel):
@@ -376,6 +379,9 @@ class OrderCreate(BaseModel):
     delivery_fee: float = 0
     total: float
     order_type: str = "one_time"
+    payment_id: Optional[str] = None
+    razorpay_order_id: Optional[str] = None
+    payment_status: str = "pending"
 
 @api_router.post("/auth/signup", response_model=User)
 async def signup(user_data: UserCreate):
