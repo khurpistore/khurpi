@@ -1445,12 +1445,13 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
             detail="Sorry, we currently deliver only in NOIDA area. Please update your address."
         )
     
-    # Calculate delivery fee based on address location
-    delivery_fee = 0
+    # Subscriptions get FREE delivery - only calculate for reference/display
+    delivery_fee = 0  # FREE for all subscriptions
     delivery_distance = 0
+    would_be_delivery_fee = 0  # What would have been charged for single orders
     if selected_address and selected_address.get("latitude") and selected_address.get("longitude"):
         delivery_info = await calculate_delivery_fee(selected_address["latitude"], selected_address["longitude"])
-        delivery_fee = delivery_info["fee"]
+        would_be_delivery_fee = delivery_info["fee"]  # Store for savings display
         delivery_distance = delivery_info.get("distance", 0)
     
     # Get subscription plan discount
