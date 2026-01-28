@@ -670,6 +670,12 @@ const Addresses = () => {
                           </div>
                         </div>
                         <p className="text-base text-gray-700 ml-10">{address.address_line}</p>
+                        {address.phone && (
+                          <p className="text-sm text-muted-foreground ml-10 mt-1 flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            +91 {address.phone}
+                          </p>
+                        )}
                         {address.pincode && (
                           <p className="text-sm text-muted-foreground ml-10 mt-1">PIN: {address.pincode}</p>
                         )}
