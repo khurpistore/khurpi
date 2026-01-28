@@ -260,6 +260,9 @@ const Checkout = () => {
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">{addr.address_line}</p>
+                          {addr.phone && (
+                            <p className="text-xs text-muted-foreground mt-1">📞 +91 {addr.phone}</p>
+                          )}
                         </Label>
                       </div>
                     ))}
