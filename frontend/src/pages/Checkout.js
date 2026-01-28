@@ -37,6 +37,7 @@ const Checkout = () => {
       return;
     }
     loadRazorpayScript();
+    fetchSettings();
     // Set default address
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
@@ -47,6 +48,16 @@ const Checkout = () => {
       checkNoidaDelivery(addresses[0]);
     }
   }, [user, cartItems, addresses, navigate]);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/settings/all`);
+      const threshold = response.data?.shop_config?.free_delivery_threshold || 1000;
+      setFreeDeliveryThreshold(threshold);
+    } catch (error) {
+      console.error('Failed to fetch settings');
+    }
+  };
 
   useEffect(() => {
     if (selectedAddressId) {
