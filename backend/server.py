@@ -274,8 +274,10 @@ class Subscription(BaseModel):
     coupon_discount: float = 0
     total_price: float
     address_id: Optional[str] = None
-    payment_method: str = "cod"
+    payment_method: str = "razorpay"
     payment_status: str = "pending"
+    payment_id: Optional[str] = None
+    razorpay_order_id: Optional[str] = None
     next_delivery_date: Optional[str] = None
     skipped_deliveries: List[str] = []
     created_at: str
@@ -293,7 +295,10 @@ class SubscriptionCreate(BaseModel):
     coupon_code: Optional[str] = None
     coupon_discount: float = 0
     referral_code: Optional[str] = None
-    payment_method: str = "cod"
+    payment_method: str = "razorpay"
+    payment_id: Optional[str] = None
+    razorpay_order_id: Optional[str] = None
+    payment_status: str = "pending"
 
 class SubscriptionUpdate(BaseModel):
     status: Optional[str] = None
