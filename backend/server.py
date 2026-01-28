@@ -1970,10 +1970,16 @@ async def create_order(order_data: OrderCreate):
     if not address:
         raise HTTPException(status_code=404, detail="Address not found")
     
-    # Calculate delivery fee based on address location
-    delivery_info = {"fee": 0, "distance": 0}
+    # Use the delivery fee from frontend if provided, otherwise calculate
+    delivery_fee = order_data.delivery_fee
+    delivery_distance = 0
+    
     if address.get("latitude") and address.get("longitude"):
         delivery_info = await calculate_delivery_fee(address["latitude"], address["longitude"])
+        delivery_distance = delivery_info.get("distance", 0)
+    
+    # Determine order status based on payment
+    order_status = "confirmed" if order_data.payment_status == "paid" else "pending"
     
     # Create order
     order_doc = {
@@ -1982,23 +1988,30 @@ async def create_order(order_data: OrderCreate):
         "address_id": order_data.address_id,
         "items": [item.model_dump() for item in order_data.items],
         "subtotal": order_data.subtotal,
-        "delivery_fee": delivery_info["fee"],
-        "delivery_distance": delivery_info.get("distance", 0),
-        "total": order_data.subtotal + delivery_info["fee"],
-        "status": "confirmed",  # Auto-confirm for COD
+        "delivery_fee": delivery_fee,
+        "delivery_distance": delivery_distance,
+        "total": order_data.total,
+        "status": order_status,
         "order_type": order_data.order_type,
+        "payment_id": order_data.payment_id,
+        "razorpay_order_id": order_data.razorpay_order_id,
+        "payment_status": order_data.payment_status,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
     await db.orders.insert_one(order_doc)
     
-    # Create a payment record (mocked as COD)
+    # Create a payment record
+    payment_status = "completed" if order_data.payment_status == "paid" else "pending"
     payment_doc = {
         "id": str(uuid.uuid4()),
-        "subscription_id": order_doc["id"],  # Using order_id as reference
+        "order_id": order_doc["id"],
         "user_id": order_data.user_id,
         "amount": order_doc["total"],
-        "status": "pending",  # COD - pending until delivery
+        "status": payment_status,
+        "payment_id": order_data.payment_id,
+        "razorpay_order_id": order_data.razorpay_order_id,
+        "payment_method": "razorpay" if order_data.payment_id else "pending",
         "payment_date": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
