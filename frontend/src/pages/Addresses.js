@@ -239,6 +239,7 @@ const Addresses = () => {
       const addressData = {
         address_line: fullAddress,
         name: formData.name,
+        phone: formData.phone,
         address_line_1: formData.address_line_1,
         address_line_2: formData.address_line_2,
         area: formData.area,
