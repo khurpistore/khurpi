@@ -11,10 +11,21 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Search } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Safe date formatter to handle invalid dates
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    const date = typeof dateStr === 'string' ? parseISO(dateStr) : new Date(dateStr);
+    return isValid(date) ? format(date, 'PP') : 'N/A';
+  } catch {
+    return 'N/A';
+  }
+};
 const API = `${BACKEND_URL}/api`;
 
 const PaymentDialog = ({ payment, onClose, onSuccess }) => {
