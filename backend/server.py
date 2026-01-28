@@ -1547,8 +1547,10 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "coupon_discount": coupon_discount,
         "total_price": final_total,
         "address_id": selected_address.get("id") if selected_address else None,
-        "payment_method": sub_data.payment_method,
-        "payment_status": "pending" if sub_data.payment_method == "cod" else "paid",
+        "payment_method": sub_data.payment_method or "razorpay",
+        "payment_status": sub_data.payment_status or "pending",
+        "payment_id": sub_data.payment_id,
+        "razorpay_order_id": sub_data.razorpay_order_id,
         "next_delivery_date": sub_data.start_date,
         "skipped_deliveries": [],
         "created_at": datetime.now(timezone.utc).isoformat()
