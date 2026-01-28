@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Store, Truck, Tag, Plus, Trash2, Save, FileText, Shield, Gift } from 'lucide-react';
+import { Store, Truck, Tag, Plus, Trash2, Save, FileText, Shield, Gift, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
