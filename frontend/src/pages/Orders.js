@@ -144,7 +144,12 @@ const Orders = () => {
             {filteredOrders.map((item) => (
               item.type === 'order' ? (
                 // One-time Order Card
-                <Card key={`order-${item.id}`} data-testid={`order-${item.id}`} className="hover:shadow-md transition-shadow">
+                <Card 
+                  key={`order-${item.id}`} 
+                  data-testid={`order-${item.id}`} 
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => navigate(`/order/${item.id}`)}
+                >
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1">
@@ -170,9 +175,12 @@ const Orders = () => {
                             </span>
                           ))}
                           {item.items?.length > 3 && (
-                            <span className="text-sm text-muted-foreground">
+                            <button 
+                              className="text-sm text-primary font-medium hover:underline"
+                              onClick={(e) => { e.stopPropagation(); navigate(`/order/${item.id}`); }}
+                            >
                               +{item.items.length - 3} more
-                            </span>
+                            </button>
                           )}
                         </div>
 
@@ -196,7 +204,7 @@ const Orders = () => {
                             {item.items?.length || 0} item(s)
                           </p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground hidden sm:block" />
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                     </div>
                   </CardContent>
