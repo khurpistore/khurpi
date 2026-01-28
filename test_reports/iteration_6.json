@@ -1,0 +1,77 @@
+{
+  "summary": "Completed testing of Khurpi Microgreens app new features. Backend: 12/12 tests passed. Frontend: All features verified working. Fixed coupon validation endpoint method mismatch (GET→POST).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/new_features_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Admin order status update working correctly with JSON body {status: 'preparing'}",
+    "Coupon validation endpoint uses POST method - frontend was fixed to match",
+    "Free delivery threshold fetched from admin settings correctly",
+    "Order detail page shows all order info including items, address, payment",
+    "Addresses page shows delivery fee for each address"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/Checkout.js - Fixed coupon validation to use POST instead of GET",
+    "/app/backend/tests/test_new_features.py - Created new test file"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": {
+    "test_user": {
+      "phone": "9876543210",
+      "password": "test123"
+    },
+    "admin": {
+      "username": "admin",
+      "password": "Khurpi2026Secure"
+    }
+  },
+  "seed_data_creation": "None - used existing test data",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All new features tested and working: Admin order status update, Checkout coupon input, Free delivery threshold, T&C links, Microgreens benefits section, Order detail page, Address delivery fee display. Fixed coupon validation method from GET to POST in Checkout.js.",
+  "features_verified": {
+    "ADMIN_ORDER_STATUS_UPDATE": {
+      "status": "PASS",
+      "details": "Admin can expand order and click status buttons (Confirmed, Preparing, Out For Delivery, Delivered, Cancelled). Status updates via PUT /api/admin/orders/{id}/status with JSON body."
+    },
+    "CHECKOUT_COUPON_INPUT": {
+      "status": "PASS",
+      "details": "Checkout page has 'Have a Coupon?' section with input field and Apply button. Fixed frontend to use POST method for coupon validation."
+    },
+    "FREE_DELIVERY_THRESHOLD": {
+      "status": "PASS",
+      "details": "Free delivery displayed when subtotal >= ₹1000 threshold. Threshold fetched from admin settings via /api/admin/settings/all."
+    },
+    "TERMS_CONDITIONS_LINK": {
+      "status": "PASS",
+      "details": "T&C link visible on Login page and Checkout page. Links to /terms page."
+    },
+    "MICROGREENS_BENEFITS_SECTION": {
+      "status": "PASS",
+      "details": "Landing page has 'Why Microgreens?' section with 6 benefits: 40x More Nutrients, Boosts Immunity, Heart Health, Brain Function, Natural Energy, Glowing Skin."
+    },
+    "ORDER_DETAIL_PAGE": {
+      "status": "PASS",
+      "details": "Clicking order card on My Orders page navigates to /order/{id}. Shows Order Status, Order Items with images, Delivery Address, Payment Summary with Payment ID."
+    },
+    "ADDRESS_DELIVERY_FEE_DISPLAY": {
+      "status": "PASS",
+      "details": "Addresses page shows delivery fee for each address. 'Free Delivery' in green for nearby addresses, 'Delivery: ₹120' in amber for farther addresses."
+    }
+  },
+  "mocked_apis_note": "No mocked APIs - all operations use real backend endpoints"
+}
