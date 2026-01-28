@@ -488,6 +488,12 @@ const Checkout = () => {
                     <span>₹{deliveryFee}</span>
                   )}
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Coupon ({appliedCoupon.code})</span>
+                    <span>-₹{couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
               
               <div className="border-t pt-4 mb-6">
