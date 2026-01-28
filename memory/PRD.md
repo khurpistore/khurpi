@@ -200,20 +200,21 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 ## Future Roadmap
 
 ### P0 (High Priority)
-- Razorpay subscription payments integration (partially done, test mode)
-- Payment failure retry logic
+- Payment failure retry logic for subscriptions
 
 ### P1 (Medium Priority)
+- User-facing subscription pause/skip functionality
 - Email/SMS notifications for deliveries
-- Subscription pause before cutoff
 - Address change for next delivery only
 - Auto-cancellation after payment failures
 
 ### P2 (Lower Priority)
-- Customer reviews and ratings
-- Referral program
+- Customer reviews and ratings for products
+- Social sharing feature for referral codes
 - Seasonal product promotions
 - Delivery time slot selection
+- Refactor monolithic `server.py` into modular routers
+- Refactor large frontend components (`SubscriptionCreate.js`, `Addresses.js`)
 
 ---
 
