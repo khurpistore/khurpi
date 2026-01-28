@@ -39,6 +39,7 @@ import AdminSettings from '@/pages/AdminSettings';
 import AdminCoupons from '@/pages/AdminCoupons';
 import AdminReferrals from '@/pages/AdminReferrals';
 import AdminPages from '@/pages/AdminPages';
+import AdminOrders from '@/pages/AdminOrders';
 import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
 
