@@ -2592,10 +2592,14 @@ async def get_all_orders_admin():
     
     return result
 
+class OrderStatusUpdate(BaseModel):
+    status: str
+
 @api_router.put("/admin/orders/{order_id}/status")
-async def update_order_status(order_id: str, status: str):
+async def update_order_status(order_id: str, status_data: OrderStatusUpdate):
     """Update order status"""
-    valid_statuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"]
+    status = status_data.status
+    valid_statuses = ["pending", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"]
     if status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
