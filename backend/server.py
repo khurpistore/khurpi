@@ -2532,17 +2532,25 @@ async def admin_update_delivery(delivery_id: str, delivery_data: DeliveryUpdate)
 
 @api_router.get("/admin/payments")
 async def get_all_payments_admin():
-    payments = await db.payments.find({}, {"_id": 0}).to_list(1000)
+    payments = await db.payments.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
     result = []
     for payment in payments:
-        user = await db.users.find_one({"id": payment["user_id"]}, {"_id": 0})
-        subscription = await db.subscriptions.find_one({"id": payment["subscription_id"]}, {"_id": 0})
+        user = await db.users.find_one({"id": payment.get("user_id")}, {"_id": 0}) if payment.get("user_id") else None
+        subscription = None
+        order = None
+        
+        # Check for subscription_id or order_id
+        if payment.get("subscription_id"):
+            subscription = await db.subscriptions.find_one({"id": payment["subscription_id"]}, {"_id": 0})
+        if payment.get("order_id"):
+            order = await db.orders.find_one({"id": payment["order_id"]}, {"_id": 0})
         
         result.append({
             **payment,
             "user": user,
-            "subscription": subscription
+            "subscription": subscription,
+            "order": order
         })
     
     return result
