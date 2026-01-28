@@ -162,8 +162,9 @@ const Checkout = () => {
             });
             navigate('/orders');
           } catch (error) {
+            console.error('Order creation error:', error);
             toast.error('Order creation failed', {
-              description: 'Please contact support with your payment ID.'
+              description: `Payment ID: ${response.razorpay_payment_id}. Please contact support.`
             });
           }
         },
