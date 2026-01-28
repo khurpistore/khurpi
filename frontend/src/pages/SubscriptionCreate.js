@@ -981,6 +981,9 @@ const SubscriptionCreate = () => {
                               )}
                             </div>
                             <p className="text-sm text-muted-foreground mt-1">{address.address_line}</p>
+                            {address.phone && (
+                              <p className="text-xs text-muted-foreground">📞 +91 {address.phone}</p>
+                            )}
                           </div>
                         </div>
                       ))}
