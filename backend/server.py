@@ -565,7 +565,8 @@ async def seed_database(username: str, password: str):
                 "longitude": 77.4538,
                 "phone": "+91 9876543210",
                 "email": "hello@khurpistore.in",
-                "delivery_radius_km": 15
+                "delivery_radius_km": 15,
+                "free_delivery_threshold": 1000
             }
         },
         {
