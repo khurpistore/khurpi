@@ -63,6 +63,7 @@ const Addresses = () => {
   const resetForm = () => {
     setFormData({
       name: '',
+      phone: '',
       address_line_1: '',
       address_line_2: '',
       area: '',
