@@ -123,7 +123,11 @@ async def get_delivery_pricing():
     """Get delivery pricing from DB or return defaults"""
     pricing = await db.settings.find_one({"type": "delivery_pricing"}, {"_id": 0})
     if pricing:
-        return pricing.get("data", DEFAULT_DELIVERY_PRICING)
+        data = pricing.get("data", DEFAULT_DELIVERY_PRICING)
+        # Handle both formats: direct list or {"tiers": [...]}
+        if isinstance(data, dict) and "tiers" in data:
+            return data["tiers"]
+        return data
     return DEFAULT_DELIVERY_PRICING
 
 async def get_subscription_plans():
