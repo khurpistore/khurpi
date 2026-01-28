@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2 } from 'lucide-react';
+import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import SimpleMapPicker from '@/components/SimpleMapPicker';
 
@@ -19,6 +19,7 @@ const Addresses = () => {
   const [editingAddress, setEditingAddress] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    phone: '',
     address_line_1: '',
     address_line_2: '',
     area: '',

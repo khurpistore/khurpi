@@ -167,6 +167,7 @@ class Address(BaseModel):
     id: str
     user_id: str
     name: Optional[str] = None
+    phone: Optional[str] = None
     address_line: str
     address_line_1: Optional[str] = None
     address_line_2: Optional[str] = None
@@ -180,6 +181,7 @@ class Address(BaseModel):
 
 class AddressCreate(BaseModel):
     name: Optional[str] = None
+    phone: Optional[str] = None
     address_line: str
     address_line_1: Optional[str] = None
     address_line_2: Optional[str] = None
@@ -192,6 +194,7 @@ class AddressCreate(BaseModel):
 
 class AddressUpdate(BaseModel):
     name: Optional[str] = None
+    phone: Optional[str] = None
     address_line: Optional[str] = None
     address_line_1: Optional[str] = None
     address_line_2: Optional[str] = None
