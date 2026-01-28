@@ -84,7 +84,7 @@ class TestUserAddresses:
     
     def test_get_user_addresses(self):
         """Test getting user addresses"""
-        response = requests.get(f"{BASE_URL}/api/addresses?user_id={TEST_USER_ID}")
+        response = requests.get(f"{BASE_URL}/api/users/{TEST_USER_ID}/addresses")
         assert response.status_code == 200
         addresses = response.json()
         assert isinstance(addresses, list)
