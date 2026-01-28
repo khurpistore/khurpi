@@ -412,7 +412,8 @@ const Checkout = () => {
               </Button>
               
               <p className="text-xs text-center text-muted-foreground mt-3">
-                By placing this order, you agree to our Terms & Conditions
+                By placing this order, you agree to our{' '}
+                <a href="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</a>
               </p>
             </CardContent>
           </Card>
