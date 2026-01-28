@@ -2013,7 +2013,7 @@ async def create_order(order_data: OrderCreate):
     await db.orders.insert_one(order_doc)
     
     # Create a payment record
-    payment_status = "completed" if order_data.payment_status == "paid" else "pending"
+    payment_status = "success" if order_data.payment_status == "paid" else "pending"
     payment_doc = {
         "id": str(uuid.uuid4()),
         "order_id": order_doc["id"],
