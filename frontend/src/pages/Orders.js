@@ -179,7 +179,12 @@ const Orders = () => {
                         {item.address && (
                           <div className="flex items-start gap-2 text-sm text-muted-foreground">
                             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-1">{item.address.address_line}</span>
+                            <div>
+                              <span className="line-clamp-1">{item.address.address_line}</span>
+                              {item.address.phone && (
+                                <span className="block text-xs">📞 +91 {item.address.phone}</span>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
