@@ -262,11 +262,22 @@ January 26, 2025
 January 28, 2025
 
 ## Change Log
+- **Jan 28, 2025:** Added phone number field to address form and display
+- **Jan 28, 2025:** Fixed subscription delivery_fee to always be 0 (FREE for all subscriptions)
+- **Jan 28, 2025:** Added coupon code input to Checkout page with apply/remove functionality
+- **Jan 28, 2025:** Added free delivery threshold setting (₹1000+ orders get free delivery)
+- **Jan 28, 2025:** Added "Why Microgreens?" benefits section on Landing page (6 health benefits)
+- **Jan 28, 2025:** Fixed Admin Order status update endpoint to accept JSON body
+- **Jan 28, 2025:** Added OrderDetail page (`/order/:id`) for viewing single order details
+- **Jan 28, 2025:** Made order cards clickable on My Orders page, "+N more" items clickable
+- **Jan 28, 2025:** Added Terms & Conditions links to Login, Signup, and Checkout pages
+- **Jan 28, 2025:** Added delivery fee display on Addresses page for each address
+- **Jan 28, 2025:** Added coupon_code and coupon_discount fields to Order model
 - **Jan 28, 2025:** FIXED - Critical payment flow bug where orders weren't being created after successful Razorpay payments
 - **Jan 28, 2025:** Fixed `calculate_delivery_fee` function to handle both flat list and nested `{"tiers": [...]}` formats from DB
 - **Jan 28, 2025:** Added Admin Orders page (`/admin/orders`) for comprehensive order management with status updates
 - **Jan 28, 2025:** Added search, filter, and order detail expansion in Admin Orders page
-- **Jan 28, 2025:** All backend tests passing (18/18) - Order creation, user orders, admin payments verified
+- **Jan 28, 2025:** All backend tests passing (12/12) - All new features verified
 - **Jan 27, 2025:** Added dynamic pack size field to products (configurable from Admin Panel)
 - **Jan 27, 2025:** Added CMS for static pages: Privacy Policy, Terms & Conditions, Shipping Policy, Cancellations & Refunds
 - **Jan 27, 2025:** Enhanced Address Management with location search bar and dynamic map pins
