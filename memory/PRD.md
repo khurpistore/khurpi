@@ -147,6 +147,8 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 ### Orders
 - `POST /api/orders` - Create order (one-time purchase)
 - `GET /api/orders` - Get user orders
+- `GET /api/admin/orders` - Get all orders (admin)
+- `PUT /api/admin/orders/:id/status` - Update order status (admin)
 
 ### Subscriptions
 - `POST /api/subscriptions` - Create subscription
