@@ -1193,11 +1193,13 @@ const SubscriptionCreate = () => {
                     </span>
                   </div>
                   <div className="space-y-1 text-sm text-green-700">
-                    {/* Free Delivery Savings */}
-                    <div className="flex items-center gap-2">
-                      <Truck className="w-4 h-4" />
-                      <span>₹{getDeliverySavings().toFixed(2)} - <strong>FREE Delivery</strong> (worth ₹{getWouldBeMonthlyDeliveryFee().toFixed(2)}/month)</span>
-                    </div>
+                    {/* Free Delivery Savings - only show if there would have been a fee */}
+                    {getDeliverySavings() > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Truck className="w-4 h-4" />
+                        <span>₹{getDeliverySavings().toFixed(2)} - <strong>FREE Delivery</strong> (worth ₹{getWouldBeMonthlyDeliveryFee().toFixed(2)}/month)</span>
+                      </div>
+                    )}
                     {/* Plan Discount */}
                     {selectedPlan.discount > 0 && (
                       <div className="flex items-center gap-2">
