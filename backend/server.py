@@ -2376,6 +2376,7 @@ async def add_user_address(user_id: str, address_data: AddressCreate):
         "id": str(uuid.uuid4()),
         "user_id": user_id,
         "name": address_data.name,
+        "phone": address_data.phone,
         "address_line": address_data.address_line,
         "address_line_1": address_data.address_line_1,
         "address_line_2": address_data.address_line_2,
