@@ -241,7 +241,7 @@ const AdminPayments = () => {
                       </div>
                       <div>
                         <p className="text-muted-foreground">Date</p>
-                        <p className="font-medium">{format(new Date(payment.payment_date), 'PP')}</p>
+                        <p className="font-medium">{formatDate(payment.payment_date)}</p>
                       </div>
                     </div>
                   </div>
