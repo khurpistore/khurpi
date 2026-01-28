@@ -193,8 +193,10 @@ const Checkout = () => {
                 quantity: item.quantity,
                 price: item.product.price
               })),
-              subtotal: getCartTotal(),
+              subtotal: subtotal,
               delivery_fee: deliveryFee,
+              coupon_code: appliedCoupon?.code || null,
+              coupon_discount: couponDiscount,
               total: total,
               order_type: 'one_time',
               payment_id: response.razorpay_payment_id,
