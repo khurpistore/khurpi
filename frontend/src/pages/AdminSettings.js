@@ -42,15 +42,18 @@ const AdminSettings = () => {
     first_order_only: true
   });
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking
+    if (authLoading) return;
+    
     if (!user || user.role !== 'admin') {
       navigate('/admin/login');
       return;
     }
     fetchSettings();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchSettings = async () => {
     try {
