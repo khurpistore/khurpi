@@ -156,6 +156,13 @@ const Signup = () => {
               </Link>
             </p>
           </div>
+          
+          <p className="text-xs text-center text-muted-foreground mt-4">
+            By creating an account, you agree to our{' '}
+            <Link to="/terms" className="text-primary hover:underline">Terms & Conditions</Link>
+            {' '}and{' '}
+            <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+          </p>
         </CardContent>
       </Card>
     </div>
