@@ -103,6 +103,82 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Microgreens Benefits Section */}
+      <section className="py-12 sm:py-20 bg-green-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-4 heading-text">
+              Why Microgreens?
+            </h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Packed with nutrients, microgreens are baby vegetables harvested just after the first leaves develop. Here's why they're a superfood.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">🥗</span>
+              </div>
+              <h4 className="text-lg font-semibold text-primary mb-2">40x More Nutrients</h4>
+              <p className="text-muted-foreground text-sm">
+                Microgreens contain up to 40 times more vitamins and antioxidants compared to their mature counterparts.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">💪</span>
+              </div>
+              <h4 className="text-lg font-semibold text-primary mb-2">Boosts Immunity</h4>
+              <p className="text-muted-foreground text-sm">
+                Rich in Vitamin C, E, and K, microgreens help strengthen your immune system and fight off diseases.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">❤️</span>
+              </div>
+              <h4 className="text-lg font-semibold text-primary mb-2">Heart Health</h4>
+              <p className="text-muted-foreground text-sm">
+                Polyphenols in microgreens help reduce cholesterol and lower the risk of heart disease.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">🧠</span>
+              </div>
+              <h4 className="text-lg font-semibold text-primary mb-2">Brain Function</h4>
+              <p className="text-muted-foreground text-sm">
+                High in antioxidants that protect brain cells and improve cognitive function and memory.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">⚡</span>
+              </div>
+              <h4 className="text-lg font-semibold text-primary mb-2">Natural Energy</h4>
+              <p className="text-muted-foreground text-sm">
+                Iron and B-vitamins in microgreens provide a natural energy boost without caffeine crashes.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">✨</span>
+              </div>
+              <h4 className="text-lg font-semibold text-primary mb-2">Glowing Skin</h4>
+              <p className="text-muted-foreground text-sm">
+                Beta-carotene and Vitamin E promote healthy, glowing skin and slow down aging signs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-12 sm:py-20 bg-gradient-to-r from-green-700 to-green-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
