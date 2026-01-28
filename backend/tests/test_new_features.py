@@ -112,8 +112,8 @@ class TestCouponValidation:
     """Test coupon validation endpoint"""
     
     def test_coupon_validate_endpoint_exists(self):
-        """Test that coupon validation endpoint exists"""
-        response = requests.get(
+        """Test that coupon validation endpoint exists (POST method)"""
+        response = requests.post(
             f"{BASE_URL}/api/coupons/validate",
             params={"code": "TESTCODE", "order_amount": 500}
         )
@@ -124,7 +124,7 @@ class TestCouponValidation:
     
     def test_coupon_validate_invalid_code(self):
         """Test coupon validation with invalid code"""
-        response = requests.get(
+        response = requests.post(
             f"{BASE_URL}/api/coupons/validate",
             params={"code": "INVALIDCODE123", "order_amount": 500}
         )
