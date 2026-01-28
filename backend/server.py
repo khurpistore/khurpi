@@ -1575,12 +1575,16 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
             {"$inc": {"stock": -item.quantity}}
         )
     
+    payment_status = "completed" if sub_data.payment_status == "paid" else "pending"
     payment_doc = {
         "id": str(uuid.uuid4()),
         "subscription_id": subscription_doc["id"],
         "user_id": user_id,
         "amount": final_total,
-        "status": "success",
+        "status": payment_status,
+        "payment_id": sub_data.payment_id,
+        "razorpay_order_id": sub_data.razorpay_order_id,
+        "payment_method": "razorpay" if sub_data.payment_id else "pending",
         "payment_date": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
