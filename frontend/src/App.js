@@ -17,6 +17,7 @@ import ProductDetail from '@/pages/ProductDetail';
 import Cart from '@/pages/Cart';
 import Checkout from '@/pages/Checkout';
 import Orders from '@/pages/Orders';
+import OrderDetail from '@/pages/OrderDetail';
 import Addresses from '@/pages/Addresses';
 import SubscriptionCreate from '@/pages/SubscriptionCreate';
 import MySubscriptions from '@/pages/MySubscriptions';
