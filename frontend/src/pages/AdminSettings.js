@@ -24,7 +24,8 @@ const AdminSettings = () => {
     latitude: 0,
     longitude: 0,
     phone: '',
-    email: ''
+    email: '',
+    free_delivery_threshold: 1000
   });
   const [deliveryPricing, setDeliveryPricing] = useState([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
