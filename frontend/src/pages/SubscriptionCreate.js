@@ -493,8 +493,8 @@ const SubscriptionCreate = () => {
         items: selectedProducts,
         total_price: totalAmount,
         subtotal: calculatePerPackPrice(), // Per delivery subtotal
-        delivery_fee: getDeliveryFeePerDelivery(), // Per delivery fee
-        monthly_delivery_fee: getMonthlyDeliveryFee(), // Total monthly delivery
+        delivery_fee: 0, // FREE delivery for all subscriptions
+        monthly_delivery_fee: 0, // FREE delivery for all subscriptions
         plan_discount: selectedPlan.discount,
         discount_amount: calculateDiscount(),
         plan_id: selectedPlan.id,
