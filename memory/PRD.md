@@ -187,14 +187,13 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 ---
 
 ## MOCKED Features (To Be Implemented)
-1. **Razorpay Payments** - Currently using Cash on Delivery
-2. **Real-time Stock Updates** - Manual stock management for now
+1. **Real-time Stock Updates** - Manual stock management for now
 
 ---
 
 ## Testing Credentials
-- **Admin:** /admin/login, username: `admin`, password: `admin`
-- **Test User:** phone: `9999999999`, password: `test123`
+- **Admin:** /admin/login, username: `admin`, password: `Khurpi2026Secure`
+- **Test User:** phone: `9876543210`, password: `test123`
 
 ---
 
