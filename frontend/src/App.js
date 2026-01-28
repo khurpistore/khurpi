@@ -88,6 +88,7 @@ function App() {
               {/* Protected Customer Routes */}
               <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+              <Route path="/order/:orderId" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
               <Route path="/addresses" element={<ProtectedRoute><Addresses /></ProtectedRoute>} />
               <Route path="/subscription/create" element={<ProtectedRoute><SubscriptionCreate /></ProtectedRoute>} />
               <Route path="/subscriptions" element={<ProtectedRoute><MySubscriptions /></ProtectedRoute>} />
