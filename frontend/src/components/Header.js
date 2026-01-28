@@ -170,7 +170,7 @@ const Header = () => {
                 onClick={() => navigate('/login')}
                 className="rounded-full"
               >
-                Login
+                Login / Sign up
               </Button>
             )}
 
@@ -313,7 +313,7 @@ const Header = () => {
                 onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
               >
                 <User className="w-4 h-4 mr-3" />
-                Login
+                Login / Sign up
               </Button>
             )}
           </div>
