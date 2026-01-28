@@ -2013,6 +2013,8 @@ async def create_order(order_data: OrderCreate):
         "subtotal": order_data.subtotal,
         "delivery_fee": delivery_fee,
         "delivery_distance": delivery_distance,
+        "coupon_code": order_data.coupon_code,
+        "coupon_discount": order_data.coupon_discount or 0,
         "total": order_data.total,
         "status": order_status,
         "order_type": order_data.order_type,
@@ -2023,6 +2025,13 @@ async def create_order(order_data: OrderCreate):
     }
     
     await db.orders.insert_one(order_doc)
+    
+    # Update coupon usage if used
+    if order_data.coupon_code:
+        await db.coupons.update_one(
+            {"code": order_data.coupon_code.upper()},
+            {"$inc": {"times_used": 1}}
+        )
     
     # Create a payment record
     payment_status = "success" if order_data.payment_status == "paid" else "pending"
