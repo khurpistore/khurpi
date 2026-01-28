@@ -183,8 +183,10 @@ const AdminSettings = () => {
 
   return (
     <AdminLayout active="settings" title="Settings">
-      {loading ? (
-        <p className="text-muted-foreground">Loading settings...</p>
+      {authLoading || loading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
       ) : (
         <div className="space-y-6">
           {/* Shop Configuration */}
