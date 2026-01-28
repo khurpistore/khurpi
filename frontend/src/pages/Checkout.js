@@ -119,13 +119,16 @@ const Checkout = () => {
     
     setCouponLoading(true);
     try {
-      const response = await axios.get(`${API}/coupons/validate`, {
-        params: { code: couponCode.trim().toUpperCase(), order_amount: subtotal }
-      });
+      const response = await axios.post(
+        `${API}/coupons/validate?code=${encodeURIComponent(couponCode.trim().toUpperCase())}&order_amount=${subtotal}`
+      );
       
-      setAppliedCoupon(response.data);
+      setAppliedCoupon({
+        code: response.data.code,
+        discount_amount: response.data.discount
+      });
       toast.success('Coupon applied!', {
-        description: `You saved ₹${response.data.discount_amount.toFixed(2)}`
+        description: `You saved ₹${response.data.discount.toFixed(2)}`
       });
     } catch (error) {
       toast.error('Invalid coupon', {
