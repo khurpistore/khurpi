@@ -358,15 +358,66 @@ const Checkout = () => {
                     )}
                   </div>
                 </div>
-                {deliveryInfo.fee > 0 && (
+                {deliveryFee > 0 && !qualifiesForFreeDelivery && (
                   <div className="mt-3 p-2 bg-amber-50 rounded text-xs text-amber-700 flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>Subscribe for FREE delivery on all orders!</span>
+                    <span>Add ₹{(freeDeliveryThreshold - subtotal).toFixed(0)} more for FREE delivery!</span>
+                  </div>
+                )}
+                {qualifiesForFreeDelivery && baseDeliveryFee > 0 && (
+                  <div className="mt-3 p-2 bg-green-50 rounded text-xs text-green-700 flex items-center gap-2">
+                    <Tag className="w-4 h-4" />
+                    <span>🎉 You saved ₹{baseDeliveryFee} on delivery!</span>
                   </div>
                 )}
               </CardContent>
             </Card>
           )}
+
+          {/* Coupon Code */}
+          <Card>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Tag className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Have a Coupon?</h2>
+              </div>
+              
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div>
+                    <p className="font-medium text-green-800">{appliedCoupon.code}</p>
+                    <p className="text-sm text-green-600">You save ₹{appliedCoupon.discount_amount.toFixed(2)}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeCoupon}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="Enter coupon code"
+                    className="flex-1"
+                    data-testid="coupon-input"
+                  />
+                  <Button
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponCode.trim()}
+                    variant="outline"
+                    data-testid="apply-coupon-btn"
+                  >
+                    {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Payment Information */}
           <Card>
