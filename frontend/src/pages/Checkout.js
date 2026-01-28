@@ -22,6 +22,10 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [isNoidaAddress, setIsNoidaAddress] = useState(true);
   const [deliveryInfo, setDeliveryInfo] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(1000);
 
   useEffect(() => {
     if (!user) {
