@@ -2555,6 +2555,52 @@ async def get_all_payments_admin():
     
     return result
 
+@api_router.get("/admin/orders")
+async def get_all_orders_admin():
+    """Get all orders for admin panel"""
+    orders = await db.orders.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    result = []
+    for order in orders:
+        user = await db.users.find_one({"id": order.get("user_id")}, {"_id": 0}) if order.get("user_id") else None
+        address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0}) if order.get("address_id") else None
+        
+        # Enrich items with product details
+        enriched_items = []
+        for item in order.get("items", []):
+            product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
+            enriched_items.append({
+                **item,
+                "product": product
+            })
+        
+        result.append({
+            **order,
+            "user": user,
+            "address": address,
+            "items": enriched_items
+        })
+    
+    return result
+
+@api_router.put("/admin/orders/{order_id}/status")
+async def update_order_status(order_id: str, status: str):
+    """Update order status"""
+    valid_statuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    result = await db.orders.update_one(
+        {"id": order_id},
+        {"$set": {"status": status}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    return order
+
 @api_router.put("/admin/payments/{payment_id}")
 async def admin_update_payment(payment_id: str, payment_data: PaymentUpdate):
     update_data = {k: v for k, v in payment_data.model_dump().items() if v is not None}
