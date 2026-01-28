@@ -111,6 +111,37 @@ const Checkout = () => {
     navigate('/addresses');
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+    
+    setCouponLoading(true);
+    try {
+      const response = await axios.get(`${API}/coupons/validate`, {
+        params: { code: couponCode.trim().toUpperCase(), order_amount: subtotal }
+      });
+      
+      setAppliedCoupon(response.data);
+      toast.success('Coupon applied!', {
+        description: `You saved ₹${response.data.discount_amount.toFixed(2)}`
+      });
+    } catch (error) {
+      toast.error('Invalid coupon', {
+        description: error.response?.data?.detail || 'This coupon is not valid'
+      });
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    toast.info('Coupon removed');
+  };
+
   const handlePayment = async () => {
     if (!selectedAddressId) {
       toast.error('Please select a delivery address', {
