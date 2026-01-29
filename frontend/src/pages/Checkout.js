@@ -46,6 +46,9 @@ const Checkout = () => {
     }
     loadRazorpayScript();
     fetchSettings();
+    // Track checkout started
+    trackPageView('Checkout');
+    trackCheckoutStarted(getCartTotal() + (pendingSubscription?.monthlyTotal || 0));
     // Set default address
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
