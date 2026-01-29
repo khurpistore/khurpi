@@ -504,10 +504,24 @@ const SubscriptionCreate = () => {
         coupon_code: appliedDiscount?.code || null,
         coupon_discount: appliedDiscount?.discount || 0,
         referral_code: appliedDiscount?.type === 'referral' ? appliedDiscount.code : null,
-        payment_method: 'online'
+        payment_method: testMode ? 'test' : 'online'
       };
 
-      // Handle online payment with Razorpay
+      // TEST MODE: Bypass Razorpay
+      if (testMode) {
+        subscriptionData.payment_status = 'paid';
+        subscriptionData.razorpay_payment_id = `test_pay_sub_${Date.now()}`;
+        subscriptionData.razorpay_subscription_id = `test_sub_${Date.now()}`;
+        
+        const response = await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
+        toast.success('Test Subscription Created! 🎉', {
+          description: 'Subscription created in test mode (no actual payment).'
+        });
+        navigate('/subscriptions');
+        return;
+      }
+
+      // PRODUCTION: Handle online payment with Razorpay
       const paymentSuccess = await handleRazorpayPayment(totalAmount, subscriptionData);
       if (!paymentSuccess) {
         setLoading(false);
