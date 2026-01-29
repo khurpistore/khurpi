@@ -246,6 +246,14 @@ const Checkout = () => {
         // Create subscription if pending
         await createSubscriptionFromPending(`test_pay_sub_${Date.now()}`, `test_sub_${Date.now()}`);
 
+        // Track successful purchase/subscription
+        if (cartItems.length > 0) {
+          trackPurchase(testOrderId, total, cartItems);
+        }
+        if (pendingSubscription) {
+          trackSubscription(pendingSubscription.plan, subscriptionTotal);
+        }
+
         setOrderPlaced(true);
         clearCart();
         clearSubscription();
