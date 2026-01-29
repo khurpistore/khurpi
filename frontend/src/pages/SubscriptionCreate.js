@@ -63,7 +63,7 @@ const SubscriptionCreate = () => {
   const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const ALL_WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']; // For date calculations
 
-  // Calculate next available start date based on delivery days
+  // Calculate next available start date based on delivery days (excluding Sunday)
   const getNextAvailableDate = (selectedDays, minDate = new Date()) => {
     const today = new Date(minDate);
     today.setHours(0, 0, 0, 0);
@@ -72,18 +72,25 @@ const SubscriptionCreate = () => {
     const startFrom = new Date(today);
     startFrom.setDate(startFrom.getDate() + 1);
     
-    // Find the next day that matches one of the selected delivery days
-    for (let i = 0; i < 7; i++) {
+    // Find the next day that matches one of the selected delivery days (skip Sundays)
+    for (let i = 0; i < 14; i++) { // Check up to 2 weeks
       const checkDate = new Date(startFrom);
       checkDate.setDate(checkDate.getDate() + i);
-      const dayName = WEEKDAYS[checkDate.getDay() === 0 ? 6 : checkDate.getDay() - 1];
+      
+      // Skip Sunday (day 0)
+      if (checkDate.getDay() === 0) continue;
+      
+      const dayName = ALL_WEEKDAYS[checkDate.getDay() === 0 ? 6 : checkDate.getDay() - 1];
       
       if (selectedDays.includes(dayName)) {
         return checkDate;
       }
     }
     
-    // Fallback to tomorrow if no match found
+    // Fallback to tomorrow if no match found (but skip if Sunday)
+    if (startFrom.getDay() === 0) {
+      startFrom.setDate(startFrom.getDate() + 1);
+    }
     return startFrom;
   };
 
