@@ -400,6 +400,211 @@ class OrderCreate(BaseModel):
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"
 
+# Analytics Models
+class AnalyticsEvent(BaseModel):
+    event_type: str  # page_view, click, add_to_cart, checkout, purchase, etc.
+    page: Optional[str] = None
+    user_id: Optional[str] = None
+    session_id: str
+    timestamp: Optional[str] = None
+    # Location data
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    # Device info
+    device_type: Optional[str] = None  # mobile, desktop, tablet
+    browser: Optional[str] = None
+    os: Optional[str] = None
+    screen_width: Optional[int] = None
+    screen_height: Optional[int] = None
+    # Event specific data
+    product_id: Optional[str] = None
+    product_name: Optional[str] = None
+    category: Optional[str] = None
+    value: Optional[float] = None
+    metadata: Optional[dict] = None
+
+@api_router.post("/analytics/track")
+async def track_analytics_event(event: AnalyticsEvent):
+    """Track an analytics event"""
+    event_doc = {
+        "id": str(uuid.uuid4()),
+        "event_type": event.event_type,
+        "page": event.page,
+        "user_id": event.user_id,
+        "session_id": event.session_id,
+        "timestamp": event.timestamp or datetime.now(timezone.utc).isoformat(),
+        "location": {
+            "latitude": event.latitude,
+            "longitude": event.longitude,
+            "city": event.city,
+            "country": event.country
+        },
+        "device": {
+            "type": event.device_type,
+            "browser": event.browser,
+            "os": event.os,
+            "screen_width": event.screen_width,
+            "screen_height": event.screen_height
+        },
+        "event_data": {
+            "product_id": event.product_id,
+            "product_name": event.product_name,
+            "category": event.category,
+            "value": event.value
+        },
+        "metadata": event.metadata or {},
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.analytics.insert_one(event_doc)
+    return {"status": "tracked", "event_id": event_doc["id"]}
+
+@api_router.get("/admin/analytics/summary")
+async def get_analytics_summary(days: int = 30):
+    """Get analytics summary for admin dashboard"""
+    from_date = datetime.now(timezone.utc) - timedelta(days=days)
+    from_date_str = from_date.isoformat()
+    
+    # Get all events in the time range
+    events = await db.analytics.find(
+        {"created_at": {"$gte": from_date_str}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    # Calculate summary statistics
+    total_events = len(events)
+    unique_sessions = len(set(e.get("session_id") for e in events if e.get("session_id")))
+    unique_users = len(set(e.get("user_id") for e in events if e.get("user_id")))
+    
+    # Event type breakdown
+    event_types = {}
+    for e in events:
+        et = e.get("event_type", "unknown")
+        event_types[et] = event_types.get(et, 0) + 1
+    
+    # Page views breakdown
+    page_views = {}
+    for e in events:
+        if e.get("event_type") == "page_view" and e.get("page"):
+            page = e["page"]
+            page_views[page] = page_views.get(page, 0) + 1
+    
+    # Device breakdown
+    devices = {"mobile": 0, "desktop": 0, "tablet": 0, "unknown": 0}
+    for e in events:
+        device = e.get("device", {}).get("type", "unknown") or "unknown"
+        devices[device] = devices.get(device, 0) + 1
+    
+    # Browser breakdown
+    browsers = {}
+    for e in events:
+        browser = e.get("device", {}).get("browser", "unknown") or "unknown"
+        browsers[browser] = browsers.get(browser, 0) + 1
+    
+    # Location breakdown (cities)
+    cities = {}
+    for e in events:
+        city = e.get("location", {}).get("city", "unknown") or "unknown"
+        if city != "unknown":
+            cities[city] = cities.get(city, 0) + 1
+    
+    # Daily activity
+    daily_activity = {}
+    for e in events:
+        date = e.get("created_at", "")[:10]  # Get YYYY-MM-DD
+        if date:
+            daily_activity[date] = daily_activity.get(date, 0) + 1
+    
+    # Top products viewed/added to cart
+    product_interactions = {}
+    for e in events:
+        if e.get("event_type") in ["product_view", "add_to_cart"] and e.get("event_data", {}).get("product_name"):
+            prod = e["event_data"]["product_name"]
+            product_interactions[prod] = product_interactions.get(prod, 0) + 1
+    
+    # Conversion funnel
+    funnel = {
+        "page_views": event_types.get("page_view", 0),
+        "product_views": event_types.get("product_view", 0),
+        "add_to_cart": event_types.get("add_to_cart", 0),
+        "checkout_started": event_types.get("checkout_started", 0),
+        "purchase": event_types.get("purchase", 0)
+    }
+    
+    return {
+        "summary": {
+            "total_events": total_events,
+            "unique_sessions": unique_sessions,
+            "unique_users": unique_users,
+            "period_days": days
+        },
+        "event_types": event_types,
+        "page_views": dict(sorted(page_views.items(), key=lambda x: x[1], reverse=True)[:20]),
+        "devices": devices,
+        "browsers": dict(sorted(browsers.items(), key=lambda x: x[1], reverse=True)[:10]),
+        "cities": dict(sorted(cities.items(), key=lambda x: x[1], reverse=True)[:20]),
+        "daily_activity": dict(sorted(daily_activity.items())),
+        "product_interactions": dict(sorted(product_interactions.items(), key=lambda x: x[1], reverse=True)[:20]),
+        "conversion_funnel": funnel
+    }
+
+@api_router.get("/admin/analytics/events")
+async def get_analytics_events(
+    limit: int = 100,
+    event_type: Optional[str] = None,
+    user_id: Optional[str] = None
+):
+    """Get recent analytics events"""
+    query = {}
+    if event_type:
+        query["event_type"] = event_type
+    if user_id:
+        query["user_id"] = user_id
+    
+    events = await db.analytics.find(query, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    return events
+
+@api_router.get("/admin/analytics/locations")
+async def get_analytics_locations():
+    """Get location data with coordinates for map visualization"""
+    events = await db.analytics.find(
+        {"location.latitude": {"$ne": None}},
+        {"_id": 0, "location": 1, "user_id": 1, "event_type": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(500)
+    
+    # Aggregate by location
+    locations = {}
+    for e in events:
+        loc = e.get("location", {})
+        if loc.get("latitude") and loc.get("longitude"):
+            key = f"{loc['latitude']:.4f},{loc['longitude']:.4f}"
+            if key not in locations:
+                locations[key] = {
+                    "latitude": loc["latitude"],
+                    "longitude": loc["longitude"],
+                    "city": loc.get("city"),
+                    "count": 0,
+                    "users": set()
+                }
+            locations[key]["count"] += 1
+            if e.get("user_id"):
+                locations[key]["users"].add(e["user_id"])
+    
+    # Convert to list
+    result = []
+    for loc in locations.values():
+        result.append({
+            "latitude": loc["latitude"],
+            "longitude": loc["longitude"],
+            "city": loc["city"],
+            "event_count": loc["count"],
+            "unique_users": len(loc["users"])
+        })
+    
+    return result
+
 @api_router.post("/auth/signup", response_model=User)
 async def signup(user_data: UserCreate):
     # Allow same phone to have different roles (customer vs delivery_boy)
