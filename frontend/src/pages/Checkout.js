@@ -164,7 +164,40 @@ const Checkout = () => {
 
     setLoading(true);
     try {
-      // Create Razorpay order
+      // TEST MODE: Bypass Razorpay and create order directly
+      if (testMode) {
+        const testPaymentId = `test_pay_${Date.now()}`;
+        const testOrderId = `test_order_${Date.now()}`;
+        
+        const orderData = {
+          user_id: user.id,
+          address_id: selectedAddressId,
+          items: cartItems.map(item => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+            price: item.product.price
+          })),
+          subtotal: subtotal,
+          delivery_fee: deliveryFee,
+          coupon_code: appliedCoupon?.code || null,
+          coupon_discount: couponDiscount,
+          total: total,
+          order_type: 'one_time',
+          payment_id: testPaymentId,
+          razorpay_order_id: testOrderId,
+          payment_status: 'paid'
+        };
+
+        await axios.post(`${API}/orders`, orderData);
+        clearCart();
+        toast.success('Test Order Placed Successfully!', {
+          description: 'Order created in test mode (no actual payment).'
+        });
+        navigate('/orders');
+        return;
+      }
+
+      // PRODUCTION MODE: Create Razorpay order
       const orderResponse = await axios.post(`${API}/payments/create-order`, {
         amount: total,
         receipt: `order_${user.id}_${Date.now()}`.slice(0, 40),
