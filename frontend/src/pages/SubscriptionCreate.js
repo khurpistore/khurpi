@@ -96,14 +96,15 @@ const SubscriptionCreate = () => {
     return startFrom;
   };
 
-  // Auto-select next available date when delivery days change (skip during edit prefill)
+  // Auto-select next available date when delivery days change (skip during edit)
   useEffect(() => {
-    if (isPrefillingEdit) return; // Skip auto-selection during edit prefill
+    // Skip auto-selection during edit mode (check both ref and state)
+    if (isPrefillingEdit || isEditModeRef.current || isEditMode) return;
     if (deliveryDays.length > 0) {
       const nextDate = getNextAvailableDate(deliveryDays, minStartDate);
       setStartDate(nextDate);
     }
-  }, [deliveryDays, minStartDate, isPrefillingEdit]);
+  }, [deliveryDays, minStartDate, isPrefillingEdit, isEditMode]);
 
   // Get next available weekday (excluding Sunday)
   const getNextAvailableWeekday = (count = 1) => {
