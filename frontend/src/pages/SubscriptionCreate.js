@@ -259,7 +259,7 @@ const SubscriptionCreate = () => {
   useEffect(() => {
     if (isEditMode && products.length > 0 && subscriptionPlans.length > 0 && pendingSubscription) {
       prefillFromPendingSubscription();
-      setIsEditMode(false); // Reset flag after prefilling
+      // Don't reset isEditMode here - let prefillFromPendingSubscription handle it in timeout
     }
   }, [isEditMode, products, subscriptionPlans, pendingSubscription]);
 
