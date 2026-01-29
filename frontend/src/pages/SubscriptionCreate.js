@@ -260,6 +260,9 @@ const SubscriptionCreate = () => {
     console.log('Prefilling from pending subscription:', pendingSubscription);
     console.log('Available plans:', subscriptionPlans);
     
+    // Set flag to prevent auto-date selection from overwriting our prefilled date
+    setIsPrefillingEdit(true);
+    
     // Convert products back to selectedProducts format
     const productsToSelect = pendingSubscription.products?.map(p => ({
       product_id: p.product_id || p.id,
@@ -273,6 +276,10 @@ const SubscriptionCreate = () => {
     if (!matchingPlan) {
       matchingPlan = subscriptionPlans.find(p => p.frequency === pendingSubscription.plan?.frequency);
     }
+    if (!matchingPlan) {
+      // Try matching by deliveries_per_week
+      matchingPlan = subscriptionPlans.find(p => p.deliveries_per_week === pendingSubscription.plan?.deliveries_per_week);
+    }
     if (!matchingPlan && pendingSubscription.plan) {
       matchingPlan = pendingSubscription.plan;
     }
@@ -284,13 +291,15 @@ const SubscriptionCreate = () => {
     
     // Set delivery days from the saved subscription
     if (pendingSubscription.deliveryDays && pendingSubscription.deliveryDays.length > 0) {
-      setDeliveryDays(pendingSubscription.deliveryDays);
+      setDeliveryDays([...pendingSubscription.deliveryDays]);
     }
     
     // Parse start date
     if (pendingSubscription.startDate) {
       try {
-        setStartDate(new Date(pendingSubscription.startDate));
+        const parsedDate = new Date(pendingSubscription.startDate);
+        console.log('Parsed start date:', parsedDate);
+        setStartDate(parsedDate);
       } catch (e) {
         console.error('Error parsing start date:', e);
       }
@@ -299,6 +308,11 @@ const SubscriptionCreate = () => {
     // Go to step 1 so user can review/edit everything
     setStep(1);
     toast.info('Edit your subscription details');
+    
+    // Reset the prefill flag after a short delay to allow state to settle
+    setTimeout(() => {
+      setIsPrefillingEdit(false);
+    }, 100);
   };
 
   useEffect(() => {
