@@ -49,6 +49,18 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - **Inventory Planning:** Stock requirements based on subscriptions
 - **Settings Management:** Shop config, delivery pricing, subscription plans
 - **Page Content (CMS):** Edit Privacy Policy, Terms, Shipping Policy, Cancellation & Refund pages
+- **Analytics Dashboard:** Comprehensive tracking and marketing analytics with:
+  - Real-time stats (active sessions, users, events)
+  - Conversion funnel (Page Views → Product Views → Add to Cart → Checkout → Purchase)
+  - Device breakdown (desktop, mobile, tablet)
+  - Location tracking (city-wise visits)
+  - User engagement metrics (bounce rate, conversion rate, pages/session)
+  - User journey tracking (session paths)
+  - Error tracking (JS errors with occurrences)
+  - **Traffic Sources** (facebook, google, instagram, whatsapp, direct, referral)
+  - **Traffic Channels** (social, search, direct, referral, email)
+  - **UTM Campaign Tracking** (source, medium, campaign, term, content)
+  - Marketing attribution (first-touch, landing page, ad click IDs: gclid, fbclid)
 
 ### 4. Pricing System
 
