@@ -249,11 +249,11 @@ const AdminAnalytics = () => {
               <CardContent>
                 <div className="flex flex-wrap justify-between items-center gap-4">
                   {[
-                    { label: 'Page Views', value: analytics?.conversion_funnel?.page_views || 0, color: 'bg-blue-500' },
-                    { label: 'Product Views', value: analytics?.conversion_funnel?.product_views || 0, color: 'bg-purple-500' },
-                    { label: 'Add to Cart', value: analytics?.conversion_funnel?.add_to_cart || 0, color: 'bg-orange-500' },
-                    { label: 'Checkout', value: analytics?.conversion_funnel?.checkout_started || 0, color: 'bg-yellow-500' },
-                    { label: 'Purchase', value: analytics?.conversion_funnel?.purchase || 0, color: 'bg-green-500' },
+                    { label: 'Page Views', value: analytics?.conversion_funnel?.page_views || 0, color: 'bg-teal-500' },
+                    { label: 'Product Views', value: analytics?.conversion_funnel?.product_views || 0, color: 'bg-cyan-500' },
+                    { label: 'Add to Cart', value: analytics?.conversion_funnel?.add_to_cart || 0, color: 'bg-amber-500' },
+                    { label: 'Checkout', value: analytics?.conversion_funnel?.checkout_started || 0, color: 'bg-orange-500' },
+                    { label: 'Purchase', value: analytics?.conversion_funnel?.purchase || 0, color: 'bg-emerald-500' },
                   ].map((step, index, arr) => (
                     <React.Fragment key={step.label}>
                       <div className="flex flex-col items-center">
