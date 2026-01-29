@@ -95,13 +95,14 @@ const SubscriptionCreate = () => {
     return startFrom;
   };
 
-  // Auto-select next available date when delivery days change
+  // Auto-select next available date when delivery days change (skip during edit prefill)
   useEffect(() => {
+    if (isPrefillingEdit) return; // Skip auto-selection during edit prefill
     if (deliveryDays.length > 0) {
       const nextDate = getNextAvailableDate(deliveryDays, minStartDate);
       setStartDate(nextDate);
     }
-  }, [deliveryDays, minStartDate]);
+  }, [deliveryDays, minStartDate, isPrefillingEdit]);
 
   // Get next available weekday (excluding Sunday)
   const getNextAvailableWeekday = (count = 1) => {
