@@ -465,9 +465,23 @@ const SubscriptionCreate = () => {
       return;
     }
 
+    // Enrich selected products with full product details for cart display
+    const enrichedProducts = selectedProducts.map(item => {
+      const product = products.find(p => p.id === item.product_id);
+      return {
+        product_id: item.product_id,
+        id: item.product_id,
+        quantity: item.quantity,
+        name: product?.name || 'Unknown Product',
+        image: product?.image || '',
+        price: product?.price || 0,
+        pack_size: product?.pack_size || '80g'
+      };
+    });
+
     const subscriptionData = {
       type: 'subscription',
-      products: selectedProducts,
+      products: enrichedProducts,
       plan: selectedPlan,
       deliveryDays: deliveryDays,
       startDate: format(startDate, 'yyyy-MM-dd'),
