@@ -43,7 +43,13 @@ const Products = () => {
       return;
     }
     addToCart(product, 1);
+    trackAddToCart(product, 1);
     toast.success(`${product.name} added to cart`);
+  };
+
+  const handleProductClick = (product) => {
+    trackProductView(product);
+    navigate(`/products/${product.id}`);
   };
 
   const handleStartSubscription = () => {
