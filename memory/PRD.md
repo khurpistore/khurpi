@@ -256,12 +256,20 @@ January 26, 2025
 - Fixed subscription steps with sticky header and prev/next buttons
 
 ## Known Issues
-- None
+- Login Redirect Race Condition: Users may briefly see login page before being redirected (low priority)
+- Subscription price may not recalculate on navigation between steps (needs investigation)
 
 ## Last Updated
-January 28, 2025
+January 29, 2025
 
 ## Change Log
+- **Jan 29, 2025:** COMPLETED - Unified Checkout Flow: Subscriptions can now be added to cart and checked out from main checkout page
+- **Jan 29, 2025:** SubscriptionCreate.js: "Add to Cart" button now enriches products with full details (name, image, price, pack_size)
+- **Jan 29, 2025:** Cart.js: Displays subscription with full product details alongside regular cart items
+- **Jan 29, 2025:** Checkout.js: Unified handlePayment function handles subscription-only, cart-only, and mixed cart scenarios
+- **Jan 29, 2025:** Checkout.js: Production Razorpay flow now creates both orders AND subscriptions after payment success
+- **Jan 29, 2025:** Test Mode: Works for both single orders and subscriptions from unified checkout
+- **Jan 29, 2025:** All backend tests passing (13/13) - Unified checkout flow verified
 - **Jan 28, 2025:** Added phone number field to address form and display
 - **Jan 28, 2025:** Fixed subscription delivery_fee to always be 0 (FREE for all subscriptions)
 - **Jan 28, 2025:** Added coupon code input to Checkout page with apply/remove functionality
