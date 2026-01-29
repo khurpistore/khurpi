@@ -113,8 +113,8 @@ class TestUserAddresses:
         assert login_response.status_code == 200
         user = login_response.json()
         
-        # Get addresses
-        response = requests.get(f"{API}/addresses?user_id={user['id']}")
+        # Get addresses - correct endpoint is /users/{user_id}/addresses
+        response = requests.get(f"{API}/users/{user['id']}/addresses")
         assert response.status_code == 200
         addresses = response.json()
         print(f"✓ Got {len(addresses)} addresses for user")
