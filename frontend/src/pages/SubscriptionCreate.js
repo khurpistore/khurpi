@@ -54,7 +54,7 @@ const SubscriptionCreate = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, addresses, fetchAddresses } = useAuth();
-  const { setSubscription } = useCart();
+  const { setSubscription, pendingSubscription } = useCart();
 
   const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
