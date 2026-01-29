@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
@@ -51,9 +51,10 @@ const SubscriptionCreate = () => {
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [testMode, setTestMode] = useState(false); // Test mode to bypass Razorpay
   
-  // Edit mode flag
+  // Edit mode flags - use ref for synchronous checking
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isPrefillingEdit, setIsPrefillingEdit] = useState(false); // Prevent auto-date selection during prefill
+  const isEditModeRef = useRef(false); // Ref for immediate synchronous checks
+  const [isPrefillingEdit, setIsPrefillingEdit] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
