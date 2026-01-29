@@ -55,6 +55,7 @@ const SubscriptionCreate = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const isEditModeRef = useRef(false); // Ref for immediate synchronous checks
   const [isPrefillingEdit, setIsPrefillingEdit] = useState(false);
+  const prefilledStartDateRef = useRef(null); // Store prefilled date to prevent overwrite
   
   const navigate = useNavigate();
   const location = useLocation();
