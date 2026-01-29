@@ -371,6 +371,16 @@ const Checkout = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+      {/* Back to Cart Link */}
+      <Button
+        variant="ghost"
+        onClick={() => navigate('/cart')}
+        className="mb-4 text-muted-foreground hover:text-primary"
+      >
+        <ChevronLeft className="w-4 h-4 mr-1" />
+        Back to Cart
+      </Button>
+      
       <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8">Checkout</h1>
 
       <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
