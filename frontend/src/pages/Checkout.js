@@ -198,6 +198,12 @@ const Checkout = () => {
     const createSubscriptionFromPending = async (paymentId, razorpaySubId) => {
       if (!pendingSubscription) return;
       
+      // Extract only product_id and quantity for backend API
+      const items = pendingSubscription.products.map(p => ({
+        product_id: p.product_id || p.id,
+        quantity: p.quantity
+      }));
+      
       const subscriptionData = {
         frequency: pendingSubscription.plan.frequency,
         delivery_days: pendingSubscription.deliveryDays,
@@ -205,7 +211,7 @@ const Checkout = () => {
         deliveries_per_week: pendingSubscription.deliveriesPerWeek,
         start_date: pendingSubscription.startDate,
         tray_count: pendingSubscription.products.reduce((sum, p) => sum + p.quantity, 0),
-        items: pendingSubscription.products,
+        items: items,
         total_price: pendingSubscription.monthlyTotal,
         subtotal: pendingSubscription.perDeliveryTotal,
         delivery_fee: 0,
