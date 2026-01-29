@@ -246,6 +246,9 @@ const SubscriptionCreate = () => {
   const prefillFromPendingSubscription = () => {
     if (!pendingSubscription) return;
     
+    console.log('Prefilling from pending subscription:', pendingSubscription);
+    console.log('Available plans:', subscriptionPlans);
+    
     // Convert products back to selectedProducts format
     const productsToSelect = pendingSubscription.products?.map(p => ({
       product_id: p.product_id || p.id,
@@ -254,11 +257,24 @@ const SubscriptionCreate = () => {
     
     setSelectedProducts(productsToSelect);
     
-    // Find and set the matching plan
-    const matchingPlan = subscriptionPlans.find(p => p.id === pendingSubscription.plan?.id) || pendingSubscription.plan;
+    // Find and set the matching plan by id or frequency
+    let matchingPlan = subscriptionPlans.find(p => p.id === pendingSubscription.plan?.id);
+    if (!matchingPlan) {
+      matchingPlan = subscriptionPlans.find(p => p.frequency === pendingSubscription.plan?.frequency);
+    }
+    if (!matchingPlan && pendingSubscription.plan) {
+      matchingPlan = pendingSubscription.plan;
+    }
+    
+    console.log('Matching plan found:', matchingPlan);
+    
+    // Set plan directly without triggering handlePlanChange (which resets delivery days)
     setSelectedPlan(matchingPlan);
     
-    setDeliveryDays(pendingSubscription.deliveryDays || []);
+    // Set delivery days from the saved subscription
+    if (pendingSubscription.deliveryDays && pendingSubscription.deliveryDays.length > 0) {
+      setDeliveryDays(pendingSubscription.deliveryDays);
+    }
     
     // Parse start date
     if (pendingSubscription.startDate) {
