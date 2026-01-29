@@ -318,10 +318,12 @@ const SubscriptionCreate = () => {
     setStep(1);
     toast.info('Edit your subscription details');
     
-    // Reset the prefill flag after a short delay to allow state to settle
+    // Reset the edit flags after a short delay to allow state to settle
     setTimeout(() => {
       setIsPrefillingEdit(false);
-    }, 100);
+      isEditModeRef.current = false; // Reset ref
+      setIsEditMode(false); // Reset state
+    }, 500);
   };
 
   useEffect(() => {
