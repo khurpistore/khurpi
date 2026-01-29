@@ -237,10 +237,13 @@ const SubscriptionCreate = () => {
       // Clean up URL
       navigate('/subscription/create', { replace: true });
     } else if (!isEditMode && deliveryDays.length === 0) {
-      // Set initial delivery day to next available weekday (only if not editing)
+      // Set initial delivery day and start date (only if not editing)
       const nextDay = getNextAvailableWeekday(1);
       if (nextDay.length > 0) {
         setDeliveryDays(nextDay);
+        // Also set the initial start date
+        const nextDate = getNextAvailableDate(nextDay, new Date());
+        setStartDate(nextDate);
       }
     }
     
