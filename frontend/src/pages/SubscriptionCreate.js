@@ -53,6 +53,7 @@ const SubscriptionCreate = () => {
   
   // Edit mode flag
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isPrefillingEdit, setIsPrefillingEdit] = useState(false); // Prevent auto-date selection during prefill
   
   const navigate = useNavigate();
   const location = useLocation();
