@@ -140,28 +140,28 @@ const AdminAnalytics = () => {
 
         {/* Real-time Stats */}
         {realtime && (
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+          <Card className="bg-gradient-to-r from-teal-600 to-cyan-600 border-0 text-white">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Activity className="w-5 h-5 text-green-600 animate-pulse" />
-                <span className="font-semibold text-green-800">Real-time (Last 30 min)</span>
+                <Activity className="w-5 h-5 text-amber-300 animate-pulse" />
+                <span className="font-semibold text-white">Real-time (Last 30 min)</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-green-700">{realtime.active_sessions}</p>
-                  <p className="text-sm text-muted-foreground">Active Sessions</p>
+                  <p className="text-3xl font-bold text-white">{realtime.active_sessions}</p>
+                  <p className="text-sm text-teal-100">Active Sessions</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-blue-700">{realtime.active_users}</p>
-                  <p className="text-sm text-muted-foreground">Active Users</p>
+                  <p className="text-3xl font-bold text-amber-300">{realtime.active_users}</p>
+                  <p className="text-sm text-teal-100">Active Users</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-purple-700">{realtime.events_last_30_min}</p>
-                  <p className="text-sm text-muted-foreground">Events</p>
+                  <p className="text-3xl font-bold text-white">{realtime.events_last_30_min}</p>
+                  <p className="text-sm text-teal-100">Events</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-orange-700">{Object.keys(realtime.current_pages || {}).length}</p>
-                  <p className="text-sm text-muted-foreground">Pages Active</p>
+                  <p className="text-3xl font-bold text-amber-300">{Object.keys(realtime.current_pages || {}).length}</p>
+                  <p className="text-sm text-teal-100">Pages Active</p>
                 </div>
               </div>
             </CardContent>
