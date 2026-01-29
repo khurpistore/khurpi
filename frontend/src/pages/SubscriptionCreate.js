@@ -217,8 +217,8 @@ const SubscriptionCreate = () => {
       // Clean up URL
       navigate('/subscription/create', { replace: true });
     } else if (isEditing && pendingSubscription) {
-      // Prefill from existing subscription in cart
-      prefillFromPendingSubscription();
+      // Set edit mode flag - will prefill after data loads
+      setIsEditMode(true);
       // Clean up URL
       navigate('/subscription/create', { replace: true });
     } else {
@@ -234,6 +234,14 @@ const SubscriptionCreate = () => {
     fetchAddresses();
   }, [user, navigate]);
 
+  // Prefill when editing and data is loaded
+  useEffect(() => {
+    if (isEditMode && products.length > 0 && subscriptionPlans.length > 0 && pendingSubscription) {
+      prefillFromPendingSubscription();
+      setIsEditMode(false); // Reset flag after prefilling
+    }
+  }, [isEditMode, products, subscriptionPlans, pendingSubscription]);
+
   // Prefill subscription details when editing from cart
   const prefillFromPendingSubscription = () => {
     if (!pendingSubscription) return;
@@ -245,7 +253,11 @@ const SubscriptionCreate = () => {
     })) || [];
     
     setSelectedProducts(productsToSelect);
-    setSelectedPlan(pendingSubscription.plan);
+    
+    // Find and set the matching plan
+    const matchingPlan = subscriptionPlans.find(p => p.id === pendingSubscription.plan?.id) || pendingSubscription.plan;
+    setSelectedPlan(matchingPlan);
+    
     setDeliveryDays(pendingSubscription.deliveryDays || []);
     
     // Parse start date
@@ -259,6 +271,7 @@ const SubscriptionCreate = () => {
     
     // Go to step 1 so user can review/edit everything
     setStep(1);
+    toast.info('Edit your subscription details');
   };
 
   useEffect(() => {
