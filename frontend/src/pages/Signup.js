@@ -52,6 +52,7 @@ const Signup = () => {
     setLoading(true);
     try {
       await signup(phone, name.trim(), password);
+      trackSignup();
       toast.success('Account created successfully! Welcome to Khurpi.');
       navigate('/products');
     } catch (error) {
