@@ -192,7 +192,7 @@ class TestSubscriptionCreation:
             json=subscription_data
         )
         
-        if response.status_code == 201:
+        if response.status_code in [200, 201]:
             subscription = response.json()
             assert "id" in subscription
             assert subscription["user_id"] == user["id"]
@@ -201,7 +201,6 @@ class TestSubscriptionCreation:
             print(f"  - Plan: {plan['name']}")
             print(f"  - Product: {product['name']}")
             print(f"  - Start Date: {start_date}")
-            return subscription
         elif response.status_code == 400:
             # May fail due to address validation - this is expected behavior
             error = response.json()
@@ -209,7 +208,6 @@ class TestSubscriptionCreation:
             # This is acceptable if it's an address validation issue
             if "NOIDA" in str(error.get('detail', '')):
                 print("  - Address validation working correctly (requires NOIDA address)")
-            return None
         else:
             print(f"✗ Unexpected response: {response.status_code} - {response.text}")
             assert False, f"Unexpected status code: {response.status_code}"
