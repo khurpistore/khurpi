@@ -299,32 +299,33 @@ const SubscriptionCreate = () => {
     // Set plan directly without triggering handlePlanChange (which resets delivery days)
     setSelectedPlan(matchingPlan);
     
-    // Set delivery days from the saved subscription
-    if (pendingSubscription.deliveryDays && pendingSubscription.deliveryDays.length > 0) {
-      setDeliveryDays([...pendingSubscription.deliveryDays]);
-    }
-    
+    // IMPORTANT: Set start date FIRST before delivery days to prevent auto-date from overwriting
     // Parse start date
     if (pendingSubscription.startDate) {
       try {
         const parsedDate = new Date(pendingSubscription.startDate);
-        console.log('Parsed start date:', parsedDate);
+        console.log('Parsed start date:', parsedDate, 'from:', pendingSubscription.startDate);
         setStartDate(parsedDate);
       } catch (e) {
         console.error('Error parsing start date:', e);
       }
     }
     
+    // Set delivery days from the saved subscription (after start date is set)
+    if (pendingSubscription.deliveryDays && pendingSubscription.deliveryDays.length > 0) {
+      setDeliveryDays([...pendingSubscription.deliveryDays]);
+    }
+    
     // Go to step 1 so user can review/edit everything
     setStep(1);
     toast.info('Edit your subscription details');
     
-    // Reset the edit flags after a short delay to allow state to settle
+    // Reset the edit flags after a longer delay to ensure all state updates complete
     setTimeout(() => {
       setIsPrefillingEdit(false);
       isEditModeRef.current = false; // Reset ref
       setIsEditMode(false); // Reset state
-    }, 500);
+    }, 1000);
   };
 
   useEffect(() => {
