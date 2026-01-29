@@ -371,6 +371,7 @@ class Order(BaseModel):
     id: str
     user_id: str
     address_id: str
+    delivery_address: Optional[dict] = None  # Snapshot of address at order time
     items: List[OrderItem]
     subtotal: float
     delivery_fee: float = 0
