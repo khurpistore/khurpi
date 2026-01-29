@@ -1174,26 +1174,58 @@ const SubscriptionCreate = () => {
                   <CreditCard className="w-4 h-4 text-primary" />
                   Payment
                 </h4>
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src="https://razorpay.com/assets/razorpay-logo.svg" 
-                        alt="Razorpay" 
-                        className="h-5"
-                      />
-                      <span className="font-medium text-blue-800">Online Payment</span>
+                
+                {/* Test Mode Toggle */}
+                <div className="flex items-center justify-between p-3 mb-4 bg-amber-50 rounded-lg border border-amber-200">
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="w-5 h-5 text-amber-600" />
+                    <div>
+                      <span className="font-medium text-amber-800">Test Mode</span>
+                      <p className="text-xs text-amber-600">Bypass payment for testing</p>
                     </div>
                   </div>
-                  <p className="text-sm text-blue-700 mb-3">
-                    Pay securely using UPI, Cards, Net Banking, or Wallets
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="text-xs bg-white px-2 py-1 rounded border">UPI</span>
-                    <span className="text-xs bg-white px-2 py-1 rounded border">Cards</span>
-                    <span className="text-xs bg-white px-2 py-1 rounded border">Net Banking</span>
-                    <span className="text-xs bg-white px-2 py-1 rounded border">Wallets</span>
+                  <Switch 
+                    checked={testMode} 
+                    onCheckedChange={setTestMode}
+                    data-testid="subscription-test-mode-toggle"
+                  />
+                </div>
+                
+                <div className={`p-4 rounded-lg border ${testMode ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {testMode ? (
+                        <>
+                          <FlaskConical className="w-5 h-5 text-amber-600" />
+                          <span className="font-medium text-amber-800">Test Payment (No Charge)</span>
+                        </>
+                      ) : (
+                        <>
+                          <img 
+                            src="https://razorpay.com/assets/razorpay-logo.svg" 
+                            alt="Razorpay" 
+                            className="h-5"
+                          />
+                          <span className="font-medium text-blue-800">Online Payment</span>
+                        </>
+                      )}
+                    </div>
+                    <Shield className={`w-5 h-5 ${testMode ? 'text-amber-600' : 'text-blue-600'}`} />
                   </div>
+                  <p className={`text-sm mb-3 ${testMode ? 'text-amber-700' : 'text-blue-700'}`}>
+                    {testMode 
+                      ? 'Create subscription without actual payment (for testing only)'
+                      : 'Pay securely using UPI, Cards, Net Banking, or Wallets'
+                    }
+                  </p>
+                  {!testMode && (
+                    <div className="flex flex-wrap gap-2">
+                      <span className="text-xs bg-white px-2 py-1 rounded border">UPI</span>
+                      <span className="text-xs bg-white px-2 py-1 rounded border">Cards</span>
+                      <span className="text-xs bg-white px-2 py-1 rounded border">Net Banking</span>
+                      <span className="text-xs bg-white px-2 py-1 rounded border">Wallets</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
