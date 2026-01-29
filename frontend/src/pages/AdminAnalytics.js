@@ -188,8 +188,8 @@ const AdminAnalytics = () => {
                       <p className="text-sm text-muted-foreground">Total Events</p>
                       <p className="text-3xl font-bold">{analytics?.summary?.total_events || 0}</p>
                     </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <BarChart3 className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-teal-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -202,8 +202,8 @@ const AdminAnalytics = () => {
                       <p className="text-sm text-muted-foreground">Unique Sessions</p>
                       <p className="text-3xl font-bold">{analytics?.summary?.unique_sessions || 0}</p>
                     </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <Users className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center">
+                      <Users className="w-6 h-6 text-cyan-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -216,8 +216,8 @@ const AdminAnalytics = () => {
                       <p className="text-sm text-muted-foreground">Unique Users</p>
                       <p className="text-3xl font-bold">{analytics?.summary?.unique_users || 0}</p>
                     </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <UserCheck className="w-6 h-6 text-purple-600" />
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                      <UserCheck className="w-6 h-6 text-amber-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -230,8 +230,8 @@ const AdminAnalytics = () => {
                       <p className="text-sm text-muted-foreground">Page Views</p>
                       <p className="text-3xl font-bold">{analytics?.conversion_funnel?.page_views || 0}</p>
                     </div>
-                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                      <Eye className="w-6 h-6 text-orange-600" />
+                    <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
+                      <Eye className="w-6 h-6 text-rose-600" />
                     </div>
                   </div>
                 </CardContent>
