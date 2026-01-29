@@ -226,7 +226,7 @@ const SubscriptionCreate = () => {
       return;
     }
     
-    // Check if returning from addresses page
+    // Check URL params first
     const params = new URLSearchParams(location.search);
     const restored = params.get('restored');
     const isEditing = params.get('edit') === 'true';
@@ -235,14 +235,15 @@ const SubscriptionCreate = () => {
       restoreSubscriptionState();
       // Clean up URL
       navigate('/subscription/create', { replace: true });
-    } else if (isEditing && pendingSubscription) {
-      // Set edit mode flag - will prefill after data loads
+    } else if (isEditing) {
+      // Set edit mode flag immediately - will prefill after data loads
       isEditModeRef.current = true; // Set ref immediately for synchronous checks
       setIsEditMode(true);
+      setIsPrefillingEdit(true); // Also set prefilling flag to block auto-date
       // Clean up URL
       navigate('/subscription/create', { replace: true });
-    } else {
-      // Set initial delivery day to next available weekday
+    } else if (!isEditMode && deliveryDays.length === 0) {
+      // Set initial delivery day to next available weekday (only if not editing)
       const nextDay = getNextAvailableWeekday(1);
       if (nextDay.length > 0) {
         setDeliveryDays(nextDay);
