@@ -1081,6 +1081,10 @@ const SubscriptionCreate = () => {
                         const dayIndex = WEEKDAYS.indexOf(d);
                         const startDayIndex = startDate.getDay() === 0 ? 6 : startDate.getDay() - 1;
                         return dayIndex === startDayIndex;
+                      }) || deliveryDays.find(d => {
+                        const dayIndex = ALL_WEEKDAYS.indexOf(d);
+                        const startDayIndex = startDate.getDay() === 0 ? 6 : startDate.getDay() - 1;
+                        return dayIndex === startDayIndex;
                       }) || 'delivery'} selected
                     </p>
                   )}
