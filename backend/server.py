@@ -849,28 +849,34 @@ async def get_utm_analytics(days: int = 30):
     from_date = datetime.now(timezone.utc) - timedelta(days=days)
     from_date_str = from_date.isoformat()
     
+    # Query events with marketing data
     events = await db.analytics.find(
-        {
-            "created_at": {"$gte": from_date_str},
-            "metadata.utm_source": {"$ne": None}
-        },
-        {"_id": 0, "session_id": 1, "metadata": 1, "event_type": 1}
-    ).to_list(5000)
+        {"created_at": {"$gte": from_date_str}},
+        {"_id": 0, "session_id": 1, "metadata": 1, "marketing": 1, "event_type": 1}
+    ).to_list(10000)
     
     # Group by campaign
     campaigns = {}
     for e in events:
+        # Try to get from marketing object first, fallback to metadata
+        marketing = e.get("marketing", {})
         meta = e.get("metadata", {})
-        source = meta.get("utm_source", "direct")
-        medium = meta.get("utm_medium", "none")
-        campaign = meta.get("utm_campaign", "none")
-        key = f"{source}/{medium}/{campaign}"
+        
+        source = marketing.get("utm_source") or meta.get("utm_source")
+        medium = marketing.get("utm_medium") or meta.get("utm_medium")
+        campaign = marketing.get("utm_campaign") or meta.get("utm_campaign")
+        
+        # Skip if no UTM source
+        if not source:
+            continue
+            
+        key = f"{source}/{medium or 'none'}/{campaign or 'none'}"
         
         if key not in campaigns:
             campaigns[key] = {
                 "source": source,
-                "medium": medium,
-                "campaign": campaign,
+                "medium": medium or "none",
+                "campaign": campaign or "none",
                 "sessions": set(),
                 "page_views": 0,
                 "conversions": 0
@@ -895,6 +901,77 @@ async def get_utm_analytics(days: int = 30):
         })
     
     return sorted(result, key=lambda x: x["sessions"], reverse=True)
+
+@api_router.get("/admin/analytics/traffic-sources")
+async def get_traffic_sources(days: int = 30):
+    """Get traffic sources breakdown (social, search, direct, referral)"""
+    from_date = datetime.now(timezone.utc) - timedelta(days=days)
+    from_date_str = from_date.isoformat()
+    
+    events = await db.analytics.find(
+        {"created_at": {"$gte": from_date_str}},
+        {"_id": 0, "session_id": 1, "marketing": 1, "metadata": 1, "event_type": 1}
+    ).to_list(10000)
+    
+    # Group by traffic source
+    sources = {}
+    channels = {}
+    
+    for e in events:
+        marketing = e.get("marketing", {})
+        meta = e.get("metadata", {})
+        
+        source = marketing.get("traffic_source") or meta.get("traffic_source", "direct")
+        channel = marketing.get("traffic_channel") or meta.get("traffic_channel", "direct")
+        session_id = e.get("session_id")
+        event_type = e.get("event_type")
+        
+        # Aggregate by source
+        if source not in sources:
+            sources[source] = {"sessions": set(), "events": 0, "conversions": 0, "add_to_cart": 0}
+        sources[source]["sessions"].add(session_id)
+        sources[source]["events"] += 1
+        if event_type == "purchase":
+            sources[source]["conversions"] += 1
+        if event_type == "add_to_cart":
+            sources[source]["add_to_cart"] += 1
+            
+        # Aggregate by channel
+        if channel not in channels:
+            channels[channel] = {"sessions": set(), "events": 0, "conversions": 0}
+        channels[channel]["sessions"].add(session_id)
+        channels[channel]["events"] += 1
+        if event_type == "purchase":
+            channels[channel]["conversions"] += 1
+    
+    # Format results
+    sources_list = []
+    for name, data in sources.items():
+        session_count = len(data["sessions"])
+        sources_list.append({
+            "source": name,
+            "sessions": session_count,
+            "events": data["events"],
+            "conversions": data["conversions"],
+            "add_to_cart": data["add_to_cart"],
+            "conversion_rate": (data["conversions"] / max(session_count, 1)) * 100
+        })
+    
+    channels_list = []
+    for name, data in channels.items():
+        session_count = len(data["sessions"])
+        channels_list.append({
+            "channel": name,
+            "sessions": session_count,
+            "events": data["events"],
+            "conversions": data["conversions"],
+            "conversion_rate": (data["conversions"] / max(session_count, 1)) * 100
+        })
+    
+    return {
+        "sources": sorted(sources_list, key=lambda x: x["sessions"], reverse=True),
+        "channels": sorted(channels_list, key=lambda x: x["sessions"], reverse=True)
+    }
 
 @api_router.post("/auth/signup", response_model=User)
 async def signup(user_data: UserCreate):
