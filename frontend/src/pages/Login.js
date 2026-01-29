@@ -48,6 +48,7 @@ const Login = () => {
     setLoading(true);
     try {
       const userData = await login(phone, password);
+      trackLogin();
       toast.success(`Welcome back, ${userData.name}!`);
       const from = location.state?.from?.pathname || '/products';
       navigate(from, { replace: true });
