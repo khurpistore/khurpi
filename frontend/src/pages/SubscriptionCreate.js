@@ -47,6 +47,7 @@ const SubscriptionCreate = () => {
   // Payment state
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [testMode, setTestMode] = useState(false); // Test mode to bypass Razorpay
   
   const navigate = useNavigate();
   const location = useLocation();
