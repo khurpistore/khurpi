@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle, Truck, Tag, X, FlaskConical, Repeat, Package } from 'lucide-react';
+import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle, Truck, Tag, X, FlaskConical, Repeat, Package, ChevronLeft, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
