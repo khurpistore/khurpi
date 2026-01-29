@@ -59,7 +59,9 @@ const SubscriptionCreate = () => {
   const { user, addresses, fetchAddresses } = useAuth();
   const { setSubscription, pendingSubscription } = useCart();
 
-  const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  // Delivery days - excluding Sunday (no delivery on Sunday)
+  const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const ALL_WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']; // For date calculations
 
   // Calculate next available start date based on delivery days
   const getNextAvailableDate = (selectedDays, minDate = new Date()) => {
