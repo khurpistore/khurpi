@@ -453,6 +453,35 @@ const SubscriptionCreate = () => {
     setDiscountCode('');
   };
 
+  // Add subscription to cart and navigate to cart page
+  const handleAddToCart = () => {
+    if (!startDate) {
+      toast.error('Please select a start date');
+      return;
+    }
+
+    if (deliveryDays.length === 0) {
+      toast.error('Please select at least one delivery day');
+      return;
+    }
+
+    const subscriptionData = {
+      type: 'subscription',
+      products: selectedProducts,
+      plan: selectedPlan,
+      deliveryDays: deliveryDays,
+      startDate: format(startDate, 'yyyy-MM-dd'),
+      monthlyTotal: calculateTotal(),
+      perDeliveryTotal: calculatePerPackPrice(),
+      discount: calculateDiscount(),
+      deliveriesPerWeek: selectedPlan.deliveries_per_week
+    };
+
+    setSubscription(subscriptionData);
+    toast.success('Subscription added to cart!');
+    navigate('/cart');
+  };
+
   const handleSubmit = async () => {
     // Check if user has any addresses
     if (addresses.length === 0) {
