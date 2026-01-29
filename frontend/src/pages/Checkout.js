@@ -11,6 +11,7 @@ import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle, Truck, Tag, X, 
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -19,6 +20,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
   const { user, addresses } = useAuth();
+  const { trackPageView, trackCheckoutStarted, trackPurchase, trackSubscription } = useAnalytics();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isNoidaAddress, setIsNoidaAddress] = useState(true);
