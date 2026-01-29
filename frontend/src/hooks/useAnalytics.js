@@ -97,20 +97,187 @@ const getDeviceInfo = () => {
   };
 };
 
-// Get referrer info
+// Detect traffic source from referrer
+const detectTrafficSource = (referrer) => {
+  if (!referrer) return { source: 'direct', medium: 'none', channel: 'direct' };
+  
+  const domain = referrer.toLowerCase();
+  
+  // Social Media
+  if (domain.includes('facebook.com') || domain.includes('fb.com') || domain.includes('fb.me')) {
+    return { source: 'facebook', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('instagram.com') || domain.includes('ig.me')) {
+    return { source: 'instagram', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('whatsapp.com') || domain.includes('wa.me') || domain.includes('api.whatsapp.com')) {
+    return { source: 'whatsapp', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('twitter.com') || domain.includes('t.co') || domain.includes('x.com')) {
+    return { source: 'twitter', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('linkedin.com') || domain.includes('lnkd.in')) {
+    return { source: 'linkedin', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('youtube.com') || domain.includes('youtu.be')) {
+    return { source: 'youtube', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('pinterest.com') || domain.includes('pin.it')) {
+    return { source: 'pinterest', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('tiktok.com')) {
+    return { source: 'tiktok', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('snapchat.com')) {
+    return { source: 'snapchat', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('reddit.com')) {
+    return { source: 'reddit', medium: 'social', channel: 'social' };
+  }
+  if (domain.includes('telegram.org') || domain.includes('t.me')) {
+    return { source: 'telegram', medium: 'social', channel: 'social' };
+  }
+  
+  // Search Engines
+  if (domain.includes('google.') || domain.includes('googleapis.com')) {
+    return { source: 'google', medium: 'organic', channel: 'search' };
+  }
+  if (domain.includes('bing.com')) {
+    return { source: 'bing', medium: 'organic', channel: 'search' };
+  }
+  if (domain.includes('yahoo.com')) {
+    return { source: 'yahoo', medium: 'organic', channel: 'search' };
+  }
+  if (domain.includes('duckduckgo.com')) {
+    return { source: 'duckduckgo', medium: 'organic', channel: 'search' };
+  }
+  if (domain.includes('baidu.com')) {
+    return { source: 'baidu', medium: 'organic', channel: 'search' };
+  }
+  
+  // Email providers
+  if (domain.includes('mail.google.com') || domain.includes('mail.yahoo.com') || 
+      domain.includes('outlook.') || domain.includes('mail.')) {
+    return { source: 'email', medium: 'email', channel: 'email' };
+  }
+  
+  // News & Content
+  if (domain.includes('news.') || domain.includes('medium.com') || domain.includes('quora.com')) {
+    return { source: domain.split('.')[0], medium: 'referral', channel: 'content' };
+  }
+  
+  // Default referral
+  try {
+    const url = new URL(referrer);
+    return { source: url.hostname.replace('www.', ''), medium: 'referral', channel: 'referral' };
+  } catch {
+    return { source: 'unknown', medium: 'referral', channel: 'referral' };
+  }
+};
+
+// Get referrer info with traffic source detection
 const getReferrerInfo = () => {
   const referrer = document.referrer;
   const urlParams = new URLSearchParams(window.location.search);
   
+  // Detect traffic source
+  const trafficSource = detectTrafficSource(referrer);
+  
+  // UTM parameters override detected source
+  const utmSource = urlParams.get('utm_source');
+  const utmMedium = urlParams.get('utm_medium');
+  
+  // Store first touch attribution
+  const firstTouch = localStorage.getItem('khurpi_first_touch');
+  if (!firstTouch) {
+    localStorage.setItem('khurpi_first_touch', JSON.stringify({
+      source: utmSource || trafficSource.source,
+      medium: utmMedium || trafficSource.medium,
+      channel: trafficSource.channel,
+      campaign: urlParams.get('utm_campaign'),
+      timestamp: new Date().toISOString()
+    }));
+  }
+  
+  // Get landing page
+  const landingPage = sessionStorage.getItem('khurpi_landing_page');
+  if (!landingPage) {
+    sessionStorage.setItem('khurpi_landing_page', window.location.pathname);
+  }
+  
   return {
     referrer: referrer || 'direct',
     referrer_domain: referrer ? new URL(referrer).hostname : 'direct',
-    utm_source: urlParams.get('utm_source'),
-    utm_medium: urlParams.get('utm_medium'),
+    // Traffic source
+    traffic_source: utmSource || trafficSource.source,
+    traffic_medium: utmMedium || trafficSource.medium,
+    traffic_channel: trafficSource.channel,
+    // UTM parameters
+    utm_source: utmSource,
+    utm_medium: utmMedium,
     utm_campaign: urlParams.get('utm_campaign'),
     utm_term: urlParams.get('utm_term'),
-    utm_content: urlParams.get('utm_content')
+    utm_content: urlParams.get('utm_content'),
+    // Attribution
+    first_touch: firstTouch ? JSON.parse(firstTouch) : null,
+    landing_page: landingPage || window.location.pathname,
+    // Additional tracking params
+    gclid: urlParams.get('gclid'), // Google Ads
+    fbclid: urlParams.get('fbclid'), // Facebook Ads
+    msclkid: urlParams.get('msclkid'), // Microsoft Ads
+    ref: urlParams.get('ref'), // Custom referral code
+    affiliate: urlParams.get('affiliate')
   };
+};
+
+// Get time-based context for marketing analysis
+const getTimeContext = () => {
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay();
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  let timeOfDay;
+  if (hour >= 5 && hour < 12) timeOfDay = 'morning';
+  else if (hour >= 12 && hour < 17) timeOfDay = 'afternoon';
+  else if (hour >= 17 && hour < 21) timeOfDay = 'evening';
+  else timeOfDay = 'night';
+  
+  let dayType = (day === 0 || day === 6) ? 'weekend' : 'weekday';
+  
+  return {
+    hour,
+    day_of_week: dayNames[day],
+    day_type: dayType,
+    time_of_day: timeOfDay,
+    is_business_hours: hour >= 9 && hour <= 18 && dayType === 'weekday',
+    local_date: now.toLocaleDateString(),
+    local_time: now.toLocaleTimeString()
+  };
+};
+
+// Track user interests based on product views
+const getUserInterests = () => {
+  const interests = JSON.parse(localStorage.getItem('khurpi_interests') || '{}');
+  return interests;
+};
+
+const updateUserInterests = (category, productId) => {
+  const interests = getUserInterests();
+  if (!interests.categories) interests.categories = {};
+  if (!interests.products) interests.products = [];
+  
+  // Update category interest
+  interests.categories[category] = (interests.categories[category] || 0) + 1;
+  
+  // Track recent product views (last 20)
+  if (!interests.products.includes(productId)) {
+    interests.products.unshift(productId);
+    if (interests.products.length > 20) interests.products.pop();
+  }
+  
+  interests.last_updated = new Date().toISOString();
+  localStorage.setItem('khurpi_interests', JSON.stringify(interests));
 };
 
 // Get performance metrics
