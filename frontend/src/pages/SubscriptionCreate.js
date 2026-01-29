@@ -21,7 +21,7 @@ const API = `${BACKEND_URL}/api`;
 const STEPS = [
   { id: 1, title: 'Select Products' },
   { id: 2, title: 'Choose Plan' },
-  { id: 3, title: 'Review & Pay' }
+  { id: 3, title: 'Schedule Delivery' }
 ];
 
 const SubscriptionCreate = () => {
