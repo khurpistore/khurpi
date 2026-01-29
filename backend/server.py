@@ -2718,6 +2718,8 @@ async def create_coupon(coupon_data: CouponCreate):
     }
     
     await db.coupons.insert_one(coupon_doc)
+    # Remove _id added by MongoDB before returning
+    coupon_doc.pop('_id', None)
     return coupon_doc
 
 @api_router.put("/admin/coupons/{coupon_id}")
