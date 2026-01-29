@@ -247,7 +247,7 @@ const SubscriptionCreate = () => {
     }
     
     fetchProducts();
-    fetchSubscriptionPlans();
+    fetchSubscriptionPlans(isEditing); // Pass edit flag directly
     fetchAddresses();
   }, [user, navigate]);
 
