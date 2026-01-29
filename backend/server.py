@@ -2078,9 +2078,12 @@ async def get_user_orders(user_id: str):
             })
         order["items"] = enriched_items
         
-        # Get address
-        address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
-        order["address"] = address
+        # Use stored delivery_address (snapshot) if available, otherwise fetch current address
+        if order.get("delivery_address"):
+            order["address"] = order["delivery_address"]
+        else:
+            address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
+            order["address"] = address
     
     return orders
 
@@ -2100,9 +2103,12 @@ async def get_order(order_id: str):
         })
     order["items"] = enriched_items
     
-    # Get address
-    address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
-    order["address"] = address
+    # Use stored delivery_address (snapshot) if available, otherwise fetch current address
+    if order.get("delivery_address"):
+        order["address"] = order["delivery_address"]
+    else:
+        address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
+        order["address"] = address
     
     return order
 
