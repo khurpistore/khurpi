@@ -26,6 +26,7 @@ const Checkout = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(1000);
+  const [testMode, setTestMode] = useState(false); // Test mode to bypass Razorpay
 
   useEffect(() => {
     if (!user) {
