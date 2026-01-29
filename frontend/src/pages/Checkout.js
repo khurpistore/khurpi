@@ -191,6 +191,7 @@ const Checkout = () => {
         };
 
         await axios.post(`${API}/orders`, orderData);
+        setOrderPlaced(true);
         clearCart();
         toast.success('Test Order Placed Successfully!', {
           description: 'Order created in test mode (no actual payment).'
