@@ -467,17 +467,42 @@ const Checkout = () => {
                 <h2 className="text-lg font-semibold">Payment</h2>
               </div>
               
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              {/* Test Mode Toggle */}
+              <div className="flex items-center justify-between p-3 mb-4 bg-amber-50 rounded-lg border border-amber-200">
+                <div className="flex items-center gap-2">
+                  <FlaskConical className="w-5 h-5 text-amber-600" />
+                  <div>
+                    <span className="font-medium text-amber-800">Test Mode</span>
+                    <p className="text-xs text-amber-600">Bypass payment for testing</p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={testMode} 
+                  onCheckedChange={setTestMode}
+                  data-testid="test-mode-toggle"
+                />
+              </div>
+              
+              <div className={`p-4 rounded-lg border ${testMode ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <img 
-                      src="https://razorpay.com/assets/razorpay-logo.svg" 
-                      alt="Razorpay" 
-                      className="h-5"
-                    />
-                    <span className="font-medium text-blue-800">Online Payment</span>
+                    {testMode ? (
+                      <>
+                        <FlaskConical className="w-5 h-5 text-amber-600" />
+                        <span className="font-medium text-amber-800">Test Payment (No Charge)</span>
+                      </>
+                    ) : (
+                      <>
+                        <img 
+                          src="https://razorpay.com/assets/razorpay-logo.svg" 
+                          alt="Razorpay" 
+                          className="h-5"
+                        />
+                        <span className="font-medium text-blue-800">Online Payment</span>
+                      </>
+                    )}
                   </div>
-                  <Shield className="w-5 h-5 text-blue-600" />
+                  <Shield className={`w-5 h-5 ${testMode ? 'text-amber-600' : 'text-blue-600'}`} />
                 </div>
                 <p className="text-sm text-blue-700 mb-3">
                   Pay securely using UPI, Cards, Net Banking, or Wallets
