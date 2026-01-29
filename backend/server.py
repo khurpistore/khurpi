@@ -404,17 +404,24 @@ class OrderCreate(BaseModel):
 class AnalyticsEvent(BaseModel):
     event_type: str  # page_view, click, add_to_cart, checkout, purchase, etc.
     page: Optional[str] = None
+    page_url: Optional[str] = None
+    page_title: Optional[str] = None
     user_id: Optional[str] = None
     session_id: str
+    visitor_id: Optional[str] = None
     timestamp: Optional[str] = None
     # Location data
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    accuracy: Optional[float] = None
     city: Optional[str] = None
+    state: Optional[str] = None
     country: Optional[str] = None
+    pincode: Optional[str] = None
     # Device info
-    device_type: Optional[str] = None  # mobile, desktop, tablet
+    device_type: Optional[str] = None
     browser: Optional[str] = None
+    browser_version: Optional[str] = None
     os: Optional[str] = None
     screen_width: Optional[int] = None
     screen_height: Optional[int] = None
@@ -427,23 +434,30 @@ class AnalyticsEvent(BaseModel):
 
 @api_router.post("/analytics/track")
 async def track_analytics_event(event: AnalyticsEvent):
-    """Track an analytics event"""
+    """Track an analytics event with advanced data"""
     event_doc = {
         "id": str(uuid.uuid4()),
         "event_type": event.event_type,
         "page": event.page,
+        "page_url": event.page_url,
+        "page_title": event.page_title,
         "user_id": event.user_id,
         "session_id": event.session_id,
+        "visitor_id": event.visitor_id,
         "timestamp": event.timestamp or datetime.now(timezone.utc).isoformat(),
         "location": {
             "latitude": event.latitude,
             "longitude": event.longitude,
+            "accuracy": event.accuracy,
             "city": event.city,
-            "country": event.country
+            "state": event.state,
+            "country": event.country,
+            "pincode": event.pincode
         },
         "device": {
             "type": event.device_type,
             "browser": event.browser,
+            "browser_version": event.browser_version,
             "os": event.os,
             "screen_width": event.screen_width,
             "screen_height": event.screen_height
