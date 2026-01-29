@@ -613,24 +613,62 @@ const Checkout = () => {
             <CardContent className="p-4 sm:p-6">
               <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
               
-              {/* Subscription Section */}
+              {/* Monthly Order Summary for Subscription */}
               {pendingSubscription && (
                 <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <Repeat className="w-4 h-4 text-green-600" />
-                    <span className="font-medium text-green-800">Subscription</span>
+                    <span className="font-medium text-green-800">Monthly Subscription</span>
                   </div>
-                  <div className="space-y-1 text-sm">
+                  
+                  {/* Products */}
+                  <div className="space-y-1 text-sm mb-3">
+                    <p className="text-xs text-muted-foreground mb-1">Products per delivery:</p>
                     {pendingSubscription.products?.map((product) => (
-                      <div key={product.id} className="flex justify-between text-muted-foreground">
+                      <div key={product.id || product.product_id} className="flex justify-between text-muted-foreground">
                         <span>{product.name} × {product.quantity}</span>
                         <span>₹{(product.price * product.quantity).toFixed(2)}</span>
                       </div>
                     ))}
-                    <div className="flex justify-between font-medium text-green-700 pt-1 border-t border-green-200 mt-2">
-                      <span>Monthly Total</span>
-                      <span>₹{subscriptionTotal.toFixed(2)}/mo</span>
+                  </div>
+                  
+                  {/* Plan Details */}
+                  <div className="space-y-1 text-sm border-t border-green-200 pt-2">
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Plan</span>
+                      <span className="font-medium text-green-700">{pendingSubscription.plan?.name}</span>
                     </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Frequency</span>
+                      <span>{pendingSubscription.deliveriesPerWeek}×/week</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> Delivery Days
+                      </span>
+                      <span>{pendingSubscription.deliveryDays?.join(', ')}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Start Date</span>
+                      <span>{pendingSubscription.startDate}</span>
+                    </div>
+                    {pendingSubscription.discount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Plan Discount ({pendingSubscription.plan?.discount}%)</span>
+                        <span>-₹{pendingSubscription.discount?.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-green-600">
+                      <span className="flex items-center gap-1">
+                        <Truck className="w-3 h-3" /> Delivery
+                      </span>
+                      <span className="font-medium">FREE</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between font-bold text-green-800 pt-2 border-t border-green-200 mt-2">
+                    <span>Monthly Total</span>
+                    <span>₹{subscriptionTotal.toFixed(2)}/mo</span>
                   </div>
                 </div>
               )}
