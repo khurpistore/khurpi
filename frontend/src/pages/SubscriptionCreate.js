@@ -237,6 +237,7 @@ const SubscriptionCreate = () => {
       navigate('/subscription/create', { replace: true });
     } else if (isEditing && pendingSubscription) {
       // Set edit mode flag - will prefill after data loads
+      isEditModeRef.current = true; // Set ref immediately for synchronous checks
       setIsEditMode(true);
       // Clean up URL
       navigate('/subscription/create', { replace: true });
