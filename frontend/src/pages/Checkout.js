@@ -7,8 +7,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle, Truck, Tag, X } from 'lucide-react';
+import { MapPin, CreditCard, Plus, Shield, Loader2, AlertCircle, Truck, Tag, X, FlaskConical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
