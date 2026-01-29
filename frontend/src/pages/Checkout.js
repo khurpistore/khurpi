@@ -572,13 +572,15 @@ const Checkout = () => {
                 data-testid="pay-now-button"
                 onClick={handlePayment}
                 disabled={loading || !selectedAddressId || !isNoidaAddress}
-                className="w-full bg-primary hover:bg-primary/90 rounded-full"
+                className={`w-full rounded-full ${testMode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary hover:bg-primary/90'}`}
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Processing...
                   </>
+                ) : testMode ? (
+                  `Place Test Order ₹${total.toFixed(2)}`
                 ) : (
                   `Pay ₹${total.toFixed(2)}`
                 )}
