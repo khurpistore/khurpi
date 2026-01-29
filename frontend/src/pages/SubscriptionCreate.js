@@ -1298,38 +1298,19 @@ const SubscriptionCreate = () => {
               </Card>
             )}
 
-            {/* Pay Button */}
+            {/* Add to Cart Button */}
             <div className="mt-6">
               <Button
-                data-testid="pay-button"
-                onClick={handleSubmit}
-                disabled={loading || processingPayment || !startDate}
-                className={`w-full py-6 text-lg font-semibold rounded-full ${
-                  testMode 
-                    ? 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'
-                    : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600'
-                }`}
+                data-testid="add-to-cart-button"
+                onClick={handleAddToCart}
+                disabled={!startDate || deliveryDays.length === 0}
+                className="w-full py-6 text-lg font-semibold rounded-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
               >
-                {processingPayment ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : testMode ? (
-                  <>
-                    <FlaskConical className="w-5 h-5 mr-2" />
-                    Create Test Subscription ₹{calculateTotal().toFixed(2)}/month
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Pay ₹{calculateTotal().toFixed(2)}/month
-                  </>
-                )}
+                <Package className="w-5 h-5 mr-2" />
+                Add to Cart - ₹{calculateTotal().toFixed(2)}/month
               </Button>
               <p className="text-xs text-center text-muted-foreground mt-2">
-                By placing this order, you agree to our{' '}
-                <a href="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</a>
+                Review your subscription details in cart before checkout
               </p>
             </div>
           </div>
