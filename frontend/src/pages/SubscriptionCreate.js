@@ -1021,10 +1021,10 @@ const SubscriptionCreate = () => {
                     </span>
                   </Label>
                   <p className="text-xs text-muted-foreground mb-3">
-                    Choose {selectedPlan?.deliveries_per_week || 1} day{(selectedPlan?.deliveries_per_week || 1) > 1 ? 's' : ''} for your weekly deliveries (Sunday unavailable)
+                    Choose {selectedPlan?.deliveries_per_week || 1} day{(selectedPlan?.deliveries_per_week || 1) > 1 ? 's' : ''} for your weekly deliveries
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {WEEKDAYS.filter(day => day !== 'Sunday').map((day) => (
+                    {WEEKDAYS.map((day) => (
                       <button
                         key={day}
                         type="button"
