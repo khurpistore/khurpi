@@ -100,7 +100,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartCount = () => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0);
+    let count = cartItems.reduce((count, item) => count + item.quantity, 0);
+    // Add 1 if there's a pending subscription
+    if (pendingSubscription) {
+      count += 1;
+    }
+    return count;
   };
 
   // Subscription methods
