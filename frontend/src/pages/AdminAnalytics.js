@@ -26,6 +26,7 @@ const AdminAnalytics = () => {
   const [errors, setErrors] = useState([]);
   const [journeys, setJourneys] = useState([]);
   const [utmData, setUtmData] = useState([]);
+  const [trafficSources, setTrafficSources] = useState({ sources: [], channels: [] });
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('30');
   const [activeTab, setActiveTab] = useState('overview');
@@ -41,14 +42,15 @@ const AdminAnalytics = () => {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const [summaryRes, locationsRes, eventsRes, engagementRes, errorsRes, journeysRes, utmRes] = await Promise.all([
+      const [summaryRes, locationsRes, eventsRes, engagementRes, errorsRes, journeysRes, utmRes, trafficRes] = await Promise.all([
         axios.get(`${API}/admin/analytics/summary?days=${period}`),
         axios.get(`${API}/admin/analytics/locations`),
         axios.get(`${API}/admin/analytics/events?limit=50`),
         axios.get(`${API}/admin/analytics/engagement?days=${period}`),
         axios.get(`${API}/admin/analytics/errors?days=${period}`),
         axios.get(`${API}/admin/analytics/user-journeys?limit=20`),
-        axios.get(`${API}/admin/analytics/utm?days=${period}`)
+        axios.get(`${API}/admin/analytics/utm?days=${period}`),
+        axios.get(`${API}/admin/analytics/traffic-sources?days=${period}`)
       ]);
       setAnalytics(summaryRes.data);
       setLocations(locationsRes.data);
@@ -57,6 +59,7 @@ const AdminAnalytics = () => {
       setErrors(errorsRes.data);
       setJourneys(journeysRes.data);
       setUtmData(utmRes.data);
+      setTrafficSources(trafficRes.data);
     } catch (error) {
       console.error('Error fetching analytics:', error);
     } finally {
