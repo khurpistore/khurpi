@@ -570,43 +570,84 @@ const Checkout = () => {
             <CardContent className="p-4 sm:p-6">
               <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
               
-              <div className="space-y-3 mb-4">
-                {cartItems.map((item) => (
-                  <div key={item.product.id} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {item.product.name} × {item.quantity}
-                    </span>
-                    <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
+              {/* Subscription Section */}
+              {pendingSubscription && (
+                <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Repeat className="w-4 h-4 text-green-600" />
+                    <span className="font-medium text-green-800">Subscription</span>
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-1 text-sm">
+                    {pendingSubscription.products?.map((product) => (
+                      <div key={product.id} className="flex justify-between text-muted-foreground">
+                        <span>{product.name} × {product.quantity}</span>
+                        <span>₹{(product.price * product.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between font-medium text-green-700 pt-1 border-t border-green-200 mt-2">
+                      <span>Monthly Total</span>
+                      <span>₹{subscriptionTotal.toFixed(2)}/mo</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              <div className="space-y-2 text-sm border-t pt-4 mb-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>₹{subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery</span>
-                  {deliveryFee === 0 ? (
-                    <span className="text-green-600 font-medium">FREE</span>
-                  ) : (
-                    <span>₹{deliveryFee}</span>
+              {/* One-time Items */}
+              {cartItems.length > 0 && (
+                <>
+                  {pendingSubscription && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Package className="w-4 h-4 text-primary" />
+                      <span className="font-medium text-sm">One-time Purchase</span>
+                    </div>
                   )}
-                </div>
-                {appliedCoupon && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Coupon ({appliedCoupon.code})</span>
-                    <span>-₹{couponDiscount.toFixed(2)}</span>
+                  <div className="space-y-3 mb-4">
+                    {cartItems.map((item) => (
+                      <div key={item.product.id} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {item.product.name} × {item.quantity}
+                        </span>
+                        <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
+
+                  <div className="space-y-2 text-sm border-t pt-4 mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span>₹{subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Delivery</span>
+                      {deliveryFee === 0 ? (
+                        <span className="text-green-600 font-medium">FREE</span>
+                      ) : (
+                        <span>₹{deliveryFee}</span>
+                      )}
+                    </div>
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Coupon ({appliedCoupon.code})</span>
+                        <span>-₹{couponDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
               
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">₹{total.toFixed(2)}</span>
+                  <span className="text-primary">
+                    ₹{grandTotal.toFixed(2)}
+                    {pendingSubscription && !cartItems.length && <span className="text-sm font-normal">/mo</span>}
+                  </span>
                 </div>
+                {pendingSubscription && cartItems.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Includes ₹{subscriptionTotal.toFixed(2)}/mo subscription
+                  </p>
+                )}
               </div>
 
               <Button
@@ -621,9 +662,9 @@ const Checkout = () => {
                     Processing...
                   </>
                 ) : testMode ? (
-                  `Place Test Order ₹${total.toFixed(2)}`
+                  `Place Test Order ₹${grandTotal.toFixed(2)}`
                 ) : (
-                  `Pay ₹${total.toFixed(2)}`
+                  `Pay ₹${grandTotal.toFixed(2)}`
                 )}
               </Button>
               
