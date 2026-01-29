@@ -2603,7 +2603,12 @@ async def get_all_orders_admin():
     result = []
     for order in orders:
         user = await db.users.find_one({"id": order.get("user_id")}, {"_id": 0}) if order.get("user_id") else None
-        address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0}) if order.get("address_id") else None
+        
+        # Use stored delivery_address (snapshot) if available, otherwise fetch current address
+        if order.get("delivery_address"):
+            address = order["delivery_address"]
+        else:
+            address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0}) if order.get("address_id") else None
         
         # Enrich items with product details
         enriched_items = []
