@@ -366,12 +366,12 @@ const SubscriptionCreate = () => {
     }
   };
 
-  const fetchSubscriptionPlans = async () => {
+  const fetchSubscriptionPlans = async (isEditing = false) => {
     try {
       const response = await axios.get(`${API}/settings/subscription-plans`);
       setSubscriptionPlans(response.data);
       // Select the first plan by default ONLY if not editing
-      if (response.data.length > 0 && !isEditMode && !selectedPlan) {
+      if (response.data.length > 0 && !isEditing && !isEditMode && !selectedPlan) {
         setSelectedPlan(response.data[0]);
       }
     } catch (error) {
@@ -383,7 +383,7 @@ const SubscriptionCreate = () => {
       ];
       setSubscriptionPlans(defaultPlans);
       // Select the first plan by default ONLY if not editing
-      if (!isEditMode && !selectedPlan) {
+      if (!isEditing && !isEditMode && !selectedPlan) {
         setSelectedPlan(defaultPlans[0]);
       }
     }
