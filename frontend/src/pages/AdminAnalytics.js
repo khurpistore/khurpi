@@ -9,7 +9,8 @@ import {
   Monitor, Smartphone, Tablet, Globe, TrendingUp, Calendar,
   Package, MousePointer, Search, UserPlus, LogIn, Loader2,
   AlertTriangle, Activity, Target, RefreshCw, Clock, ArrowRight,
-  Percent, UserCheck, UserX, Zap
+  Percent, UserCheck, UserX, Zap, Share2, Facebook, Instagram, 
+  MessageCircle, Twitter, Linkedin, Youtube, ExternalLink
 } from 'lucide-react';
 import axios from 'axios';
 import AdminLayout from '@/components/AdminLayout';
