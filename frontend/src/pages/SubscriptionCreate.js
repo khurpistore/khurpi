@@ -31,7 +31,7 @@ const SubscriptionCreate = () => {
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [deliveryDays, setDeliveryDays] = useState(['Monday']); // Changed to array for multiple days
+  const [deliveryDays, setDeliveryDays] = useState([]); // Start empty, set in useEffect
   const [startDate, setStartDate] = useState(null);
   const [loading, setLoading] = useState(false);
   const [stockWarning, setStockWarning] = useState(null);
