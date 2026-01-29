@@ -270,7 +270,7 @@ const SubscriptionCreate = () => {
     console.log('Prefilling from pending subscription:', pendingSubscription);
     console.log('Available plans:', subscriptionPlans);
     
-    // Set flag to prevent auto-date selection from overwriting our prefilled date
+    // Ensure prefill flag is set (might already be set from main useEffect)
     setIsPrefillingEdit(true);
     
     // Convert products back to selectedProducts format
