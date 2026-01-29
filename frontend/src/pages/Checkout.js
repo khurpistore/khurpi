@@ -35,7 +35,8 @@ const Checkout = () => {
       navigate('/login');
       return;
     }
-    if (cartItems.length === 0) {
+    // Don't redirect to cart if order was just placed
+    if (cartItems.length === 0 && !orderPlaced) {
       navigate('/cart');
       return;
     }
