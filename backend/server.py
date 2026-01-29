@@ -431,10 +431,34 @@ class AnalyticsEvent(BaseModel):
     category: Optional[str] = None
     value: Optional[float] = None
     metadata: Optional[dict] = None
+    # Marketing attribution (extracted from metadata for indexing)
+    traffic_source: Optional[str] = None
+    traffic_medium: Optional[str] = None
+    traffic_channel: Optional[str] = None
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_term: Optional[str] = None
+    utm_content: Optional[str] = None
+    referrer: Optional[str] = None
+    landing_page: Optional[str] = None
 
 @api_router.post("/analytics/track")
 async def track_analytics_event(event: AnalyticsEvent):
     """Track an analytics event with advanced data"""
+    # Extract marketing data from metadata if not provided at top level
+    metadata = event.metadata or {}
+    traffic_source = event.traffic_source or metadata.get("traffic_source", "direct")
+    traffic_medium = event.traffic_medium or metadata.get("traffic_medium", "none")
+    traffic_channel = event.traffic_channel or metadata.get("traffic_channel", "direct")
+    utm_source = event.utm_source or metadata.get("utm_source")
+    utm_medium = event.utm_medium or metadata.get("utm_medium")
+    utm_campaign = event.utm_campaign or metadata.get("utm_campaign")
+    utm_term = event.utm_term or metadata.get("utm_term")
+    utm_content = event.utm_content or metadata.get("utm_content")
+    referrer = event.referrer or metadata.get("referrer", "direct")
+    landing_page = event.landing_page or metadata.get("landing_page")
+    
     event_doc = {
         "id": str(uuid.uuid4()),
         "event_type": event.event_type,
@@ -468,7 +492,24 @@ async def track_analytics_event(event: AnalyticsEvent):
             "category": event.category,
             "value": event.value
         },
-        "metadata": event.metadata or {},
+        "marketing": {
+            "traffic_source": traffic_source,
+            "traffic_medium": traffic_medium,
+            "traffic_channel": traffic_channel,
+            "utm_source": utm_source,
+            "utm_medium": utm_medium,
+            "utm_campaign": utm_campaign,
+            "utm_term": utm_term,
+            "utm_content": utm_content,
+            "referrer": referrer,
+            "landing_page": landing_page,
+            "gclid": metadata.get("gclid"),
+            "fbclid": metadata.get("fbclid"),
+            "msclkid": metadata.get("msclkid"),
+            "ref": metadata.get("ref"),
+            "affiliate": metadata.get("affiliate")
+        },
+        "metadata": metadata,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
