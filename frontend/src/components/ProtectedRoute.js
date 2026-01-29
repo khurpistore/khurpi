@@ -16,8 +16,12 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
     );
   }
 
-  // Not authenticated - redirect to login
+  // Not authenticated - redirect to appropriate login page
   if (!user) {
+    // If trying to access admin route, redirect to admin login
+    if (requireAdmin || location.pathname.startsWith('/admin')) {
+      return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    }
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
