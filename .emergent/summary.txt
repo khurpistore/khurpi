@@ -1,0 +1,228 @@
+<analysis>**original_problem_statement:**
+Build a full-stack subscription web app named Khurpi for selling microgreens.
+
+**PRODUCT REQUIREMENTS (Consolidated & Updated):**
+- **Stack:** Frontend (React), Backend (FastAPI), Database (MongoDB).
+- **Core Features:**
+    - **Product Catalog:** Customers can browse microgreens.
+    - **Single Purchase & Subscriptions:** Unified checkout flow for both single-time purchases and recurring subscriptions.
+    - **User Profile & Address Management:** Manage profile, multiple delivery addresses (with phone number and delivery fee estimates), and change password.
+    - **CMS for Legal Pages:** Admin can manage content for Privacy Policy, Terms & Conditions, etc.
+    - **Microgreens Benefits:** A section on the homepage highlighting the benefits of microgreens.
+    - **Immutable Order Address:** The delivery address used for an order is snapshotted at creation time and does not change if the user later updates their default address.
+- **Authentication:**
+    - Login and Signup options should be clearly visible and combined (Login / Sign up).
+    - T&C and Privacy Policy links must be present and functional on Login/Signup pages.
+- **Admin Panel:**
+    - CRUD for products, users, subscriptions, coupons.
+    - Manage shop settings, including a free delivery threshold for orders over a certain amount.
+    - View and manage orders, including updating order status.
+    - **Analytics Dashboard:** A dedicated page to view key business metrics, user behavior, and marketing campaign performance.
+- **Checkout & Payments:**
+    - A unified checkout page for both cart items and subscriptions.
+    - Coupon/discount code functionality.
+    - **Free delivery** for all subscriptions and for single orders exceeding an admin-defined threshold.
+    - T&C hyperlink on the checkout page.
+    - **Test Mode:** A toggle on the checkout page to bypass Razorpay and place test orders.
+- **Analytics & Tracking:**
+    - Track key user events (page views, auth events, add to cart, purchases).
+    - Track advanced metrics like user journey, time on page, scroll depth, and cart abandonment.
+    - Track marketing attribution via UTM parameters and traffic sources (e.g., social media, direct).
+
+**User's preferred language**: English
+
+**what currently exists?**
+A functional full-stack application for Khurpi. The previous session focused heavily on fixing a complex, recurring bug in the subscription editing flow and building out a comprehensive, multi-phased analytics system.
+
+Key Accomplishments:
+- **Unified Checkout Flow:** The checkout process for single purchases and subscriptions was merged and verified by the testing agent.
+- **Subscription Edit Flow Stabilized:** A persistent bug where the plan and start date would not be correctly pre-filled when editing a subscription from the cart has been resolved. This required significant refactoring of the state management in , removing problematic  hooks and using  to manage race conditions.
+- **Address Snapshotting:** The backend now saves a complete, immutable copy of the delivery address with each order, ensuring order history remains accurate even if user addresses change.
+- **Comprehensive Analytics System:** A new analytics feature was built from the ground up:
+    - **Backend:** New models and API endpoints in  to receive and aggregate analytics data.
+    - **Frontend Hook:** A new  hook to track page views, events, session data, user journey, engagement metrics (scroll depth, time on page), and technical details.
+    - **Admin Dashboard:** A new  page with charts and stats for visualizing total events, user engagement, real-time activity, user funnels, and traffic sources.
+- **UI/UX Fixes:** Addressed multiple user requests, including fixing T&C/Privacy Policy links, ensuring the cart icon count includes subscriptions, and disabling Sundays for delivery.
+
+**Last working item**:
+- Last item agent was working: Enhancing the analytics system to include marketing attribution. The agent updated the  function in  to better parse  and URL parameters to identify traffic sources (e.g., 'google', 'facebook', 'direct') and capture UTM parameters.
+- Status: IN PROGRESS
+- Agent Testing Done: N
+- Which testing method agent to use? both
+- User Testing Done: N
+
+**All Pending/In progress Issue list**:
+- **Issue 1:** Login Redirect Race Condition (Priority: P1)
+- **Issue 2:** Subscription price does not recalculate on navigation (Priority: P2)
+- **Issue 3:** Incorrect delivery date display (Priority: P2)
+- **Issue 4:** Incorrect coupon logic on Admin Payments page (Priority: P2)
+
+**Issues Detail:**
+- **Issue 1: Login Redirect Race Condition**
+    - **Attempted fixes:** None in this session. This is a long-standing issue from a previous fork.
+    - **Next debug checklist:**
+        1.  Review , , and .
+        2.  Ensure the  state from  is robustly used to prevent  from rendering or redirecting prematurely before the user's auth status is confirmed.
+        3.  Consider adding logging to trace the timing of the user check vs. the route rendering.
+    - **Why fix this issue and what will be achieved with the fix?** It creates a jarring user experience where users are briefly flashed the login page even when authenticated. Fixing it will make navigation smooth.
+    - **Status:** NOT STARTED
+    - **Is recurring issue?** Y
+    - **Should Test frontend/backend/both after fix?** frontend
+    - **Blocked on other issue:** None
+
+- **Issue 2: Subscription price does not recalculate on navigation**
+    - **Attempted fixes:** This was not explicitly targeted, but the extensive refactoring of  may have resolved it as a side effect.
+    - **Next debug checklist:**
+        1.  Perform a manual test: Navigate through the subscription creation steps, go back, change the number of products, and verify the price updates correctly in the final step.
+    - **Why fix this issue and what will be achieved with the fix?** Prevents user confusion and ensures they see the correct price.
+    - **Status:** USER VERIFICATION PENDING
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** frontend
+    - **Blocked on other issue:** None
+
+- **Issue 3: Incorrect delivery date display**
+    - **Attempted fixes:** None.
+    - **Next debug checklist:**
+        1.  Locate where the delivery date is displayed (likely  or ).
+        2.  Check the date formatting logic being used. The issue could be related to timezones or incorrect day string parsing.
+    - **Why fix this issue and what will be achieved with the fix?** Ensures users see the correct delivery information.
+    - **Status:** NOT STARTED
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** frontend
+    - **Blocked on other issue:** None
+
+- **Issue 4: Incorrect coupon logic on Admin Payments page**
+    - **Attempted fixes:** None.
+    - **Next debug checklist:**
+        1.  Review the  endpoint in  to see if coupon data is being included in the response.
+        2.  Check  to see how it is supposed to render the discount.
+    - **Why fix this issue and what will be achieved with the fix?** Provides the admin with accurate financial reporting.
+    - **Status:** NOT STARTED
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** frontend
+    - **Blocked on other issue:** None
+
+**In progress Task List**:
+- **Task 1: Complete Marketing Analytics Implementation (P0)**
+    - **Where to resume:** . The  function has been updated. The next steps are:
+        1.  Modify the main  function in the same file to include the marketing data (UTM params, referrer source) in the payload sent to the backend.
+        2.  Update the  Pydantic model and the  endpoint in  to accept and store the new marketing fields.
+        3.  Update the  page to display the new marketing data (e.g., a Traffic Sources chart).
+    - **What will be achieved with this?** The business will be able to track the effectiveness of its marketing campaigns and understand where users are coming from.
+    - **Status:** IN PROGRESS
+    - **Should Test frontend/backend/both after fix?** both
+    - **Blocked on something:** None
+
+**Upcoming and Future Tasks**
+- **Upcoming Tasks:**
+    - (P1) Implement user-facing ability to pause/skip a subscription delivery.
+    - Refactor  into a modular, router-based architecture.
+- **Future Tasks:**
+    - Implement customer reviews and ratings for products.
+    - Add a social sharing feature for referral codes.
+    - Implement payment failure retry logic for subscriptions.
+    - Refactor large frontend components like , , and .
+
+**Completed work in this session**
+- **Subscription Edit Flow:** Fixed state persistence for plan & start date when editing a subscription.
+- **Subscription Logic:** Disabled Sundays as a valid delivery day.
+- **UI/UX:** Fixed T&C/Privacy links on auth pages and updated the cart icon to correctly count subscriptions.
+- **Data Integrity:** Implemented address snapshotting on order creation.
+- **Analytics System:** Built and deployed a comprehensive, multi-phased analytics tracking system with an admin dashboard.
+
+**Earlier issues found/mentioned but not fixed**
+- **Issue 1:** Login Redirect Race Condition (P1)
+- **Issue 2:** Subscription price not recalculating on navigation (P2, needs verification)
+- **Issue 3:** Incorrect delivery date display (P2)
+- **Issue 4:** Incorrect coupon logic on Admin Payments page (P2)
+
+**Known issue recurrence from previous fork**
+- **Issue recurrence in previous fork:** Login Redirect Race Condition
+- **Recurrence count:** 5+
+- **Status:** NOT STARTED
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Backend:** FastAPI, Pydantic, Motor ORM
+- **Frontend:** React, React Router, TailwindCSS, 
+- **State Management:** React Context API, extensive use of , , and  to manage complex component state and prevent race conditions.
+- **Analytics:** Custom-built event tracking system for capturing user behavior, session data, and marketing attribution.
+
+**key DB schema**
+- **orders:** Added  to store a snapshot of the address.
+- **analytics_events:** New collection to store detailed event data, including session info, user identifiers, event type, path, and technical/marketing metadata.
+- **analytics_sessions:** New collection to store aggregated session data.
+
+**changes in tech stack**
+- None.
+
+**All files of reference**
+- : The core of the new analytics system on the client side.
+- : The dashboard for viewing all analytics data.
+- : The site of major bug fixing for the subscription edit flow.
+- : Contains all new backend logic for analytics and order snapshotting.
+- : Contains the logic for the cart count badge.
+
+**Areas that need refactoring**:
+- : Is now extremely large with auth, CRUD, and all analytics logic in one file. It is the top candidate for refactoring into a router-based structure.
+- : Remains highly complex due to its multi-step nature and the patches applied to fix state management bugs.
+- : Is becoming large with multiple charts and data fetches. It could be broken into smaller, reusable components.
+
+**key api endpoints**
+- **New Analytics Endpoints:**
+    - : Main endpoint for ingesting all tracking events.
+    - , , , , : Endpoints to feed the admin dashboard.
+- **Modified Order Endpoints:**
+    - : Updated to fetch and store the full address object.
+    -  & : Updated to prioritize the  snapshot over dynamic fetching.
+
+**Critical Info for New Agent**
+- **Your immediate task is to complete the marketing analytics implementation.** This involves connecting the new frontend referrer parsing to the backend and displaying the data on the admin dashboard.
+- **Be cautious with .** It has been a source of recurring, complex bugs related to state management. The current solution uses  and carefully ordered state updates to prevent race conditions. Understand this pattern before making changes.
+- The Login Redirect Race Condition is a long-standing, recurring P1 issue that has not been addressed. It would be a significant UX improvement to fix it.
+- The new analytics system is powerful but adds complexity. Refer to  (frontend) and the analytics section in  (backend) for its complete logic.
+
+**documents and test reports created in this job**
+- 
+-  (updated)
+
+**Last 10 User Messages and any pending HUMAN messages**
+1. **User:** track source of page opending like fb, insta, whatsapp or other. track all other things which can help in marketing and analyse user behaviour. (IN PROGRESS)
+2. **User:** track more advanced data. (DONE)
+3. **User:** add analytics in app everywhere and show in a page in admin where all details will be displayed. (DONE)
+4. **User:** show address info with order which was kept during order creation, Order address should not be changeable even after original address is changed. (DONE)
+5. **User:** Some information of microgram in home page- benefits. add it. (DONE - section already existed)
+6. **User:** terms and consition and privacy policy link should redirect to respective page on login page. (DONE)
+7. **User:** highlight count in cart e evern in subscription case also. (DONE)
+8. **User:** start date is not maintaining state if editing the subscription. (DONE - multiple attempts, finally resolved)
+9. **User:** avoid delivery and scedule date selection for sunday as no delivery on sunday. (DONE)
+10. **User:** during edit sunscription choose plan is always slected once a week. fix it. (DONE - multiple attempts, finally resolved)
+
+**Project Health Check:**
+- **Broken:** No core functionality is broken. The checkout and subscription flows are working.
+- **Mocked:** Razorpay payments via the Test Mode toggle.
+
+**3rd Party Integrations**
+- **Razorpay (Payments)**
+- **MongoDB Atlas (Database)**
+- **Leaflet & React-Leaflet (Maps)**
+- **date-fns (Date Utility)**
+
+**Testing status**
+- **Testing agent used after significant changes:** YES, for the initial unified checkout flow.
+- **Troubleshoot agent used after agent stuck in loop:** NO
+- **Test files created:**
+    -  (by testing agent)
+- **Known regressions:** The Login Redirect Race Condition remains from previous forks.
+
+**Credentials to test flow:**
+- **Admin Login:** 
+    - Username: 
+    - Password: 
+- **User:** Sign up via the main signup page, or use  / . A common test user phone is .
+
+**What agent forgot to execute**
+- The agent did not address the long-standing Login Redirect Race Condition issue.
+- The agent did not investigate the other P2 issues mentioned in the initial handoff: Incorrect delivery date display and Incorrect coupon logic on Admin Payments page. These tasks were superseded by the user's focus on fixing the subscription edit flow and building the analytics feature.</analysis>
