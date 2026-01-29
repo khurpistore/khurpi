@@ -17,7 +17,7 @@ const API = `${BACKEND_URL}/api`;
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
   const { user, addresses } = useAuth();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,13 +30,15 @@ const Checkout = () => {
   const [testMode, setTestMode] = useState(false); // Test mode to bypass Razorpay
   const [orderPlaced, setOrderPlaced] = useState(false); // Flag to prevent redirect after order
 
+  const hasItems = cartItems.length > 0 || pendingSubscription;
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
-    // Don't redirect to cart if order was just placed
-    if (cartItems.length === 0 && !orderPlaced) {
+    // Don't redirect to cart if order was just placed or has subscription
+    if (!hasItems && !orderPlaced) {
       navigate('/cart');
       return;
     }
