@@ -7,6 +7,7 @@ import { ShoppingCart, Plus, Sparkles, Truck, Tag, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -17,8 +18,10 @@ const Products = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
+  const { trackPageView, trackProductView, trackAddToCart } = useAnalytics();
 
   useEffect(() => {
+    trackPageView('Products');
     fetchProducts();
   }, []);
 
