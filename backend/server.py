@@ -619,6 +619,242 @@ async def get_analytics_locations():
     
     return result
 
+@api_router.get("/admin/analytics/user-journeys")
+async def get_user_journeys(limit: int = 50):
+    """Get user journey patterns"""
+    # Get sessions with multiple events
+    pipeline = [
+        {"$group": {
+            "_id": "$session_id",
+            "events": {"$push": {"event_type": "$event_type", "page": "$page", "timestamp": "$timestamp"}},
+            "user_id": {"$first": "$user_id"},
+            "visitor_id": {"$first": "$visitor_id"},
+            "event_count": {"$sum": 1},
+            "first_event": {"$min": "$timestamp"},
+            "last_event": {"$max": "$timestamp"}
+        }},
+        {"$match": {"event_count": {"$gte": 3}}},
+        {"$sort": {"last_event": -1}},
+        {"$limit": limit}
+    ]
+    
+    journeys = await db.analytics.aggregate(pipeline).to_list(limit)
+    
+    result = []
+    for j in journeys:
+        events = sorted(j.get("events", []), key=lambda x: x.get("timestamp", ""))
+        result.append({
+            "session_id": j["_id"],
+            "user_id": j.get("user_id"),
+            "visitor_id": j.get("visitor_id"),
+            "event_count": j["event_count"],
+            "duration_seconds": 0,  # Would need to calculate from timestamps
+            "pages_visited": list(set(e.get("page") for e in events if e.get("page"))),
+            "events": events[:20]  # Limit events returned
+        })
+    
+    return result
+
+@api_router.get("/admin/analytics/realtime")
+async def get_realtime_analytics():
+    """Get real-time analytics (last 30 minutes)"""
+    from_time = datetime.now(timezone.utc) - timedelta(minutes=30)
+    from_time_str = from_time.isoformat()
+    
+    events = await db.analytics.find(
+        {"created_at": {"$gte": from_time_str}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    active_sessions = set(e.get("session_id") for e in events)
+    active_users = set(e.get("user_id") for e in events if e.get("user_id"))
+    
+    # Events by minute
+    events_by_minute = {}
+    for e in events:
+        minute = e.get("created_at", "")[:16]  # YYYY-MM-DDTHH:MM
+        events_by_minute[minute] = events_by_minute.get(minute, 0) + 1
+    
+    # Current pages
+    page_sessions = {}
+    for e in events:
+        if e.get("event_type") == "page_view":
+            page = e.get("page", "unknown")
+            page_sessions[page] = page_sessions.get(page, set())
+            page_sessions[page].add(e.get("session_id"))
+    
+    current_pages = {page: len(sessions) for page, sessions in page_sessions.items()}
+    
+    return {
+        "active_sessions": len(active_sessions),
+        "active_users": len(active_users),
+        "events_last_30_min": len(events),
+        "events_by_minute": dict(sorted(events_by_minute.items())),
+        "current_pages": dict(sorted(current_pages.items(), key=lambda x: x[1], reverse=True)[:10])
+    }
+
+@api_router.get("/admin/analytics/errors")
+async def get_analytics_errors(days: int = 7):
+    """Get error analytics"""
+    from_date = datetime.now(timezone.utc) - timedelta(days=days)
+    from_date_str = from_date.isoformat()
+    
+    errors = await db.analytics.find(
+        {
+            "event_type": {"$in": ["error", "api_error"]},
+            "created_at": {"$gte": from_date_str}
+        },
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
+    
+    # Group by error type/message
+    error_groups = {}
+    for e in errors:
+        error_msg = e.get("metadata", {}).get("error_message", "Unknown")
+        error_type = e.get("metadata", {}).get("error_type", e.get("event_type"))
+        key = f"{error_type}:{error_msg[:50]}"
+        if key not in error_groups:
+            error_groups[key] = {
+                "error_type": error_type,
+                "message": error_msg,
+                "count": 0,
+                "first_seen": e.get("created_at"),
+                "last_seen": e.get("created_at"),
+                "affected_pages": set(),
+                "affected_users": set()
+            }
+        error_groups[key]["count"] += 1
+        error_groups[key]["last_seen"] = e.get("created_at")
+        if e.get("page"):
+            error_groups[key]["affected_pages"].add(e["page"])
+        if e.get("user_id"):
+            error_groups[key]["affected_users"].add(e["user_id"])
+    
+    # Convert to list
+    result = []
+    for key, data in error_groups.items():
+        result.append({
+            "error_type": data["error_type"],
+            "message": data["message"],
+            "count": data["count"],
+            "first_seen": data["first_seen"],
+            "last_seen": data["last_seen"],
+            "affected_pages": list(data["affected_pages"]),
+            "affected_users_count": len(data["affected_users"])
+        })
+    
+    return sorted(result, key=lambda x: x["count"], reverse=True)
+
+@api_router.get("/admin/analytics/engagement")
+async def get_engagement_analytics(days: int = 30):
+    """Get user engagement analytics"""
+    from_date = datetime.now(timezone.utc) - timedelta(days=days)
+    from_date_str = from_date.isoformat()
+    
+    events = await db.analytics.find(
+        {"created_at": {"$gte": from_date_str}},
+        {"_id": 0, "session_id": 1, "visitor_id": 1, "event_type": 1, "metadata": 1, "created_at": 1}
+    ).to_list(10000)
+    
+    # Calculate metrics
+    sessions = {}
+    visitors = {}
+    
+    for e in events:
+        sid = e.get("session_id")
+        vid = e.get("visitor_id")
+        
+        if sid:
+            if sid not in sessions:
+                sessions[sid] = {"events": 0, "pages": set(), "has_purchase": False}
+            sessions[sid]["events"] += 1
+            if e.get("event_type") == "page_view":
+                sessions[sid]["pages"].add(e.get("metadata", {}).get("page_name", "unknown"))
+            if e.get("event_type") == "purchase":
+                sessions[sid]["has_purchase"] = True
+        
+        if vid:
+            if vid not in visitors:
+                visitors[vid] = {"sessions": set(), "is_returning": False}
+            visitors[vid]["sessions"].add(sid)
+            if e.get("metadata", {}).get("is_new_visitor") == False:
+                visitors[vid]["is_returning"] = True
+    
+    # Calculate averages
+    total_sessions = len(sessions)
+    avg_events_per_session = sum(s["events"] for s in sessions.values()) / max(total_sessions, 1)
+    avg_pages_per_session = sum(len(s["pages"]) for s in sessions.values()) / max(total_sessions, 1)
+    bounce_rate = sum(1 for s in sessions.values() if s["events"] <= 1) / max(total_sessions, 1) * 100
+    conversion_rate = sum(1 for s in sessions.values() if s["has_purchase"]) / max(total_sessions, 1) * 100
+    
+    returning_visitors = sum(1 for v in visitors.values() if v["is_returning"])
+    new_visitors = len(visitors) - returning_visitors
+    
+    return {
+        "total_sessions": total_sessions,
+        "total_visitors": len(visitors),
+        "new_visitors": new_visitors,
+        "returning_visitors": returning_visitors,
+        "returning_visitor_rate": returning_visitors / max(len(visitors), 1) * 100,
+        "avg_events_per_session": round(avg_events_per_session, 2),
+        "avg_pages_per_session": round(avg_pages_per_session, 2),
+        "bounce_rate": round(bounce_rate, 2),
+        "conversion_rate": round(conversion_rate, 2)
+    }
+
+@api_router.get("/admin/analytics/utm")
+async def get_utm_analytics(days: int = 30):
+    """Get UTM campaign analytics"""
+    from_date = datetime.now(timezone.utc) - timedelta(days=days)
+    from_date_str = from_date.isoformat()
+    
+    events = await db.analytics.find(
+        {
+            "created_at": {"$gte": from_date_str},
+            "metadata.utm_source": {"$ne": None}
+        },
+        {"_id": 0, "session_id": 1, "metadata": 1, "event_type": 1}
+    ).to_list(5000)
+    
+    # Group by campaign
+    campaigns = {}
+    for e in events:
+        meta = e.get("metadata", {})
+        source = meta.get("utm_source", "direct")
+        medium = meta.get("utm_medium", "none")
+        campaign = meta.get("utm_campaign", "none")
+        key = f"{source}/{medium}/{campaign}"
+        
+        if key not in campaigns:
+            campaigns[key] = {
+                "source": source,
+                "medium": medium,
+                "campaign": campaign,
+                "sessions": set(),
+                "page_views": 0,
+                "conversions": 0
+            }
+        
+        campaigns[key]["sessions"].add(e.get("session_id"))
+        if e.get("event_type") == "page_view":
+            campaigns[key]["page_views"] += 1
+        if e.get("event_type") == "purchase":
+            campaigns[key]["conversions"] += 1
+    
+    result = []
+    for data in campaigns.values():
+        result.append({
+            "source": data["source"],
+            "medium": data["medium"],
+            "campaign": data["campaign"],
+            "sessions": len(data["sessions"]),
+            "page_views": data["page_views"],
+            "conversions": data["conversions"],
+            "conversion_rate": data["conversions"] / max(len(data["sessions"]), 1) * 100
+        })
+    
+    return sorted(result, key=lambda x: x["sessions"], reverse=True)
+
 @api_router.post("/auth/signup", response_model=User)
 async def signup(user_data: UserCreate):
     # Allow same phone to have different roles (customer vs delivery_boy)
