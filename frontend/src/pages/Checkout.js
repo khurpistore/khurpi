@@ -246,6 +246,7 @@ const Checkout = () => {
             };
 
             await axios.post(`${API}/orders`, orderData);
+            setOrderPlaced(true);
             clearCart();
             toast.success('Order Placed Successfully!', {
               description: 'Your fresh microgreens will be delivered soon.'
