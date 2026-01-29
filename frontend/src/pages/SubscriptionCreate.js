@@ -1065,8 +1065,14 @@ const SubscriptionCreate = () => {
                         mode="single"
                         selected={startDate}
                         onSelect={setStartDate}
-                        disabled={(date) => date < minStartDate}
+                        disabled={(date) => {
+                          // Disable past dates and Sundays
+                          return date < minStartDate || date.getDay() === 0;
+                        }}
                       />
+                      <p className="text-xs text-muted-foreground px-3 pb-2 text-center">
+                        Sundays are unavailable for delivery
+                      </p>
                     </PopoverContent>
                   </Popover>
                   {startDate && (
