@@ -101,6 +101,9 @@ const SubscriptionCreate = () => {
   useEffect(() => {
     // Skip auto-selection during edit mode (check both ref and state)
     if (isPrefillingEdit || isEditModeRef.current || isEditMode) return;
+    // Also skip if we have a prefilled date that hasn't been cleared yet
+    if (prefilledStartDateRef.current) return;
+    
     if (deliveryDays.length > 0) {
       const nextDate = getNextAvailableDate(deliveryDays, minStartDate);
       setStartDate(nextDate);
