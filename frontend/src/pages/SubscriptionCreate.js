@@ -1273,12 +1273,21 @@ const SubscriptionCreate = () => {
                 data-testid="pay-button"
                 onClick={handleSubmit}
                 disabled={loading || processingPayment || !startDate}
-                className="w-full py-6 text-lg font-semibold rounded-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+                className={`w-full py-6 text-lg font-semibold rounded-full ${
+                  testMode 
+                    ? 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'
+                    : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600'
+                }`}
               >
                 {processingPayment ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                     Processing...
+                  </>
+                ) : testMode ? (
+                  <>
+                    <FlaskConical className="w-5 h-5 mr-2" />
+                    Create Test Subscription ₹{calculateTotal().toFixed(2)}/month
                   </>
                 ) : (
                   <>
@@ -1288,7 +1297,8 @@ const SubscriptionCreate = () => {
                 )}
               </Button>
               <p className="text-xs text-center text-muted-foreground mt-2">
-                By placing this order, you agree to our Terms & Conditions
+                By placing this order, you agree to our{' '}
+                <a href="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</a>
               </p>
             </div>
           </div>
