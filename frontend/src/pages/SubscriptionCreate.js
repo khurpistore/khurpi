@@ -920,7 +920,11 @@ const SubscriptionCreate = () => {
               Select Your Plan
             </h3>
 
-            <RadioGroup value={selectedPlan?.id} onValueChange={(id) => handlePlanChange(subscriptionPlans.find(p => p.id === id))}>
+            <RadioGroup 
+              key={selectedPlan?.id || 'no-plan'} 
+              value={selectedPlan?.id || ''} 
+              onValueChange={(id) => handlePlanChange(subscriptionPlans.find(p => p.id === id))}
+            >
               <div className="space-y-4">
                 {subscriptionPlans.map((plan) => (
                   <Card 
