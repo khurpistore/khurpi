@@ -159,10 +159,16 @@ const SubscriptionCreate = () => {
 
   // Reset delivery days when plan changes - use next available weekdays
   const handlePlanChange = (plan) => {
+    // Only reset delivery days if the plan is actually changing
+    const isPlanChanging = !selectedPlan || selectedPlan.id !== plan.id;
+    
     setSelectedPlan(plan);
-    // Auto-select next available weekdays based on plan
-    const nextDays = getNextAvailableWeekday(plan.deliveries_per_week);
-    setDeliveryDays(nextDays);
+    
+    if (isPlanChanging) {
+      // Auto-select next available weekdays based on new plan
+      const nextDays = getNextAvailableWeekday(plan.deliveries_per_week);
+      setDeliveryDays(nextDays);
+    }
   };
 
   // Save subscription state to localStorage before navigating away
