@@ -556,6 +556,180 @@ const AdminAnalytics = () => {
 
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="space-y-6">
+            {/* Traffic Sources Overview */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* By Source */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Share2 className="w-5 h-5" />
+                    Traffic Sources
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {trafficSources.sources?.length > 0 ? (
+                    <div className="space-y-3">
+                      {trafficSources.sources.slice(0, 10).map((source, index) => {
+                        const totalSessions = trafficSources.sources.reduce((a, b) => a + b.sessions, 0);
+                        const percentage = totalSessions > 0 ? ((source.sessions / totalSessions) * 100).toFixed(1) : 0;
+                        
+                        // Get icon based on source name
+                        const getSourceIcon = (name) => {
+                          const lowerName = name.toLowerCase();
+                          if (lowerName.includes('facebook') || lowerName.includes('fb')) return <Facebook className="w-4 h-4 text-blue-600" />;
+                          if (lowerName.includes('instagram')) return <Instagram className="w-4 h-4 text-pink-500" />;
+                          if (lowerName.includes('whatsapp')) return <MessageCircle className="w-4 h-4 text-green-500" />;
+                          if (lowerName.includes('twitter') || lowerName.includes('x.com')) return <Twitter className="w-4 h-4 text-blue-400" />;
+                          if (lowerName.includes('linkedin')) return <Linkedin className="w-4 h-4 text-blue-700" />;
+                          if (lowerName.includes('youtube')) return <Youtube className="w-4 h-4 text-red-600" />;
+                          if (lowerName.includes('google')) return <Search className="w-4 h-4 text-orange-500" />;
+                          if (lowerName === 'direct') return <Globe className="w-4 h-4 text-gray-500" />;
+                          return <ExternalLink className="w-4 h-4 text-gray-400" />;
+                        };
+                        
+                        const getSourceColor = (name) => {
+                          const lowerName = name.toLowerCase();
+                          if (lowerName.includes('facebook') || lowerName.includes('fb')) return 'bg-blue-500';
+                          if (lowerName.includes('instagram')) return 'bg-gradient-to-r from-purple-500 to-pink-500';
+                          if (lowerName.includes('whatsapp')) return 'bg-green-500';
+                          if (lowerName.includes('twitter') || lowerName.includes('x.com')) return 'bg-blue-400';
+                          if (lowerName.includes('linkedin')) return 'bg-blue-700';
+                          if (lowerName.includes('youtube')) return 'bg-red-600';
+                          if (lowerName.includes('google')) return 'bg-orange-500';
+                          if (lowerName === 'direct') return 'bg-gray-500';
+                          return 'bg-purple-500';
+                        };
+                        
+                        return (
+                          <div key={source.source} className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                              {getSourceIcon(source.source)}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between mb-1">
+                                <span className="font-medium capitalize text-sm">{source.source}</span>
+                                <span className="text-sm text-muted-foreground">{source.sessions} ({percentage}%)</span>
+                              </div>
+                              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full ${getSourceColor(source.source)} rounded-full`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Share2 className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+                      <p className="text-muted-foreground">No traffic data yet</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* By Channel */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    Traffic Channels
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {trafficSources.channels?.length > 0 ? (
+                    <div className="space-y-4">
+                      {trafficSources.channels.map((channel) => {
+                        const totalSessions = trafficSources.channels.reduce((a, b) => a + b.sessions, 0);
+                        const percentage = totalSessions > 0 ? ((channel.sessions / totalSessions) * 100).toFixed(1) : 0;
+                        
+                        const channelColors = {
+                          'social': { bg: 'bg-pink-50', text: 'text-pink-700', bar: 'bg-pink-500' },
+                          'search': { bg: 'bg-orange-50', text: 'text-orange-700', bar: 'bg-orange-500' },
+                          'direct': { bg: 'bg-gray-50', text: 'text-gray-700', bar: 'bg-gray-500' },
+                          'referral': { bg: 'bg-purple-50', text: 'text-purple-700', bar: 'bg-purple-500' },
+                          'email': { bg: 'bg-blue-50', text: 'text-blue-700', bar: 'bg-blue-500' },
+                          'content': { bg: 'bg-green-50', text: 'text-green-700', bar: 'bg-green-500' }
+                        };
+                        const colors = channelColors[channel.channel] || channelColors.referral;
+                        
+                        return (
+                          <div key={channel.channel} className={`p-4 ${colors.bg} rounded-lg`}>
+                            <div className="flex justify-between items-center mb-2">
+                              <span className={`font-semibold capitalize ${colors.text}`}>{channel.channel}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{channel.sessions} sessions</span>
+                                <Badge variant="outline">{percentage}%</Badge>
+                              </div>
+                            </div>
+                            <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${colors.bar} rounded-full`}
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                              <span>{channel.events} events</span>
+                              <span>{channel.conversions} conversions ({channel.conversion_rate?.toFixed(1)}%)</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <TrendingUp className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+                      <p className="text-muted-foreground">No channel data yet</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Source Performance Table */}
+            {trafficSources.sources?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Source Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3">Source</th>
+                          <th className="text-right p-3">Sessions</th>
+                          <th className="text-right p-3">Events</th>
+                          <th className="text-right p-3">Add to Cart</th>
+                          <th className="text-right p-3">Conversions</th>
+                          <th className="text-right p-3">Conv. Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {trafficSources.sources.map((source) => (
+                          <tr key={source.source} className="border-b hover:bg-gray-50">
+                            <td className="p-3 font-medium capitalize">{source.source}</td>
+                            <td className="p-3 text-right">{source.sessions}</td>
+                            <td className="p-3 text-right">{source.events}</td>
+                            <td className="p-3 text-right">{source.add_to_cart}</td>
+                            <td className="p-3 text-right">{source.conversions}</td>
+                            <td className="p-3 text-right">
+                              <Badge variant={source.conversion_rate > 2 ? "default" : "secondary"}>
+                                {source.conversion_rate?.toFixed(1)}%
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* UTM Campaign Tracking */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
