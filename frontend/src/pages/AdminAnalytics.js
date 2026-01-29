@@ -393,21 +393,21 @@ const AdminAnalytics = () => {
                   </Card>
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                      <TrendingUp className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
                       <p className="text-3xl font-bold">{engagement.conversion_rate}%</p>
                       <p className="text-sm text-muted-foreground">Conversion Rate</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <Eye className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                      <Eye className="w-8 h-8 mx-auto mb-2 text-cyan-600" />
                       <p className="text-3xl font-bold">{engagement.avg_pages_per_session}</p>
                       <p className="text-sm text-muted-foreground">Avg Pages/Session</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <Zap className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+                      <Zap className="w-8 h-8 mx-auto mb-2 text-amber-500" />
                       <p className="text-3xl font-bold">{engagement.avg_events_per_session}</p>
                       <p className="text-sm text-muted-foreground">Avg Events/Session</p>
                     </CardContent>
@@ -421,26 +421,26 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                        <div className="flex items-center justify-between p-4 bg-teal-50 rounded-lg">
                           <div className="flex items-center gap-3">
-                            <UserPlus className="w-6 h-6 text-green-600" />
+                            <UserPlus className="w-6 h-6 text-teal-600" />
                             <span className="font-medium">New Visitors</span>
                           </div>
-                          <span className="text-2xl font-bold text-green-700">{engagement.new_visitors}</span>
+                          <span className="text-2xl font-bold text-teal-700">{engagement.new_visitors}</span>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                        <div className="flex items-center justify-between p-4 bg-cyan-50 rounded-lg">
                           <div className="flex items-center gap-3">
-                            <UserCheck className="w-6 h-6 text-blue-600" />
+                            <UserCheck className="w-6 h-6 text-cyan-600" />
                             <span className="font-medium">Returning Visitors</span>
                           </div>
-                          <span className="text-2xl font-bold text-blue-700">{engagement.returning_visitors}</span>
+                          <span className="text-2xl font-bold text-cyan-700">{engagement.returning_visitors}</span>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                        <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg">
                           <div className="flex items-center gap-3">
-                            <Percent className="w-6 h-6 text-purple-600" />
+                            <Percent className="w-6 h-6 text-amber-600" />
                             <span className="font-medium">Return Rate</span>
                           </div>
-                          <span className="text-2xl font-bold text-purple-700">{engagement.returning_visitor_rate?.toFixed(1)}%</span>
+                          <span className="text-2xl font-bold text-amber-700">{engagement.returning_visitor_rate?.toFixed(1)}%</span>
                         </div>
                       </div>
                     </CardContent>
@@ -452,11 +452,11 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                           <span className="font-medium">Total Sessions</span>
                           <span className="text-2xl font-bold">{engagement.total_sessions}</span>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                           <span className="font-medium">Total Visitors</span>
                           <span className="text-2xl font-bold">{engagement.total_visitors}</span>
                         </div>
