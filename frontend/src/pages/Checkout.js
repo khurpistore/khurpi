@@ -168,33 +168,65 @@ const Checkout = () => {
 
     setLoading(true);
     try {
-      // TEST MODE: Bypass Razorpay and create order directly
+      // TEST MODE: Bypass Razorpay and create order/subscription directly
       if (testMode) {
         const testPaymentId = `test_pay_${Date.now()}`;
         const testOrderId = `test_order_${Date.now()}`;
         
-        const orderData = {
-          user_id: user.id,
-          address_id: selectedAddressId,
-          items: cartItems.map(item => ({
-            product_id: item.product.id,
-            quantity: item.quantity,
-            price: item.product.price
-          })),
-          subtotal: subtotal,
-          delivery_fee: deliveryFee,
-          coupon_code: appliedCoupon?.code || null,
-          coupon_discount: couponDiscount,
-          total: total,
-          order_type: 'one_time',
-          payment_id: testPaymentId,
-          razorpay_order_id: testOrderId,
-          payment_status: 'paid'
-        };
+        // Create one-time order if cart has items
+        if (cartItems.length > 0) {
+          const orderData = {
+            user_id: user.id,
+            address_id: selectedAddressId,
+            items: cartItems.map(item => ({
+              product_id: item.product.id,
+              quantity: item.quantity,
+              price: item.product.price
+            })),
+            subtotal: subtotal,
+            delivery_fee: deliveryFee,
+            coupon_code: appliedCoupon?.code || null,
+            coupon_discount: couponDiscount,
+            total: total,
+            order_type: 'one_time',
+            payment_id: testPaymentId,
+            razorpay_order_id: testOrderId,
+            payment_status: 'paid'
+          };
 
-        await axios.post(`${API}/orders`, orderData);
+          await axios.post(`${API}/orders`, orderData);
+        }
+
+        // Create subscription if pending
+        if (pendingSubscription) {
+          const subscriptionData = {
+            frequency: pendingSubscription.plan.frequency,
+            delivery_days: pendingSubscription.deliveryDays,
+            delivery_day: pendingSubscription.deliveryDays[0],
+            deliveries_per_week: pendingSubscription.deliveriesPerWeek,
+            start_date: pendingSubscription.startDate,
+            tray_count: pendingSubscription.products.reduce((sum, p) => sum + p.quantity, 0),
+            items: pendingSubscription.products,
+            total_price: pendingSubscription.monthlyTotal,
+            subtotal: pendingSubscription.perDeliveryTotal,
+            delivery_fee: 0,
+            monthly_delivery_fee: 0,
+            plan_discount: pendingSubscription.plan.discount,
+            discount_amount: pendingSubscription.discount,
+            plan_id: pendingSubscription.plan.id,
+            address_id: selectedAddressId,
+            payment_method: 'test',
+            payment_status: 'paid',
+            razorpay_payment_id: `test_pay_sub_${Date.now()}`,
+            razorpay_subscription_id: `test_sub_${Date.now()}`
+          };
+
+          await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
+        }
+
         setOrderPlaced(true);
         clearCart();
+        clearSubscription();
         toast.success('Test Order Placed Successfully!', {
           description: 'Order created in test mode (no actual payment).'
         });
