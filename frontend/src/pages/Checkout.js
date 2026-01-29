@@ -167,6 +167,62 @@ const Checkout = () => {
     }
 
     setLoading(true);
+    
+    // Helper function to create order from cart items
+    const createOrderFromCart = async (paymentId, razorpayOrderId) => {
+      if (cartItems.length === 0) return;
+      
+      const orderData = {
+        user_id: user.id,
+        address_id: selectedAddressId,
+        items: cartItems.map(item => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price
+        })),
+        subtotal: subtotal,
+        delivery_fee: deliveryFee,
+        coupon_code: appliedCoupon?.code || null,
+        coupon_discount: couponDiscount,
+        total: total,
+        order_type: 'one_time',
+        payment_id: paymentId,
+        razorpay_order_id: razorpayOrderId,
+        payment_status: 'paid'
+      };
+
+      await axios.post(`${API}/orders`, orderData);
+    };
+
+    // Helper function to create subscription
+    const createSubscriptionFromPending = async (paymentId, razorpaySubId) => {
+      if (!pendingSubscription) return;
+      
+      const subscriptionData = {
+        frequency: pendingSubscription.plan.frequency,
+        delivery_days: pendingSubscription.deliveryDays,
+        delivery_day: pendingSubscription.deliveryDays[0],
+        deliveries_per_week: pendingSubscription.deliveriesPerWeek,
+        start_date: pendingSubscription.startDate,
+        tray_count: pendingSubscription.products.reduce((sum, p) => sum + p.quantity, 0),
+        items: pendingSubscription.products,
+        total_price: pendingSubscription.monthlyTotal,
+        subtotal: pendingSubscription.perDeliveryTotal,
+        delivery_fee: 0,
+        monthly_delivery_fee: 0,
+        plan_discount: pendingSubscription.plan.discount,
+        discount_amount: pendingSubscription.discount,
+        plan_id: pendingSubscription.plan.id,
+        address_id: selectedAddressId,
+        payment_method: 'online',
+        payment_status: 'paid',
+        razorpay_payment_id: paymentId,
+        razorpay_subscription_id: razorpaySubId
+      };
+
+      await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
+    };
+
     try {
       // TEST MODE: Bypass Razorpay and create order/subscription directly
       if (testMode) {
@@ -174,55 +230,10 @@ const Checkout = () => {
         const testOrderId = `test_order_${Date.now()}`;
         
         // Create one-time order if cart has items
-        if (cartItems.length > 0) {
-          const orderData = {
-            user_id: user.id,
-            address_id: selectedAddressId,
-            items: cartItems.map(item => ({
-              product_id: item.product.id,
-              quantity: item.quantity,
-              price: item.product.price
-            })),
-            subtotal: subtotal,
-            delivery_fee: deliveryFee,
-            coupon_code: appliedCoupon?.code || null,
-            coupon_discount: couponDiscount,
-            total: total,
-            order_type: 'one_time',
-            payment_id: testPaymentId,
-            razorpay_order_id: testOrderId,
-            payment_status: 'paid'
-          };
-
-          await axios.post(`${API}/orders`, orderData);
-        }
+        await createOrderFromCart(testPaymentId, testOrderId);
 
         // Create subscription if pending
-        if (pendingSubscription) {
-          const subscriptionData = {
-            frequency: pendingSubscription.plan.frequency,
-            delivery_days: pendingSubscription.deliveryDays,
-            delivery_day: pendingSubscription.deliveryDays[0],
-            deliveries_per_week: pendingSubscription.deliveriesPerWeek,
-            start_date: pendingSubscription.startDate,
-            tray_count: pendingSubscription.products.reduce((sum, p) => sum + p.quantity, 0),
-            items: pendingSubscription.products,
-            total_price: pendingSubscription.monthlyTotal,
-            subtotal: pendingSubscription.perDeliveryTotal,
-            delivery_fee: 0,
-            monthly_delivery_fee: 0,
-            plan_discount: pendingSubscription.plan.discount,
-            discount_amount: pendingSubscription.discount,
-            plan_id: pendingSubscription.plan.id,
-            address_id: selectedAddressId,
-            payment_method: 'test',
-            payment_status: 'paid',
-            razorpay_payment_id: `test_pay_sub_${Date.now()}`,
-            razorpay_subscription_id: `test_sub_${Date.now()}`
-          };
-
-          await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
-        }
+        await createSubscriptionFromPending(`test_pay_sub_${Date.now()}`, `test_sub_${Date.now()}`);
 
         setOrderPlaced(true);
         clearCart();
@@ -230,15 +241,31 @@ const Checkout = () => {
         toast.success('Test Order Placed Successfully!', {
           description: 'Order created in test mode (no actual payment).'
         });
-        navigate('/orders');
+        
+        // Navigate to appropriate page
+        if (pendingSubscription && cartItems.length === 0) {
+          navigate('/subscriptions');
+        } else {
+          navigate('/orders');
+        }
         return;
       }
 
       // PRODUCTION MODE: Create Razorpay order
+      // Determine the order type and description
+      const hasOnlySubscription = pendingSubscription && cartItems.length === 0;
+      const hasBoth = pendingSubscription && cartItems.length > 0;
+      const orderType = hasOnlySubscription ? 'subscription' : hasBoth ? 'mixed' : 'single_order';
+      const description = hasOnlySubscription 
+        ? `Monthly Subscription - ${pendingSubscription.plan?.name || 'Plan'}`
+        : hasBoth 
+          ? 'Order + Subscription Payment'
+          : 'Order Payment';
+
       const orderResponse = await axios.post(`${API}/payments/create-order`, {
-        amount: total,
+        amount: grandTotal, // Use grandTotal to include subscription
         receipt: `order_${user.id}_${Date.now()}`.slice(0, 40),
-        notes: { user_id: user.id, type: 'single_order' }
+        notes: { user_id: user.id, type: orderType }
       });
 
       const { order_id, amount: orderAmount, currency, key_id } = orderResponse.data;
@@ -248,7 +275,7 @@ const Checkout = () => {
         amount: orderAmount,
         currency: currency,
         name: 'Khurpi Microgreens',
-        description: 'Order Payment',
+        description: description,
         order_id: order_id,
         handler: async function (response) {
           try {
@@ -259,33 +286,33 @@ const Checkout = () => {
               razorpay_signature: response.razorpay_signature
             });
 
-            // Create order after successful payment
-            const orderData = {
-              user_id: user.id,
-              address_id: selectedAddressId,
-              items: cartItems.map(item => ({
-                product_id: item.product.id,
-                quantity: item.quantity,
-                price: item.product.price
-              })),
-              subtotal: subtotal,
-              delivery_fee: deliveryFee,
-              coupon_code: appliedCoupon?.code || null,
-              coupon_discount: couponDiscount,
-              total: total,
-              order_type: 'one_time',
-              payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              payment_status: 'paid'
-            };
+            // Create order if cart has items
+            await createOrderFromCart(response.razorpay_payment_id, response.razorpay_order_id);
 
-            await axios.post(`${API}/orders`, orderData);
+            // Create subscription if pending
+            await createSubscriptionFromPending(response.razorpay_payment_id, `sub_${response.razorpay_order_id}`);
+
             setOrderPlaced(true);
             clearCart();
-            toast.success('Order Placed Successfully!', {
-              description: 'Your fresh microgreens will be delivered soon.'
-            });
-            navigate('/orders');
+            clearSubscription();
+            
+            // Show appropriate success message and navigate
+            if (hasOnlySubscription) {
+              toast.success('Subscription Created Successfully!', {
+                description: 'Your subscription is now active. Fresh microgreens coming soon!'
+              });
+              navigate('/subscriptions');
+            } else if (hasBoth) {
+              toast.success('Order & Subscription Created!', {
+                description: 'Your order and subscription are confirmed.'
+              });
+              navigate('/orders');
+            } else {
+              toast.success('Order Placed Successfully!', {
+                description: 'Your fresh microgreens will be delivered soon.'
+              });
+              navigate('/orders');
+            }
           } catch (error) {
             console.error('Order creation error:', error);
             toast.error('Order creation failed', {
