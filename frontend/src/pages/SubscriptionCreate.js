@@ -207,9 +207,15 @@ const SubscriptionCreate = () => {
     // Check if returning from addresses page
     const params = new URLSearchParams(location.search);
     const restored = params.get('restored');
+    const isEditing = params.get('edit') === 'true';
     
     if (restored === 'true') {
       restoreSubscriptionState();
+      // Clean up URL
+      navigate('/subscription/create', { replace: true });
+    } else if (isEditing && pendingSubscription) {
+      // Prefill from existing subscription in cart
+      prefillFromPendingSubscription();
       // Clean up URL
       navigate('/subscription/create', { replace: true });
     } else {
@@ -224,6 +230,33 @@ const SubscriptionCreate = () => {
     fetchSubscriptionPlans();
     fetchAddresses();
   }, [user, navigate]);
+
+  // Prefill subscription details when editing from cart
+  const prefillFromPendingSubscription = () => {
+    if (!pendingSubscription) return;
+    
+    // Convert products back to selectedProducts format
+    const productsToSelect = pendingSubscription.products?.map(p => ({
+      product_id: p.product_id || p.id,
+      quantity: p.quantity
+    })) || [];
+    
+    setSelectedProducts(productsToSelect);
+    setSelectedPlan(pendingSubscription.plan);
+    setDeliveryDays(pendingSubscription.deliveryDays || []);
+    
+    // Parse start date
+    if (pendingSubscription.startDate) {
+      try {
+        setStartDate(new Date(pendingSubscription.startDate));
+      } catch (e) {
+        console.error('Error parsing start date:', e);
+      }
+    }
+    
+    // Go to step 1 so user can review/edit everything
+    setStep(1);
+  };
 
   useEffect(() => {
     // Set default address when addresses load
