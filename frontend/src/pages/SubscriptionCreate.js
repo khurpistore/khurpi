@@ -157,10 +157,13 @@ const SubscriptionCreate = () => {
     
     setSelectedPlan(plan);
     
-    if (isPlanChanging) {
-      // Auto-select next available weekdays based on new plan
+    if (isPlanChanging && !isEditModeRef.current && !isEditMode) {
+      // Auto-select next available weekdays based on new plan (only if not editing)
       const nextDays = getNextAvailableWeekday(plan.deliveries_per_week);
       setDeliveryDays(nextDays);
+      // Also set the start date based on new delivery days
+      const nextDate = getNextAvailableDate(nextDays, minStartDate);
+      setStartDate(nextDate);
     }
   };
 
