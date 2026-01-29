@@ -1108,19 +1108,6 @@ const SubscriptionCreate = () => {
                       </p>
                     </PopoverContent>
                   </Popover>
-                  {startDate && (
-                    <p className="text-xs text-green-600 mt-1">
-                      ✓ Next available {deliveryDays.find(d => {
-                        const dayIndex = WEEKDAYS.indexOf(d);
-                        const startDayIndex = startDate.getDay() === 0 ? 6 : startDate.getDay() - 1;
-                        return dayIndex === startDayIndex;
-                      }) || deliveryDays.find(d => {
-                        const dayIndex = ALL_WEEKDAYS.indexOf(d);
-                        const startDayIndex = startDate.getDay() === 0 ? 6 : startDate.getDay() - 1;
-                        return dayIndex === startDayIndex;
-                      }) || 'delivery'} selected
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
