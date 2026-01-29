@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Clock, Truck, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { trackPageView, trackClick } = useAnalytics();
+
+  useEffect(() => {
+    trackPageView('Home');
+  }, [trackPageView]);
+
+  const handleGetStarted = () => {
+    trackClick('Get Started', { location: 'hero' });
+    navigate('/subscription/create');
+  };
+
+  const handleBrowseProducts = () => {
+    trackClick('Browse Products', { location: 'hero' });
+    navigate('/products');
+  };
 
   return (
     <div>
