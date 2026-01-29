@@ -309,6 +309,7 @@ const SubscriptionCreate = () => {
       try {
         const parsedDate = new Date(pendingSubscription.startDate);
         console.log('Parsed start date:', parsedDate, 'from:', pendingSubscription.startDate);
+        prefilledStartDateRef.current = parsedDate; // Store in ref to prevent overwrite
         setStartDate(parsedDate);
       } catch (e) {
         console.error('Error parsing start date:', e);
@@ -329,6 +330,7 @@ const SubscriptionCreate = () => {
       setIsPrefillingEdit(false);
       isEditModeRef.current = false; // Reset ref
       setIsEditMode(false); // Reset state
+      prefilledStartDateRef.current = null; // Clear the prefilled date ref
     }, 1000);
   };
 
