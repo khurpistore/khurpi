@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Phone, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const Signup = () => {
   const [phone, setPhone] = useState('');
@@ -17,6 +18,11 @@ const Signup = () => {
   
   const { signup, user } = useAuth();
   const navigate = useNavigate();
+  const { trackPageView, trackSignup } = useAnalytics();
+
+  useEffect(() => {
+    trackPageView('Signup');
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
