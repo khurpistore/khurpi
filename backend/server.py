@@ -2006,11 +2006,21 @@ async def create_order(order_data: OrderCreate):
     # Determine order status based on payment
     order_status = "confirmed" if order_data.payment_status == "paid" else "pending"
     
-    # Create order
+    # Create order with address snapshot
     order_doc = {
         "id": str(uuid.uuid4()),
         "user_id": order_data.user_id,
         "address_id": order_data.address_id,
+        "delivery_address": {
+            "name": address.get("name"),
+            "address_line": address.get("address_line"),
+            "city": address.get("city"),
+            "state": address.get("state"),
+            "pincode": address.get("pincode"),
+            "phone": address.get("phone"),
+            "latitude": address.get("latitude"),
+            "longitude": address.get("longitude")
+        },
         "items": [item.model_dump() for item in order_data.items],
         "subtotal": order_data.subtotal,
         "delivery_fee": delivery_fee,
