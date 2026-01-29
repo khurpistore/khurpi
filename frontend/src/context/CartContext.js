@@ -18,9 +18,23 @@ const getStoredCart = () => {
   return [];
 };
 
+// Helper to get subscription from localStorage
+const getStoredSubscription = () => {
+  try {
+    const savedSub = localStorage.getItem('khurpi_subscription');
+    if (savedSub) {
+      return JSON.parse(savedSub);
+    }
+  } catch (error) {
+    console.error('Error loading subscription from localStorage:', error);
+  }
+  return null;
+};
+
 export const CartProvider = ({ children }) => {
   // Initialize from localStorage immediately
   const [cartItems, setCartItems] = useState(() => getStoredCart());
+  const [pendingSubscription, setPendingSubscription] = useState(() => getStoredSubscription());
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Save cart to localStorage whenever it changes
@@ -31,6 +45,19 @@ export const CartProvider = ({ children }) => {
       console.error('Error saving cart to localStorage:', error);
     }
   }, [cartItems]);
+
+  // Save subscription to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (pendingSubscription) {
+        localStorage.setItem('khurpi_subscription', JSON.stringify(pendingSubscription));
+      } else {
+        localStorage.removeItem('khurpi_subscription');
+      }
+    } catch (error) {
+      console.error('Error saving subscription to localStorage:', error);
+    }
+  }, [pendingSubscription]);
 
   const addToCart = (product, quantity = 1) => {
     setCartItems(prev => {
@@ -76,6 +103,15 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
   };
 
+  // Subscription methods
+  const setSubscription = (subscriptionData) => {
+    setPendingSubscription(subscriptionData);
+  };
+
+  const clearSubscription = () => {
+    setPendingSubscription(null);
+  };
+
   return (
     <CartContext.Provider value={{
       cartItems,
@@ -86,7 +122,10 @@ export const CartProvider = ({ children }) => {
       updateQuantity,
       clearCart,
       getCartTotal,
-      getCartCount
+      getCartCount,
+      pendingSubscription,
+      setSubscription,
+      clearSubscription
     }}>
       {children}
     </CartContext.Provider>
