@@ -228,8 +228,8 @@ class TestOrderCreation:
         assert login_response.status_code == 200
         user = login_response.json()
         
-        # Get addresses
-        addr_response = requests.get(f"{API}/addresses?user_id={user['id']}")
+        # Get addresses - correct endpoint
+        addr_response = requests.get(f"{API}/users/{user['id']}/addresses")
         addresses = addr_response.json()
         
         if len(addresses) == 0:
