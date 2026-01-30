@@ -202,68 +202,91 @@ const Cart = () => {
                 </div>
               )}
               
-              {cartItems.map((item) => (
-                <Card key={item.product.id} data-testid={`cart-item-${item.product.id}`}>
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex gap-4">
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base sm:text-lg font-semibold text-primary truncate">
-                          {item.product.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          ₹{item.product.price} per {item.product.pack_size || '80g'} pack
-                        </p>
-                        
-                        {/* Quantity Controls */}
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="w-8 h-8 p-0"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={item.quantity}
-                            onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value) || 1)}
-                            className="w-16 text-center"
+              {cartItems.map((item) => {
+                const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
+                const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days;
+                const estimatedDelivery = addDays(new Date(), deliveryDays);
+                
+                return (
+                  <Card key={item.product.id} data-testid={`cart-item-${item.product.id}`} className={isGrowing ? 'border-amber-200' : ''}>
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex gap-4">
+                        <div className="relative">
+                          <img
+                            src={item.product.image}
+                            alt={item.product.name}
+                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0"
                           />
+                          {isGrowing && (
+                            <div className="absolute -top-1 -right-1">
+                              <Badge className="bg-amber-500 text-white text-xs px-1">
+                                <Sprout className="w-3 h-3" />
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base sm:text-lg font-semibold text-primary truncate">
+                            {item.product.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            ₹{item.product.price} per {item.product.pack_size || '80g'} pack
+                          </p>
+                          
+                          {/* Delivery Time Info */}
+                          <div className={`flex items-center gap-1 text-xs mb-2 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                            <Clock className="w-3 h-3" />
+                            <span>
+                              {isGrowing ? 'Growing - ' : ''}Delivery by {format(estimatedDelivery, 'MMM d')} ({deliveryDays} days)
+                            </span>
+                          </div>
+                          
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                              className="w-8 h-8 p-0"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value) || 1)}
+                              className="w-16 text-center"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                              className="w-8 h-8 p-0"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-lg sm:text-xl font-bold text-primary">
+                            ₹{(item.product.price * item.quantity).toFixed(2)}
+                          </p>
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="w-8 h-8 p-0"
+                            onClick={() => removeFromCart(item.product.id)}
+                            className="text-red-500 hover:text-red-600 mt-2"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                      
-                      <div className="text-right">
-                        <p className="text-lg sm:text-xl font-bold text-primary">
-                          ₹{(item.product.price * item.quantity).toFixed(2)}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFromCart(item.product.id)}
-                          className="text-red-500 hover:text-red-600 mt-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </>
           )}
 
