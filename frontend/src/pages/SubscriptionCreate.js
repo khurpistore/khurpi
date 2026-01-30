@@ -202,9 +202,11 @@ const SubscriptionCreate = () => {
       // Auto-select next available weekdays based on new plan (only if not editing)
       const nextDays = getNextAvailableWeekday(plan.deliveries_per_week);
       setDeliveryDays(nextDays);
-      // Also set the start date based on new delivery days
-      const nextDate = getNextAvailableDate(nextDays, minStartDate);
-      setStartDate(nextDate);
+      // Set start date to nearest date matching the first delivery day
+      if (nextDays.length > 0) {
+        const nearestDate = getNearestDateForDay(nextDays[0], minStartDate);
+        setStartDate(nearestDate);
+      }
     }
   };
 
