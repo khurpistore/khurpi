@@ -165,28 +165,33 @@ const SubscriptionCreate = () => {
 
   // Get the nearest date for a specific weekday, starting from minDate
   const getNearestDateForDay = (dayName, minDate = new Date()) => {
-    const dayIndex = WEEKDAYS.indexOf(dayName);
-    if (dayIndex === -1) return minDate;
+    // Map day names to JavaScript getDay() values (0=Sunday, 1=Monday, ..., 6=Saturday)
+    const dayMap = {
+      'Sunday': 0,
+      'Monday': 1,
+      'Tuesday': 2,
+      'Wednesday': 3,
+      'Thursday': 4,
+      'Friday': 5,
+      'Saturday': 6
+    };
+    
+    const targetDayIndex = dayMap[dayName];
+    if (targetDayIndex === undefined) return minDate;
     
     const startDate = new Date(minDate);
     startDate.setHours(0, 0, 0, 0);
     
-    // Find the next occurrence of this day
-    let daysToAdd = dayIndex - startDate.getDay();
-    if (daysToAdd < 0) {
-      daysToAdd += 7; // Next week
-    } else if (daysToAdd === 0 && startDate <= new Date()) {
-      // If today is the day but it's past, go to next week
-      daysToAdd = 7;
+    const currentDayIndex = startDate.getDay();
+    
+    // Calculate days to add to reach the target day
+    let daysToAdd = targetDayIndex - currentDayIndex;
+    if (daysToAdd <= 0) {
+      daysToAdd += 7; // Go to next week if target day is today or earlier in the week
     }
     
     const result = new Date(startDate);
     result.setDate(result.getDate() + daysToAdd);
-    
-    // Ensure result is not before minDate
-    if (result < minDate) {
-      result.setDate(result.getDate() + 7);
-    }
     
     return result;
   };
