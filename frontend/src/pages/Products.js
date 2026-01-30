@@ -57,19 +57,25 @@ const Products = () => {
       return;
     }
     
-    if (stockInfo.status === 'growing') {
-      // Add as pre-order/booking
-      addToCart({ ...product, isPreOrder: true, readyInDays: stockInfo.readyInDays }, 1);
-      trackAddToCart(product, 1);
-      toast.success(`${product.name} booked! Ready in ${stockInfo.readyInDays || product.growth_days} days`, {
-        description: 'This item will be delivered once ready'
-      });
-      return;
-    }
+    // Add product with delivery info
+    const productWithDelivery = {
+      ...product,
+      isGrowing: stockInfo.status === 'growing',
+      deliveryDays: stockInfo.status === 'growing' 
+        ? (stockInfo.readyInDays || product.growth_days) 
+        : product.growth_days
+    };
     
-    addToCart(product, 1);
+    addToCart(productWithDelivery, 1);
     trackAddToCart(product, 1);
-    toast.success(`${product.name} added to cart`);
+    
+    if (stockInfo.status === 'growing') {
+      toast.success(`${product.name} added to cart`, {
+        description: `Delivery in ${stockInfo.readyInDays || product.growth_days} days (currently growing)`
+      });
+    } else {
+      toast.success(`${product.name} added to cart`);
+    }
   };
 
   const handleProductClick = (product) => {
