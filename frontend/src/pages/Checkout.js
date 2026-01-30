@@ -338,14 +338,14 @@ const Checkout = () => {
 
   const cartSubtotal = getCartTotal();
   const subscriptionTotal = pendingSubscription?.monthlyTotal || 0;
-  const subtotal = cartSubtotal; // Only cart items for one-time payment
-  // Free delivery if subtotal >= threshold (subscriptions always have free delivery)
-  const qualifiesForFreeDelivery = subtotal >= freeDeliveryThreshold || pendingSubscription;
+  const combinedSubtotal = cartSubtotal + subscriptionTotal; // Total before delivery & coupon
+  // Free delivery if cart subtotal >= threshold (subscriptions always have free delivery)
+  const qualifiesForFreeDelivery = cartSubtotal >= freeDeliveryThreshold || pendingSubscription;
   const baseDeliveryFee = deliveryInfo?.fee || 0;
   const deliveryFee = qualifiesForFreeDelivery ? 0 : baseDeliveryFee;
   const couponDiscount = appliedCoupon?.discount_amount || 0;
-  const total = Math.max(0, subtotal + deliveryFee - couponDiscount);
-  const grandTotal = total + subscriptionTotal;
+  // Apply coupon to combined total (cart + subscription)
+  const grandTotal = Math.max(0, combinedSubtotal + deliveryFee - couponDiscount);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
