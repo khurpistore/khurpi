@@ -235,42 +235,7 @@ const Checkout = () => {
     };
 
     try {
-      // TEST MODE: Bypass Razorpay and create order/subscription directly
-      if (testMode) {
-        const testPaymentId = `test_pay_${Date.now()}`;
-        const testOrderId = `test_order_${Date.now()}`;
-        
-        // Create one-time order if cart has items
-        await createOrderFromCart(testPaymentId, testOrderId);
-
-        // Create subscription if pending
-        await createSubscriptionFromPending(`test_pay_sub_${Date.now()}`, `test_sub_${Date.now()}`);
-
-        // Track successful purchase/subscription
-        if (cartItems.length > 0) {
-          trackPurchase(testOrderId, total, cartItems);
-        }
-        if (pendingSubscription) {
-          trackSubscription(pendingSubscription.plan, subscriptionTotal);
-        }
-
-        setOrderPlaced(true);
-        clearCart();
-        clearSubscription();
-        toast.success('Test Order Placed Successfully!', {
-          description: 'Order created in test mode (no actual payment).'
-        });
-        
-        // Navigate to appropriate page
-        if (pendingSubscription && cartItems.length === 0) {
-          navigate('/subscriptions');
-        } else {
-          navigate('/orders');
-        }
-        return;
-      }
-
-      // PRODUCTION MODE: Create Razorpay order
+      // Create Razorpay order
       // Determine the order type and description
       const hasOnlySubscription = pendingSubscription && cartItems.length === 0;
       const hasBoth = pendingSubscription && cartItems.length > 0;
