@@ -698,14 +698,27 @@ const Checkout = () => {
                     </div>
                   )}
                   <div className="space-y-3 mb-4">
-                    {cartItems.map((item) => (
-                      <div key={item.product.id} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {item.product.name} × {item.quantity}
-                        </span>
-                        <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
+                    {cartItems.map((item) => {
+                      const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
+                      const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days;
+                      const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
+                      
+                      return (
+                        <div key={item.product.id} className="text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              {item.product.name} × {item.quantity}
+                              {isGrowing && <Sprout className="w-3 h-3 text-amber-500" />}
+                            </span>
+                            <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
+                          </div>
+                          <div className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                            <Clock className="w-3 h-3" />
+                            {isGrowing ? 'Growing - ' : ''}Delivery by {estimatedDate}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="space-y-2 text-sm border-t pt-4 mb-4">
