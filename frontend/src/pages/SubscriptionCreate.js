@@ -769,14 +769,6 @@ const SubscriptionCreate = () => {
                 <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={loading || !startDate}
-                className="bg-primary hover:bg-primary/90 rounded-full"
-              >
-                {loading ? 'Processing...' : 'Confirm'}
-              </Button>
             )}
           </div>
 
