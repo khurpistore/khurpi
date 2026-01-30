@@ -47,10 +47,8 @@ const SubscriptionCreate = () => {
   // Address selection state
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   
-  // Payment state
-  const [processingPayment, setProcessingPayment] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('cod');
-  const [testMode, setTestMode] = useState(false); // Test mode to bypass Razorpay
+  // Payment state - removed Razorpay, payment happens at checkout
+  const [loading, setLoading] = useState(false);
   
   // Edit mode flags - use ref for synchronous checking
   const [isEditMode, setIsEditMode] = useState(false);
