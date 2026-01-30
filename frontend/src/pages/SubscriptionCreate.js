@@ -760,7 +760,7 @@ const SubscriptionCreate = () => {
               {STEPS[step - 1].title}
             </h2>
 
-            {step < 3 ? (
+            {step < 3 && (
               <Button
                 onClick={() => goToStep(step + 1)}
                 disabled={!canGoNext()}
