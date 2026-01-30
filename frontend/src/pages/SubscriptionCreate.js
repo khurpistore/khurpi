@@ -353,7 +353,24 @@ const SubscriptionCreate = () => {
       setStockWarning(null);
       setMinStartDate(new Date());
     }
-  }, [selectedProducts]);
+  }, [selectedProducts, products]);
+
+  // Adjust start date when minStartDate changes (due to stock availability)
+  useEffect(() => {
+    // Skip if in edit mode (prefilling from cart)
+    if (isPrefillingEdit || isEditModeRef.current) return;
+    
+    // If current start date is before minStartDate, adjust it
+    if (startDate && minStartDate && startDate < minStartDate) {
+      // Find next available date from minStartDate
+      const nextDate = getNextAvailableDate(deliveryDays.length > 0 ? deliveryDays : ['Monday'], minStartDate);
+      setStartDate(nextDate);
+    } else if (!startDate && minStartDate) {
+      // If no start date set, set it to the next available date from minStartDate
+      const nextDate = getNextAvailableDate(deliveryDays.length > 0 ? deliveryDays : ['Monday'], minStartDate);
+      setStartDate(nextDate);
+    }
+  }, [minStartDate]);
 
   const fetchDeliveryInfoForAddress = async (lat, lng) => {
     try {
