@@ -137,19 +137,7 @@ const Products = () => {
       );
     }
     
-    if (stockInfo.status === 'growing') {
-      return (
-        <Button
-          data-testid={`book-now-${product.id}`}
-          onClick={(e) => handleAddToCart(e, product)}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-full mt-2"
-        >
-          <CalendarPlus className="w-4 h-4 mr-1" />
-          Book Now
-        </Button>
-      );
-    }
-    
+    // Both in_stock and growing use Add to Cart
     return (
       <Button
         data-testid={`add-to-cart-${product.id}`}
