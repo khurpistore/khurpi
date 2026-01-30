@@ -666,9 +666,15 @@ const Checkout = () => {
 
                   <div className="space-y-2 text-sm border-t pt-4 mb-4">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span>₹{subtotal.toFixed(2)}</span>
+                      <span className="text-muted-foreground">Cart Subtotal</span>
+                      <span>₹{cartSubtotal.toFixed(2)}</span>
                     </div>
+                    {pendingSubscription && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Subscription</span>
+                        <span>₹{subscriptionTotal.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Delivery</span>
                       {deliveryFee === 0 ? (
