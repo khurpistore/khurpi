@@ -1123,18 +1123,40 @@ const SubscriptionCreate = () => {
         {step === 3 && (
           <div>
             {stockWarning && (
-              <Card className="mb-4 sm:mb-6 border-amber-200 bg-amber-50">
+              <Card className={`mb-4 sm:mb-6 ${stockWarning.type === 'error' ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'}`}>
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-start gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-amber-700 text-sm sm:text-lg">!</span>
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      stockWarning.type === 'error' ? 'bg-red-100' : 'bg-amber-100'
+                    }`}>
+                      {stockWarning.type === 'error' ? (
+                        <XCircle className={`w-4 h-4 text-red-700`} />
+                      ) : (
+                        <Sprout className={`w-4 h-4 text-amber-700`} />
+                      )}
                     </div>
-                    <div>
-                      <p className="font-semibold text-amber-900 mb-1 text-sm sm:text-base">Stock Notice</p>
-                      <p className="text-xs sm:text-sm text-amber-800 mb-2">{stockWarning.message}</p>
-                      <p className="text-xs sm:text-sm text-amber-900 font-medium">
-                        Earliest delivery: {format(stockWarning.earliestDate, 'PPP')}
+                    <div className="flex-1">
+                      <p className={`font-semibold mb-1 text-sm sm:text-base ${
+                        stockWarning.type === 'error' ? 'text-red-900' : 'text-amber-900'
+                      }`}>
+                        {stockWarning.type === 'error' ? 'Products Unavailable' : 'Delivery Timeline Notice'}
                       </p>
+                      <p className={`text-xs sm:text-sm mb-2 ${
+                        stockWarning.type === 'error' ? 'text-red-800' : 'text-amber-800'
+                      }`}>
+                        {stockWarning.message}
+                      </p>
+                      {stockWarning.earliestDate && (
+                        <div className={`text-xs sm:text-sm font-medium p-2 rounded ${
+                          stockWarning.type === 'error' ? 'bg-red-100 text-red-900' : 'bg-amber-100 text-amber-900'
+                        }`}>
+                          <Clock className="w-3 h-3 inline mr-1" />
+                          Earliest start date: {format(stockWarning.earliestDate, 'EEEE, MMMM d, yyyy')}
+                          {stockWarning.maxReadyDays && (
+                            <span className="ml-2">({stockWarning.maxReadyDays} days from today)</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
