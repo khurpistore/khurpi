@@ -133,22 +133,62 @@ const SubscriptionCreate = () => {
     }
     
     const maxDays = selectedPlan?.deliveries_per_week || 1;
+    let newDeliveryDays;
     
     if (deliveryDays.includes(day)) {
       // Remove day if already selected (but keep at least 1)
       if (deliveryDays.length > 1) {
-        setDeliveryDays(deliveryDays.filter(d => d !== day));
+        newDeliveryDays = deliveryDays.filter(d => d !== day);
+        setDeliveryDays(newDeliveryDays);
+        // Update start date to nearest date matching the first remaining day
+        const firstDay = newDeliveryDays[0];
+        const nearestDate = getNearestDateForDay(firstDay, minStartDate);
+        setStartDate(nearestDate);
       }
     } else {
       // Add day if under max limit
       if (deliveryDays.length < maxDays) {
-        setDeliveryDays([...deliveryDays, day].sort((a, b) => WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b)));
+        newDeliveryDays = [...deliveryDays, day].sort((a, b) => WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b));
       } else {
         // Replace oldest selection if at max
-        const newDays = [...deliveryDays.slice(1), day].sort((a, b) => WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b));
-        setDeliveryDays(newDays);
+        newDeliveryDays = [...deliveryDays.slice(1), day].sort((a, b) => WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b));
       }
+      setDeliveryDays(newDeliveryDays);
+      
+      // If this is the first day being selected, or days changed, update start date
+      // Find the nearest date that matches the FIRST delivery day in the sorted list
+      const firstDay = newDeliveryDays[0];
+      const nearestDate = getNearestDateForDay(firstDay, minStartDate);
+      setStartDate(nearestDate);
     }
+  };
+
+  // Get the nearest date for a specific weekday, starting from minDate
+  const getNearestDateForDay = (dayName, minDate = new Date()) => {
+    const dayIndex = WEEKDAYS.indexOf(dayName);
+    if (dayIndex === -1) return minDate;
+    
+    const startDate = new Date(minDate);
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Find the next occurrence of this day
+    let daysToAdd = dayIndex - startDate.getDay();
+    if (daysToAdd < 0) {
+      daysToAdd += 7; // Next week
+    } else if (daysToAdd === 0 && startDate <= new Date()) {
+      // If today is the day but it's past, go to next week
+      daysToAdd = 7;
+    }
+    
+    const result = new Date(startDate);
+    result.setDate(result.getDate() + daysToAdd);
+    
+    // Ensure result is not before minDate
+    if (result < minDate) {
+      result.setDate(result.getDate() + 7);
+    }
+    
+    return result;
   };
 
   // Reset delivery days when plan changes - use next available weekdays
