@@ -701,11 +701,6 @@ const Checkout = () => {
                     {pendingSubscription && !cartItems.length && <span className="text-sm font-normal">/mo</span>}
                   </span>
                 </div>
-                {pendingSubscription && cartItems.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Includes ₹{subscriptionTotal.toFixed(2)}/mo subscription
-                  </p>
-                )}
               </div>
 
               <Button
