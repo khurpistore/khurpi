@@ -222,59 +222,64 @@ const Products = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8" data-testid="products-grid">
-            {products.map((product) => (
-              <Card
-                key={product.id}
-                data-testid={`product-card-${product.id}`}
-                className="overflow-hidden border border-border/50 hover:shadow-lg transition-all duration-300 group cursor-pointer"
-                onClick={() => navigate(`/product/${product.id}`)}
-              >
-                <div className="aspect-video overflow-hidden relative">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {product.stock <= 0 && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Out of Stock
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-1 sm:mb-2 heading-text">{product.name}</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">per {product.pack_size || '80g'} pack</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Ready in</p>
-                      <p className="text-base sm:text-lg font-semibold text-secondary">{product.growth_days} days</p>
-                    </div>
+            {products.map((product) => {
+              const stockInfo = getStockStatus(product);
+              return (
+                <Card
+                  key={product.id}
+                  data-testid={`product-card-${product.id}`}
+                  className={`overflow-hidden border border-border/50 hover:shadow-lg transition-all duration-300 group cursor-pointer ${
+                    stockInfo.status === 'out_of_stock' ? 'opacity-75' : ''
+                  }`}
+                  onClick={() => navigate(`/product/${product.id}`)}
+                >
+                  <div className="aspect-video overflow-hidden relative">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+                        stockInfo.status === 'out_of_stock' ? 'grayscale' : ''
+                      }`}
+                    />
+                    {stockInfo.status === 'out_of_stock' && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          Out of Stock
+                        </span>
+                      </div>
+                    )}
+                    {stockInfo.status === 'growing' && (
+                      <div className="absolute top-2 right-2">
+                        <Badge className="bg-amber-500 text-white border-0 shadow-lg">
+                          <Sprout className="w-3 h-3 mr-1" />
+                          Growing
+                        </Badge>
+                      </div>
+                    )}
                   </div>
-                  
-                  {product.stock > 0 && product.stock < 10 && (
-                    <div className="mb-3 px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 text-amber-700 text-xs sm:text-sm rounded-full inline-block">
-                      Only {product.stock} left in stock
+                  <CardContent className="p-4 sm:p-6">
+                    <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-1 sm:mb-2 heading-text">{product.name}</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">per {product.pack_size || '80g'} pack</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Ready in</p>
+                        <p className="text-base sm:text-lg font-semibold text-secondary">{product.growth_days} days</p>
+                      </div>
                     </div>
-                  )}
+                    
+                    <div className="mb-3">
+                      {renderStockBadge(product)}
+                    </div>
 
-                  <Button
-                    data-testid={`add-to-cart-${product.id}`}
-                    onClick={(e) => handleAddToCart(e, product)}
-                    disabled={product.stock <= 0}
-                    className="w-full bg-primary hover:bg-primary/90 rounded-full mt-2"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add to Cart
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    {renderActionButton(product)}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
