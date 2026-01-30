@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Calendar, Repeat, Package, Tag, Truck } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Calendar, Repeat, Package, Tag, Truck, Clock, Sprout } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 
 const Cart = () => {
   const navigate = useNavigate();
