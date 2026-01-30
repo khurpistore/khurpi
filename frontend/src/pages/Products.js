@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ShoppingCart, Plus, Sparkles, Truck, Tag, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingCart, Plus, Sparkles, Truck, Tag, Zap, Sprout, Clock, XCircle, CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
@@ -36,12 +37,36 @@ const Products = () => {
     }
   };
 
+  const getStockStatus = (product) => {
+    const status = product.stock_status || 'in_stock';
+    if (status === 'out_of_stock' || product.stock <= 0) {
+      return { status: 'out_of_stock', canBuy: false, canBook: false };
+    }
+    if (status === 'growing') {
+      return { status: 'growing', canBuy: false, canBook: true, readyInDays: product.ready_in_days };
+    }
+    return { status: 'in_stock', canBuy: true, canBook: false };
+  };
+
   const handleAddToCart = (e, product) => {
     e.stopPropagation();
-    if (product.stock <= 0) {
-      toast.error('This product is currently out of stock');
+    const stockInfo = getStockStatus(product);
+    
+    if (stockInfo.status === 'out_of_stock') {
+      toast.error('This product is currently unavailable');
       return;
     }
+    
+    if (stockInfo.status === 'growing') {
+      // Add as pre-order/booking
+      addToCart({ ...product, isPreOrder: true, readyInDays: stockInfo.readyInDays }, 1);
+      trackAddToCart(product, 1);
+      toast.success(`${product.name} booked! Ready in ${stockInfo.readyInDays || product.growth_days} days`, {
+        description: 'This item will be delivered once ready'
+      });
+      return;
+    }
+    
     addToCart(product, 1);
     trackAddToCart(product, 1);
     toast.success(`${product.name} added to cart`);
@@ -59,6 +84,82 @@ const Products = () => {
       return;
     }
     navigate('/subscription/create');
+  };
+
+  const renderStockBadge = (product) => {
+    const stockInfo = getStockStatus(product);
+    
+    if (stockInfo.status === 'out_of_stock') {
+      return (
+        <Badge className="bg-red-100 text-red-700 border-0">
+          <XCircle className="w-3 h-3 mr-1" />
+          Out of Stock
+        </Badge>
+      );
+    }
+    
+    if (stockInfo.status === 'growing') {
+      return (
+        <Badge className="bg-amber-100 text-amber-700 border-0">
+          <Sprout className="w-3 h-3 mr-1" />
+          Ready in {stockInfo.readyInDays || product.growth_days} days
+        </Badge>
+      );
+    }
+    
+    if (product.stock > 0 && product.stock < 10) {
+      return (
+        <Badge className="bg-amber-50 text-amber-700 border-0">
+          Only {product.stock} left
+        </Badge>
+      );
+    }
+    
+    return (
+      <Badge className="bg-green-100 text-green-700 border-0">
+        In Stock
+      </Badge>
+    );
+  };
+
+  const renderActionButton = (product) => {
+    const stockInfo = getStockStatus(product);
+    
+    if (stockInfo.status === 'out_of_stock') {
+      return (
+        <Button
+          disabled
+          className="w-full bg-gray-300 text-gray-500 rounded-full mt-2 cursor-not-allowed"
+        >
+          <XCircle className="w-4 h-4 mr-1" />
+          Unavailable
+        </Button>
+      );
+    }
+    
+    if (stockInfo.status === 'growing') {
+      return (
+        <Button
+          data-testid={`book-now-${product.id}`}
+          onClick={(e) => handleAddToCart(e, product)}
+          className="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-full mt-2"
+        >
+          <CalendarPlus className="w-4 h-4 mr-1" />
+          Book Now
+        </Button>
+      );
+    }
+    
+    return (
+      <Button
+        data-testid={`add-to-cart-${product.id}`}
+        onClick={(e) => handleAddToCart(e, product)}
+        className="w-full bg-primary hover:bg-primary/90 rounded-full mt-2"
+      >
+        <Plus className="w-4 h-4 mr-1" />
+        Add to Cart
+      </Button>
+    );
   };
 
   return (
