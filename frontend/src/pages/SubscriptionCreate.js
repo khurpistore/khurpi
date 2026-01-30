@@ -413,35 +413,89 @@ const SubscriptionCreate = () => {
   const checkStockAvailability = async () => {
     try {
       const today = new Date();
-      let maxGrowDays = 0;
+      let maxReadyDays = 0;
+      const delayedItems = [];
       const outOfStockItems = [];
 
       for (const item of selectedProducts) {
         const product = products.find(p => p.id === item.product_id);
         if (product) {
-          if (product.stock < item.quantity) {
-            outOfStockItems.push({
+          // Check if product is completely out of stock (not available)
+          if (product.stock_status === 'out_of_stock' && !product.seeds_available) {
+            outOfStockItems.push(product.name);
+            continue;
+          }
+          
+          // Calculate ready days based on stock status
+          let readyDays = product.growth_days; // default for in-stock
+          
+          if (product.stock_status === 'growing') {
+            // Growing products - use ready_in_days or growth_days
+            readyDays = product.ready_in_days || product.growth_days;
+            delayedItems.push({
               name: product.name,
-              growDays: product.growth_days
+              readyDays: readyDays,
+              status: 'growing'
             });
-            if (product.growth_days > maxGrowDays) {
-              maxGrowDays = product.growth_days;
-            }
+          } else if (product.stock < item.quantity) {
+            // Low stock - need to grow more
+            readyDays = product.growth_days;
+            delayedItems.push({
+              name: product.name,
+              readyDays: readyDays,
+              status: 'low_stock'
+            });
+          }
+          
+          // Track the maximum ready days across all selected products
+          if (readyDays > maxReadyDays) {
+            maxReadyDays = readyDays;
           }
         }
       }
 
+      // If any products are completely unavailable
       if (outOfStockItems.length > 0) {
-        const earliestDate = new Date(today);
-        earliestDate.setDate(earliestDate.getDate() + maxGrowDays);
-        setMinStartDate(earliestDate);
-        
-        const productNames = outOfStockItems.map(p => `${p.name} (${p.growDays} days)`).join(', ');
         setStockWarning({
-          message: `Some products are out of stock: ${productNames}`,
-          earliestDate: earliestDate,
+          message: `Unavailable products: ${outOfStockItems.join(', ')}. Please remove them to continue.`,
+          type: 'error',
           products: outOfStockItems
         });
+        return;
+      }
+
+      // Set minimum start date based on the product with longest ready time
+      if (maxReadyDays > 0) {
+        const earliestDate = new Date(today);
+        earliestDate.setDate(earliestDate.getDate() + maxReadyDays);
+        setMinStartDate(earliestDate);
+        
+        // Show warning if any products are delayed (growing or low stock)
+        if (delayedItems.length > 0) {
+          const growingProducts = delayedItems.filter(p => p.status === 'growing');
+          const lowStockProducts = delayedItems.filter(p => p.status === 'low_stock');
+          
+          let message = '';
+          if (growingProducts.length > 0) {
+            const names = growingProducts.map(p => `${p.name} (${p.readyDays} days)`).join(', ');
+            message += `Growing: ${names}`;
+          }
+          if (lowStockProducts.length > 0) {
+            if (message) message += '. ';
+            const names = lowStockProducts.map(p => `${p.name} (${p.readyDays} days)`).join(', ');
+            message += `Low stock: ${names}`;
+          }
+          
+          setStockWarning({
+            message: message,
+            type: 'warning',
+            earliestDate: earliestDate,
+            products: delayedItems,
+            maxReadyDays: maxReadyDays
+          });
+        } else {
+          setStockWarning(null);
+        }
       } else {
         setStockWarning(null);
         setMinStartDate(new Date());
