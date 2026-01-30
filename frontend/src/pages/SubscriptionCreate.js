@@ -901,23 +901,40 @@ const SubscriptionCreate = () => {
               {products.map((product) => {
                 const isSelected = selectedProducts.some(p => p.product_id === product.id);
                 const selectedItem = selectedProducts.find(p => p.product_id === product.id);
+                const isGrowing = product.stock_status === 'growing';
+                const isOutOfStock = product.stock_status === 'out_of_stock' || product.stock <= 0;
+                const deliveryDaysNeeded = isGrowing ? (product.ready_in_days || product.growth_days) : product.growth_days;
 
                 return (
                   <Card
                     key={product.id}
                     data-testid={`select-product-${product.id}`}
                     className={`cursor-pointer transition-all ${
+                      isOutOfStock ? 'opacity-60 cursor-not-allowed' : ''
+                    } ${
                       isSelected ? 'border-2 border-primary shadow-md' : 'border border-border'
-                    }`}
-                    onClick={() => toggleProduct(product.id)}
+                    } ${isGrowing ? 'border-amber-200' : ''}`}
+                    onClick={() => !isOutOfStock && toggleProduct(product.id)}
                   >
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex gap-3 sm:gap-4">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0"
-                        />
+                        <div className="relative">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className={`w-16 h-16 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0 ${isOutOfStock ? 'grayscale' : ''}`}
+                          />
+                          {isGrowing && (
+                            <Badge className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs px-1">
+                              <Sprout className="w-3 h-3" />
+                            </Badge>
+                          )}
+                          {isOutOfStock && (
+                            <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
+                              <XCircle className="w-6 h-6 text-white" />
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <h4 className="text-base sm:text-xl font-semibold text-primary heading-text truncate">
@@ -930,6 +947,26 @@ const SubscriptionCreate = () => {
                             )}
                           </div>
                           <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 line-clamp-2">{product.benefit}</p>
+                          
+                          {/* Stock Status & Delivery Time */}
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {isOutOfStock ? (
+                              <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
+                                Out of Stock
+                              </Badge>
+                            ) : isGrowing ? (
+                              <Badge variant="outline" className="text-amber-600 border-amber-200 text-xs">
+                                <Sprout className="w-3 h-3 mr-1" />
+                                Ready in {deliveryDaysNeeded} days
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-green-600 border-green-200 text-xs">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {deliveryDaysNeeded} days delivery
+                              </Badge>
+                            )}
+                          </div>
+                          
                           <p className="text-base sm:text-lg font-bold text-primary">₹{product.price}/pack</p>
                         </div>
                       </div>
@@ -945,6 +982,12 @@ const SubscriptionCreate = () => {
                             onChange={(e) => updateQuantity(product.id, e.target.value)}
                             className="mt-1"
                           />
+                          {isGrowing && (
+                            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                              <Sprout className="w-3 h-3" />
+                              First delivery after {deliveryDaysNeeded} days (currently growing)
+                            </p>
+                          )}
                         </div>
                       )}
                     </CardContent>
