@@ -492,7 +492,7 @@ const SubscriptionCreate = () => {
           }
           
           // Calculate ready days based on stock status
-          let readyDays = product.growth_days; // default for in-stock
+          let readyDays = 0; // In-stock products are ready now
           
           if (product.stock_status === 'growing') {
             // Growing products - use ready_in_days or growth_days
@@ -502,8 +502,8 @@ const SubscriptionCreate = () => {
               readyDays: readyDays,
               status: 'growing'
             });
-          } else if (product.stock < item.quantity) {
-            // Low stock - need to grow more
+          } else if (product.stock_status === 'in_stock' && product.stock < item.quantity) {
+            // In stock but low quantity - need to grow more
             readyDays = product.growth_days;
             delayedItems.push({
               name: product.name,
@@ -511,6 +511,7 @@ const SubscriptionCreate = () => {
               status: 'low_stock'
             });
           }
+          // In-stock with sufficient quantity = 0 days (ready now)
           
           // Track the maximum ready days across all selected products
           if (readyDays > maxReadyDays) {
