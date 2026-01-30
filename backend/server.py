@@ -235,6 +235,10 @@ class Product(BaseModel):
     pack_size: str = "80g"  # Configurable pack size
     stock: int = 100
     active: bool = True
+    # Stock availability status
+    stock_status: str = "in_stock"  # in_stock, growing, out_of_stock
+    ready_in_days: Optional[int] = None  # For "growing" status - days until ready
+    seeds_available: bool = True  # Whether seeds are available for growing
     created_at: str
 
 class ProductCreate(BaseModel):
@@ -247,6 +251,9 @@ class ProductCreate(BaseModel):
     pack_size: str = "80g"  # Configurable pack size
     stock: int = 100
     active: bool = True
+    stock_status: str = "in_stock"
+    ready_in_days: Optional[int] = None
+    seeds_available: bool = True
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -258,6 +265,9 @@ class ProductUpdate(BaseModel):
     pack_size: Optional[str] = None  # Configurable pack size
     stock: Optional[int] = None
     active: Optional[bool] = None
+    stock_status: Optional[str] = None
+    ready_in_days: Optional[int] = None
+    seeds_available: Optional[bool] = None
 
 class SubscriptionItem(BaseModel):
     product_id: str
