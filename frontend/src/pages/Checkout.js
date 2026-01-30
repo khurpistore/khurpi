@@ -723,11 +723,6 @@ const Checkout = () => {
                   `Pay ₹${grandTotal.toFixed(2)}`
                 )}
               </Button>
-              
-              <p className="text-xs text-center text-muted-foreground mt-3">
-                By placing this order, you agree to our{' '}
-                <a href="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</a>
-              </p>
             </CardContent>
           </Card>
         </div>
