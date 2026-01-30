@@ -376,10 +376,11 @@ const AdminProducts = () => {
                   <span className="text-lg sm:text-2xl font-bold text-primary">₹{product.price}</span>
                   <span className="text-xs sm:text-sm text-muted-foreground">{product.growth_days} days</span>
                 </div>
-                <div className="mb-3 sm:mb-4">
+                <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
                   <span className={`text-xs sm:text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
                     Stock: {product.stock} packs
                   </span>
+                  {getStockStatusBadge(product)}
                 </div>
                 <div className="flex gap-2">
                   <Button
