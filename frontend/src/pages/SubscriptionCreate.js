@@ -404,15 +404,16 @@ const SubscriptionCreate = () => {
     
     // If current start date is before minStartDate, adjust it
     if (startDate && minStartDate && startDate < minStartDate) {
-      // Find next available date from minStartDate
-      const nextDate = getNextAvailableDate(deliveryDays.length > 0 ? deliveryDays : ['Monday'], minStartDate);
-      setStartDate(nextDate);
-    } else if (!startDate && minStartDate) {
-      // If no start date set, set it to the next available date from minStartDate
-      const nextDate = getNextAvailableDate(deliveryDays.length > 0 ? deliveryDays : ['Monday'], minStartDate);
-      setStartDate(nextDate);
+      // Find nearest date for the first delivery day from minStartDate
+      const firstDay = deliveryDays.length > 0 ? deliveryDays[0] : 'Monday';
+      const nearestDate = getNearestDateForDay(firstDay, minStartDate);
+      setStartDate(nearestDate);
+    } else if (!startDate && minStartDate && deliveryDays.length > 0) {
+      // If no start date set, set it to the nearest date for the first delivery day
+      const nearestDate = getNearestDateForDay(deliveryDays[0], minStartDate);
+      setStartDate(nearestDate);
     }
-  }, [minStartDate]);
+  }, [minStartDate, deliveryDays]);
 
   const fetchDeliveryInfoForAddress = async (lat, lng) => {
     try {
