@@ -128,10 +128,15 @@ const Checkout = () => {
       return;
     }
     
+    // Calculate combined total (cart + subscription) for coupon validation
+    const cartTotal = getCartTotal();
+    const subTotal = pendingSubscription?.monthlyTotal || 0;
+    const orderAmount = cartTotal + subTotal;
+    
     setCouponLoading(true);
     try {
       const response = await axios.post(
-        `${API}/coupons/validate?code=${encodeURIComponent(couponCode.trim().toUpperCase())}&order_amount=${subtotal}`
+        `${API}/coupons/validate?code=${encodeURIComponent(couponCode.trim().toUpperCase())}&order_amount=${orderAmount}`
       );
       
       setAppliedCoupon({
