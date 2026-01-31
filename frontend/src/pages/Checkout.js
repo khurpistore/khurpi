@@ -422,6 +422,14 @@ const Checkout = () => {
                           {addr.phone && (
                             <p className="text-xs text-muted-foreground mt-1">📞 +91 {addr.phone}</p>
                           )}
+                          {selectedAddressId === addr.id && deliveryInfo && isNoidaAddress && (
+                            <p className="text-xs text-teal-600 mt-2 flex items-center gap-1">
+                              <Truck className="w-3 h-3" />
+                              {deliveryInfo.fee === 0 
+                                ? `Free delivery • Est. ${deliveryInfo.estimated_date}` 
+                                : `₹${deliveryInfo.fee} delivery • Est. ${deliveryInfo.estimated_date}`}
+                            </p>
+                          )}
                         </Label>
                       </div>
                     ))}
