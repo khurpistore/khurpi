@@ -731,7 +731,6 @@ const Checkout = () => {
           </Card>
         </div>
       </div>
-    </div>
   );
 };
 
