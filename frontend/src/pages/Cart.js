@@ -176,19 +176,6 @@ const Cart = () => {
               </Card>
             </>
           )}
-
-          {/* Clear All - Small */}
-          {(cartItems.length > 0 || pendingSubscription) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { clearCart(); clearSubscription(); }}
-              className="text-red-500 hover:text-red-600 text-xs"
-            >
-              <Trash2 className="w-3 h-3 mr-1" />
-              Clear All
-            </Button>
-          )}
         </div>
 
         {/* Order Summary - Compact Sticky */}
