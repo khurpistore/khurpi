@@ -270,25 +270,12 @@ const Checkout = () => {
               ) : (
                 <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
                   <div 
-                    className="space-y-2 max-h-36 overflow-y-scroll pr-2"
+                    className="space-y-2 max-h-36 overflow-y-scroll pr-2 border-r-4 border-teal-200 rounded"
                     style={{
                       scrollbarWidth: 'thin',
                       scrollbarColor: '#0d9488 #e5e7eb'
                     }}
                   >
-                    <style>{`
-                      .address-scroll::-webkit-scrollbar {
-                        width: 6px;
-                      }
-                      .address-scroll::-webkit-scrollbar-track {
-                        background: #e5e7eb;
-                        border-radius: 3px;
-                      }
-                      .address-scroll::-webkit-scrollbar-thumb {
-                        background: #0d9488;
-                        border-radius: 3px;
-                      }
-                    `}</style>
                     {addresses.map((addr) => (
                       <div
                         key={addr.id}
