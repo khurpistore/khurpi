@@ -287,7 +287,7 @@ const AdminOrders = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Delivery Fee</span>
-                          <span>{order.delivery_fee === 0 ? 'FREE' : `₹${order.delivery_fee}`}</span>
+                          <span className="text-green-600">FREE</span>
                         </div>
                         <div className="flex justify-between font-semibold border-t pt-2 mt-2">
                           <span>Total</span>
