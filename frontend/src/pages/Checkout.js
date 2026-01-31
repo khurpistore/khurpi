@@ -561,184 +561,163 @@ const Checkout = () => {
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">Qty: {product.quantity} × ₹{product.price}</p>
+                          <p className="text-xs text-muted-foreground">
+                            ₹{product.price} × {product.quantity}
+                          </p>
                         </div>
                         <span className="text-sm font-semibold">₹{(product.price * product.quantity).toFixed(0)}</span>
                       </div>
                     ))}
                   </div>
                   
-                  {/* Subscription Details */}
-                  <div className="bg-teal-50 rounded-lg p-3 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> Delivery Days
-                      </span>
-                      <span className="font-medium">{pendingSubscription.deliveryDays?.join(', ')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Starts</span>
-                      <span className="font-medium">{pendingSubscription.startDate}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Deliveries</span>
-                      <span className="font-medium">{pendingSubscription.deliveriesPerWeek}×/week</span>
-                    </div>
-                    {pendingSubscription.discount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Discount ({pendingSubscription.plan?.discount}%)</span>
-                        <span>-₹{pendingSubscription.discount?.toFixed(0)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-teal-600">
-                      <span className="flex items-center gap-1">
-                        <Truck className="w-3 h-3" /> Delivery
-                      </span>
-                      <span className="font-semibold">FREE</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-teal-700 pt-2 border-t border-teal-200">
-                      <span>Monthly Total</span>
-                      <span>₹{subscriptionTotal.toFixed(0)}/mo</span>
-                    </div>
+                  <div className="flex justify-between text-sm pt-2 border-t">
+                    <span className="text-muted-foreground">Monthly Total</span>
+                    <span className="font-semibold text-teal-700">₹{subscriptionTotal.toFixed(0)}/mo</span>
                   </div>
                 </div>
               )}
 
-              {/* Two Column Layout: Items Left, Price Right */}
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Left Column - Items */}
-                <div>
-                  {/* One-time Purchase Items */}
-                  {cartItems.length > 0 && (
-                    <div>
-                      {pendingSubscription && (
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                            <Package className="w-4 h-4 text-amber-600" />
-                          </div>
-                          <span className="font-semibold">One-time Purchase</span>
-                        </div>
-                      )}
-                      
-                      <div className="space-y-3">
-                        {cartItems.map((item) => {
-                          const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
-                          const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days;
-                          const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
-                          
-                          return (
-                            <div key={item.product.id} className={`p-3 rounded-lg border ${isGrowing ? 'bg-amber-50/50 border-amber-200' : 'bg-gray-50 border-gray-100'}`}>
-                              <div className="flex items-start gap-3">
-                                <div className="relative flex-shrink-0">
-                                  <img 
-                                    src={item.product.image} 
-                                    alt={item.product.name}
-                                    className="w-12 h-12 rounded-lg object-cover shadow-sm"
-                                  />
-                                  {isGrowing && (
-                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
-                                      <Sprout className="w-3 h-3 text-white" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-900">{item.product.name}</p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    ₹{item.product.price} × {item.quantity} {item.product.pack_size || '80g'}
-                                  </p>
-                                  <div className={`flex items-center gap-1 text-xs mt-1 ${isGrowing ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                                    <Clock className="w-3 h-3" />
-                                    {isGrowing ? 'Growing - ready ' : 'Delivery '}by {estimatedDate}
-                                  </div>
-                                </div>
-                                <div className="text-right flex-shrink-0">
-                                  <span className="text-sm font-bold text-gray-900">₹{(item.product.price * item.quantity).toFixed(0)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
+              {/* One-time Purchase Items */}
+              {cartItems.length > 0 && (
+                <div className={pendingSubscription ? 'pt-4 border-t' : ''}>
+                  {pendingSubscription && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                        <Package className="w-4 h-4 text-amber-600" />
                       </div>
+                      <span className="font-semibold">One-time Purchase</span>
                     </div>
                   )}
+                  
+                  <div className="space-y-3">
+                    {cartItems.map((item) => {
+                      const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
+                      const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days;
+                      const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
+                      
+                      return (
+                        <div key={item.product.id} className={`p-3 rounded-lg border ${isGrowing ? 'bg-amber-50/50 border-amber-200' : 'bg-gray-50 border-gray-100'}`}>
+                          <div className="flex items-start gap-3">
+                            <div className="relative flex-shrink-0">
+                              <img 
+                                src={item.product.image} 
+                                alt={item.product.name}
+                                className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                              />
+                              {isGrowing && (
+                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
+                                  <Sprout className="w-3 h-3 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900">{item.product.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                ₹{item.product.price} × {item.quantity} {item.product.pack_size || '80g'}
+                              </p>
+                              <div className={`flex items-center gap-1 text-xs mt-1 ${isGrowing ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                                <Clock className="w-3 h-3" />
+                                {isGrowing ? 'Growing - ready ' : 'Delivery '}by {estimatedDate}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <span className="text-sm font-bold text-gray-900">₹{(item.product.price * item.quantity).toFixed(0)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-                {/* Right Column - Price Breakdown */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Cart Subtotal</span>
-                      <span className="font-medium">₹{cartSubtotal.toFixed(0)}</span>
-                    </div>
+        {/* Right Column - Price Summary (Sticky) */}
+        <div className="lg:col-span-1">
+          <Card className="sticky top-24 overflow-hidden">
+            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Payment Summary
+              </h3>
+            </div>
+            <CardContent className="p-4 sm:p-6">
+              {/* Price Breakdown */}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Cart Subtotal</span>
+                  <span className="font-medium">₹{cartSubtotal.toFixed(0)}</span>
+                </div>
+                {pendingSubscription && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subscription (1st month)</span>
+                    <span className="font-medium">₹{subscriptionTotal.toFixed(0)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delivery</span>
+                  {deliveryFee === 0 ? (
+                    <span className="text-green-600 font-semibold">FREE</span>
+                  ) : (
+                    <span className="font-medium">₹{deliveryFee}</span>
+                  )}
+                </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      {appliedCoupon.code}
+                    </span>
+                    <span className="font-medium">-₹{couponDiscount.toFixed(0)}</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Grand Total */}
+              <div className="mt-4 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-lg font-bold text-teal-800">Total to Pay</span>
                     {pendingSubscription && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Subscription (1st month)</span>
-                        <span className="font-medium">₹{subscriptionTotal.toFixed(0)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Delivery</span>
-                      {deliveryFee === 0 ? (
-                        <span className="text-green-600 font-semibold">FREE</span>
-                      ) : (
-                        <span className="font-medium">₹{deliveryFee}</span>
-                      )}
-                    </div>
-                    {appliedCoupon && (
-                      <div className="flex justify-between text-green-600">
-                        <span className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
-                          {appliedCoupon.code}
-                        </span>
-                        <span className="font-medium">-₹{couponDiscount.toFixed(0)}</span>
-                      </div>
+                      <p className="text-xs text-teal-600">Includes first month subscription</p>
                     )}
                   </div>
-                  
-                  {/* Grand Total */}
-                  <div className="p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <span className="text-lg font-bold text-teal-800">Total to Pay</span>
-                        {pendingSubscription && (
-                          <p className="text-xs text-teal-600">Includes first month subscription</p>
-                        )}
-                      </div>
-                      <span className="text-2xl font-bold text-teal-700">
-                        ₹{grandTotal.toFixed(0)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Pay Button */}
-                  <Button
-                    data-testid="pay-now-button"
-                    onClick={handlePayment}
-                    disabled={loading || !selectedAddressId || !isNoidaAddress}
-                    className="w-full rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-semibold py-6"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="w-5 h-5 mr-2" />
-                        Pay ₹{grandTotal.toFixed(0)} Securely
-                      </>
-                    )}
-                  </Button>
-                  
-                  {/* Security Badge */}
-                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                    <Shield className="w-4 h-4 text-teal-600" />
-                    <span>Secured by Razorpay • 256-bit encryption</span>
-                  </div>
+                  <span className="text-2xl font-bold text-teal-700">
+                    ₹{grandTotal.toFixed(0)}
+                  </span>
                 </div>
+              </div>
+
+              {/* Pay Button */}
+              <Button
+                data-testid="pay-now-button"
+                onClick={handlePayment}
+                disabled={loading || !selectedAddressId || !isNoidaAddress}
+                className="w-full mt-4 rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-semibold py-6"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Pay ₹{grandTotal.toFixed(0)} Securely
+                  </>
+                )}
+              </Button>
+              
+              {/* Security Badge */}
+              <div className="flex items-center justify-center gap-2 mt-3 text-xs text-muted-foreground">
+                <Shield className="w-4 h-4 text-teal-600" />
+                <span>Secured by Razorpay • 256-bit encryption</span>
               </div>
             </CardContent>
           </Card>
+        </div>
       </div>
     </div>
   );
