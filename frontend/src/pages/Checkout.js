@@ -595,6 +595,12 @@ const Checkout = () => {
                   </div>
                 </div>
               )}
+
+              {/* Free Delivery Banner */}
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                <Truck className="w-5 h-5 text-green-600" />
+                <span className="text-sm text-green-700 font-medium">Free delivery on all orders!</span>
+              </div>
             </CardContent>
           </Card>
         </div>
