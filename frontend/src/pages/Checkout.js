@@ -613,14 +613,30 @@ const Checkout = () => {
             <CardContent className="p-4 sm:p-6">
               {/* Price Breakdown */}
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">One time purchase</span>
-                  <span className="font-medium">₹{cartSubtotal.toFixed(0)}</span>
-                </div>
+                {cartItems.length > 0 && (
+                  <div className="pb-3 border-b">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">One time purchase</span>
+                      <span className="font-medium">₹{cartSubtotal.toFixed(0)}</span>
+                    </div>
+                    <p className="text-xs text-teal-600 mt-1 flex items-center gap-1">
+                      <Truck className="w-3 h-3" />
+                      {deliveryInfo ? `Est. delivery: ${deliveryInfo.estimated_date}` : 'Delivery date will be calculated'}
+                    </p>
+                  </div>
+                )}
                 {pendingSubscription && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subscription (1st month)</span>
-                    <span className="font-medium">₹{subscriptionTotal.toFixed(0)}</span>
+                  <div className="pb-3 border-b">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subscription (1st month)</span>
+                      <span className="font-medium">₹{subscriptionTotal.toFixed(0)}</span>
+                    </div>
+                    <p className="text-xs text-teal-600 mt-1 flex items-center gap-1">
+                      <Repeat className="w-3 h-3" />
+                      {pendingSubscription.delivery_days?.length > 0 
+                        ? `Delivers on: ${pendingSubscription.delivery_days.join(', ')}`
+                        : 'Weekly delivery'}
+                    </p>
                   </div>
                 )}
                 <div className="flex justify-between">
