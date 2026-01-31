@@ -42,7 +42,7 @@ const Landing = () => {
               {/* FREE Delivery Highlight */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-6 sm:mb-8">
                 <span className="px-4 py-2 bg-green-100 text-green-800 text-sm font-bold rounded-full flex items-center gap-2">
-                  <Truck className="w-4 h-4" /> FREE Delivery on Subscriptions
+                  <Truck className="w-4 h-4" /> FREE Delivery on All Orders
                 </span>
                 <span className="px-4 py-2 bg-amber-100 text-amber-800 text-sm font-bold rounded-full">
                   Save up to 50%
