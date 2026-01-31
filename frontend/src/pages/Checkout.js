@@ -268,37 +268,20 @@ const Checkout = () => {
                   </Button>
                 </div>
               ) : (
-                <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
-                  <div 
-                    className="space-y-2 max-h-36 overflow-y-scroll pr-2 border-r-4 border-teal-200 rounded"
-                    style={{
-                      scrollbarWidth: 'thin',
-                      scrollbarColor: '#0d9488 #e5e7eb'
-                    }}
-                  >
-                    {addresses.map((addr) => (
-                      <div
-                        key={addr.id}
-                        className={`flex items-start gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
-                          selectedAddressId === addr.id ? 'border-primary bg-teal-50' : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => handleAddressSelect(addr.id)}
-                      >
-                        <RadioGroupItem value={addr.id} id={addr.id} className="mt-0.5" />
-                        <Label htmlFor={addr.id} className="flex-1 cursor-pointer">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{addr.name || 'Address'}</span>
-                            {addr.is_default && <span className="text-xs bg-primary text-white px-1.5 py-0.5 rounded">Default</span>}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">{addr.address_line}</p>
-                        </Label>
+                <>
+                  {(() => {
+                    const defaultAddr = addresses.find(a => a.is_default) || addresses.find(a => a.id === selectedAddressId) || addresses[0];
+                    return (
+                      <div className="p-3 rounded-lg border border-primary bg-teal-50">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{defaultAddr.name || 'Address'}</span>
+                          <span className="text-xs bg-primary text-white px-1.5 py-0.5 rounded">Default</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{defaultAddr.address_line}</p>
                       </div>
-                    ))}
-                  </div>
-                  {addresses.length > 2 && (
-                    <p className="text-xs text-teal-600 mt-2 text-center">↕ Scroll for more addresses</p>
-                  )}
-                </RadioGroup>
+                    );
+                  })()}
+                </>
               )}
 
               {!isNoidaAddress && selectedAddressId && (
