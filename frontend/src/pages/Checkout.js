@@ -449,47 +449,6 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Delivery Info */}
-          {deliveryInfo && isNoidaAddress && (
-            <Card className={deliveryInfo.fee === 0 ? 'border-green-200 bg-green-50' : ''}>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Truck className="w-5 h-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Delivery Information</h2>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{deliveryInfo.label}</p>
-                    {deliveryInfo.distance > 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Distance: {deliveryInfo.distance.toFixed(1)} km from shop
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    {deliveryInfo.fee === 0 ? (
-                      <span className="text-lg font-bold text-green-600">FREE</span>
-                    ) : (
-                      <span className="text-lg font-bold">₹{deliveryInfo.fee}</span>
-                    )}
-                  </div>
-                </div>
-                {deliveryFee > 0 && !qualifiesForFreeDelivery && (
-                  <div className="mt-3 p-2 bg-amber-50 rounded text-xs text-amber-700 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>Add ₹{(freeDeliveryThreshold - subtotal).toFixed(0)} more for FREE delivery!</span>
-                  </div>
-                )}
-                {qualifiesForFreeDelivery && baseDeliveryFee > 0 && (
-                  <div className="mt-3 p-2 bg-green-50 rounded text-xs text-green-700 flex items-center gap-2">
-                    <Tag className="w-4 h-4" />
-                    <span>🎉 You saved ₹{baseDeliveryFee} on delivery!</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           {/* Coupon Code */}
           <Card>
             <CardContent className="p-4 sm:p-6">
