@@ -231,9 +231,12 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 ---
 
 ## Last Updated
-January 26, 2025
+January 31, 2026
 
 ## Change Log
+- **Jan 31, 2026:** Redesigned Checkout Order Summary - beautiful, uneditable layout with product cards, delivery dates, and teal gradient styling
+- **Jan 31, 2026:** Fixed Admin Logout Bug - added robust session handling with localStorage double-check and race condition prevention in ProtectedRoute
+- **Jan 31, 2026:** Enhanced Order Summary to show full product names, pack sizes, growing status indicators, and delivery estimates
 - **Jan 26, 2025:** Reverted from OTP to Password-based authentication per user request
 - **Jan 26, 2025:** Removed "Forgot Password" page and link
 - **Jan 26, 2025:** Added "Change Password" feature to Profile page (Security section)
