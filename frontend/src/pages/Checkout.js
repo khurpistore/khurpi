@@ -254,8 +254,7 @@ const Checkout = () => {
                   <h3 className="font-semibold">Delivery Address</h3>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => navigate('/addresses')} className="h-8 px-2 text-xs">
-                  <Plus className="w-3 h-3 mr-1" />
-                  {addresses.length > 0 ? 'Manage' : 'Add'}
+                  {addresses.length > 0 ? 'Change Address' : 'Add'}
                 </Button>
               </div>
 
