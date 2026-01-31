@@ -293,41 +293,6 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Coupon - Compact */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Tag className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-sm">Have a Coupon?</h3>
-              </div>
-              
-              {appliedCoupon ? (
-                <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-700">{appliedCoupon.code}</span>
-                    <span className="text-xs text-green-600">-₹{appliedCoupon.discount_amount.toFixed(0)}</span>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="h-6 px-2">
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter code"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    className="h-9 text-sm"
-                  />
-                  <Button onClick={handleApplyCoupon} disabled={couponLoading} size="sm" className="h-9 px-4">
-                    {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Order Items - Compact */}
           <Card>
             <CardContent className="p-4">
