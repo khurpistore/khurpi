@@ -353,7 +353,7 @@ const Checkout = () => {
   const grandTotal = Math.max(0, combinedSubtotal + deliveryFee - couponDiscount);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
       {/* Back to Cart Link */}
       <Button
         variant="ghost"
@@ -366,9 +366,7 @@ const Checkout = () => {
       
       <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8">Checkout</h1>
 
-      <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
-        {/* Left Column - Address, Coupon, Order Items */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="space-y-6">
         {/* Delivery Address */}
         <Card>
           <CardContent className="p-4 sm:p-6">
