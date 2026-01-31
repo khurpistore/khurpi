@@ -269,7 +269,7 @@ const Checkout = () => {
                 </div>
               ) : (
                 <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
-                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-36 overflow-y-scroll pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" style={{scrollbarWidth: 'thin'}}>
                     {addresses.map((addr) => (
                       <div
                         key={addr.id}
