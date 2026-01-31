@@ -707,16 +707,10 @@ const Addresses = () => {
                         {address.pincode && (
                           <p className="text-sm text-muted-foreground ml-10 mt-1">PIN: {address.pincode}</p>
                         )}
-                        {deliveryFees[address.id] && (
-                          <p className="text-sm ml-10 mt-2 flex items-center gap-1">
-                            <Truck className="w-3 h-3" />
-                            {deliveryFees[address.id].fee === 0 ? (
-                              <span className="text-green-600 font-medium">Free Delivery</span>
-                            ) : (
-                              <span className="text-amber-600">Delivery: ₹{deliveryFees[address.id].fee}</span>
-                            )}
-                          </p>
-                        )}
+                        <p className="text-sm ml-10 mt-2 flex items-center gap-1">
+                          <Truck className="w-3 h-3" />
+                          <span className="text-green-600 font-medium">Free Delivery</span>
+                        </p>
                       </div>
 
                       <div className="flex items-center gap-2 ml-10 sm:ml-0">
