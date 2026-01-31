@@ -619,36 +619,40 @@ const Checkout = () => {
                     </div>
                   )}
                   
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-3 mb-4">
                     {cartItems.map((item) => {
                       const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
                       const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days;
                       const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
                       
                       return (
-                        <div key={item.product.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
-                          <div className="relative">
-                            <img 
-                              src={item.product.image} 
-                              alt={item.product.name}
-                              className="w-10 h-10 rounded-md object-cover"
-                            />
-                            {isGrowing && (
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                                <Sprout className="w-2.5 h-2.5 text-white" />
+                        <div key={item.product.id} className={`p-3 rounded-lg border ${isGrowing ? 'bg-amber-50/50 border-amber-200' : 'bg-gray-50 border-gray-100'}`}>
+                          <div className="flex items-start gap-3">
+                            <div className="relative flex-shrink-0">
+                              <img 
+                                src={item.product.image} 
+                                alt={item.product.name}
+                                className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                              />
+                              {isGrowing && (
+                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
+                                  <Sprout className="w-3 h-3 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900">{item.product.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                ₹{item.product.price} × {item.quantity} {item.product.pack_size || '80g'}
+                              </p>
+                              <div className={`flex items-center gap-1 text-xs mt-1 ${isGrowing ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                                <Clock className="w-3 h-3" />
+                                {isGrowing ? 'Growing - ready ' : 'Delivery '}by {estimatedDate}
                               </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{item.product.name}</p>
-                            <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
-                              <Clock className="w-3 h-3" />
-                              {isGrowing ? 'Growing - ' : ''}by {estimatedDate}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-sm font-semibold">₹{(item.product.price * item.quantity).toFixed(0)}</span>
-                            <p className="text-xs text-muted-foreground">×{item.quantity}</p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <span className="text-sm font-bold text-gray-900">₹{(item.product.price * item.quantity).toFixed(0)}</span>
+                            </div>
                           </div>
                         </div>
                       );
