@@ -197,10 +197,6 @@ const Cart = () => {
                     <span>₹{subscriptionTotal.toFixed(0)}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span className="text-green-600 font-medium">FREE</span>
-                </div>
               </div>
               
               <div className="border-t pt-3 mt-3">
