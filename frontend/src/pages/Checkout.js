@@ -295,6 +295,9 @@ const Checkout = () => {
                       </div>
                     ))}
                   </div>
+                  {addresses.length > 2 && (
+                    <p className="text-xs text-teal-600 mt-2 text-center">↕ Scroll for more addresses</p>
+                  )}
                 </RadioGroup>
               )}
 
