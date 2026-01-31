@@ -647,7 +647,7 @@ const Checkout = () => {
               {/* Price Breakdown */}
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Cart Subtotal</span>
+                  <span className="text-muted-foreground">One time purchase</span>
                   <span className="font-medium">₹{cartSubtotal.toFixed(0)}</span>
                 </div>
                 {pendingSubscription && (
