@@ -709,12 +709,6 @@ const Checkout = () => {
                   </>
                 )}
               </Button>
-              
-              {/* Security Badge */}
-              <div className="flex items-center justify-center gap-2 mt-3 text-xs text-muted-foreground">
-                <Shield className="w-4 h-4 text-teal-600" />
-                <span>Secured by Razorpay • 256-bit encryption</span>
-              </div>
             </CardContent>
           </Card>
         </div>
