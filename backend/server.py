@@ -138,28 +138,19 @@ async def get_subscription_plans():
     return DEFAULT_SUBSCRIPTION_PLANS
 
 async def calculate_delivery_fee(customer_lat, customer_lon):
-    """Calculate delivery fee based on distance from shop"""
+    """Calculate delivery fee based on distance from shop - NOW FREE FOR ALL"""
     shop = await get_shop_config()
-    pricing = await get_delivery_pricing()
     
     distance = calculate_distance(
         shop["latitude"], shop["longitude"],
         customer_lat, customer_lon
     )
     
-    for tier in sorted(pricing, key=lambda x: x["max_distance"]):
-        if distance <= tier["max_distance"]:
-            return {
-                "distance": round(distance, 2),
-                "fee": tier["fee"],
-                "label": tier["label"]
-            }
-    
-    # Default to highest tier
+    # FREE delivery on all orders
     return {
         "distance": round(distance, 2),
-        "fee": pricing[-1]["fee"],
-        "label": pricing[-1]["label"]
+        "fee": 0,
+        "label": "FREE Delivery"
     }
 
 class Address(BaseModel):
