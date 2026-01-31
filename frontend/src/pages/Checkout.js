@@ -657,25 +657,38 @@ const Checkout = () => {
                   </div>
                 </div>
               )}
-              
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Price Summary & Pay Button */}
+        <div className="lg:col-span-1">
+          <Card className="sticky top-24 overflow-hidden">
+            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Payment Summary
+              </h3>
+            </div>
+            <CardContent className="p-4 sm:p-6">
               {/* Price Breakdown */}
-              <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Cart Subtotal</span>
-                  <span>₹{cartSubtotal.toFixed(0)}</span>
+                  <span className="font-medium">₹{cartSubtotal.toFixed(0)}</span>
                 </div>
                 {pendingSubscription && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subscription (1st month)</span>
-                    <span>₹{subscriptionTotal.toFixed(0)}</span>
+                    <span className="font-medium">₹{subscriptionTotal.toFixed(0)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery</span>
                   {deliveryFee === 0 ? (
-                    <span className="text-green-600 font-medium">FREE</span>
+                    <span className="text-green-600 font-semibold">FREE</span>
                   ) : (
-                    <span>₹{deliveryFee}</span>
+                    <span className="font-medium">₹{deliveryFee}</span>
                   )}
                 </div>
                 {appliedCoupon && (
@@ -684,7 +697,7 @@ const Checkout = () => {
                       <Tag className="w-3 h-3" />
                       {appliedCoupon.code}
                     </span>
-                    <span>-₹{couponDiscount.toFixed(0)}</span>
+                    <span className="font-medium">-₹{couponDiscount.toFixed(0)}</span>
                   </div>
                 )}
               </div>
@@ -714,7 +727,7 @@ const Checkout = () => {
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing Payment...
+                    Processing...
                   </>
                 ) : (
                   <>
@@ -731,6 +744,7 @@ const Checkout = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
       </div>
     </div>
   );
