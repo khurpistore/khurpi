@@ -22,7 +22,14 @@ export const AuthProvider = ({ children }) => {
     if (storedUser && sessionExpiry) {
       const expiryTime = parseInt(sessionExpiry, 10);
       if (Date.now() < expiryTime) {
-        setUser(JSON.parse(storedUser));
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+        } catch (e) {
+          console.error('Error parsing stored user:', e);
+          localStorage.removeItem('user');
+          localStorage.removeItem('sessionExpiry');
+        }
       } else {
         // Session expired - clear storage
         localStorage.removeItem('user');
