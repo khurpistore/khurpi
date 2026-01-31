@@ -190,11 +190,7 @@ const OrderDetail = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Delivery</span>
-                  {order.delivery_fee === 0 ? (
-                    <span className="text-green-600 font-medium">FREE</span>
-                  ) : (
-                    <span>₹{order.delivery_fee?.toFixed(2)}</span>
-                  )}
+                  <span className="text-green-600 font-medium">FREE</span>
                 </div>
                 {order.coupon_discount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
