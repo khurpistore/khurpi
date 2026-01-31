@@ -655,22 +655,9 @@ const Checkout = () => {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Right Column - Price Summary & Pay Button */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-24 overflow-hidden">
-            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Payment Summary
-              </h3>
-            </div>
-            <CardContent className="p-4 sm:p-6">
               {/* Price Breakdown */}
-              <div className="space-y-3 text-sm">
+              <div className="mt-4 pt-4 border-t space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Cart Subtotal</span>
                   <span className="font-medium">₹{cartSubtotal.toFixed(0)}</span>
