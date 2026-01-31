@@ -285,11 +285,6 @@ const Checkout = () => {
                             {addr.is_default && <span className="text-xs bg-primary text-white px-1.5 py-0.5 rounded">Default</span>}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">{addr.address_line}</p>
-                          {selectedAddressId === addr.id && (
-                            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                              <Truck className="w-3 h-3" /> Free delivery
-                            </p>
-                          )}
                         </Label>
                       </div>
                     ))}
