@@ -269,7 +269,7 @@ const Checkout = () => {
                 </div>
               ) : (
                 <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
                     {addresses.map((addr) => (
                       <div
                         key={addr.id}
