@@ -167,13 +167,6 @@ const Cart = () => {
                       <span>-₹{pendingSubscription.discount?.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-green-600">
-                    <span className="flex items-center gap-1">
-                      <Truck className="w-3 h-3" />
-                      Delivery ({pendingSubscription.deliveriesPerWeek}×/week × 4 weeks)
-                    </span>
-                    <span className="font-medium">FREE</span>
-                  </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
                     <span>Monthly Total</span>
                     <span className="text-green-600">₹{pendingSubscription.monthlyTotal?.toFixed(2)}/mo</span>
