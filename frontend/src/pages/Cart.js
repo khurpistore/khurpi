@@ -330,11 +330,6 @@ const Cart = () => {
                     {pendingSubscription && !cartItems.length && <span className="text-sm font-normal">/mo</span>}
                   </span>
                 </div>
-                {pendingSubscription && cartItems.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    + ₹{subscriptionTotal.toFixed(2)}/month for subscription
-                  </p>
-                )}
               </div>
 
               <Button
