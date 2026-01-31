@@ -385,6 +385,33 @@ const Checkout = () => {
                   </div>
                 )}
               </div>
+
+              {/* Apply Coupon */}
+              <div className="border-t pt-3 mt-3">
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-700">{appliedCoupon.code}</span>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="h-6 px-2">
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="h-8 text-sm"
+                    />
+                    <Button onClick={handleApplyCoupon} disabled={couponLoading} size="sm" className="h-8 px-3">
+                      {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                )}
+              </div>
               
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center">
