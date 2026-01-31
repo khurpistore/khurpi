@@ -526,198 +526,208 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Payment Information */}
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <CreditCard className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Payment</h2>
-              </div>
-              
-              <div className="p-4 rounded-lg border bg-blue-50 border-blue-200">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <img 
-                      src="https://razorpay.com/assets/razorpay-logo.svg" 
-                      alt="Razorpay" 
-                      className="h-5"
-                    />
-                    <span className="font-medium text-blue-800">Online Payment</span>
-                  </div>
-                  <Shield className="w-5 h-5 text-blue-600" />
-                </div>
-                <p className="text-sm text-blue-700 mb-3">
-                  Pay securely using UPI, Cards, Net Banking, or Wallets
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-xs bg-white px-2 py-1 rounded border">UPI</span>
-                  <span className="text-xs bg-white px-2 py-1 rounded border">Cards</span>
-                  <span className="text-xs bg-white px-2 py-1 rounded border">Net Banking</span>
-                  <span className="text-xs bg-white px-2 py-1 rounded border">Wallets</span>
-                </div>
-              </div>
-              
-              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                <Shield className="w-4 h-4" />
-                <span>Your payment information is encrypted and secure</span>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Payment Information - Removed, payment happens on button click */}
         </div>
 
-        {/* Order Summary */}
+        {/* Order Summary - Beautiful Uneditable */}
         <div>
-          <Card className="sticky top-24">
+          <Card className="sticky top-24 overflow-hidden">
+            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                Order Summary
+              </h3>
+            </div>
             <CardContent className="p-4 sm:p-6">
-              <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
               
-              {/* Monthly Order Summary for Subscription */}
+              {/* Monthly Subscription Summary */}
               {pendingSubscription && (
-                <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Repeat className="w-4 h-4 text-green-600" />
-                    <span className="font-medium text-green-800">Monthly Subscription</span>
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b">
+                    <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+                      <Repeat className="w-4 h-4 text-teal-600" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-teal-800">Monthly Subscription</span>
+                      <p className="text-xs text-muted-foreground">{pendingSubscription.plan?.name} Plan</p>
+                    </div>
                   </div>
                   
-                  {/* Products */}
-                  <div className="space-y-1 text-sm mb-3">
-                    <p className="text-xs text-muted-foreground mb-1">Products per delivery:</p>
+                  {/* Subscription Products */}
+                  <div className="space-y-2 mb-3">
                     {pendingSubscription.products?.map((product) => (
-                      <div key={product.id || product.product_id} className="flex justify-between text-muted-foreground">
-                        <span>{product.name} × {product.quantity}</span>
-                        <span>₹{(product.price * product.quantity).toFixed(2)}</span>
+                      <div key={product.id || product.product_id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-10 h-10 rounded-md object-cover"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{product.name}</p>
+                          <p className="text-xs text-muted-foreground">Qty: {product.quantity} × ₹{product.price}</p>
+                        </div>
+                        <span className="text-sm font-semibold">₹{(product.price * product.quantity).toFixed(0)}</span>
                       </div>
                     ))}
                   </div>
                   
-                  {/* Plan Details */}
-                  <div className="space-y-1 text-sm border-t border-green-200 pt-2">
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Plan</span>
-                      <span className="font-medium text-green-700">{pendingSubscription.plan?.name}</span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Frequency</span>
-                      <span>{pendingSubscription.deliveriesPerWeek}×/week</span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1">
+                  {/* Subscription Details */}
+                  <div className="bg-teal-50 rounded-lg p-3 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground flex items-center gap-1">
                         <Calendar className="w-3 h-3" /> Delivery Days
                       </span>
-                      <span>{pendingSubscription.deliveryDays?.join(', ')}</span>
+                      <span className="font-medium">{pendingSubscription.deliveryDays?.join(', ')}</span>
                     </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Start Date</span>
-                      <span>{pendingSubscription.startDate}</span>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Starts</span>
+                      <span className="font-medium">{pendingSubscription.startDate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Deliveries</span>
+                      <span className="font-medium">{pendingSubscription.deliveriesPerWeek}×/week</span>
                     </div>
                     {pendingSubscription.discount > 0 && (
                       <div className="flex justify-between text-green-600">
-                        <span>Plan Discount ({pendingSubscription.plan?.discount}%)</span>
-                        <span>-₹{pendingSubscription.discount?.toFixed(2)}</span>
+                        <span>Discount ({pendingSubscription.plan?.discount}%)</span>
+                        <span>-₹{pendingSubscription.discount?.toFixed(0)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-green-600">
+                    <div className="flex justify-between text-teal-600">
                       <span className="flex items-center gap-1">
                         <Truck className="w-3 h-3" /> Delivery
                       </span>
-                      <span className="font-medium">FREE</span>
+                      <span className="font-semibold">FREE</span>
                     </div>
-                  </div>
-                  
-                  <div className="flex justify-between font-bold text-green-800 pt-2 border-t border-green-200 mt-2">
-                    <span>Monthly Total</span>
-                    <span>₹{subscriptionTotal.toFixed(2)}/mo</span>
+                    <div className="flex justify-between font-bold text-teal-700 pt-2 border-t border-teal-200">
+                      <span>Monthly Total</span>
+                      <span>₹{subscriptionTotal.toFixed(0)}/mo</span>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* One-time Items */}
+              {/* One-time Purchase Items */}
               {cartItems.length > 0 && (
-                <>
+                <div className={pendingSubscription ? 'pt-4 border-t' : ''}>
                   {pendingSubscription && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <Package className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-sm">One-time Purchase</span>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                        <Package className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <span className="font-semibold">One-time Purchase</span>
                     </div>
                   )}
-                  <div className="space-y-3 mb-4">
+                  
+                  <div className="space-y-2 mb-4">
                     {cartItems.map((item) => {
                       const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
                       const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days;
                       const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
                       
                       return (
-                        <div key={item.product.id} className="text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              {item.product.name} × {item.quantity}
-                              {isGrowing && <Sprout className="w-3 h-3 text-amber-500" />}
-                            </span>
-                            <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
+                        <div key={item.product.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                          <div className="relative">
+                            <img 
+                              src={item.product.image} 
+                              alt={item.product.name}
+                              className="w-10 h-10 rounded-md object-cover"
+                            />
+                            {isGrowing && (
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                                <Sprout className="w-2.5 h-2.5 text-white" />
+                              </div>
+                            )}
                           </div>
-                          <div className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
-                            <Clock className="w-3 h-3" />
-                            {isGrowing ? 'Growing - ' : ''}Delivery by {estimatedDate}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{item.product.name}</p>
+                            <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                              <Clock className="w-3 h-3" />
+                              {isGrowing ? 'Growing - ' : ''}by {estimatedDate}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-semibold">₹{(item.product.price * item.quantity).toFixed(0)}</span>
+                            <p className="text-xs text-muted-foreground">×{item.quantity}</p>
                           </div>
                         </div>
                       );
                     })}
                   </div>
-
-                  <div className="space-y-2 text-sm border-t pt-4 mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Cart Subtotal</span>
-                      <span>₹{cartSubtotal.toFixed(2)}</span>
-                    </div>
-                    {pendingSubscription && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Subscription</span>
-                        <span>₹{subscriptionTotal.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Delivery</span>
-                      {deliveryFee === 0 ? (
-                        <span className="text-green-600 font-medium">FREE</span>
-                      ) : (
-                        <span>₹{deliveryFee}</span>
-                      )}
-                    </div>
-                    {appliedCoupon && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Coupon ({appliedCoupon.code})</span>
-                        <span>-₹{couponDiscount.toFixed(2)}</span>
-                      </div>
-                    )}
-                  </div>
-                </>
+                </div>
               )}
               
-              <div className="border-t pt-4 mb-6">
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span className="text-primary">
-                    ₹{grandTotal.toFixed(2)}
-                    {pendingSubscription && !cartItems.length && <span className="text-sm font-normal">/mo</span>}
+              {/* Price Breakdown */}
+              <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Cart Subtotal</span>
+                  <span>₹{cartSubtotal.toFixed(0)}</span>
+                </div>
+                {pendingSubscription && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subscription (1st month)</span>
+                    <span>₹{subscriptionTotal.toFixed(0)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delivery</span>
+                  {deliveryFee === 0 ? (
+                    <span className="text-green-600 font-medium">FREE</span>
+                  ) : (
+                    <span>₹{deliveryFee}</span>
+                  )}
+                </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      {appliedCoupon.code}
+                    </span>
+                    <span>-₹{couponDiscount.toFixed(0)}</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Grand Total */}
+              <div className="mt-4 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-lg font-bold text-teal-800">Total to Pay</span>
+                    {pendingSubscription && (
+                      <p className="text-xs text-teal-600">Includes first month subscription</p>
+                    )}
+                  </div>
+                  <span className="text-2xl font-bold text-teal-700">
+                    ₹{grandTotal.toFixed(0)}
                   </span>
                 </div>
               </div>
 
+              {/* Pay Button */}
               <Button
                 data-testid="pay-now-button"
                 onClick={handlePayment}
                 disabled={loading || !selectedAddressId || !isNoidaAddress}
-                className="w-full rounded-full bg-primary hover:bg-primary/90"
+                className="w-full mt-4 rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-semibold py-6"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processing Payment...
                   </>
                 ) : (
-                  `Pay ₹${grandTotal.toFixed(2)}`
+                  <>
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Pay ₹{grandTotal.toFixed(0)} Securely
+                  </>
                 )}
               </Button>
+              
+              {/* Security Badge */}
+              <div className="flex items-center justify-center gap-2 mt-3 text-xs text-muted-foreground">
+                <Shield className="w-4 h-4 text-teal-600" />
+                <span>Secured by Razorpay • 256-bit encryption</span>
+              </div>
             </CardContent>
           </Card>
         </div>
