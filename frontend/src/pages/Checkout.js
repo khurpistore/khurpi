@@ -366,58 +366,57 @@ const Checkout = () => {
       
       <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8">Checkout</h1>
 
-      <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+      <div className="space-y-6">
         {/* Delivery Address */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Delivery Address</h2>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddAddress}
-                  className="rounded-full"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  {addresses.length > 0 ? 'Manage' : 'Add Address'}
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Delivery Address</h2>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAddAddress}
+                className="rounded-full"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                {addresses.length > 0 ? 'Manage' : 'Add Address'}
+              </Button>
+            </div>
+
+            {addresses.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <MapPin className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                <p className="text-muted-foreground mb-4">No delivery address found</p>
+                <Button onClick={handleAddAddress} className="rounded-full">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your First Address
                 </Button>
               </div>
-
-              {addresses.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <MapPin className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-                  <p className="text-muted-foreground mb-4">No delivery address found</p>
-                  <Button onClick={handleAddAddress} className="rounded-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Your First Address
-                  </Button>
-                </div>
-              ) : (
-                <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
-                  <div className="space-y-3">
-                    {addresses.map((addr) => (
-                      <div
-                        key={addr.id}
-                        className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
-                          selectedAddressId === addr.id 
-                            ? 'border-primary bg-green-50 shadow-sm' 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => handleAddressSelect(addr.id)}
-                      >
-                        <RadioGroupItem value={addr.id} id={addr.id} className="mt-1" />
-                        <Label htmlFor={addr.id} className="flex-1 cursor-pointer">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">{addr.name || 'Address'}</span>
-                            {addr.is_default && (
-                              <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">Default</span>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">{addr.address_line}</p>
+            ) : (
+              <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
+                <div className="space-y-3">
+                  {addresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+                        selectedAddressId === addr.id 
+                          ? 'border-primary bg-green-50 shadow-sm' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => handleAddressSelect(addr.id)}
+                    >
+                      <RadioGroupItem value={addr.id} id={addr.id} className="mt-1" />
+                      <Label htmlFor={addr.id} className="flex-1 cursor-pointer">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium">{addr.name || 'Address'}</span>
+                          {addr.is_default && (
+                            <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">Default</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{addr.address_line}</p>
                           {addr.phone && (
                             <p className="text-xs text-muted-foreground mt-1">📞 +91 {addr.phone}</p>
                           )}
