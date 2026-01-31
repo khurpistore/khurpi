@@ -525,12 +525,8 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Payment Information - Removed, payment happens on button click */}
-        </div>
-
-        {/* Order Summary - Beautiful Uneditable */}
-        <div>
-          <Card className="sticky top-24 overflow-hidden">
+          {/* Order Summary - At the bottom left */}
+          <Card className="overflow-hidden">
             <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-4">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Package className="w-5 h-5" />
