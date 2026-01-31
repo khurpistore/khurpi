@@ -394,12 +394,6 @@ const Checkout = () => {
                   })}
                 </div>
               )}
-
-              {/* Free Delivery Banner */}
-              <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center gap-2">
-                <Truck className="w-4 h-4 text-green-600" />
-                <span className="text-xs text-green-700 font-medium">Free delivery on all orders!</span>
-              </div>
             </CardContent>
           </Card>
         </div>
