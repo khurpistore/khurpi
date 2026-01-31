@@ -678,12 +678,7 @@ const Checkout = () => {
               {/* Grand Total */}
               <div className="mt-4 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
                 <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-lg font-bold text-teal-800">Total to Pay</span>
-                    {pendingSubscription && (
-                      <p className="text-xs text-teal-600">Includes first month subscription</p>
-                    )}
-                  </div>
+                  <span className="text-lg font-bold text-teal-800">Total to Pay</span>
                   <span className="text-2xl font-bold text-teal-700">
                     ₹{grandTotal.toFixed(0)}
                   </span>
