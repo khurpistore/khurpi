@@ -121,7 +121,8 @@ const Cart = () => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
                     const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
                     const estimatedDelivery = addDays(new Date(), deliveryDays);
-                    const unitPrice = (item.product.price / 100) * (item.product.weight || 100);
+                    const selectedQty = item.product.selectedQty || 100;
+                    const unitPrice = (item.product.price / 100) * selectedQty;
                     
                     return (
                       <div key={item.product.id} data-testid={`cart-item-${item.product.id}`} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
@@ -135,7 +136,7 @@ const Cart = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}gm @ ₹{item.product.price}/100gm</p>
+                          <p className="text-xs text-muted-foreground">{selectedQty}gm @ ₹{item.product.price}/100gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {isGrowing ? `Growing - by ${format(estimatedDelivery, 'MMM d')}` : `Delivery by ${format(estimatedDelivery, 'MMM d')}`}
