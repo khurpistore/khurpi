@@ -253,7 +253,10 @@ const Checkout = () => {
                   <MapPin className="w-4 h-4 text-primary" />
                   <h3 className="font-semibold">Delivery Address</h3>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/addresses', { state: { from: 'checkout' } })} className="h-8 px-2 text-xs">
+                <Button variant="ghost" size="sm" onClick={() => {
+                  localStorage.setItem('checkoutReturn', 'true');
+                  navigate('/addresses');
+                }} className="h-8 px-2 text-xs">
                   {addresses.length > 0 ? 'Change Address' : 'Add'}
                 </Button>
               </div>
