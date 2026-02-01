@@ -270,11 +270,6 @@ const Products = () => {
                     <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-1 sm:mb-2 heading-text">{product.name}</h3>
                     <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
                     
-                    {/* Price */}
-                    <div className="mb-3">
-                      <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
-                    </div>
-                    
                     {/* Quantity Selector */}
                     {stockInfo.status !== 'out_of_stock' && (
                       <div className="flex items-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
@@ -295,7 +290,7 @@ const Products = () => {
                           </SelectContent>
                         </Select>
                         <span className="text-sm text-muted-foreground">gm</span>
-                        <span className="text-sm font-semibold text-primary ml-auto">
+                        <span className="text-xl font-bold text-primary ml-auto">
                           ₹{((product.price / 100) * (selectedQty[product.id] || 100)).toFixed(0)}
                         </span>
                       </div>
