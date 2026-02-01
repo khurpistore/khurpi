@@ -157,7 +157,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
             <SelectValue placeholder="Select weight" />
           </SelectTrigger>
           <SelectContent className="max-h-60">
-            {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
+            {WEIGHT_OPTIONS.map((w) => (
               <SelectItem key={w} value={String(w)}>
                 {w}
               </SelectItem>
