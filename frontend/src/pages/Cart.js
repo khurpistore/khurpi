@@ -218,76 +218,28 @@ const Cart = () => {
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3">Order Summary</h3>
               
-              <div className="space-y-3 text-sm">
-                {/* One-time Items Breakdown */}
+              <div className="space-y-2 text-sm">
                 {cartItems.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">One-time Purchase</p>
-                    {cartItems.map((item) => {
-                      const qty = item.product.selectedQty || 100;
-                      const price = (item.product.price / 100) * qty;
-                      return (
-                        <div key={item.product.id} className="flex justify-between text-xs">
-                          <span className="text-muted-foreground truncate max-w-[150px]">{item.product.name} ({qty}gm)</span>
-                          <span>₹{price.toFixed(0)}</span>
-                        </div>
-                      );
-                    })}
-                    <div className="flex justify-between pt-1 border-t border-dashed">
-                      <span className="font-medium">Subtotal</span>
-                      <span className="font-medium">₹{cartTotal.toFixed(0)}</span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">One-time Items</span>
+                    <span>₹{cartTotal.toFixed(0)}</span>
                   </div>
                 )}
-
-                {/* Subscription Breakdown */}
                 {pendingSubscription && (
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-medium text-green-700 uppercase tracking-wide">Subscription ({pendingSubscription.plan?.name})</p>
-                    {pendingSubscription.products?.map((product) => {
-                      const qty = product.selectedQty || 100;
-                      const price = (product.price / 100) * qty;
-                      return (
-                        <div key={product.id || product.product_id} className="flex justify-between text-xs">
-                          <span className="text-muted-foreground truncate max-w-[150px]">{product.name} ({qty}gm)</span>
-                          <span>₹{price.toFixed(0)}</span>
-                        </div>
-                      );
-                    })}
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>× {pendingSubscription.plan?.deliveries_per_week || 1} day/week × 4 weeks</span>
-                    </div>
-                    <div className="flex justify-between pt-1 border-t border-dashed">
-                      <span className="font-medium text-green-700">Monthly Total</span>
-                      <span className="font-medium text-green-700">₹{subscriptionTotal.toFixed(0)}/mo</span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subscription (monthly)</span>
+                    <span>₹{subscriptionTotal.toFixed(0)}</span>
                   </div>
                 )}
-
-                {/* Delivery */}
-                <div className="flex justify-between text-xs text-green-600">
-                  <span className="flex items-center gap-1">
-                    <Truck className="w-3 h-3" />
-                    Delivery
-                  </span>
-                  <span>FREE</span>
-                </div>
               </div>
               
-              {/* Grand Total */}
-              <div className="border-t-2 pt-3 mt-3">
+              <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">Total to Pay</span>
-                  <div className="text-right">
-                    <span className="text-xl font-bold text-primary">
-                      ₹{grandTotal.toFixed(0)}
-                    </span>
-                    {pendingSubscription && (
-                      <p className="text-xs text-muted-foreground">
-                        {cartItems.length > 0 ? '+ subscription starts' : 'per month'}
-                      </p>
-                    )}
-                  </div>
+                  <span className="font-semibold">Total</span>
+                  <span className="text-xl font-bold text-primary">
+                    ₹{grandTotal.toFixed(0)}
+                    {pendingSubscription && !cartItems.length && <span className="text-sm font-normal">/mo</span>}
+                  </span>
                 </div>
               </div>
 
