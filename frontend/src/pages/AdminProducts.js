@@ -500,13 +500,25 @@ const AdminProducts = () => {
                       value={getFieldValue(product, 'stock_status') || 'in_stock'}
                       onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
                     >
-                      <SelectTrigger className="h-7 text-xs">
+                      <SelectTrigger className={`h-7 text-xs ${
+                        (getFieldValue(product, 'stock_status') || 'in_stock') === 'in_stock' 
+                          ? 'bg-green-100 text-green-700 border-green-300' 
+                          : (getFieldValue(product, 'stock_status') || 'in_stock') === 'growing'
+                          ? 'bg-amber-100 text-amber-700 border-amber-300'
+                          : 'bg-red-100 text-red-700 border-red-300'
+                      }`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="in_stock">In Stock</SelectItem>
-                        <SelectItem value="growing">Growing</SelectItem>
-                        <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                        <SelectItem value="in_stock">
+                          <span className="text-green-700">In Stock</span>
+                        </SelectItem>
+                        <SelectItem value="growing">
+                          <span className="text-amber-700">Growing</span>
+                        </SelectItem>
+                        <SelectItem value="out_of_stock">
+                          <span className="text-red-700">Out of Stock</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
