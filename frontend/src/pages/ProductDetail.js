@@ -159,48 +159,6 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <Card className="border-secondary/20">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <Heart className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2 heading-text">
-                      Health Benefits
-                    </h3>
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{product.benefit}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {product.nutrients && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex items-start gap-3">
-                    <ShieldCheck className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="text-lg sm:text-xl font-semibold text-primary mb-3 heading-text">
-                        Nutritional Profile
-                      </h3>
-                      <div className="space-y-2 text-sm sm:text-base">
-                        {product.nutrients.split('|').map((nutrient, index) => {
-                          const [category, values] = nutrient.split(':');
-                          return (
-                            <div key={index} className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                              <span className="font-semibold text-primary sm:min-w-[100px]">
-                                {category.trim()}:
-                              </span>
-                              <span className="text-muted-foreground">{values?.trim()}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Buy Options */}
             <div className="space-y-4 p-4 sm:p-6 bg-white rounded-xl border border-border shadow-sm">
               <h3 className="font-semibold text-primary">Buy Now</h3>
@@ -281,6 +239,50 @@ const ProductDetail = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Health Benefits */}
+            <Card className="border-secondary/20">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start gap-3 mb-4">
+                  <Heart className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2 heading-text">
+                      Health Benefits
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{product.benefit}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Nutritional Profile */}
+            {product.nutrients && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="text-lg sm:text-xl font-semibold text-primary mb-3 heading-text">
+                        Nutritional Profile
+                      </h3>
+                      <div className="space-y-2 text-sm sm:text-base">
+                        {product.nutrients.split('|').map((nutrient, index) => {
+                          const [category, values] = nutrient.split(':');
+                          return (
+                            <div key={index} className="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                              <span className="font-semibold text-primary sm:min-w-[100px]">
+                                {category.trim()}:
+                              </span>
+                              <span className="text-muted-foreground">{values?.trim()}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="bg-secondary/10 rounded-xl p-4 sm:p-6">
               <h4 className="font-semibold text-primary mb-3">Why Choose Khurpi Microgreens?</h4>
