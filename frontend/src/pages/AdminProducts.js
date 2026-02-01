@@ -526,16 +526,6 @@ const AdminProducts = () => {
                   
                   {/* Actions */}
                   <div className="col-span-2 flex items-center justify-center gap-1">
-                    {hasChanges(product.id) && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleSaveProduct(product)}
-                        disabled={saving[product.id]}
-                        className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
-                      >
-                        {saving[product.id] ? '...' : 'Save'}
-                      </Button>
-                    )}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -552,6 +542,16 @@ const AdminProducts = () => {
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
+                    {hasChanges(product.id) && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveProduct(product)}
+                        disabled={saving[product.id]}
+                        className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
+                      >
+                        {saving[product.id] ? '...' : 'Save'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
