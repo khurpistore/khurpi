@@ -281,6 +281,8 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [editedProducts, setEditedProducts] = useState({});
+  const [saving, setSaving] = useState({});
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -295,7 +297,6 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`${API}/products?active_only=false`);
-      // Sort by created_at descending (recent first)
       const sorted = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setProducts(sorted);
     } catch (error) {
@@ -303,6 +304,71 @@ const AdminProducts = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFieldChange = (productId, field, value) => {
+    setEditedProducts(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSaveProduct = async (product) => {
+    const changes = editedProducts[product.id];
+    if (!changes) return;
+
+    setSaving(prev => ({ ...prev, [product.id]: true }));
+    try {
+      const updateData = {
+        ...product,
+        ...changes,
+        price: changes.price !== undefined ? parseFloat(changes.price) : product.price,
+        growth_days: changes.growth_days !== undefined ? parseInt(changes.growth_days) : product.growth_days,
+        stock: changes.stock !== undefined ? parseInt(changes.stock) : product.stock,
+        ready_in_days: changes.stock_status === 'growing' ? (parseInt(changes.ready_in_days) || product.ready_in_days) : null
+      };
+      await axios.put(`${API}/products/${product.id}`, updateData);
+      toast.success(`${product.name} updated`);
+      setEditedProducts(prev => {
+        const newState = { ...prev };
+        delete newState[product.id];
+        return newState;
+      });
+      fetchProducts();
+    } catch (error) {
+      toast.error('Failed to update product');
+    } finally {
+      setSaving(prev => ({ ...prev, [product.id]: false }));
+    }
+  };
+
+  const handleSaveAll = async () => {
+    const productIds = Object.keys(editedProducts);
+    if (productIds.length === 0) {
+      toast.info('No changes to save');
+      return;
+    }
+
+    for (const productId of productIds) {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        await handleSaveProduct(product);
+      }
+    }
+    toast.success('All changes saved');
+  };
+
+  const getFieldValue = (product, field) => {
+    return editedProducts[product.id]?.[field] !== undefined 
+      ? editedProducts[product.id][field] 
+      : product[field];
+  };
+
+  const hasChanges = (productId) => {
+    return editedProducts[productId] && Object.keys(editedProducts[productId]).length > 0;
   };
 
   const handleDelete = async (productId) => {
