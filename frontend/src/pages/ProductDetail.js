@@ -169,7 +169,6 @@ const ProductDetail = () => {
 
             {/* Buy Options */}
             <div className="space-y-4 p-4 sm:p-6 bg-white rounded-xl border border-border shadow-sm">
-              <h3 className="font-semibold text-primary">Buy Now</h3>
               
               {/* Quantity Selector */}
               <div className="flex items-center gap-3">
