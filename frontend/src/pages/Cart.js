@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Calendar, Repeat, Package, Truck, Clock, Sprout, Edit2 } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Repeat, Package, Clock, Sprout, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
