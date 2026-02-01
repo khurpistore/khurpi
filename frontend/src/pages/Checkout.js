@@ -366,6 +366,7 @@ const Checkout = () => {
                             {isGrowing ? `Growing - by ${estimatedDate}` : `Delivery by ${estimatedDate}`}
                           </p>
                         </div>
+                        <span className="text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded font-medium">Qty: {item.quantity}</span>
                         <span className="text-sm font-medium">₹{(item.product.price * item.quantity).toFixed(0)}</span>
                       </div>
                     );
