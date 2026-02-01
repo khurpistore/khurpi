@@ -125,17 +125,28 @@ const ProductDetail = () => {
               
               {/* Stock Status with Delivery Date */}
               {(() => {
-                const deliveryDate = addDays(new Date(), getStockStatus().status === 'growing' 
-                  ? (product.ready_in_days || product.growth_days) 
-                  : product.growth_days);
+                const status = getStockStatus().status;
+                let deliveryDate;
                 
-                if (getStockStatus().status === 'out_of_stock') {
+                if (status === 'in_stock') {
+                  // In stock: delivery next day
+                  deliveryDate = addDays(new Date(), 1);
+                } else if (status === 'growing') {
+                  // Growing: delivery = availability_date + 1 day
+                  if (product.availability_date) {
+                    deliveryDate = addDays(new Date(product.availability_date), 1);
+                  } else {
+                    deliveryDate = addDays(new Date(), (product.ready_in_days || product.growth_days) + 1);
+                  }
+                }
+                
+                if (status === 'out_of_stock') {
                   return (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <p className="text-red-800 font-semibold">Currently Out of Stock</p>
                     </div>
                   );
-                } else if (getStockStatus().status === 'growing') {
+                } else if (status === 'growing') {
                   return (
                     <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
                       <p className="text-amber-800 font-semibold flex items-center gap-2">
