@@ -380,7 +380,7 @@ const Addresses = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Banner - Always show when from checkout */}
+        {/* Back Banner - Only show when from checkout */}
         {(returnTo === 'subscription' || fromCheckout) && (
           <div className="mb-4 flex items-center justify-between">
             <Button 
@@ -393,19 +393,6 @@ const Addresses = () => {
               {returnTo === 'subscription' ? 'Back to Subscription' : 'Back to Checkout'}
             </Button>
           </div>
-        )}
-
-        {/* Simple back link */}
-        {!returnTo && !fromCheckout && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate(-1)}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
-          </Button>
         )}
         
         <div className="flex items-center justify-between mb-6">
