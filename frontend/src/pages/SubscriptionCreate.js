@@ -873,17 +873,17 @@ const SubscriptionCreate = () => {
                             ) : isGrowing ? (
                               <Badge variant="outline" className="text-amber-600 border-amber-200 text-xs">
                                 <Sprout className="w-3 h-3 mr-1" />
-                                Ready in {deliveryDaysNeeded} days
+                                Growing - Delivery by {format(addDays(product.availability_date ? new Date(product.availability_date) : new Date(), (product.availability_date ? 1 : deliveryDaysNeeded + 1)), 'MMM d')}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="text-green-600 border-green-200 text-xs">
                                 <Clock className="w-3 h-3 mr-1" />
-                                {deliveryDaysNeeded} days delivery
+                                Delivery by Tomorrow
                               </Badge>
                             )}
                           </div>
                           
-                          <p className="text-base sm:text-lg font-bold text-primary">₹{product.price}/pack</p>
+                          <p className="text-base sm:text-lg font-bold text-primary">₹{product.price}</p>
                         </div>
                       </div>
                       {isSelected && (
