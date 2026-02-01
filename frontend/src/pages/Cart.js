@@ -121,6 +121,7 @@ const Cart = () => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
                     const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
                     const estimatedDelivery = addDays(new Date(), deliveryDays);
+                    const unitPrice = (item.product.price / 100) * (item.product.weight || 100);
                     
                     return (
                       <div key={item.product.id} data-testid={`cart-item-${item.product.id}`} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
@@ -134,7 +135,7 @@ const Cart = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}gm</p>
+                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}gm @ ₹{item.product.price}/100gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {isGrowing ? `Growing - by ${format(estimatedDelivery, 'MMM d')}` : `Delivery by ${format(estimatedDelivery, 'MMM d')}`}
@@ -150,7 +151,7 @@ const Cart = () => {
                             <Plus className="w-3 h-3" />
                           </Button>
                         </div>
-                        <span className="text-sm font-medium">₹{(item.product.price * item.quantity).toFixed(0)}</span>
+                        <span className="text-sm font-medium">₹{(unitPrice * item.quantity).toFixed(0)}</span>
                         <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">
                           <Trash2 className="w-3 h-3" />
                         </Button>
