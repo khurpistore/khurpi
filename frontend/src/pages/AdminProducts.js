@@ -352,13 +352,19 @@ const AdminProducts = () => {
 
     setSaving(prev => ({ ...prev, [product.id]: true }));
     try {
+      const stockStatus = changes.stock_status !== undefined ? changes.stock_status : product.stock_status;
       const updateData = {
         ...product,
         ...changes,
         price: changes.price !== undefined ? parseFloat(changes.price) : product.price,
         growth_days: changes.growth_days !== undefined ? parseInt(changes.growth_days) : product.growth_days,
         weight: changes.weight !== undefined ? parseInt(changes.weight) : (product.weight || 100),
-        ready_in_days: changes.stock_status === 'growing' ? (parseInt(changes.ready_in_days) || product.ready_in_days) : null
+        ready_in_days: stockStatus === 'growing' 
+          ? (changes.ready_in_days !== undefined ? parseInt(changes.ready_in_days) : product.ready_in_days) 
+          : null,
+        availability_date: stockStatus === 'growing'
+          ? (changes.availability_date || product.availability_date)
+          : null
       };
       await axios.put(`${API}/products/${product.id}`, updateData);
       toast.success(`${product.name} updated`);
