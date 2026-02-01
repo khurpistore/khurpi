@@ -9,7 +9,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://fresh-greens-18.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://grow-subscribe.preview.emergentagent.com').rstrip('/')
 
 class TestAdminOrderStatusUpdate:
     """Test admin order status update functionality"""
