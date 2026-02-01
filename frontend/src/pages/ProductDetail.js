@@ -47,12 +47,39 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    if (product.stock <= 0) {
+    const stockInfo = getStockStatus();
+    if (stockInfo.status === 'out_of_stock') {
       toast.error('This product is currently out of stock');
       return;
     }
-    addToCart(product, quantity);
-    toast.success(`${quantity} × ${product.name} added to cart`);
+    
+    const totalPrice = (product.price / 100) * selectedQty;
+    
+    const productWithDetails = {
+      ...product,
+      selectedQty: selectedQty,
+      isGrowing: stockInfo.status === 'growing',
+      deliveryDays: stockInfo.status === 'growing' 
+        ? (product.ready_in_days || product.growth_days) 
+        : product.growth_days
+    };
+    
+    addToCart(productWithDetails, 1);
+    toast.success(`${product.name} (${selectedQty}gm) added to cart`, {
+      description: `₹${totalPrice.toFixed(0)}`
+    });
+  };
+
+  const getStockStatus = () => {
+    if (!product) return { status: 'loading' };
+    const status = product.stock_status || 'in_stock';
+    if (status === 'out_of_stock' || product.stock <= 0) {
+      return { status: 'out_of_stock' };
+    }
+    if (status === 'growing') {
+      return { status: 'growing', readyInDays: product.ready_in_days };
+    }
+    return { status: 'in_stock' };
   };
 
   if (loading) {
