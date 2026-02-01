@@ -123,13 +123,13 @@ const SubscriptionDetail = () => {
   
   // Per delivery values from subscription
   const perDeliveryTotal = subscription.total_price || 0;
-  const perDeliverySubtotal = subscription.subtotal || 0;
   const perDeliveryFee = subscription.delivery_fee || 0;
   
-  // Calculate per pack price from items or stored subtotal
-  const itemsTotal = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0);
-  const packCount = subscription.tray_count || 1;
-  const perPackPrice = itemsTotal > 0 ? Math.round(itemsTotal / packCount) : (perDeliverySubtotal > 0 ? Math.round(perDeliverySubtotal / packCount) : 0);
+  // Calculate per delivery subtotal from items using weight-based pricing
+  const perDeliverySubtotal = items.reduce((sum, item) => {
+    const qty = item.selected_qty || item.selectedQty || 100;
+    return sum + ((item.product?.price || 0) / 100) * qty;
+  }, 0) || subscription.subtotal || perDeliveryTotal;
   
   // Monthly calculations
   const monthlySubtotal = perDeliverySubtotal * totalDeliveriesPerMonth;
