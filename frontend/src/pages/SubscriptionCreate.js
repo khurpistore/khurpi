@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
@@ -19,6 +18,15 @@ import { useCart } from '@/context/CartContext';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Generate quantity options: 100-1000 (step 100), 1500-5000 (step 500)
+const getQtyOptions = (maxQty) => {
+  const options = [
+    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
+    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
+  ];
+  return options.filter(q => q <= maxQty);
+};
 
 const STEPS = [
   { id: 1, title: 'Select Products' },
@@ -570,36 +578,38 @@ const SubscriptionCreate = () => {
     if (selectedProducts.some(p => p.product_id === productId)) {
       setSelectedProducts(selectedProducts.filter(p => p.product_id !== productId));
     } else {
-      setSelectedProducts([...selectedProducts, { product_id: productId, quantity: 1 }]);
+      // Default to 100gm when first selected
+      setSelectedProducts([...selectedProducts, { product_id: productId, selectedQty: 100 }]);
     }
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const updateSelectedQty = (productId, selectedQty) => {
     setSelectedProducts(
       selectedProducts.map(p =>
-        p.product_id === productId ? { ...p, quantity: parseInt(quantity) || 1 } : p
+        p.product_id === productId ? { ...p, selectedQty: parseInt(selectedQty) || 100 } : p
       )
     );
   };
 
-  // Calculate per-pack cost (single delivery)
-  const calculatePerPackPrice = () => {
+  // Calculate per-delivery cost based on weight (price per 100gm)
+  const calculatePerDeliveryPrice = () => {
     let total = 0;
     selectedProducts.forEach(item => {
       const product = products.find(p => p.id === item.product_id);
       if (product) {
-        total += product.price * item.quantity;
+        const qty = item.selectedQty || 100;
+        total += (product.price / 100) * qty;
       }
     });
     return total;
   };
 
-  // Calculate monthly subtotal (per pack × deliveries per week × 4 weeks)
+  // Calculate monthly subtotal (per delivery × deliveries per week × 4 weeks)
   const calculateMonthlySubtotal = () => {
-    const perPack = calculatePerPackPrice();
+    const perDelivery = calculatePerDeliveryPrice();
     const deliveriesPerWeek = selectedPlan?.deliveries_per_week || 1;
     const weeksPerMonth = 4;
-    return perPack * deliveriesPerWeek * weeksPerMonth;
+    return perDelivery * deliveriesPerWeek * weeksPerMonth;
   };
 
   // Calculate discount on monthly subtotal
