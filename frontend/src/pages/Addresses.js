@@ -703,19 +703,7 @@ const Addresses = () => {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 ml-10 sm:ml-0">
-                        {!address.is_default && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSetDefault(address.id)}
-                            className="rounded-full text-xs"
-                            data-testid={`set-default-${address.id}`}
-                          >
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Set Default
-                          </Button>
-                        )}
+                      <div className="flex items-center gap-2 ml-10 sm:ml-0" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="sm"
