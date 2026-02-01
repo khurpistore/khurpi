@@ -328,6 +328,7 @@ const AdminProducts = () => {
         price: changes.price !== undefined ? parseFloat(changes.price) : product.price,
         growth_days: changes.growth_days !== undefined ? parseInt(changes.growth_days) : product.growth_days,
         stock: changes.stock !== undefined ? parseInt(changes.stock) : product.stock,
+        weight: changes.weight !== undefined ? parseInt(changes.weight) : (product.weight || 100),
         ready_in_days: changes.stock_status === 'growing' ? (parseInt(changes.ready_in_days) || product.ready_in_days) : null
       };
       await axios.put(`${API}/products/${product.id}`, updateData);
