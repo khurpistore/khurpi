@@ -701,9 +701,6 @@ const Addresses = () => {
                           <Truck className="w-3 h-3" />
                           <span className="text-green-600 font-medium">Free Delivery</span>
                         </p>
-                        {!address.is_default && (
-                          <p className="text-xs text-muted-foreground ml-10 mt-2">Click to set as default</p>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-2 ml-10 sm:ml-0" onClick={(e) => e.stopPropagation()}>
