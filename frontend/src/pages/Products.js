@@ -256,8 +256,8 @@ const Products = () => {
                     <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">{product.weight || 100}gm</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{((product.price / 100) * (product.weight || 100)).toFixed(0)}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{product.weight || 100}gm @ ₹{product.price}/100gm</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs sm:text-sm text-muted-foreground">Ready in</p>
