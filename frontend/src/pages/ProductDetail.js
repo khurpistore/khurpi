@@ -122,9 +122,6 @@ const ProductDetail = () => {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-4 heading-text">
                 {product.name}
               </h1>
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                <div className="text-3xl sm:text-4xl font-bold text-primary">₹{product.price}</div>
-              </div>
               
               {/* Stock Status with Delivery Date */}
               {(() => {
