@@ -768,11 +768,7 @@ const SubscriptionCreate = () => {
               <span className="hidden sm:inline">Previous</span>
             </Button>
 
-            <h2 className="text-lg sm:text-xl font-bold text-primary">
-              {STEPS[step - 1].title}
-            </h2>
-
-            {step < 3 && (
+            {step < 3 ? (
               <Button
                 onClick={() => goToStep(step + 1)}
                 disabled={!canGoNext()}
@@ -781,6 +777,8 @@ const SubscriptionCreate = () => {
                 <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
+            ) : (
+              <div></div>
             )}
           </div>
 
