@@ -28,6 +28,17 @@ const WEIGHT_OPTIONS = [
 ];
 
 const ProductDialog = ({ product, onClose, onSuccess }) => {
+  // Calculate initial availability date from ready_in_days if exists
+  const getInitialAvailabilityDate = () => {
+    if (product?.availability_date) {
+      return new Date(product.availability_date);
+    }
+    if (product?.ready_in_days) {
+      return addDays(new Date(), product.ready_in_days);
+    }
+    return addDays(new Date(), 7); // Default 7 days from now
+  };
+
   const [formData, setFormData] = useState({
     name: product?.name || '',
     image: product?.image || '',
@@ -38,7 +49,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     weight: product?.weight || 100,
     active: product?.active !== false,
     stock_status: product?.stock_status || 'in_stock',
-    ready_in_days: product?.ready_in_days || '',
+    availability_date: getInitialAvailabilityDate(),
     seeds_available: product?.seeds_available !== false
   });
   const [loading, setLoading] = useState(false);
