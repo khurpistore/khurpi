@@ -924,13 +924,12 @@ const SubscriptionCreate = () => {
                       </div>
                       {isSelected && (
                         <div className="mt-3 sm:mt-4" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">Qty:</span>
+                          <div className="flex items-center gap-1">
                             <Select
                               value={String(selectedQty)}
                               onValueChange={(value) => updateSelectedQty(product.id, value)}
                             >
-                              <SelectTrigger className="w-20 h-8 text-sm">
+                              <SelectTrigger className="w-20 h-7 text-xs">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
