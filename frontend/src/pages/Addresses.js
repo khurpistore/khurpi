@@ -382,16 +382,12 @@ const Addresses = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Banner - Always show when from checkout */}
         {(returnTo === 'subscription' || fromCheckout) && (
-          <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between">
-            <p className="text-sm text-primary font-medium">
-              {returnTo === 'subscription' 
-                ? 'Add or edit your address, then return to complete your subscription'
-                : 'Add or edit your address, then return to checkout'}
-            </p>
+          <div className="mb-4 flex items-center justify-between">
             <Button 
               onClick={handleBack}
+              variant="outline"
               size="sm"
-              className="rounded-full"
+              className="rounded-full text-primary border-primary hover:bg-primary hover:text-white"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               {returnTo === 'subscription' ? 'Back to Subscription' : 'Back to Checkout'}
