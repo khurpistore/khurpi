@@ -5,10 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Plus, Loader2, AlertCircle, Truck, Tag, X, Repeat, Package, ChevronLeft, Clock, Sprout, Trash2 } from 'lucide-react';
+import { MapPin, CreditCard, Plus, Loader2, AlertCircle, Truck, Tag, X, Repeat, Package, ChevronLeft, Clock, Sprout } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -17,18 +16,9 @@ import { format, addDays } from 'date-fns';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Generate quantity options: 100-1000 (step 100), 1500-5000 (step 500)
-const getQtyOptions = (maxQty) => {
-  const options = [
-    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
-    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
-  ];
-  return options.filter(q => q <= maxQty);
-};
-
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription, updateSelectedQty, removeFromCart } = useCart();
+  const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
   const { user, addresses } = useAuth();
   const { trackPageView, trackCheckoutStarted } = useAnalytics();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
