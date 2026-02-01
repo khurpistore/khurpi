@@ -756,8 +756,8 @@ const SubscriptionCreate = () => {
       {/* Fixed Step Header */}
       <div className="sticky top-16 sm:top-20 z-40 bg-white/95 backdrop-blur-md border-b border-green-100 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          {/* Step Navigation Buttons */}
-          <div className="flex items-center justify-between">
+          {/* Step Navigation Buttons at Top */}
+          <div className="flex items-center justify-between mb-4">
             <Button
               variant="outline"
               onClick={() => goToStep(step - 1)}
@@ -768,7 +768,11 @@ const SubscriptionCreate = () => {
               <span className="hidden sm:inline">Previous</span>
             </Button>
 
-            {step < 3 ? (
+            <h2 className="text-lg sm:text-xl font-bold text-primary">
+              {STEPS[step - 1].title}
+            </h2>
+
+            {step < 3 && (
               <Button
                 onClick={() => goToStep(step + 1)}
                 disabled={!canGoNext()}
@@ -777,9 +781,40 @@ const SubscriptionCreate = () => {
                 <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
-            ) : (
-              <div></div>
             )}
+          </div>
+
+          {/* Step Progress */}
+          <div className="flex items-center gap-2">
+            {STEPS.map((s, idx) => (
+              <React.Fragment key={s.id}>
+                <button
+                  onClick={() => goToStep(s.id)}
+                  disabled={s.id > step && !canGoNext()}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+                    step === s.id 
+                      ? 'bg-primary text-white' 
+                      : step > s.id 
+                        ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                        : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs ${
+                    step === s.id 
+                      ? 'bg-white/20' 
+                      : step > s.id 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-gray-200'
+                  }`}>
+                    {step > s.id ? <Check className="w-3 h-3" /> : s.id}
+                  </span>
+                  <span className="hidden sm:inline">{s.title}</span>
+                </button>
+                {idx < STEPS.length - 1 && (
+                  <div className={`flex-1 h-0.5 ${step > s.id ? 'bg-green-400' : 'bg-gray-200'}`} />
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </div>
