@@ -27,7 +27,6 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     price: product?.price || '',
     growth_days: product?.growth_days || '',
     weight: product?.weight || 100,
-    stock: product?.stock || 50,
     active: product?.active !== false,
     stock_status: product?.stock_status || 'in_stock',
     ready_in_days: product?.ready_in_days || '',
@@ -141,38 +140,23 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <div>
-          <Label htmlFor="weight" className="text-sm">Weight (gm)</Label>
-          <Select
-            value={String(formData.weight)}
-            onValueChange={(value) => setFormData({ ...formData, weight: parseInt(value) })}
-          >
-            <SelectTrigger className="mt-1" data-testid="product-weight-select">
-              <SelectValue placeholder="Select weight" />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
-                <SelectItem key={w} value={String(w)}>
-                  {w >= 1000 ? `${(w/1000).toFixed(1)}kg` : `${w}gm`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="stock" className="text-sm">Stock Quantity</Label>
-          <Input
-            id="stock"
-            data-testid="product-stock-input"
-            type="number"
-            value={formData.stock}
-            onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-            required
-            className="mt-1"
-            placeholder="Number of units"
-          />
-        </div>
+      <div>
+        <Label htmlFor="weight" className="text-sm">Weight (gm)</Label>
+        <Select
+          value={String(formData.weight)}
+          onValueChange={(value) => setFormData({ ...formData, weight: parseInt(value) })}
+        >
+          <SelectTrigger className="mt-1" data-testid="product-weight-select">
+            <SelectValue placeholder="Select weight" />
+          </SelectTrigger>
+          <SelectContent className="max-h-60">
+            {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
+              <SelectItem key={w} value={String(w)}>
+                {w >= 1000 ? `${(w/1000).toFixed(1)}kg` : `${w}gm`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       
       {/* Stock Availability Section */}
