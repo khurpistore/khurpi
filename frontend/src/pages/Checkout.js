@@ -408,29 +408,8 @@ const Checkout = () => {
                             {deliveryText}
                           </p>
                         </div>
-                        {/* Weight Dropdown */}
-                        <div className="flex items-center gap-1">
-                          <Select
-                            value={String(selectedQty)}
-                            onValueChange={(value) => updateSelectedQty(item.product.id, parseInt(value))}
-                          >
-                            <SelectTrigger className="w-20 h-7 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {getQtyOptions(item.product.weight || 5000).map((qty) => (
-                                <SelectItem key={qty} value={String(qty)}>
-                                  {qty}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <span className="text-xs text-muted-foreground">gm</span>
-                        </div>
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium">{selectedQty}gm</span>
                         <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>
-                        <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
                       </div>
                     );
                   })}
