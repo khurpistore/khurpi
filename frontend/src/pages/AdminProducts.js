@@ -284,13 +284,6 @@ const AdminProducts = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Weight options: 100-1000 (step 100), 1000-5000 (step 500), 5000-10000 (step 1000)
-  const weightOptions = [
-    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
-    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
-    ...Array.from({ length: 5 }, (_, i) => 6000 + i * 1000),  // 6000-10000
-  ];
-
   useEffect(() => {
     if (!user || user.role !== 'admin') {
       navigate('/admin/login');
