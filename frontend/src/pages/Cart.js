@@ -95,16 +95,19 @@ const Cart = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {pendingSubscription.products?.map((product) => (
-                      <div key={product.id || product.product_id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
-                        <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-medium truncate block">{product.name}</span>
-                          <span className="text-xs text-muted-foreground">{product.weight || 100}gm</span>
+                    {pendingSubscription.products?.map((product) => {
+                      const qty = product.selectedQty || 100;
+                      const price = (product.price / 100) * qty;
+                      return (
+                        <div key={product.id || product.product_id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                          <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-medium truncate block">{product.name}</span>
+                            <span className="text-xs text-muted-foreground">{qty}gm - ₹{price.toFixed(0)}</span>
+                          </div>
                         </div>
-                        <span className="text-xs bg-green-200 text-green-800 px-1.5 py-0.5 rounded font-medium">Qty: {product.quantity}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   <div className="mt-2 pt-2 border-t border-green-200">
                     <div className="flex items-center gap-1 text-xs text-green-700 mb-1">
