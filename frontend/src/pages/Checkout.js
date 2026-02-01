@@ -306,10 +306,12 @@ const Checkout = () => {
               {/* Subscription Items */}
               {pendingSubscription && (
                 <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Repeat className="w-4 h-4 text-green-600" />
-                    <span className="font-medium text-sm text-green-800">Subscription</span>
-                    <span className="text-xs text-muted-foreground">• {pendingSubscription.plan?.name}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="w-4 h-4 text-green-600" />
+                      <span className="font-medium text-sm text-green-800">Subscription</span>
+                      <span className="text-xs text-muted-foreground">• {pendingSubscription.plan?.name}</span>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     {pendingSubscription.products?.map((product) => (
@@ -320,9 +322,17 @@ const Checkout = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-between mt-2 pt-2 border-t border-green-200 text-sm">
-                    <span className="text-green-700">Monthly</span>
-                    <span className="font-semibold text-green-700">₹{subscriptionTotal.toFixed(0)}/mo</span>
+                  <div className="mt-2 pt-2 border-t border-green-200">
+                    <div className="flex items-center gap-1 text-xs text-green-700 mb-1">
+                      <Clock className="w-3 h-3" />
+                      <span>Starts: {pendingSubscription.startDate}</span>
+                      <span className="mx-1">•</span>
+                      <span>Days: {pendingSubscription.deliveryDays?.join(', ')}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-700">Monthly</span>
+                      <span className="font-semibold text-green-700">₹{subscriptionTotal.toFixed(0)}/mo</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -330,9 +340,13 @@ const Checkout = () => {
               {/* One-time Items */}
               {cartItems.length > 0 && (
                 <div className="space-y-2">
+                  {pendingSubscription && (
+                    <p className="text-xs font-medium text-muted-foreground mb-1">One-time Purchase</p>
+                  )}
                   {cartItems.map((item) => {
                     const isGrowing = item.product.stock_status === 'growing';
-                    const deliveryDays = item.product.ready_in_days || 7;
+                    const deliveryDays = item.product.ready_in_days || item.product.deliveryDays || 7;
+                    const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
                     return (
                       <div key={item.product.id} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
                         <div className="relative">
@@ -345,7 +359,10 @@ const Checkout = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">×{item.quantity}</p>
+                          <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                            <Clock className="w-3 h-3" />
+                            {isGrowing ? `Growing - by ${estimatedDate}` : `Delivery by ${estimatedDate}`}
+                          </p>
                         </div>
                         <span className="text-sm font-medium">₹{(item.product.price * item.quantity).toFixed(0)}</span>
                       </div>
