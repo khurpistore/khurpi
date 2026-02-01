@@ -293,17 +293,18 @@ const Products = () => {
                           value={String(selectedQty[product.id] || 100)}
                           onValueChange={(value) => setSelectedQty(prev => ({ ...prev, [product.id]: parseInt(value) }))}
                         >
-                          <SelectTrigger className="w-24 h-8 text-sm">
+                          <SelectTrigger className="w-20 h-8 text-sm">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {getQtyOptions(product.weight || 5000).map((qty) => (
                               <SelectItem key={qty} value={String(qty)}>
-                                {qty}gm
+                                {qty}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                        <span className="text-sm text-muted-foreground">gm</span>
                         <span className="text-sm font-semibold text-primary ml-auto">
                           ₹{((product.price / 100) * (selectedQty[product.id] || 100)).toFixed(0)}
                         </span>
