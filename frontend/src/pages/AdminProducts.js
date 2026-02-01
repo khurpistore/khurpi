@@ -486,7 +486,7 @@ const AdminProducts = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
-                        {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
+                        {weightOptions.map((w) => (
                           <SelectItem key={w} value={String(w)}>
                             {w}
                           </SelectItem>
