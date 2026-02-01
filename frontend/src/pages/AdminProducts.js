@@ -58,10 +58,15 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     e.preventDefault();
     setLoading(true);
 
-    // Prepare data - only include ready_in_days if status is growing
+    // Prepare data - convert availability_date to ready_in_days if status is growing
     const submitData = {
       ...formData,
-      ready_in_days: formData.stock_status === 'growing' ? parseInt(formData.ready_in_days) || null : null
+      ready_in_days: formData.stock_status === 'growing' 
+        ? differenceInDays(formData.availability_date, new Date()) 
+        : null,
+      availability_date: formData.stock_status === 'growing'
+        ? formData.availability_date.toISOString()
+        : null
     };
 
     try {
