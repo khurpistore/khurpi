@@ -57,125 +57,110 @@ const Cart = () => {
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
           
-          {/* Subscription Section - Compact */}
-          {pendingSubscription && (
-            <Card className="border-green-200 bg-gradient-to-r from-green-50 to-teal-50" data-testid="subscription-cart-item">
-              <CardContent className="p-4">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <Repeat className="w-4 h-4 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-green-800">Monthly Subscription</h3>
-                      <p className="text-xs text-muted-foreground">{pendingSubscription.plan?.name} Plan • {pendingSubscription.deliveriesPerWeek}×/week</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => navigate('/subscription/create?edit=true')} className="h-8 px-2">
-                      <Edit2 className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={clearSubscription} className="text-red-500 hover:text-red-600 h-8 px-2">
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Package className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm">Order Items</h3>
+              </div>
 
-                {/* Products - Compact Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-                  {pendingSubscription.products?.map((product) => (
-                    <div key={product.id || product.product_id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
-                      <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-xs truncate">{product.name}</p>
-                        <p className="text-xs text-muted-foreground">×{product.quantity}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Details Row */}
-                <div className="flex flex-wrap items-center gap-3 text-xs">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
-                    <span>Starts {pendingSubscription.startDate}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <span>Days: {pendingSubscription.deliveryDays?.join(', ')}</span>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="flex justify-between items-center mt-3 pt-3 border-t border-green-200">
-                  <span className="text-sm text-muted-foreground">Monthly Total</span>
-                  <span className="text-lg font-bold text-green-600">₹{pendingSubscription.monthlyTotal?.toFixed(0)}/mo</span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* One-time Purchase Items - Compact */}
-          {cartItems.length > 0 && (
-            <>
+              {/* Subscription Section */}
               {pendingSubscription && (
-                <div className="flex items-center gap-2 mt-4 mb-2">
-                  <Package className="w-4 h-4 text-primary" />
-                  <h3 className="font-semibold text-sm">One-time Purchase</h3>
+                <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="w-4 h-4 text-green-600" />
+                      <span className="font-medium text-sm text-green-800">Subscription</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
+                        {pendingSubscription.plan?.name} Plan
+                      </span>
+                      <Button variant="ghost" size="sm" onClick={() => navigate('/subscription/create?edit=true')} className="h-6 px-1.5">
+                        <Edit2 className="w-3 h-3" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={clearSubscription} className="text-red-500 hover:text-red-600 h-6 px-1.5">
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {pendingSubscription.products?.map((product) => (
+                      <div key={product.id || product.product_id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                        <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-medium truncate block">{product.name}</span>
+                          <span className="text-xs text-muted-foreground">{product.pack_size || '80g'}</span>
+                        </div>
+                        <span className="text-xs bg-green-200 text-green-800 px-1.5 py-0.5 rounded font-medium">Qty: {product.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-green-200">
+                    <div className="flex items-center gap-1 text-xs text-green-700 mb-1">
+                      <Clock className="w-3 h-3" />
+                      <span>Starts: {pendingSubscription.startDate}</span>
+                      <span className="mx-1">•</span>
+                      <span>Days: {pendingSubscription.deliveryDays?.join(', ')}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-700">Monthly</span>
+                      <span className="font-semibold text-green-700">₹{pendingSubscription.monthlyTotal?.toFixed(0)}/mo</span>
+                    </div>
+                  </div>
                 </div>
               )}
-              
-              <Card>
-                <CardContent className="p-0 divide-y">
+
+              {/* One-time Items */}
+              {cartItems.length > 0 && (
+                <div className="space-y-2">
+                  {pendingSubscription && (
+                    <p className="text-xs font-medium text-muted-foreground mb-1">One-time Purchase</p>
+                  )}
                   {cartItems.map((item) => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
-                    const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days;
+                    const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
                     const estimatedDelivery = addDays(new Date(), deliveryDays);
                     
                     return (
-                      <div key={item.product.id} data-testid={`cart-item-${item.product.id}`} className={`p-3 flex gap-3 ${isGrowing ? 'bg-amber-50/50' : ''}`}>
+                      <div key={item.product.id} data-testid={`cart-item-${item.product.id}`} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
                         <div className="relative">
-                          <img src={item.product.image} alt={item.product.name} className="w-16 h-16 rounded-lg object-cover" />
+                          <img src={item.product.image} alt={item.product.name} className="w-12 h-12 rounded object-cover" />
                           {isGrowing && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
-                              <Sprout className="w-3 h-3 text-white" />
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                              <Sprout className="w-2.5 h-2.5 text-white" />
                             </div>
                           )}
                         </div>
-                        
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm truncate">{item.product.name}</h3>
-                          <p className="text-xs text-muted-foreground">₹{item.product.price} × {item.product.pack_size || '80g'}</p>
-                          <div className={`flex items-center gap-1 text-xs mt-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                          <p className="text-xs font-medium truncate">{item.product.name}</p>
+                          <p className="text-xs text-muted-foreground">{item.product.pack_size || '80g'}</p>
+                          <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
-                            <span>{isGrowing ? 'Growing - ' : ''}by {format(estimatedDelivery, 'MMM d')}</span>
-                          </div>
-                          
-                          {/* Quantity Controls - Inline */}
-                          <div className="flex items-center gap-1 mt-2">
-                            <Button variant="outline" size="sm" onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="w-7 h-7 p-0">
-                              <Minus className="w-3 h-3" />
-                            </Button>
-                            <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                            <Button variant="outline" size="sm" onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-7 h-7 p-0">
-                              <Plus className="w-3 h-3" />
-                            </Button>
-                          </div>
+                            {isGrowing ? `Growing - by ${format(estimatedDelivery, 'MMM d')}` : `Delivery by ${format(estimatedDelivery, 'MMM d')}`}
+                          </p>
                         </div>
-                        
-                        <div className="text-right flex flex-col items-end justify-between">
-                          <p className="font-bold text-primary">₹{(item.product.price * item.quantity).toFixed(0)}</p>
-                          <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-7 px-2">
-                            <Trash2 className="w-3 h-3" />
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-1">
+                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="w-6 h-6 p-0">
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                          <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
+                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-6 h-6 p-0">
+                            <Plus className="w-3 h-3" />
                           </Button>
                         </div>
+                        <span className="text-sm font-medium">₹{(item.product.price * item.quantity).toFixed(0)}</span>
+                        <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
                       </div>
                     );
                   })}
-                </CardContent>
-              </Card>
-            </>
-          )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Order Summary - Compact Sticky */}
