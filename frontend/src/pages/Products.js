@@ -113,6 +113,9 @@ const Products = () => {
 
   const renderStockBadge = (product) => {
     const stockInfo = getStockStatus(product);
+    const deliveryDate = addDays(new Date(), stockInfo.status === 'growing' 
+      ? (stockInfo.readyInDays || product.growth_days) 
+      : product.growth_days);
     
     if (stockInfo.status === 'out_of_stock') {
       return (
@@ -127,22 +130,15 @@ const Products = () => {
       return (
         <Badge className="bg-amber-100 text-amber-700 border-0">
           <Sprout className="w-3 h-3 mr-1" />
-          Ready in {stockInfo.readyInDays || product.growth_days} days
-        </Badge>
-      );
-    }
-    
-    if (product.stock > 0 && product.stock < 10) {
-      return (
-        <Badge className="bg-amber-50 text-amber-700 border-0">
-          Only {product.stock} left
+          Delivery by {format(deliveryDate, 'MMM d')}
         </Badge>
       );
     }
     
     return (
       <Badge className="bg-green-100 text-green-700 border-0">
-        In Stock
+        <Clock className="w-3 h-3 mr-1" />
+        Delivery by {format(deliveryDate, 'MMM d')}
       </Badge>
     );
   };
