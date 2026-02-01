@@ -644,13 +644,6 @@ const Addresses = () => {
           </Dialog>
         </div>
 
-        {/* Info Notice */}
-        <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>💡 Tip:</strong> You can add any address. Search by typing or pin your location on the map.
-          </p>
-        </div>
-
         {addresses.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
