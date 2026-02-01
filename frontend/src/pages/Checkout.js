@@ -312,7 +312,7 @@ const Checkout = () => {
                       <span className="font-medium text-sm text-green-800">Subscription</span>
                     </div>
                     <span className="text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
-                      {pendingSubscription.plan?.name} Plan
+                      {pendingSubscription.plan?.name}
                     </span>
                   </div>
                   <div className="space-y-2">
