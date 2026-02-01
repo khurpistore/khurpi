@@ -163,22 +163,27 @@ const Cart = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{selectedQty}gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {deliveryText}
                           </p>
                         </div>
-                        {/* Quantity Controls */}
-                        <div className="flex items-center gap-1">
-                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="w-6 h-6 p-0">
-                            <Minus className="w-3 h-3" />
-                          </Button>
-                          <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
-                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-6 h-6 p-0">
-                            <Plus className="w-3 h-3" />
-                          </Button>
-                        </div>
+                        {/* Quantity Dropdown */}
+                        <Select
+                          value={String(item.quantity)}
+                          onValueChange={(value) => updateQuantity(item.product.id, parseInt(value))}
+                        >
+                          <SelectTrigger className="w-16 h-7 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((qty) => (
+                              <SelectItem key={qty} value={String(qty)}>
+                                {qty}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <span className="text-sm font-medium">₹{(unitPrice * item.quantity).toFixed(0)}</span>
                         <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">
                           <Trash2 className="w-3 h-3" />
