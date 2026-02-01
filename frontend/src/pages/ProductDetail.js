@@ -127,16 +127,28 @@ const ProductDetail = () => {
               {(() => {
                 const status = getStockStatus().status;
                 let deliveryDate;
+                let deliveryText;
                 
                 if (status === 'in_stock') {
-                  // In stock: delivery next day
+                  // In stock: delivery next day, skip Sunday
                   deliveryDate = addDays(new Date(), 1);
+                  if (deliveryDate.getDay() === 0) { // Sunday
+                    deliveryDate = addDays(deliveryDate, 1); // Move to Monday
+                  }
+                  deliveryText = 'Tomorrow';
+                  if (addDays(new Date(), 1).getDay() === 0) {
+                    deliveryText = 'Monday';
+                  }
                 } else if (status === 'growing') {
                   // Growing: delivery = availability_date + 1 day
                   if (product.availability_date) {
                     deliveryDate = addDays(new Date(product.availability_date), 1);
                   } else {
                     deliveryDate = addDays(new Date(), (product.ready_in_days || product.growth_days) + 1);
+                  }
+                  // Skip Sunday
+                  if (deliveryDate.getDay() === 0) {
+                    deliveryDate = addDays(deliveryDate, 1);
                   }
                 }
                 
@@ -164,7 +176,7 @@ const ProductDetail = () => {
                     <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
                       <p className="text-green-800 font-semibold flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        Delivery by {format(deliveryDate, 'MMM d, yyyy')}
+                        Delivery by {deliveryText}
                       </p>
                     </div>
                   );
