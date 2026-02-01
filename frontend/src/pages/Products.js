@@ -116,15 +116,28 @@ const Products = () => {
     
     // Calculate delivery date based on stock status
     let deliveryDate;
+    let deliveryText;
+    
     if (stockInfo.status === 'in_stock') {
-      // In stock: delivery next day
+      // In stock: delivery next day, skip Sunday
       deliveryDate = addDays(new Date(), 1);
+      if (deliveryDate.getDay() === 0) { // Sunday
+        deliveryDate = addDays(deliveryDate, 1); // Move to Monday
+      }
+      deliveryText = 'Tomorrow';
+      if (addDays(new Date(), 1).getDay() === 0) {
+        deliveryText = 'Monday';
+      }
     } else if (stockInfo.status === 'growing') {
-      // Growing: delivery = availability_date + 1 day, or ready_in_days + 1
+      // Growing: delivery = availability_date + 1 day
       if (product.availability_date) {
         deliveryDate = addDays(new Date(product.availability_date), 1);
       } else {
         deliveryDate = addDays(new Date(), (stockInfo.readyInDays || product.growth_days) + 1);
+      }
+      // Skip Sunday for growing products too
+      if (deliveryDate.getDay() === 0) {
+        deliveryDate = addDays(deliveryDate, 1);
       }
     }
     
@@ -149,7 +162,7 @@ const Products = () => {
     return (
       <Badge className="bg-green-100 text-green-700 border-0">
         <Clock className="w-3 h-3 mr-1" />
-        Delivery by {format(deliveryDate, 'MMM d')}
+        Delivery by {deliveryText}
       </Badge>
     );
   };
