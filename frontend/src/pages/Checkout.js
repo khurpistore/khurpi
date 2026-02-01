@@ -319,7 +319,10 @@ const Checkout = () => {
                     {pendingSubscription.products?.map((product) => (
                       <div key={product.id || product.product_id} className="flex items-center gap-2">
                         <img src={product.image} alt={product.name} className="w-8 h-8 rounded object-cover" />
-                        <span className="text-xs flex-1 truncate">{product.name}</span>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs truncate block">{product.name}</span>
+                          <span className="text-xs text-muted-foreground">{product.pack_size || '80g'}</span>
+                        </div>
                         <span className="text-xs bg-green-200 text-green-800 px-1.5 py-0.5 rounded font-medium">Qty: {product.quantity}</span>
                       </div>
                     ))}
