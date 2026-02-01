@@ -557,6 +557,50 @@ const AdminProducts = () => {
                     </Select>
                   </div>
                   
+                  {/* Availability Date - only for growing status */}
+                  <div className="col-span-1">
+                    {(getFieldValue(product, 'stock_status') || product.stock_status) === 'growing' ? (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="h-7 w-full text-xs px-1">
+                            <CalendarIcon className="h-3 w-3 mr-1" />
+                            {(() => {
+                              const availDate = getFieldValue(product, 'availability_date') || product.availability_date;
+                              if (availDate) {
+                                return format(new Date(availDate), 'MMM d');
+                              }
+                              const readyDays = getFieldValue(product, 'ready_in_days') || product.ready_in_days;
+                              if (readyDays) {
+                                return format(addDays(new Date(), readyDays), 'MMM d');
+                              }
+                              return 'Set';
+                            })()}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={(() => {
+                              const availDate = getFieldValue(product, 'availability_date') || product.availability_date;
+                              if (availDate) return new Date(availDate);
+                              const readyDays = getFieldValue(product, 'ready_in_days') || product.ready_in_days;
+                              if (readyDays) return addDays(new Date(), readyDays);
+                              return addDays(new Date(), 7);
+                            })()}
+                            onSelect={(date) => {
+                              handleFieldChange(product.id, 'availability_date', date?.toISOString());
+                              handleFieldChange(product.id, 'ready_in_days', differenceInDays(date, new Date()));
+                            }}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
+                  </div>
+                  
                   {/* Active Toggle */}
                   <div className="col-span-1 flex justify-center">
                     <Switch
