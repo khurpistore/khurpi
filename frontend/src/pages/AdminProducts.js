@@ -390,13 +390,21 @@ const AdminProducts = () => {
 
   return (
     <AdminLayout active="products" title="Manage Products">
-      <div className="flex flex-col sm:flex-row sm:justify-end gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-6">
+        {Object.keys(editedProducts).length > 0 && (
+          <Button
+            onClick={handleSaveAll}
+            className="bg-green-600 hover:bg-green-700 rounded-full"
+          >
+            Save All Changes ({Object.keys(editedProducts).length})
+          </Button>
+        )}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button
               data-testid="add-product-button"
               onClick={() => openDialog()}
-              className="bg-primary hover:bg-primary/90 rounded-full w-full sm:w-auto"
+              className="bg-primary hover:bg-primary/90 rounded-full w-full sm:w-auto ml-auto"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Product
@@ -422,62 +430,127 @@ const AdminProducts = () => {
       ) : (
         <Card>
           <CardContent className="p-0">
+            {/* Header */}
+            <div className="grid grid-cols-12 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
+              <div className="col-span-3">Product</div>
+              <div className="col-span-1 text-center">Price (₹)</div>
+              <div className="col-span-1 text-center">Growth Days</div>
+              <div className="col-span-1 text-center">Pack Size</div>
+              <div className="col-span-1 text-center">Stock Qty</div>
+              <div className="col-span-2 text-center">Stock Status</div>
+              <div className="col-span-1 text-center">Active</div>
+              <div className="col-span-2 text-center">Actions</div>
+            </div>
+            
+            {/* Product Rows */}
             <div className="divide-y" data-testid="admin-products-list">
               {products.map((product) => (
-                <div key={product.id} data-testid={`admin-product-row-${product.id}`} className="flex items-center gap-4 p-4 hover:bg-gray-50">
-                  {/* Small Image */}
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
-                  />
-                  
+                <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-12 gap-2 p-3 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
                   {/* Product Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm truncate">{product.name}</h3>
-                      <span className={`text-xs px-1.5 py-0.5 rounded ${
-                        product.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {product.active ? 'Active' : 'Inactive'}
-                      </span>
-                      {getStockStatusBadge(product)}
+                  <div className="col-span-3 flex items-center gap-2">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-10 h-10 object-cover rounded flex-shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{product.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{product.benefit?.slice(0, 30)}...</p>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate">{product.benefit}</p>
                   </div>
-
-                  {/* Price & Details */}
-                  <div className="text-right flex-shrink-0 hidden sm:block">
-                    <p className="font-bold text-primary">₹{product.price}</p>
-                    <p className="text-xs text-muted-foreground">{product.pack_size || '80g'} • {product.growth_days}d</p>
+                  
+                  {/* Price */}
+                  <div className="col-span-1">
+                    <Input
+                      type="number"
+                      value={getFieldValue(product, 'price')}
+                      onChange={(e) => handleFieldChange(product.id, 'price', e.target.value)}
+                      className="h-8 text-sm text-center"
+                    />
                   </div>
-
-                  {/* Stock */}
-                  <div className="text-right flex-shrink-0 hidden md:block">
-                    <p className={`text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
-                      {product.stock} packs
-                    </p>
+                  
+                  {/* Growth Days */}
+                  <div className="col-span-1">
+                    <Input
+                      type="number"
+                      value={getFieldValue(product, 'growth_days')}
+                      onChange={(e) => handleFieldChange(product.id, 'growth_days', e.target.value)}
+                      className="h-8 text-sm text-center"
+                    />
                   </div>
-
+                  
+                  {/* Pack Size */}
+                  <div className="col-span-1">
+                    <Input
+                      type="text"
+                      value={getFieldValue(product, 'pack_size') || '80g'}
+                      onChange={(e) => handleFieldChange(product.id, 'pack_size', e.target.value)}
+                      className="h-8 text-sm text-center"
+                    />
+                  </div>
+                  
+                  {/* Stock Qty */}
+                  <div className="col-span-1">
+                    <Input
+                      type="number"
+                      value={getFieldValue(product, 'stock')}
+                      onChange={(e) => handleFieldChange(product.id, 'stock', e.target.value)}
+                      className="h-8 text-sm text-center"
+                    />
+                  </div>
+                  
+                  {/* Stock Status */}
+                  <div className="col-span-2">
+                    <Select
+                      value={getFieldValue(product, 'stock_status') || 'in_stock'}
+                      onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="in_stock">In Stock</SelectItem>
+                        <SelectItem value="growing">Growing</SelectItem>
+                        <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Active Toggle */}
+                  <div className="col-span-1 flex justify-center">
+                    <Switch
+                      checked={getFieldValue(product, 'active') !== false}
+                      onCheckedChange={(checked) => handleFieldChange(product.id, 'active', checked)}
+                    />
+                  </div>
+                  
                   {/* Actions */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="col-span-2 flex items-center justify-center gap-1">
+                    {hasChanges(product.id) && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveProduct(product)}
+                        disabled={saving[product.id]}
+                        className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
+                      >
+                        {saving[product.id] ? '...' : 'Save'}
+                      </Button>
+                    )}
                     <Button
-                      data-testid={`edit-product-button-${product.id}`}
                       size="sm"
                       variant="ghost"
                       onClick={() => openDialog(product)}
-                      className="h-8 w-8 p-0"
+                      className="h-7 w-7 p-0"
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-3 h-3" />
                     </Button>
                     <Button
-                      data-testid={`delete-product-button-${product.id}`}
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDelete(product.id)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                      className="h-7 w-7 p-0 text-red-500 hover:text-red-600"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
