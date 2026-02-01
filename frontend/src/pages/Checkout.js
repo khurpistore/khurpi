@@ -352,6 +352,7 @@ const Checkout = () => {
                     const isGrowing = item.product.stock_status === 'growing';
                     const deliveryDays = item.product.ready_in_days || item.product.deliveryDays || 7;
                     const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
+                    const unitPrice = (item.product.price / 100) * (item.product.weight || 100);
                     return (
                       <div key={item.product.id} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
                         <div className="relative">
@@ -364,14 +365,14 @@ const Checkout = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}gm</p>
+                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}gm @ ₹{item.product.price}/100gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {isGrowing ? `Growing - by ${estimatedDate}` : `Delivery by ${estimatedDate}`}
                           </p>
                         </div>
                         <span className="text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded font-medium">Qty: {item.quantity}</span>
-                        <span className="text-sm font-medium">₹{(item.product.price * item.quantity).toFixed(0)}</span>
+                        <span className="text-sm font-medium">₹{(unitPrice * item.quantity).toFixed(0)}</span>
                       </div>
                     );
                   })}
