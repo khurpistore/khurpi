@@ -364,7 +364,7 @@ const Checkout = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product.pack_size || '80g'}</p>
+                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}g</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {isGrowing ? `Growing - by ${estimatedDate}` : `Delivery by ${estimatedDate}`}
