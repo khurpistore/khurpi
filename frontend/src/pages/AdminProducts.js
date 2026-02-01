@@ -354,60 +354,71 @@ const AdminProducts = () => {
       {loading ? (
         <p className="text-muted-foreground">Loading products...</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" data-testid="admin-products-grid">
-          {products.map((product) => (
-            <Card key={product.id} data-testid={`admin-product-card-${product.id}`}>
-              <CardContent className="p-4 sm:p-6">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-32 sm:h-40 object-cover rounded-lg mb-3 sm:mb-4"
-                />
-                <div className="flex items-start justify-between mb-2 gap-2">
-                  <h3 className="text-base sm:text-xl font-semibold text-primary heading-text truncate">{product.name}</h3>
-                  <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-                    product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {product.active ? 'Active' : 'Inactive'}
-                  </span>
+        <Card>
+          <CardContent className="p-0">
+            <div className="divide-y" data-testid="admin-products-list">
+              {products.map((product) => (
+                <div key={product.id} data-testid={`admin-product-row-${product.id}`} className="flex items-center gap-4 p-4 hover:bg-gray-50">
+                  {/* Small Image */}
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                  />
+                  
+                  {/* Product Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-sm truncate">{product.name}</h3>
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                        product.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {product.active ? 'Active' : 'Inactive'}
+                      </span>
+                      {getStockStatusBadge(product)}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{product.benefit}</p>
+                  </div>
+
+                  {/* Price & Details */}
+                  <div className="text-right flex-shrink-0 hidden sm:block">
+                    <p className="font-bold text-primary">₹{product.price}</p>
+                    <p className="text-xs text-muted-foreground">{product.pack_size || '80g'} • {product.growth_days}d</p>
+                  </div>
+
+                  {/* Stock */}
+                  <div className="text-right flex-shrink-0 hidden md:block">
+                    <p className={`text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
+                      {product.stock} packs
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Button
+                      data-testid={`edit-product-button-${product.id}`}
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => openDialog(product)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      data-testid={`delete-product-button-${product.id}`}
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDelete(product.id)}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{product.benefit}</p>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-lg sm:text-2xl font-bold text-primary">₹{product.price}</span>
-                  <span className="text-xs sm:text-sm text-muted-foreground">{product.growth_days} days</span>
-                </div>
-                <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-                  <span className={`text-xs sm:text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
-                    Stock: {product.stock} packs
-                  </span>
-                  {getStockStatusBadge(product)}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    data-testid={`edit-product-button-${product.id}`}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openDialog(product)}
-                    className="flex-1 rounded-full text-xs sm:text-sm"
-                  >
-                    <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    data-testid={`delete-product-button-${product.id}`}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDelete(product.id)}
-                    className="flex-1 rounded-full text-destructive text-xs sm:text-sm"
-                  >
-                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
     </AdminLayout>
   );
