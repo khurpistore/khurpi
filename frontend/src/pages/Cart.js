@@ -177,23 +177,26 @@ const Cart = () => {
                             {deliveryText}
                           </p>
                         </div>
-                        {/* Quantity Dropdown */}
-                        <Select
-                          value={String(item.quantity)}
-                          onValueChange={(value) => updateQuantity(item.product.id, parseInt(value))}
-                        >
-                          <SelectTrigger className="w-16 h-7 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((qty) => (
-                              <SelectItem key={qty} value={String(qty)}>
-                                {qty}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <span className="text-sm font-medium">₹{(unitPrice * item.quantity).toFixed(0)}</span>
+                        {/* Weight Dropdown */}
+                        <div className="flex items-center gap-1">
+                          <Select
+                            value={String(selectedQty)}
+                            onValueChange={(value) => updateSelectedQty(item.product.id, parseInt(value))}
+                          >
+                            <SelectTrigger className="w-20 h-7 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getQtyOptions(item.product.weight || 5000).map((qty) => (
+                                <SelectItem key={qty} value={String(qty)}>
+                                  {qty}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-xs text-muted-foreground">gm</span>
+                        </div>
+                        <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>
                         <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">
                           <Trash2 className="w-3 h-3" />
                         </Button>
