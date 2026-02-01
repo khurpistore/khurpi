@@ -139,6 +139,7 @@ export const CartProvider = ({ children }) => {
       addToCart,
       removeFromCart,
       updateQuantity,
+      updateSelectedQty,
       clearCart,
       getCartTotal,
       getCartCount,
