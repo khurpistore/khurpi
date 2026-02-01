@@ -124,37 +124,44 @@ const ProductDetail = () => {
               </h1>
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="text-3xl sm:text-4xl font-bold text-primary">₹{product.price}</div>
-                <div className="text-muted-foreground">per 100gm</div>
               </div>
               
-              {/* Stock Status with Ready Info */}
-              {getStockStatus().status === 'out_of_stock' ? (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-800 font-semibold mb-1">Currently Out of Stock</p>
-                  <p className="text-red-600 text-sm">
-                    Available after {product.growth_days} days. Subscribe to get notified.
-                  </p>
-                </div>
-              ) : getStockStatus().status === 'growing' ? (
-                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
-                  <p className="text-amber-800 font-semibold flex items-center gap-2">
-                    <Sprout className="w-4 h-4" />
-                    Currently Growing
-                  </p>
-                  <p className="text-amber-700 text-sm flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    Ready in {product.ready_in_days || product.growth_days} days
-                  </p>
-                </div>
-              ) : (
-                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
-                  <p className="text-green-800 font-semibold">In Stock</p>
-                  <p className="text-green-700 text-sm flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    Delivery in {product.growth_days} days
-                  </p>
-                </div>
-              )}
+              {/* Stock Status with Delivery Date */}
+              {(() => {
+                const deliveryDate = addDays(new Date(), getStockStatus().status === 'growing' 
+                  ? (product.ready_in_days || product.growth_days) 
+                  : product.growth_days);
+                
+                if (getStockStatus().status === 'out_of_stock') {
+                  return (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-800 font-semibold">Currently Out of Stock</p>
+                    </div>
+                  );
+                } else if (getStockStatus().status === 'growing') {
+                  return (
+                    <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+                      <p className="text-amber-800 font-semibold flex items-center gap-2">
+                        <Sprout className="w-4 h-4" />
+                        Currently Growing
+                      </p>
+                      <p className="text-amber-700 text-sm flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        Delivery by {format(deliveryDate, 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                      <p className="text-green-800 font-semibold flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Delivery by {format(deliveryDate, 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
               
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm sm:text-base">
                 <div className="flex items-center gap-2">
