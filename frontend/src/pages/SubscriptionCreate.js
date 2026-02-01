@@ -825,7 +825,7 @@ const SubscriptionCreate = () => {
         {/* Step 1: Select Products */}
         {step === 1 && (
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-6">
               {products.map((product) => {
                 const isSelected = selectedProducts.some(p => p.product_id === product.id);
                 const selectedItem = selectedProducts.find(p => p.product_id === product.id);
@@ -863,95 +863,121 @@ const SubscriptionCreate = () => {
                   <Card
                     key={product.id}
                     data-testid={`select-product-${product.id}`}
-                    className={`cursor-pointer transition-all ${
-                      isOutOfStock ? 'opacity-60 cursor-not-allowed' : ''
+                    className={`overflow-hidden border transition-all duration-300 group ${
+                      isOutOfStock ? 'opacity-75' : 'hover:shadow-lg'
                     } ${
-                      isSelected ? 'border-2 border-primary shadow-md' : 'border border-border'
-                    } ${isGrowing ? 'border-amber-200' : ''}`}
-                    onClick={() => !isOutOfStock && toggleProduct(product.id)}
+                      isSelected ? 'border-2 border-primary shadow-md' : 'border-border/50'
+                    }`}
                   >
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex gap-3 sm:gap-4">
-                        <div className="relative">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className={`w-16 h-16 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0 ${isOutOfStock ? 'grayscale' : ''}`}
-                          />
-                          {isGrowing && (
-                            <Badge className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs px-1">
-                              <Sprout className="w-3 h-3" />
-                            </Badge>
-                          )}
-                          {isOutOfStock && (
-                            <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
-                              <XCircle className="w-6 h-6 text-white" />
-                            </div>
-                          )}
+                    <div className="aspect-video overflow-hidden relative">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+                          isOutOfStock ? 'grayscale' : ''
+                        }`}
+                      />
+                      {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            Out of Stock
+                          </span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-base sm:text-xl font-semibold text-primary heading-text truncate">
-                              {product.name}
-                            </h4>
-                            {isSelected && (
-                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                                <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 line-clamp-2">{product.benefit}</p>
-                          
-                          {/* Stock Status & Delivery Time */}
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            {isOutOfStock ? (
-                              <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
-                                Out of Stock
-                              </Badge>
-                            ) : isGrowing ? (
-                              <Badge variant="outline" className="text-amber-600 border-amber-200 text-xs">
-                                <Sprout className="w-3 h-3 mr-1" />
-                                {deliveryText}
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-green-600 border-green-200 text-xs">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {deliveryText}
-                              </Badge>
-                            )}
-                          </div>
+                      )}
+                      {isGrowing && (
+                        <div className="absolute top-2 right-2">
+                          <Badge className="bg-amber-500 text-white border-0 shadow-lg">
+                            <Sprout className="w-3 h-3 mr-1" />
+                            Growing
+                          </Badge>
                         </div>
-                      </div>
+                      )}
                       {isSelected && (
-                        <div className="mt-3 sm:mt-4" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-1">
-                            <Select
-                              value={String(selectedQty)}
-                              onValueChange={(value) => updateSelectedQty(product.id, value)}
-                            >
-                              <SelectTrigger className="w-20 h-7 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {getQtyOptions(product.weight || 5000).map((qty) => (
-                                  <SelectItem key={qty} value={String(qty)}>
-                                    {qty}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <span className="text-xs text-muted-foreground">gm</span>
-                            <span className="text-lg font-bold text-primary ml-auto">
-                              ₹{totalPrice.toFixed(0)}
-                            </span>
+                        <div className="absolute top-2 left-2">
+                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                            <Check className="w-4 h-4 text-white" />
                           </div>
-                          {isGrowing && (
-                            <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                              <Sprout className="w-3 h-3" />
-                              Growing - {deliveryText}
-                            </p>
-                          )}
                         </div>
+                      )}
+                    </div>
+                    <CardContent className="p-4 sm:p-6">
+                      <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-1 sm:mb-2 heading-text">{product.name}</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
+                      
+                      {/* Quantity Selector */}
+                      {!isOutOfStock && (
+                        <div className="flex items-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                          <span className="text-sm text-muted-foreground">Qty:</span>
+                          <Select
+                            value={String(selectedQty)}
+                            onValueChange={(value) => updateSelectedQty(product.id, value)}
+                          >
+                            <SelectTrigger className="w-20 h-8 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getQtyOptions(product.weight || 5000).map((qty) => (
+                                <SelectItem key={qty} value={String(qty)}>
+                                  {qty}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-sm text-muted-foreground">gm</span>
+                          <span className="text-xl font-bold text-primary ml-auto">
+                            ₹{totalPrice.toFixed(0)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Stock/Delivery Badge */}
+                      <div className="mb-3">
+                        {isOutOfStock ? (
+                          <Badge className="bg-red-100 text-red-700 border-0">
+                            <XCircle className="w-3 h-3 mr-1" />
+                            Out of Stock
+                          </Badge>
+                        ) : isGrowing ? (
+                          <Badge className="bg-amber-100 text-amber-700 border-0">
+                            <Sprout className="w-3 h-3 mr-1" />
+                            {deliveryText}
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-700 border-0">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {deliveryText}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      {isOutOfStock ? (
+                        <Button
+                          disabled
+                          className="w-full bg-gray-300 text-gray-500 rounded-full cursor-not-allowed"
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Unavailable
+                        </Button>
+                      ) : isSelected ? (
+                        <Button
+                          data-testid={`remove-subscription-${product.id}`}
+                          onClick={() => toggleProduct(product.id)}
+                          variant="outline"
+                          className="w-full rounded-full border-primary text-primary hover:bg-primary/10"
+                        >
+                          <Check className="w-4 h-4 mr-1" />
+                          Added to Subscription
+                        </Button>
+                      ) : (
+                        <Button
+                          data-testid={`add-subscription-${product.id}`}
+                          onClick={() => toggleProduct(product.id)}
+                          className="w-full bg-primary hover:bg-primary/90 rounded-full"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add to Subscription
+                        </Button>
                       )}
                     </CardContent>
                   </Card>
