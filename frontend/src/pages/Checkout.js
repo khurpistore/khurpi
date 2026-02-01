@@ -351,8 +351,10 @@ const Checkout = () => {
                   {cartItems.map((item) => {
                     const isGrowing = item.product.stock_status === 'growing' || item.product.isGrowing;
                     
-                    // Calculate delivery date: next day for in_stock, availability_date + 1 for growing
+                    // Calculate delivery date and text
                     let estimatedDelivery;
+                    let deliveryText;
+                    
                     if (isGrowing) {
                       if (item.product.availability_date) {
                         estimatedDelivery = addDays(new Date(item.product.availability_date), 1);
@@ -360,11 +362,21 @@ const Checkout = () => {
                         const readyDays = item.product.ready_in_days || item.product.deliveryDays || 7;
                         estimatedDelivery = addDays(new Date(), readyDays + 1);
                       }
+                      // Skip Sunday
+                      if (estimatedDelivery.getDay() === 0) {
+                        estimatedDelivery = addDays(estimatedDelivery, 1);
+                      }
+                      deliveryText = `Growing - by ${format(estimatedDelivery, 'MMM d')}`;
                     } else {
-                      // In stock: delivery next day
+                      // In stock: delivery next day, skip Sunday
                       estimatedDelivery = addDays(new Date(), 1);
+                      if (estimatedDelivery.getDay() === 0) {
+                        estimatedDelivery = addDays(estimatedDelivery, 1);
+                        deliveryText = 'Delivery by Monday';
+                      } else {
+                        deliveryText = 'Delivery by Tomorrow';
+                      }
                     }
-                    const estimatedDate = format(estimatedDelivery, 'MMM d');
                     
                     const selectedQty = item.product.selectedQty || 100;
                     const unitPrice = (item.product.price / 100) * selectedQty;
@@ -383,7 +395,7 @@ const Checkout = () => {
                           <p className="text-xs text-muted-foreground">{selectedQty}gm @ ₹{item.product.price}/100gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
-                            {isGrowing ? `Growing - by ${estimatedDate}` : `Delivery by ${estimatedDate}`}
+                            {deliveryText}
                           </p>
                         </div>
                         <span className="text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded font-medium">x{item.quantity}</span>
