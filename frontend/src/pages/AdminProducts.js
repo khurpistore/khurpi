@@ -18,11 +18,10 @@ import AdminLayout from '@/components/AdminLayout';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Weight options: 100-1000 (step 100), 1000-5000 (step 500), 5000-10000 (step 1000)
+// Weight options: 100-1000 (step 100), 1500-5000 (step 500)
 const WEIGHT_OPTIONS = [
   ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
   ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
-  ...Array.from({ length: 5 }, (_, i) => 6000 + i * 1000),  // 6000-10000
 ];
 
 const ProductDialog = ({ product, onClose, onSuccess }) => {
