@@ -147,13 +147,13 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
         </div>
       </div>
       <div>
-        <Label htmlFor="weight" className="text-sm">Weight (gm)</Label>
+        <Label htmlFor="weight" className="text-sm">Available Qty (gm)</Label>
         <Select
           value={String(formData.weight)}
           onValueChange={(value) => setFormData({ ...formData, weight: parseInt(value) })}
         >
           <SelectTrigger className="mt-1" data-testid="product-weight-select">
-            <SelectValue placeholder="Select weight" />
+            <SelectValue placeholder="Select quantity" />
           </SelectTrigger>
           <SelectContent className="max-h-60">
             {WEIGHT_OPTIONS.map((w) => (
