@@ -135,22 +135,25 @@ const SubscriptionCreate = () => {
       return;
     }
     
-    const maxDays = selectedPlan?.deliveries_per_week || 1;
+    const requiredDays = selectedPlan?.deliveries_per_week || 1;
     let newDeliveryDays;
     
     if (deliveryDays.includes(day)) {
-      // Remove day if already selected (but keep at least 1)
-      if (deliveryDays.length > 1) {
-        newDeliveryDays = deliveryDays.filter(d => d !== day);
-        setDeliveryDays(newDeliveryDays);
-        // Update start date to nearest date matching the first remaining day
-        const firstDay = newDeliveryDays[0];
-        const nearestDate = getNearestDateForDay(firstDay, minStartDate);
-        setStartDate(nearestDate);
+      // Don't allow unselecting if we're at the required number of days
+      if (deliveryDays.length <= requiredDays) {
+        toast.error(`Your plan requires ${requiredDays} delivery day${requiredDays > 1 ? 's' : ''}`);
+        return;
       }
+      // Remove day if we have more than required
+      newDeliveryDays = deliveryDays.filter(d => d !== day);
+      setDeliveryDays(newDeliveryDays);
+      // Update start date to nearest date matching the first remaining day
+      const firstDay = newDeliveryDays[0];
+      const nearestDate = getNearestDateForDay(firstDay, minStartDate);
+      setStartDate(nearestDate);
     } else {
       // Add day if under max limit
-      if (deliveryDays.length < maxDays) {
+      if (deliveryDays.length < requiredDays) {
         newDeliveryDays = [...deliveryDays, day].sort((a, b) => WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b));
       } else {
         // Replace oldest selection if at max
