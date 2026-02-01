@@ -126,35 +126,43 @@ const ProductDetail = () => {
                 <div className="text-muted-foreground">per 100gm</div>
               </div>
               
+              {/* Stock Status with Ready Info */}
               {getStockStatus().status === 'out_of_stock' ? (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-800 font-semibold mb-1">Currently Out of Stock</p>
                   <p className="text-red-600 text-sm">
-                    This product will be available for delivery in {product.growth_days} days. 
-                    You can schedule your subscription to start after {product.growth_days} days from today.
+                    Available after {product.growth_days} days. Subscribe to get notified.
                   </p>
                 </div>
               ) : getStockStatus().status === 'growing' ? (
-                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
                   <p className="text-amber-800 font-semibold flex items-center gap-2">
                     <Sprout className="w-4 h-4" />
-                    Currently Growing - Ready in {product.ready_in_days || product.growth_days} days
+                    Currently Growing
+                  </p>
+                  <p className="text-amber-700 text-sm flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    Ready in {product.ready_in_days || product.growth_days} days
                   </p>
                 </div>
               ) : (
-                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 font-semibold">In Stock - Available up to {product.weight || 5000}gm</p>
+                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                  <p className="text-green-800 font-semibold">In Stock</p>
+                  <p className="text-green-700 text-sm flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    Delivery in {product.growth_days} days
+                  </p>
                 </div>
               )}
               
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm sm:text-base">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-secondary" />
-                  <span>Ready in {product.growth_days} days</span>
-                </div>
-                <div className="flex items-center gap-2">
                   <Sprout className="w-5 h-5 text-secondary" />
                   <span>100% Organic</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-secondary" />
+                  <span>Freshly Harvested</span>
                 </div>
               </div>
             </div>
