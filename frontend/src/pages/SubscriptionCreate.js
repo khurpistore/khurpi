@@ -324,7 +324,7 @@ const SubscriptionCreate = () => {
     // Convert products back to selectedProducts format
     const productsToSelect = pendingSubscription.products?.map(p => ({
       product_id: p.product_id || p.id,
-      quantity: p.quantity
+      selectedQty: p.selectedQty || 100
     })) || [];
     
     setSelectedProducts(productsToSelect);
