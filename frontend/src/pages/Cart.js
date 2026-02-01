@@ -145,7 +145,7 @@ const Cart = () => {
                       if (estimatedDelivery.getDay() === 0) {
                         estimatedDelivery = addDays(estimatedDelivery, 1);
                       }
-                      deliveryText = `Growing - by ${format(estimatedDelivery, 'MMM d')}`;
+                      deliveryText = `Growing - Delivery by ${format(estimatedDelivery, 'MMM d')}`;
                     } else {
                       // In stock: delivery next day, skip Sunday
                       estimatedDelivery = addDays(new Date(), 1);
