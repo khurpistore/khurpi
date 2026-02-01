@@ -21,7 +21,7 @@ const getQtyOptions = (maxQty) => {
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
+  const { cartItems, updateSelectedQty, removeFromCart, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
   const { user } = useAuth();
 
   const handleCheckout = () => {
