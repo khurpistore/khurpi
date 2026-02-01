@@ -665,7 +665,8 @@ const Addresses = () => {
                 <Card 
                   key={address.id} 
                   data-testid={`address-card-${address.id}`}
-                  className={`transition-all hover:shadow-md ${address.is_default ? 'border-primary border-2 bg-primary/5' : ''}`}
+                  className={`transition-all cursor-pointer hover:shadow-md ${address.is_default ? 'border-primary border-2 bg-primary/5' : 'hover:border-primary/50'}`}
+                  onClick={() => !address.is_default && handleSetDefault(address.id)}
                 >
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
