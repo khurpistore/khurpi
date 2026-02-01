@@ -270,16 +270,9 @@ const Products = () => {
                     <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-1 sm:mb-2 heading-text">{product.name}</h3>
                     <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
                     
-                    {/* Price per 100gm */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">per 100gm</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs sm:text-sm text-muted-foreground">Ready in</p>
-                        <p className="text-base sm:text-lg font-semibold text-secondary">{product.growth_days} days</p>
-                      </div>
+                    {/* Price */}
+                    <div className="mb-3">
+                      <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
                     </div>
                     
                     {/* Quantity Selector */}
