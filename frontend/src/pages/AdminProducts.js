@@ -435,7 +435,7 @@ const AdminProducts = () => {
               <div className="col-span-3">Product</div>
               <div className="col-span-1 text-center">Price (₹)</div>
               <div className="col-span-1 text-center">Growth Days</div>
-              <div className="col-span-1 text-center">Pack Size</div>
+              <div className="col-span-1 text-center">Weight (gm)</div>
               <div className="col-span-1 text-center">Stock Qty</div>
               <div className="col-span-2 text-center">Stock Status</div>
               <div className="col-span-1 text-center">Active</div>
