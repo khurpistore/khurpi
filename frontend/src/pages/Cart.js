@@ -162,7 +162,7 @@ const Cart = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{selectedQty}gm @ ₹{item.product.price}/100gm</p>
+                          <p className="text-xs text-muted-foreground">{selectedQty}gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {deliveryText}
