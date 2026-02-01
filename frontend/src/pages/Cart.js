@@ -84,7 +84,7 @@ const Cart = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
-                        {pendingSubscription.plan?.name} Plan
+                        {pendingSubscription.plan?.name}
                       </span>
                       <Button variant="ghost" size="sm" onClick={() => navigate('/subscription/create?edit=true')} className="h-6 px-1.5">
                         <Edit2 className="w-3 h-3" />
