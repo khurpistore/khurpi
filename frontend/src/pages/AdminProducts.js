@@ -439,13 +439,12 @@ const AdminProducts = () => {
         <Card>
           <CardContent className="p-0">
             {/* Header */}
-            <div className="grid grid-cols-12 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
+            <div className="grid grid-cols-11 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
               <div className="col-span-3">Product</div>
               <div className="col-span-1 text-center">Price (₹)</div>
               <div className="col-span-1 text-center">Growth Days</div>
-              <div className="col-span-1 text-center">Weight (gm)</div>
-              <div className="col-span-1 text-center">Stock Qty</div>
-              <div className="col-span-2 text-center">Stock Status</div>
+              <div className="col-span-2 text-center">Weight (gm)</div>
+              <div className="col-span-1 text-center">Stock Status</div>
               <div className="col-span-1 text-center">Active</div>
               <div className="col-span-2 text-center">Actions</div>
             </div>
@@ -453,7 +452,7 @@ const AdminProducts = () => {
             {/* Product Rows */}
             <div className="divide-y" data-testid="admin-products-list">
               {products.map((product) => (
-                <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-12 gap-2 p-3 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
+                <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-11 gap-2 p-3 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
                   {/* Product Info */}
                   <div className="col-span-3 flex items-center gap-2">
                     <img
@@ -488,7 +487,7 @@ const AdminProducts = () => {
                   </div>
                   
                   {/* Weight (gm) */}
-                  <div className="col-span-1">
+                  <div className="col-span-2">
                     <Select
                       value={String(getFieldValue(product, 'weight') || 100)}
                       onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
@@ -506,18 +505,8 @@ const AdminProducts = () => {
                     </Select>
                   </div>
                   
-                  {/* Stock Qty */}
-                  <div className="col-span-1">
-                    <Input
-                      type="number"
-                      value={getFieldValue(product, 'stock')}
-                      onChange={(e) => handleFieldChange(product.id, 'stock', e.target.value)}
-                      className="h-8 text-sm text-center"
-                    />
-                  </div>
-                  
                   {/* Stock Status */}
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <Select
                       value={getFieldValue(product, 'stock_status') || 'in_stock'}
                       onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
