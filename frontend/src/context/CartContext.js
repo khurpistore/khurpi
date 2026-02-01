@@ -96,7 +96,10 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => {
+      const unitPrice = (item.product.price / 100) * (item.product.weight || 100);
+      return total + (unitPrice * item.quantity);
+    }, 0);
   };
 
   const getCartCount = () => {
