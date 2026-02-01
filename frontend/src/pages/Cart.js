@@ -120,8 +120,10 @@ const Cart = () => {
                   {cartItems.map((item) => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
                     
-                    // Calculate delivery date: next day for in_stock, availability_date + 1 for growing
+                    // Calculate delivery date and text
                     let estimatedDelivery;
+                    let deliveryText;
+                    
                     if (isGrowing) {
                       if (item.product.availability_date) {
                         estimatedDelivery = addDays(new Date(item.product.availability_date), 1);
@@ -129,9 +131,20 @@ const Cart = () => {
                         const readyDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
                         estimatedDelivery = addDays(new Date(), readyDays + 1);
                       }
+                      // Skip Sunday
+                      if (estimatedDelivery.getDay() === 0) {
+                        estimatedDelivery = addDays(estimatedDelivery, 1);
+                      }
+                      deliveryText = `Growing - by ${format(estimatedDelivery, 'MMM d')}`;
                     } else {
-                      // In stock: delivery next day
+                      // In stock: delivery next day, skip Sunday
                       estimatedDelivery = addDays(new Date(), 1);
+                      if (estimatedDelivery.getDay() === 0) {
+                        estimatedDelivery = addDays(estimatedDelivery, 1);
+                        deliveryText = 'Delivery by Monday';
+                      } else {
+                        deliveryText = 'Delivery by Tomorrow';
+                      }
                     }
                     
                     const selectedQty = item.product.selectedQty || 100;
@@ -152,7 +165,7 @@ const Cart = () => {
                           <p className="text-xs text-muted-foreground">{selectedQty}gm @ ₹{item.product.price}/100gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
-                            {isGrowing ? `Growing - by ${format(estimatedDelivery, 'MMM d')}` : `Delivery by ${format(estimatedDelivery, 'MMM d')}`}
+                            {deliveryText}
                           </p>
                         </div>
                         {/* Quantity Controls */}
