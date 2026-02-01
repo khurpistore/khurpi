@@ -42,7 +42,7 @@ const Addresses = () => {
   // Check if coming from checkout or subscription flow
   const params = new URLSearchParams(location.search);
   const returnTo = params.get('returnTo');
-  const fromCheckout = localStorage.getItem('checkoutReturn') === 'true';
+  const fromCheckout = localStorage.getItem('checkoutReturn') === 'true' || location.state?.from === 'checkout';
 
   // Calculate delivery fees for all addresses
   useEffect(() => {
