@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, Minus, Plus, ShoppingCart, Sparkles, Truck, Tag, Zap } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, ShoppingCart, Sparkles, Truck, Tag, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
@@ -12,10 +12,19 @@ import { useCart } from '@/context/CartContext';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Generate quantity options: 100-1000 (step 100), 1500-5000 (step 500)
+const getQtyOptions = (maxQty) => {
+  const options = [
+    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
+    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
+  ];
+  return options.filter(q => q <= maxQty);
+};
+
 const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
+  const [selectedQty, setSelectedQty] = useState(100);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
