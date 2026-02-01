@@ -387,7 +387,7 @@ const Checkout = () => {
                     return (
                       <div key={item.product.id} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
                         <div className="relative">
-                          <img src={item.product.image} alt={item.product.name} className="w-10 h-10 rounded object-cover" />
+                          <img src={item.product.image} alt={item.product.name} className="w-12 h-12 rounded object-cover" />
                           {isGrowing && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
                               <Sprout className="w-2.5 h-2.5 text-white" />
