@@ -349,9 +349,23 @@ const Checkout = () => {
                     <p className="text-xs font-medium text-muted-foreground mb-1">One-time Purchase</p>
                   )}
                   {cartItems.map((item) => {
-                    const isGrowing = item.product.stock_status === 'growing';
-                    const deliveryDays = item.product.ready_in_days || item.product.deliveryDays || 7;
-                    const estimatedDate = format(addDays(new Date(), deliveryDays), 'MMM d');
+                    const isGrowing = item.product.stock_status === 'growing' || item.product.isGrowing;
+                    
+                    // Calculate delivery date: next day for in_stock, availability_date + 1 for growing
+                    let estimatedDelivery;
+                    if (isGrowing) {
+                      if (item.product.availability_date) {
+                        estimatedDelivery = addDays(new Date(item.product.availability_date), 1);
+                      } else {
+                        const readyDays = item.product.ready_in_days || item.product.deliveryDays || 7;
+                        estimatedDelivery = addDays(new Date(), readyDays + 1);
+                      }
+                    } else {
+                      // In stock: delivery next day
+                      estimatedDelivery = addDays(new Date(), 1);
+                    }
+                    const estimatedDate = format(estimatedDelivery, 'MMM d');
+                    
                     const selectedQty = item.product.selectedQty || 100;
                     const unitPrice = (item.product.price / 100) * selectedQty;
                     return (
