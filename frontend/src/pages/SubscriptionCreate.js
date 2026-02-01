@@ -704,11 +704,13 @@ const SubscriptionCreate = () => {
       return {
         product_id: item.product_id,
         id: item.product_id,
-        quantity: item.quantity,
+        selectedQty: item.selectedQty || 100,
         name: product?.name || 'Unknown Product',
         image: product?.image || '',
         price: product?.price || 0,
-        pack_size: product?.pack_size || '80g'
+        weight: product?.weight || 5000,
+        stock_status: product?.stock_status || 'in_stock',
+        availability_date: product?.availability_date
       };
     });
 
@@ -719,7 +721,7 @@ const SubscriptionCreate = () => {
       deliveryDays: deliveryDays,
       startDate: format(startDate, 'yyyy-MM-dd'),
       monthlyTotal: calculateTotal(),
-      perDeliveryTotal: calculatePerPackPrice(),
+      perDeliveryTotal: calculatePerDeliveryPrice(),
       discount: calculateDiscount(),
       deliveriesPerWeek: selectedPlan.deliveries_per_week
     };
