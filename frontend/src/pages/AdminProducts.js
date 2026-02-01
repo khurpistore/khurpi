@@ -152,7 +152,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           <SelectContent className="max-h-60">
             {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
               <SelectItem key={w} value={String(w)}>
-                {w >= 1000 ? `${(w/1000).toFixed(1)}kg` : `${w}gm`}
+                {w}
               </SelectItem>
             ))}
           </SelectContent>
@@ -455,7 +455,7 @@ const AdminProducts = () => {
                       type="number"
                       value={getFieldValue(product, 'price')}
                       onChange={(e) => handleFieldChange(product.id, 'price', e.target.value)}
-                      className="h-8 text-sm text-center"
+                      className="h-7 text-xs text-center w-16"
                     />
                   </div>
                   
@@ -465,7 +465,7 @@ const AdminProducts = () => {
                       type="number"
                       value={getFieldValue(product, 'growth_days')}
                       onChange={(e) => handleFieldChange(product.id, 'growth_days', e.target.value)}
-                      className="h-8 text-sm text-center"
+                      className="h-7 text-xs text-center w-14"
                     />
                   </div>
                   
@@ -475,13 +475,13 @@ const AdminProducts = () => {
                       value={String(getFieldValue(product, 'weight') || 100)}
                       onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
                     >
-                      <SelectTrigger className="h-8 text-xs">
+                      <SelectTrigger className="h-7 text-xs w-20">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
                           <SelectItem key={w} value={String(w)}>
-                            {w >= 1000 ? `${(w/1000).toFixed(1)}kg` : `${w}gm`}
+                            {w}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -494,7 +494,7 @@ const AdminProducts = () => {
                       value={getFieldValue(product, 'stock_status') || 'in_stock'}
                       onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
                     >
-                      <SelectTrigger className="h-8 text-xs">
+                      <SelectTrigger className="h-7 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
