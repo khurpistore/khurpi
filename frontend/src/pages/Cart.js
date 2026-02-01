@@ -119,8 +119,21 @@ const Cart = () => {
                   )}
                   {cartItems.map((item) => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
-                    const deliveryDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
-                    const estimatedDelivery = addDays(new Date(), deliveryDays);
+                    
+                    // Calculate delivery date: next day for in_stock, availability_date + 1 for growing
+                    let estimatedDelivery;
+                    if (isGrowing) {
+                      if (item.product.availability_date) {
+                        estimatedDelivery = addDays(new Date(item.product.availability_date), 1);
+                      } else {
+                        const readyDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
+                        estimatedDelivery = addDays(new Date(), readyDays + 1);
+                      }
+                    } else {
+                      // In stock: delivery next day
+                      estimatedDelivery = addDays(new Date(), 1);
+                    }
+                    
                     const selectedQty = item.product.selectedQty || 100;
                     const unitPrice = (item.product.price / 100) * selectedQty;
                     
