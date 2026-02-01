@@ -109,7 +109,7 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => {
       const qty = item.product.selectedQty || 100;
       const unitPrice = (item.product.price / 100) * qty;
-      return total + (unitPrice * item.quantity);
+      return total + unitPrice;
     }, 0);
   };
 
