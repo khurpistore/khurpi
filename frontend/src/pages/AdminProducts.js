@@ -432,8 +432,8 @@ const AdminProducts = () => {
               <div className="col-span-3">Product</div>
               <div className="col-span-1">Price (₹)</div>
               <div className="col-span-1">Growth Days</div>
-              <div className="col-span-2">Weight (gm)</div>
-              <div className="col-span-1">Stock Status</div>
+              <div className="col-span-1">Weight (gm)</div>
+              <div className="col-span-2">Stock Status</div>
               <div className="col-span-1 text-center">Active</div>
               <div className="col-span-2 text-center">Actions</div>
             </div>
@@ -476,7 +476,7 @@ const AdminProducts = () => {
                   </div>
                   
                   {/* Weight (gm) */}
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <Select
                       value={String(getFieldValue(product, 'weight') || 100)}
                       onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
@@ -495,7 +495,7 @@ const AdminProducts = () => {
                   </div>
                   
                   {/* Stock Status */}
-                  <div className="col-span-1">
+                  <div className="col-span-2">
                     <Select
                       value={getFieldValue(product, 'stock_status') || 'in_stock'}
                       onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
@@ -506,7 +506,7 @@ const AdminProducts = () => {
                       <SelectContent>
                         <SelectItem value="in_stock">In Stock</SelectItem>
                         <SelectItem value="growing">Growing</SelectItem>
-                        <SelectItem value="out_of_stock">Out</SelectItem>
+                        <SelectItem value="out_of_stock">Out of Stock</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
