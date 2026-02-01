@@ -68,24 +68,31 @@ const Products = () => {
       return;
     }
     
-    // Add product with delivery info
-    const productWithDelivery = {
+    // Get selected quantity or default to 100
+    const qty = selectedQty[product.id] || 100;
+    const totalPrice = (product.price / 100) * qty;
+    
+    // Add product with selected quantity and delivery info
+    const productWithDetails = {
       ...product,
+      selectedQty: qty,
       isGrowing: stockInfo.status === 'growing',
       deliveryDays: stockInfo.status === 'growing' 
         ? (stockInfo.readyInDays || product.growth_days) 
         : product.growth_days
     };
     
-    addToCart(productWithDelivery, 1);
+    addToCart(productWithDetails, 1);
     trackAddToCart(product, 1);
     
     if (stockInfo.status === 'growing') {
-      toast.success(`${product.name} added to cart`, {
-        description: `Delivery in ${stockInfo.readyInDays || product.growth_days} days (currently growing)`
+      toast.success(`${product.name} (${qty}gm) added to cart`, {
+        description: `₹${totalPrice.toFixed(0)} - Delivery in ${stockInfo.readyInDays || product.growth_days} days`
       });
     } else {
-      toast.success(`${product.name} added to cart`);
+      toast.success(`${product.name} (${qty}gm) added to cart`, {
+        description: `₹${totalPrice.toFixed(0)}`
+      });
     }
   };
 
