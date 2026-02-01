@@ -831,7 +831,33 @@ const SubscriptionCreate = () => {
                 const selectedItem = selectedProducts.find(p => p.product_id === product.id);
                 const isGrowing = product.stock_status === 'growing';
                 const isOutOfStock = product.stock_status === 'out_of_stock' || product.stock <= 0;
-                const deliveryDaysNeeded = isGrowing ? (product.ready_in_days || product.growth_days) : product.growth_days;
+                
+                // Calculate delivery date based on stock status
+                let deliveryDate;
+                let deliveryText;
+                
+                if (isGrowing) {
+                  if (product.availability_date) {
+                    deliveryDate = addDays(new Date(product.availability_date), 1);
+                  } else {
+                    deliveryDate = addDays(new Date(), (product.ready_in_days || product.growth_days) + 1);
+                  }
+                  if (deliveryDate.getDay() === 0) {
+                    deliveryDate = addDays(deliveryDate, 1);
+                  }
+                  deliveryText = `Delivery by ${format(deliveryDate, 'MMM d')}`;
+                } else {
+                  deliveryDate = addDays(new Date(), 1);
+                  if (deliveryDate.getDay() === 0) {
+                    deliveryDate = addDays(deliveryDate, 1);
+                    deliveryText = 'Delivery by Monday';
+                  } else {
+                    deliveryText = 'Delivery by Tomorrow';
+                  }
+                }
+                
+                const selectedQty = selectedItem?.selectedQty || 100;
+                const totalPrice = (product.price / 100) * selectedQty;
 
                 return (
                   <Card
@@ -885,35 +911,45 @@ const SubscriptionCreate = () => {
                             ) : isGrowing ? (
                               <Badge variant="outline" className="text-amber-600 border-amber-200 text-xs">
                                 <Sprout className="w-3 h-3 mr-1" />
-                                Growing - Delivery by {format(addDays(product.availability_date ? new Date(product.availability_date) : new Date(), (product.availability_date ? 1 : deliveryDaysNeeded + 1)), 'MMM d')}
+                                {deliveryText}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="text-green-600 border-green-200 text-xs">
                                 <Clock className="w-3 h-3 mr-1" />
-                                Delivery by Tomorrow
+                                {deliveryText}
                               </Badge>
                             )}
                           </div>
-                          
-                          <p className="text-base sm:text-lg font-bold text-primary">₹{product.price}</p>
                         </div>
                       </div>
                       {isSelected && (
                         <div className="mt-3 sm:mt-4" onClick={(e) => e.stopPropagation()}>
-                          <Label className="text-xs sm:text-sm">Packs per delivery ({product.pack_size || '80g'})</Label>
-                          <Input
-                            data-testid={`quantity-input-${product.id}`}
-                            type="number"
-                            min="1"
-                            max="10"
-                            value={selectedItem?.quantity || 1}
-                            onChange={(e) => updateQuantity(product.id, e.target.value)}
-                            className="mt-1"
-                          />
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">Qty:</span>
+                            <Select
+                              value={String(selectedQty)}
+                              onValueChange={(value) => updateSelectedQty(product.id, value)}
+                            >
+                              <SelectTrigger className="w-20 h-8 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getQtyOptions(product.weight || 5000).map((qty) => (
+                                  <SelectItem key={qty} value={String(qty)}>
+                                    {qty}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <span className="text-xs text-muted-foreground">gm</span>
+                            <span className="text-lg font-bold text-primary ml-auto">
+                              ₹{totalPrice.toFixed(0)}
+                            </span>
+                          </div>
                           {isGrowing && (
-                            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                            <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
                               <Sprout className="w-3 h-3" />
-                              First delivery after {deliveryDaysNeeded} days (currently growing)
+                              Growing - {deliveryText}
                             </p>
                           )}
                         </div>
