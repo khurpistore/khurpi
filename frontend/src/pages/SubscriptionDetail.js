@@ -273,7 +273,7 @@ const SubscriptionDetail = () => {
               <div className="space-y-3">
                 {/* Summary Line */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>{packCount} pack{packCount > 1 ? 's' : ''} × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
+                  <span>Per delivery × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
                   <span>₹{monthlySubtotal.toFixed(0)}</span>
                 </div>
 
