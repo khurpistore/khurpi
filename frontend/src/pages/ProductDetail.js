@@ -206,35 +206,26 @@ const ProductDetail = () => {
               <h3 className="font-semibold text-primary">Buy Now</h3>
               
               {/* Quantity Selector */}
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">Quantity:</span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-8 h-8 p-0"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-16 text-center"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-8 h-8 p-0"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                <span className="text-lg font-bold text-primary ml-auto">
-                  ₹{(product.price * quantity).toFixed(2)}
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Qty:</span>
+                <Select
+                  value={String(selectedQty)}
+                  onValueChange={(value) => setSelectedQty(parseInt(value))}
+                >
+                  <SelectTrigger className="w-24 h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getQtyOptions(product.weight || 5000).map((qty) => (
+                      <SelectItem key={qty} value={String(qty)}>
+                        {qty}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-muted-foreground">gm</span>
+                <span className="text-2xl font-bold text-primary ml-auto">
+                  ₹{((product.price / 100) * selectedQty).toFixed(0)}
                 </span>
               </div>
 
@@ -242,11 +233,11 @@ const ProductDetail = () => {
                 data-testid="add-to-cart-detail-button"
                 size="lg"
                 onClick={handleAddToCart}
-                disabled={product.stock <= 0}
+                disabled={getStockStatus().status === 'out_of_stock'}
                 className="w-full bg-primary hover:bg-primary/90 text-white rounded-full py-5 text-lg font-medium"
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart
+                Add to Cart - ₹{((product.price / 100) * selectedQty).toFixed(0)}
               </Button>
 
               <div className="relative">
