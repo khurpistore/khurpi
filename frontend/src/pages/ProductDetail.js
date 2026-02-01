@@ -123,10 +123,10 @@ const ProductDetail = () => {
               </h1>
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="text-3xl sm:text-4xl font-bold text-primary">₹{product.price}</div>
-                <div className="text-muted-foreground">per {product.pack_size || '80g'} pack</div>
+                <div className="text-muted-foreground">per 100gm</div>
               </div>
               
-              {product.stock <= 0 ? (
+              {getStockStatus().status === 'out_of_stock' ? (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-800 font-semibold mb-1">Currently Out of Stock</p>
                   <p className="text-red-600 text-sm">
@@ -134,15 +134,16 @@ const ProductDetail = () => {
                     You can schedule your subscription to start after {product.growth_days} days from today.
                   </p>
                 </div>
-              ) : product.stock < 10 ? (
+              ) : getStockStatus().status === 'growing' ? (
                 <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-amber-800 font-semibold">
-                    Only {product.stock} packs left in stock!
+                  <p className="text-amber-800 font-semibold flex items-center gap-2">
+                    <Sprout className="w-4 h-4" />
+                    Currently Growing - Ready in {product.ready_in_days || product.growth_days} days
                   </p>
                 </div>
               ) : (
                 <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 font-semibold">In Stock - {product.stock} packs available</p>
+                  <p className="text-green-800 font-semibold">In Stock - Available up to {product.weight || 5000}gm</p>
                 </div>
               )}
               
