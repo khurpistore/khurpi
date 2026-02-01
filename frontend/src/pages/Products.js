@@ -272,16 +272,43 @@ const Products = () => {
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-1 sm:mb-2 heading-text">{product.name}</h3>
                     <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
+                    
+                    {/* Price per 100gm */}
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{((product.price / 100) * (product.weight || 100)).toFixed(0)}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">{product.weight || 100}gm @ ₹{product.price}/100gm</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">per 100gm</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs sm:text-sm text-muted-foreground">Ready in</p>
                         <p className="text-base sm:text-lg font-semibold text-secondary">{product.growth_days} days</p>
                       </div>
                     </div>
+                    
+                    {/* Quantity Selector */}
+                    {stockInfo.status !== 'out_of_stock' && (
+                      <div className="flex items-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-sm text-muted-foreground">Qty:</span>
+                        <Select
+                          value={String(selectedQty[product.id] || 100)}
+                          onValueChange={(value) => setSelectedQty(prev => ({ ...prev, [product.id]: parseInt(value) }))}
+                        >
+                          <SelectTrigger className="w-24 h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getQtyOptions(product.weight || 5000).map((qty) => (
+                              <SelectItem key={qty} value={String(qty)}>
+                                {qty}gm
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-sm font-semibold text-primary ml-auto">
+                          ₹{((product.price / 100) * (selectedQty[product.id] || 100)).toFixed(0)}
+                        </span>
+                      </div>
+                    )}
                     
                     <div className="mb-3">
                       {renderStockBadge(product)}
