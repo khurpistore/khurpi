@@ -479,14 +479,23 @@ const AdminProducts = () => {
                     />
                   </div>
                   
-                  {/* Pack Size */}
+                  {/* Weight (gm) */}
                   <div className="col-span-1">
-                    <Input
-                      type="text"
-                      value={getFieldValue(product, 'pack_size') || '80g'}
-                      onChange={(e) => handleFieldChange(product.id, 'pack_size', e.target.value)}
-                      className="h-8 text-sm text-center"
-                    />
+                    <Select
+                      value={String(getFieldValue(product, 'weight') || 100)}
+                      onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="100">100g</SelectItem>
+                        <SelectItem value="200">200g</SelectItem>
+                        <SelectItem value="300">300g</SelectItem>
+                        <SelectItem value="400">400g</SelectItem>
+                        <SelectItem value="500">500g</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   {/* Stock Qty */}
