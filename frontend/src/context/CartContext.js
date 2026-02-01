@@ -91,6 +91,16 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  const updateSelectedQty = (productId, selectedQty) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.product.id === productId
+          ? { ...item, product: { ...item.product, selectedQty } }
+          : item
+      )
+    );
+  };
+
   const clearCart = () => {
     setCartItems([]);
   };
