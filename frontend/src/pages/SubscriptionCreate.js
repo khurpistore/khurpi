@@ -1135,9 +1135,6 @@ const SubscriptionCreate = () => {
                 <Package className="w-5 h-5 mr-2" />
                 Add to Cart - ₹{calculateTotal().toFixed(2)}/month
               </Button>
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                Review your subscription details in cart before checkout
-              </p>
             </div>
           </div>
         )}
