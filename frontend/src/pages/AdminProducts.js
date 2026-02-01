@@ -26,7 +26,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     nutrients: product?.nutrients || '',
     price: product?.price || '',
     growth_days: product?.growth_days || '',
-    pack_size: product?.pack_size || '80g',
+    weight: product?.weight || 100,
     stock: product?.stock || 50,
     active: product?.active !== false,
     stock_status: product?.stock_status || 'in_stock',
@@ -143,15 +143,22 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <Label htmlFor="pack_size" className="text-sm">Pack Size</Label>
-          <Input
-            id="pack_size"
-            data-testid="product-pack-size-input"
-            value={formData.pack_size}
-            onChange={(e) => setFormData({ ...formData, pack_size: e.target.value })}
-            placeholder="e.g., 80g, 100g, 50g"
-            className="mt-1"
-          />
+          <Label htmlFor="weight" className="text-sm">Weight (gm)</Label>
+          <Select
+            value={String(formData.weight)}
+            onValueChange={(value) => setFormData({ ...formData, weight: parseInt(value) })}
+          >
+            <SelectTrigger className="mt-1" data-testid="product-weight-select">
+              <SelectValue placeholder="Select weight" />
+            </SelectTrigger>
+            <SelectContent className="max-h-60">
+              {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
+                <SelectItem key={w} value={String(w)}>
+                  {w >= 1000 ? `${(w/1000).toFixed(1)}kg` : `${w}gm`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label htmlFor="stock" className="text-sm">Stock Quantity</Label>
@@ -163,7 +170,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
             onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
             required
             className="mt-1"
-            placeholder="Number of packs"
+            placeholder="Number of units"
           />
         </div>
       </div>
@@ -489,12 +496,12 @@ const AdminProducts = () => {
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="100">100g</SelectItem>
-                        <SelectItem value="200">200g</SelectItem>
-                        <SelectItem value="300">300g</SelectItem>
-                        <SelectItem value="400">400g</SelectItem>
-                        <SelectItem value="500">500g</SelectItem>
+                      <SelectContent className="max-h-60">
+                        {Array.from({ length: 100 }, (_, i) => (i + 1) * 100).map((w) => (
+                          <SelectItem key={w} value={String(w)}>
+                            {w >= 1000 ? `${(w/1000).toFixed(1)}kg` : `${w}gm`}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

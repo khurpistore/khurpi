@@ -321,7 +321,7 @@ const Checkout = () => {
                         <img src={product.image} alt={product.name} className="w-8 h-8 rounded object-cover" />
                         <div className="flex-1 min-w-0">
                           <span className="text-xs truncate block">{product.name}</span>
-                          <span className="text-xs text-muted-foreground">{product.weight || 100}g</span>
+                          <span className="text-xs text-muted-foreground">{product.weight || 100}gm</span>
                         </div>
                         <span className="text-xs bg-green-200 text-green-800 px-1.5 py-0.5 rounded font-medium">Qty: {product.quantity}</span>
                       </div>
@@ -364,7 +364,7 @@ const Checkout = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}g</p>
+                          <p className="text-xs text-muted-foreground">{item.product.weight || 100}gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {isGrowing ? `Growing - by ${estimatedDate}` : `Delivery by ${estimatedDate}`}
