@@ -1,0 +1,73 @@
+{
+  "summary": "Completed frontend testing of subscription pages with new weight-based pricing logic. All features working correctly: weight dropdown (100-5000gm options), price calculation (price/100 * selectedQty), dynamic delivery dates based on stock status.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_8.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SubscriptionCreate.js: getQtyOptions() correctly generates weight options 100-1000 (step 100) and 1500-5000 (step 500)",
+    "SubscriptionCreate.js: calculatePerDeliveryPrice() uses correct formula (product.price / 100) * qty",
+    "SubscriptionCreate.js: Delivery date calculation correctly handles in-stock (tomorrow) and growing (availability_date+1) products, skipping Sundays",
+    "Cart.js: Subscription section correctly displays weight (qty)gm and calculated price",
+    "SubscriptionDetail.js: Products section uses same weight-based pricing formula for display"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% (all subscription features verified)"
+  },
+  "test_credentials": {
+    "test_user": {
+      "phone": "1234567890",
+      "password": "testpassword"
+    }
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Subscription pages updated with weight-based pricing. Key changes verified: 1) Weight dropdown with options 100-5000gm, 2) Price calculation: (price/100) * selectedQty, 3) Delivery dates: Tomorrow for in-stock, availability_date+1 for growing products (skip Sundays). All flows tested end-to-end.",
+  "features_verified": {
+    "SUBSCRIPTION_CREATE_STEP1_PRODUCT_SELECTION": {
+      "status": "PASS",
+      "details": "Products displayed with weight dropdown (Qty: 100-5000gm), dynamic delivery dates (Tomorrow for in-stock, Feb 7/Feb 17 for growing), price updates on weight change"
+    },
+    "SUBSCRIPTION_CREATE_STEP1_PRICE_CALCULATION": {
+      "status": "PASS",
+      "details": "Price correctly calculated as (price/100) * selectedQty. Example: Turnip ₹180/100gm, 300gm = ₹540"
+    },
+    "SUBSCRIPTION_CREATE_STEP2_PLAN_SELECTION": {
+      "status": "PASS",
+      "details": "Three plans displayed: Fresh Start (1/week), Balanced Nutrition (2/week, 10% OFF), Power Greens (4/week, 50% OFF). All show FREE DELIVERY badge"
+    },
+    "SUBSCRIPTION_CREATE_STEP3_ADD_TO_CART": {
+      "status": "PASS",
+      "details": "Add to Cart button shows correct monthly total. Example: ₹540/delivery × 1/week × 4 weeks = ₹2160/month"
+    },
+    "CART_SUBSCRIPTION_DISPLAY": {
+      "status": "PASS",
+      "details": "Cart shows subscription with: product name, weight (300gm), calculated price (₹540), start date, delivery days, monthly total (₹2160/mo)"
+    },
+    "DELIVERY_DATE_IN_STOCK": {
+      "status": "PASS",
+      "details": "In-stock products show 'Delivery by Tomorrow' (or 'Delivery by Monday' if tomorrow is Sunday)"
+    },
+    "DELIVERY_DATE_GROWING": {
+      "status": "PASS",
+      "details": "Growing products show 'Delivery by [date]' based on availability_date + 1 day. Example: Basil shows 'Delivery by Feb 7', Green Pea Shoot shows 'Delivery by Feb 17'"
+    },
+    "WEIGHT_DROPDOWN_OPTIONS": {
+      "status": "PASS",
+      "details": "Weight dropdown shows options: 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000 (and 1500-5000 for products with higher max weight)"
+    }
+  },
+  "mocked_apis_note": "No mocked APIs - all operations use real backend endpoints"
+}
