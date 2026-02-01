@@ -109,15 +109,19 @@ const Cart = () => {
                       );
                     })}
                   </div>
-                  <div className="mt-2 pt-2 border-t border-green-200">
-                    <div className="flex items-center gap-1 text-xs text-green-700 mb-1">
+                  <div className="mt-2 pt-2 border-t border-green-200 space-y-1">
+                    <div className="flex items-center gap-1 text-xs text-green-700">
                       <Clock className="w-3 h-3" />
                       <span>Starts: {pendingSubscription.startDate}</span>
                       <span className="mx-1">•</span>
                       <span>Days: {pendingSubscription.deliveryDays?.join(', ')}</span>
                     </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-green-700">Per Delivery</span>
+                      <span className="font-medium text-green-700">₹{pendingSubscription.perDeliveryTotal?.toFixed(0)}</span>
+                    </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-green-700">Monthly</span>
+                      <span className="text-green-700">Monthly ({pendingSubscription.deliveriesPerWeek || 1} × 4 weeks)</span>
                       <span className="font-semibold text-green-700">₹{pendingSubscription.monthlyTotal?.toFixed(0)}/mo</span>
                     </div>
                   </div>
