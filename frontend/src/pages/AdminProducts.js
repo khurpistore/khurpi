@@ -221,17 +221,31 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
         
         {formData.stock_status === 'growing' && (
           <div>
-            <Label htmlFor="ready_in_days" className="text-xs text-muted-foreground">Ready in (days)</Label>
-            <Input
-              id="ready_in_days"
-              data-testid="ready-in-days-input"
-              type="number"
-              min="1"
-              value={formData.ready_in_days}
-              onChange={(e) => setFormData({ ...formData, ready_in_days: e.target.value })}
-              placeholder="e.g., 10"
-              className="mt-1"
-            />
+            <Label className="text-xs text-muted-foreground">Availability Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full mt-1 justify-start text-left font-normal"
+                  data-testid="availability-date-picker"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.availability_date ? format(formData.availability_date, 'PPP') : 'Select date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.availability_date}
+                  onSelect={(date) => setFormData({ ...formData, availability_date: date })}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formData.availability_date && `Ready in ${differenceInDays(formData.availability_date, new Date())} days`}
+            </p>
           </div>
         )}
         
