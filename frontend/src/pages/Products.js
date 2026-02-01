@@ -113,9 +113,20 @@ const Products = () => {
 
   const renderStockBadge = (product) => {
     const stockInfo = getStockStatus(product);
-    const deliveryDate = addDays(new Date(), stockInfo.status === 'growing' 
-      ? (stockInfo.readyInDays || product.growth_days) 
-      : product.growth_days);
+    
+    // Calculate delivery date based on stock status
+    let deliveryDate;
+    if (stockInfo.status === 'in_stock') {
+      // In stock: delivery next day
+      deliveryDate = addDays(new Date(), 1);
+    } else if (stockInfo.status === 'growing') {
+      // Growing: delivery = availability_date + 1 day, or ready_in_days + 1
+      if (product.availability_date) {
+        deliveryDate = addDays(new Date(product.availability_date), 1);
+      } else {
+        deliveryDate = addDays(new Date(), (stockInfo.readyInDays || product.growth_days) + 1);
+      }
+    }
     
     if (stockInfo.status === 'out_of_stock') {
       return (
