@@ -230,6 +230,7 @@ class Product(BaseModel):
     # Stock availability status
     stock_status: str = "in_stock"  # in_stock, growing, out_of_stock
     ready_in_days: Optional[int] = None  # For "growing" status - days until ready
+    availability_date: Optional[str] = None  # ISO date string when product will be available
     seeds_available: bool = True  # Whether seeds are available for growing
     created_at: str
 
@@ -246,6 +247,7 @@ class ProductCreate(BaseModel):
     active: bool = True
     stock_status: str = "in_stock"
     ready_in_days: Optional[int] = None
+    availability_date: Optional[str] = None
     seeds_available: bool = True
 
 class ProductUpdate(BaseModel):
@@ -261,6 +263,7 @@ class ProductUpdate(BaseModel):
     active: Optional[bool] = None
     stock_status: Optional[str] = None
     ready_in_days: Optional[int] = None
+    availability_date: Optional[str] = None
     seeds_available: Optional[bool] = None
 
 class SubscriptionItem(BaseModel):
