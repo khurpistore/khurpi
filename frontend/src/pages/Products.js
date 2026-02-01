@@ -257,7 +257,7 @@ const Products = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="text-xl sm:text-2xl font-bold text-primary">₹{product.price}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">per {product.weight || 100}gm</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{product.weight || 100}gm</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs sm:text-sm text-muted-foreground">Ready in</p>
