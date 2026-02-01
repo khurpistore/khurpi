@@ -280,6 +280,9 @@ const Checkout = () => {
                           <span className="text-xs bg-primary text-white px-1.5 py-0.5 rounded">Default</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{defaultAddr.address_line}</p>
+                        {defaultAddr.phone && (
+                          <p className="text-xs text-muted-foreground mt-0.5">Phone: {defaultAddr.phone}</p>
+                        )}
                       </div>
                     );
                   })()}
