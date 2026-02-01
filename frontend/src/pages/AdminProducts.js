@@ -424,10 +424,10 @@ const AdminProducts = () => {
             {/* Header */}
             <div className="grid grid-cols-11 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
               <div className="col-span-3">Product</div>
-              <div className="col-span-1 text-center">Price (₹)</div>
-              <div className="col-span-1 text-center">Growth Days</div>
-              <div className="col-span-2 text-center">Weight (gm)</div>
-              <div className="col-span-1 text-center">Stock Status</div>
+              <div className="col-span-1">Price (₹)</div>
+              <div className="col-span-1">Growth Days</div>
+              <div className="col-span-2">Weight (gm)</div>
+              <div className="col-span-1">Stock Status</div>
               <div className="col-span-1 text-center">Active</div>
               <div className="col-span-2 text-center">Actions</div>
             </div>
@@ -455,7 +455,7 @@ const AdminProducts = () => {
                       type="number"
                       value={getFieldValue(product, 'price')}
                       onChange={(e) => handleFieldChange(product.id, 'price', e.target.value)}
-                      className="h-7 text-xs text-center w-16"
+                      className="h-7 text-xs text-center"
                     />
                   </div>
                   
@@ -465,7 +465,7 @@ const AdminProducts = () => {
                       type="number"
                       value={getFieldValue(product, 'growth_days')}
                       onChange={(e) => handleFieldChange(product.id, 'growth_days', e.target.value)}
-                      className="h-7 text-xs text-center w-14"
+                      className="h-7 text-xs text-center"
                     />
                   </div>
                   
@@ -475,7 +475,7 @@ const AdminProducts = () => {
                       value={String(getFieldValue(product, 'weight') || 100)}
                       onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
                     >
-                      <SelectTrigger className="h-7 text-xs w-20">
+                      <SelectTrigger className="h-7 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
@@ -500,7 +500,7 @@ const AdminProducts = () => {
                       <SelectContent>
                         <SelectItem value="in_stock">In Stock</SelectItem>
                         <SelectItem value="growing">Growing</SelectItem>
-                        <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                        <SelectItem value="out_of_stock">Out</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
