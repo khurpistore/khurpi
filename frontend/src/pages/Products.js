@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ShoppingCart, Plus, Sparkles, Truck, Tag, Zap, Sprout, Clock, XCircle, CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
@@ -13,9 +14,19 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Generate quantity options: 100-1000 (step 100), 1500-5000 (step 500)
+const getQtyOptions = (maxQty) => {
+  const options = [
+    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
+    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
+  ];
+  return options.filter(q => q <= maxQty);
+};
+
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedQty, setSelectedQty] = useState({});
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
