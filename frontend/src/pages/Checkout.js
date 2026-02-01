@@ -376,7 +376,7 @@ const Checkout = () => {
                       if (estimatedDelivery.getDay() === 0) {
                         estimatedDelivery = addDays(estimatedDelivery, 1);
                       }
-                      deliveryText = `Growing - by ${format(estimatedDelivery, 'MMM d')}`;
+                      deliveryText = `Growing - Delivery by ${format(estimatedDelivery, 'MMM d')}`;
                     } else {
                       // In stock: delivery next day, skip Sunday
                       estimatedDelivery = addDays(new Date(), 1);
@@ -390,6 +390,7 @@ const Checkout = () => {
                     
                     const selectedQty = item.product.selectedQty || 100;
                     const unitPrice = (item.product.price / 100) * selectedQty;
+                    
                     return (
                       <div key={item.product.id} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
                         <div className="relative">
@@ -402,14 +403,34 @@ const Checkout = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">{selectedQty}gm @ ₹{item.product.price}/100gm</p>
                           <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
                             <Clock className="w-3 h-3" />
                             {deliveryText}
                           </p>
                         </div>
-                        <span className="text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded font-medium">x{item.quantity}</span>
-                        <span className="text-sm font-medium">₹{(unitPrice * item.quantity).toFixed(0)}</span>
+                        {/* Weight Dropdown */}
+                        <div className="flex items-center gap-1">
+                          <Select
+                            value={String(selectedQty)}
+                            onValueChange={(value) => updateSelectedQty(item.product.id, parseInt(value))}
+                          >
+                            <SelectTrigger className="w-20 h-7 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getQtyOptions(item.product.weight || 5000).map((qty) => (
+                                <SelectItem key={qty} value={String(qty)}>
+                                  {qty}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-xs text-muted-foreground">gm</span>
+                        </div>
+                        <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>
+                        <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
                       </div>
                     );
                   })}
