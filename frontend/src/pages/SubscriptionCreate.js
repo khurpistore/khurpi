@@ -455,9 +455,9 @@ const SubscriptionCreate = () => {
     } catch (error) {
       // Use default plans (Monthly billing)
       const defaultPlans = [
-        { id: 'once_week', name: 'Once a Week', frequency: 'once_week', deliveries_per_week: 1, discount: 0, packs_per_month: 4, description: 'Perfect for trying out' },
-        { id: 'twice_week', name: 'Twice a Week', frequency: 'twice_week', deliveries_per_week: 2, discount: 10, packs_per_month: 8, description: 'Most popular choice' },
-        { id: 'four_days_week', name: '4 Days a Week', frequency: 'four_days_week', deliveries_per_week: 4, discount: 50, packs_per_month: 16, description: 'Best value - Maximum freshness' }
+        { id: 'once_week', name: 'Fresh Start Plan', frequency: 'once_week', deliveries_per_week: 1, discount: 0, packs_per_month: 4, description: 'Perfect for trying out' },
+        { id: 'twice_week', name: 'Balanced Nutrition Plan', frequency: 'twice_week', deliveries_per_week: 2, discount: 10, packs_per_month: 8, description: 'Most popular choice' },
+        { id: 'four_days_week', name: 'Power Greens Plan', frequency: 'four_days_week', deliveries_per_week: 4, discount: 50, packs_per_month: 16, description: 'Best value - Maximum freshness' }
       ];
       setSubscriptionPlans(defaultPlans);
       // Select the first plan by default ONLY if not editing
