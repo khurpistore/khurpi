@@ -398,7 +398,8 @@ const AdminDiscountTiers = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
