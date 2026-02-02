@@ -214,11 +214,11 @@ const Orders = () => {
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {item.items.slice(0, 6).map((orderItem, idx) => {
-                            const isGrowing = orderItem.product?.stock_status === 'growing';
+                            const deliveryInfo = getProductDeliveryDate(orderItem.product);
                             return (
                               <div 
                                 key={idx} 
-                                className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
+                                className={`flex items-center gap-2 p-2 rounded-lg ${deliveryInfo.isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
                               >
                                 {orderItem.product?.image ? (
                                   <img 
@@ -234,9 +234,10 @@ const Orders = () => {
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs font-medium truncate">{orderItem.product?.name || 'Product'}</p>
                                   <p className="text-xs text-muted-foreground">{orderItem.quantity}gm</p>
-                                  {isGrowing && (
-                                    <p className="text-xs text-amber-600">🌱 Growing</p>
-                                  )}
+                                  <p className={`text-xs flex items-center gap-1 ${deliveryInfo.isGrowing ? 'text-amber-600' : 'text-green-600'}`}>
+                                    {deliveryInfo.isGrowing ? <Sprout className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                    {format(deliveryInfo.date, 'MMM d')}
+                                  </p>
                                 </div>
                               </div>
                             );
