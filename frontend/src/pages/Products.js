@@ -222,10 +222,10 @@ const Products = () => {
                   <Truck className="w-4 h-4" /> FREE Delivery
                 </span>
                 <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
-                  <Tag className="w-4 h-4" /> Up to 50% OFF
+                  <Sparkles className="w-4 h-4" /> Priority Harvest
                 </span>
                 <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
-                  <Sparkles className="w-4 h-4" /> Priority Harvest
+                  <Tag className="w-4 h-4" /> Flexible Plans
                 </span>
               </div>
             </div>
