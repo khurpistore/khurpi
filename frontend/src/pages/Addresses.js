@@ -241,8 +241,10 @@ const Addresses = () => {
     const parts = [
       formData.address_line_1,
       formData.address_line_2,
+      formData.landmark,
       formData.area,
       formData.city,
+      formData.state,
       formData.pincode
     ].filter(Boolean);
     return parts.join(', ');
@@ -255,6 +257,14 @@ const Addresses = () => {
     if (!formData.latitude || !formData.longitude) {
       toast.error('Location Required', {
         description: 'Please pin your delivery location on the map or search for an address.'
+      });
+      return;
+    }
+
+    // Validate receiver name
+    if (!formData.name || formData.name.trim().length < 2) {
+      toast.error('Receiver Name Required', {
+        description: 'Please enter the receiver\'s name.'
       });
       return;
     }
@@ -284,11 +294,14 @@ const Addresses = () => {
         phone: formData.phone,
         address_line_1: formData.address_line_1,
         address_line_2: formData.address_line_2,
+        landmark: formData.landmark,
         area: formData.area,
         city: formData.city,
+        state: formData.state,
         pincode: formData.pincode,
         latitude: formData.latitude,
         longitude: formData.longitude,
+        address_type: formData.address_type,
         is_default: formData.is_default
       };
 
