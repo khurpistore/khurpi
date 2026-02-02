@@ -147,7 +147,7 @@ const OrderDetail = () => {
                 {order.items?.map((item, idx) => {
                   const weight = item.quantity || 100;
                   const itemPrice = item.price || 0;
-                  const pricePerHundredGm = item.product?.price || (itemPrice * 100 / weight);
+                  const pricePerHundredGm = item.product?.price || 0;
                   
                   return (
                     <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
@@ -177,18 +177,12 @@ const OrderDetail = () => {
                 })}
               </div>
               
-              {/* Total Weight and Price */}
-              <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-                <div className="flex justify-between items-center text-sm">
+              {/* Total Weight */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total Weight</span>
                   <span className="font-semibold">
                     {order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0)}gm
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Total Price</span>
-                  <span className="font-semibold text-primary text-lg">
-                    ₹{order.items?.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(0)}
                   </span>
                 </div>
               </div>
