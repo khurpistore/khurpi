@@ -1854,6 +1854,20 @@ class PaymentVerifyRequest(BaseModel):
 @api_router.post("/payments/create-order")
 async def create_razorpay_order(data: PaymentOrderRequest):
     """Create a Razorpay order for payment"""
+    
+    # Test mode - return mock order for testing
+    if razorpay_test_mode:
+        import random
+        mock_order_id = f"order_test_{random.randint(100000, 999999)}"
+        return {
+            "success": True,
+            "order_id": mock_order_id,
+            "amount": int(data.amount * 100),
+            "currency": "INR",
+            "key_id": razorpay_key_id or "rzp_test_mock",
+            "test_mode": True
+        }
+    
     if not razorpay_client:
         raise HTTPException(status_code=500, detail="Payment gateway not configured")
     
