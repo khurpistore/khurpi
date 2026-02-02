@@ -145,9 +145,9 @@ const OrderDetail = () => {
             <CardContent className="p-6 pt-0">
               <div className="space-y-4">
                 {order.items?.map((item, idx) => {
-                  const itemQty = item.quantity || 1;
-                  const itemPrice = item.price || 0;
-                  const totalPrice = itemPrice * itemQty;
+                  const weight = item.quantity || 100; // quantity is weight in grams
+                  const itemPrice = item.price || 0; // price is total price for this item
+                  const pricePerHundredGm = item.product?.price || (itemPrice * 100 / weight);
                   
                   return (
                     <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
@@ -165,12 +165,12 @@ const OrderDetail = () => {
                       <div className="flex-1">
                         <p className="font-medium">{item.product?.name || 'Product'}</p>
                         <p className="text-sm text-muted-foreground">
-                          ₹{itemPrice.toFixed(0)} × {itemQty}
+                          {weight}gm @ ₹{pricePerHundredGm.toFixed(0)}/100gm
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-primary">₹{totalPrice.toFixed(0)}</p>
-                        <p className="text-xs text-muted-foreground">Qty: {itemQty}</p>
+                        <p className="font-semibold text-primary">₹{itemPrice.toFixed(0)}</p>
+                        <p className="text-xs text-muted-foreground">{weight}gm</p>
                       </div>
                     </div>
                   );
