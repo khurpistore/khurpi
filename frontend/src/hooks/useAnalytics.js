@@ -491,8 +491,8 @@ export const useAnalytics = () => {
       category: product.category,
       value: product.price,
       metadata: {
-        stock: product.stock,
-        in_stock: product.stock > 0
+        available_qty: product.weight,
+        in_stock: product.weight > 0
       }
     });
   }, [trackEvent]);
