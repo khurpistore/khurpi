@@ -148,11 +148,8 @@ const OrderDetail = () => {
                 let latestDeliveryDate = addDays(new Date(), 1);
                 if (latestDeliveryDate.getDay() === 0) latestDeliveryDate = addDays(latestDeliveryDate, 1);
                 
-                let hasGrowingItems = false;
-                
                 order.items?.forEach(item => {
                   const deliveryInfo = getProductDeliveryDate(item.product);
-                  if (deliveryInfo.isGrowing) hasGrowingItems = true;
                   if (deliveryInfo.date > latestDeliveryDate) {
                     latestDeliveryDate = deliveryInfo.date;
                   }
@@ -166,19 +163,13 @@ const OrderDetail = () => {
                       <p className="font-semibold text-primary">{format(new Date(order.created_at), 'MMM d, yyyy')}</p>
                       <p className="text-xs text-muted-foreground">{format(new Date(order.created_at), 'hh:mm a')}</p>
                     </div>
-                    <div className={`rounded-lg p-4 text-center ${hasGrowingItems ? 'bg-amber-50' : 'bg-green-50'}`}>
-                      {hasGrowingItems ? (
-                        <Sprout className="w-5 h-5 mx-auto text-amber-600 mb-2" />
-                      ) : (
-                        <Clock className="w-5 h-5 mx-auto text-green-600 mb-2" />
-                      )}
-                      <p className={`text-xs uppercase tracking-wide ${hasGrowingItems ? 'text-amber-700' : 'text-green-700'}`}>Delivery Date</p>
-                      <p className={`font-semibold ${hasGrowingItems ? 'text-amber-800' : 'text-green-800'}`}>
+                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                      <Clock className="w-5 h-5 mx-auto text-green-600 mb-2" />
+                      <p className="text-xs text-green-700 uppercase tracking-wide">Delivery Date</p>
+                      <p className="font-semibold text-green-800">
                         {format(latestDeliveryDate, 'MMM d, yyyy')}
                       </p>
-                      <p className={`text-xs ${hasGrowingItems ? 'text-amber-600' : 'text-green-600'}`}>
-                        {hasGrowingItems ? 'Growing Item' : 'Expected'}
-                      </p>
+                      <p className="text-xs text-green-600">Expected</p>
                     </div>
                   </div>
                 );
