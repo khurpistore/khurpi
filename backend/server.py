@@ -3817,6 +3817,115 @@ async def generate_user_referral(user_id: str):
         "message": "Referral code generated successfully!"
     }
 
+# ============ ORDER DISCOUNT TIERS API ============
+
+@api_router.get("/admin/discount-tiers")
+async def get_discount_tiers():
+    """Get all discount tiers sorted by min_order_value"""
+    tiers = await db.discount_tiers.find({}, {"_id": 0}).to_list(100)
+    # Sort by min_order_value ascending
+    tiers.sort(key=lambda x: x.get("min_order_value", 0))
+    return tiers
+
+@api_router.post("/admin/discount-tiers")
+async def create_discount_tier(tier: DiscountTierCreate):
+    """Create a new discount tier"""
+    tier_doc = {
+        "id": str(uuid.uuid4()),
+        "min_order_value": tier.min_order_value,
+        "discount_percent": tier.discount_percent,
+        "active": tier.active,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.discount_tiers.insert_one(tier_doc)
+    return {**tier_doc, "_id": None}
+
+@api_router.put("/admin/discount-tiers/{tier_id}")
+async def update_discount_tier(tier_id: str, tier: DiscountTierCreate):
+    """Update a discount tier"""
+    result = await db.discount_tiers.update_one(
+        {"id": tier_id},
+        {"$set": {
+            "min_order_value": tier.min_order_value,
+            "discount_percent": tier.discount_percent,
+            "active": tier.active
+        }}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Discount tier not found")
+    return {"message": "Discount tier updated"}
+
+@api_router.delete("/admin/discount-tiers/{tier_id}")
+async def delete_discount_tier(tier_id: str):
+    """Delete a discount tier"""
+    result = await db.discount_tiers.delete_one({"id": tier_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Discount tier not found")
+    return {"message": "Discount tier deleted"}
+
+@api_router.get("/discount-tiers")
+async def get_active_discount_tiers():
+    """Get all active discount tiers for customers"""
+    tiers = await db.discount_tiers.find({"active": True}, {"_id": 0}).to_list(100)
+    tiers.sort(key=lambda x: x.get("min_order_value", 0))
+    return tiers
+
+@api_router.post("/discount-tiers/calculate")
+async def calculate_order_discount(order_value: float):
+    """Calculate applicable discount for an order value"""
+    tiers = await db.discount_tiers.find({"active": True}, {"_id": 0}).to_list(100)
+    tiers.sort(key=lambda x: x.get("min_order_value", 0), reverse=True)
+    
+    applicable_tier = None
+    for tier in tiers:
+        if order_value >= tier["min_order_value"]:
+            applicable_tier = tier
+            break
+    
+    if applicable_tier:
+        discount_amount = (order_value * applicable_tier["discount_percent"]) / 100
+        return {
+            "applicable": True,
+            "tier": applicable_tier,
+            "discount_percent": applicable_tier["discount_percent"],
+            "discount_amount": round(discount_amount, 2),
+            "final_amount": round(order_value - discount_amount, 2)
+        }
+    
+    return {
+        "applicable": False,
+        "tier": None,
+        "discount_percent": 0,
+        "discount_amount": 0,
+        "final_amount": order_value
+    }
+
+@api_router.post("/admin/discount-tiers/seed-defaults")
+async def seed_default_discount_tiers():
+    """Seed default discount tiers"""
+    # Check if tiers already exist
+    existing = await db.discount_tiers.count_documents({})
+    if existing > 0:
+        return {"message": "Discount tiers already exist", "count": existing}
+    
+    default_tiers = [
+        {"min_order_value": 1500, "discount_percent": 10},
+        {"min_order_value": 2500, "discount_percent": 15},
+        {"min_order_value": 4000, "discount_percent": 25}
+    ]
+    
+    for tier in default_tiers:
+        tier_doc = {
+            "id": str(uuid.uuid4()),
+            "min_order_value": tier["min_order_value"],
+            "discount_percent": tier["discount_percent"],
+            "active": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.discount_tiers.insert_one(tier_doc)
+    
+    return {"message": "Default discount tiers created", "count": len(default_tiers)}
+
 app.include_router(api_router)
 
 app.add_middleware(
