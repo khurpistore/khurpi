@@ -127,10 +127,21 @@ const Checkout = () => {
     
     const createOrderFromCart = async (paymentId, razorpayOrderId) => {
       if (cartItems.length === 0) return;
+      
+      // Get the default address if selectedAddressId is not set
+      const addressId = selectedAddressId || addresses.find(a => a.is_default)?.id || addresses[0]?.id;
+      if (!addressId) {
+        throw new Error('No delivery address selected');
+      }
+      
       const orderData = {
         user_id: user.id,
-        address_id: selectedAddressId,
-        items: cartItems.map(item => ({ product_id: item.product.id, quantity: item.quantity, price: item.product.price })),
+        address_id: addressId,
+        items: cartItems.map(item => ({ 
+          product_id: item.product.id, 
+          quantity: item.product.selectedQty || 100, 
+          price: item.product.price 
+        })),
         subtotal: cartSubtotal,
         delivery_fee: 0,
         coupon_code: appliedCoupon?.code || null,
