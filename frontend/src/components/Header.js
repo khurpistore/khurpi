@@ -82,7 +82,27 @@ const Header = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-green-100 shadow-sm">
+    <>
+      {/* Promo Banner */}
+      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-2 px-4 text-center text-sm">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          <span className="flex items-center gap-1.5">
+            <Truck className="w-4 h-4" />
+            <span className="font-medium">FREE Delivery</span> on all orders
+          </span>
+          {maxDiscount > 0 && (
+            <>
+              <span className="hidden sm:inline text-white/60">|</span>
+              <span className="flex items-center gap-1.5">
+                <Percent className="w-4 h-4" />
+                <span>Up to <span className="font-bold">{maxDiscount}% OFF</span> on bulk orders</span>
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+      
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-green-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-16 sm:h-20 flex items-center justify-between">
           {/* Logo */}
