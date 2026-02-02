@@ -417,7 +417,7 @@ const Checkout = () => {
                           <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
                           <div className="flex-1 min-w-0">
                             <span className="text-xs font-medium truncate block">{product.name}</span>
-                            <span className="text-xs text-muted-foreground">{qty}gm - ₹{price.toFixed(0)}</span>
+                            <span className="text-xs text-muted-foreground">₹{product.price}/100gm • {qty}gm - ₹{price.toFixed(0)}</span>
                           </div>
                         </div>
                       );
