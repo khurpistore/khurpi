@@ -136,34 +136,6 @@ const Cart = () => {
                   )}
                   {cartItems.map((item) => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
-                    
-                    // Calculate delivery date and text
-                    let estimatedDelivery;
-                    let deliveryText;
-                    
-                    if (isGrowing) {
-                      if (item.product.availability_date) {
-                        estimatedDelivery = addDays(new Date(item.product.availability_date), 1);
-                      } else {
-                        const readyDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
-                        estimatedDelivery = addDays(new Date(), readyDays + 1);
-                      }
-                      // Skip Sunday
-                      if (estimatedDelivery.getDay() === 0) {
-                        estimatedDelivery = addDays(estimatedDelivery, 1);
-                      }
-                      deliveryText = `Growing - Delivery by ${format(estimatedDelivery, 'MMM d')}`;
-                    } else {
-                      // In stock: delivery next day, skip Sunday
-                      estimatedDelivery = addDays(new Date(), 1);
-                      if (estimatedDelivery.getDay() === 0) {
-                        estimatedDelivery = addDays(estimatedDelivery, 1);
-                        deliveryText = 'Delivery by Monday';
-                      } else {
-                        deliveryText = 'Delivery by Tomorrow';
-                      }
-                    }
-                    
                     const selectedQty = item.product.selectedQty || 100;
                     const unitPrice = (item.product.price / 100) * selectedQty;
                     
@@ -180,10 +152,6 @@ const Cart = () => {
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{item.product.name}</p>
                           <p className="text-xs text-muted-foreground">₹{item.product.price}/100gm</p>
-                          <p className={`text-xs flex items-center gap-1 ${isGrowing ? 'text-amber-600' : 'text-muted-foreground'}`}>
-                            <Clock className="w-3 h-3" />
-                            {deliveryText}
-                          </p>
                         </div>
                         {/* Weight Dropdown */}
                         <div className="flex items-center gap-1">
@@ -211,6 +179,44 @@ const Cart = () => {
                       </div>
                     );
                   })}
+                  
+                  {/* Show overall delivery date for one-time items */}
+                  {(() => {
+                    let latestDeliveryDate = addDays(new Date(), 1);
+                    if (latestDeliveryDate.getDay() === 0) latestDeliveryDate = addDays(latestDeliveryDate, 1);
+                    
+                    cartItems.forEach(item => {
+                      const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
+                      let itemDelivery;
+                      
+                      if (isGrowing) {
+                        if (item.product.availability_date) {
+                          itemDelivery = addDays(new Date(item.product.availability_date), 1);
+                        } else {
+                          const readyDays = item.product.deliveryDays || item.product.ready_in_days || item.product.growth_days || 7;
+                          itemDelivery = addDays(new Date(), readyDays + 1);
+                        }
+                        if (itemDelivery.getDay() === 0) itemDelivery = addDays(itemDelivery, 1);
+                      } else {
+                        itemDelivery = addDays(new Date(), 1);
+                        if (itemDelivery.getDay() === 0) itemDelivery = addDays(itemDelivery, 1);
+                      }
+                      
+                      if (itemDelivery > latestDeliveryDate) {
+                        latestDeliveryDate = itemDelivery;
+                      }
+                    });
+                    
+                    return (
+                      <div className="mt-3 p-2 bg-green-50 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Truck className="w-4 h-4 text-green-600" />
+                          <span className="text-xs font-medium text-green-700">Estimated Delivery</span>
+                        </div>
+                        <span className="text-xs font-semibold text-green-800">{format(latestDeliveryDate, 'MMM d, yyyy')}</span>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </CardContent>
