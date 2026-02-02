@@ -161,6 +161,41 @@ const MySubscriptions = () => {
                     </div>
                   </div>
 
+                  {/* Products in Subscription */}
+                  {subscription.items && subscription.items.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
+                      <div className="space-y-2">
+                        {subscription.items.map((item) => {
+                          const isGrowing = item.product?.stock_status === 'growing';
+                          return (
+                            <div 
+                              key={item.id} 
+                              className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
+                            >
+                              <div className="relative">
+                                <img 
+                                  src={item.product?.image} 
+                                  alt={item.product?.name} 
+                                  className="w-10 h-10 rounded object-cover" 
+                                />
+                                {isGrowing && (
+                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                                    <Sprout className="w-2.5 h-2.5 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{item.product?.name}</p>
+                                <p className="text-xs text-muted-foreground">{item.quantity}gm per delivery</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Important Dates */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
