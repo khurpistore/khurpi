@@ -1898,6 +1898,21 @@ async def create_razorpay_order(data: PaymentOrderRequest):
 @api_router.post("/payments/verify")
 async def verify_razorpay_payment(data: PaymentVerifyRequest):
     """Verify Razorpay payment signature"""
+    
+    # Test mode - auto-verify for testing
+    if razorpay_test_mode:
+        # Store mock payment record
+        payment_doc = {
+            "id": str(uuid.uuid4()),
+            "razorpay_order_id": data.razorpay_order_id,
+            "razorpay_payment_id": data.razorpay_payment_id,
+            "status": "captured",
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "test_mode": True
+        }
+        await db.payments.insert_one(payment_doc)
+        return {"success": True, "verified": True, "test_mode": True}
+    
     if not razorpay_client:
         raise HTTPException(status_code=500, detail="Payment gateway not configured")
     
