@@ -1,0 +1,231 @@
+<analysis>**original_problem_statement:**
+Build a full-stack subscription web app named Khurpi for selling microgreens.
+
+**PRODUCT REQUIREMENTS (Consolidated & Updated):**
+- **Stack:** Frontend (React), Backend (FastAPI), Database (MongoDB).
+- **Core Features:**
+    - **Product Catalog:** Customers can browse microgreens with detailed stock availability (, , ). Products are sold by weight (in grams).  field represents available stock.
+    - **Single Purchase & Subscriptions:** Unified checkout flow for both single-time purchases and recurring subscriptions.
+    - **User Profile & Address Management:** Manage profile, multiple delivery addresses, and change password. Delivery is restricted to a 40km radius from the shop.
+    - **CMS for Legal Pages:** Admin can manage content for Privacy Policy, Terms & Conditions, etc.
+    - **Delivery Logic:** In Stock products are delivered the next day (skipping Sunday). Growing products are delivered one day after their set availability date.
+- **Authentication:**
+    - Login and Signup options should be clearly visible and combined (Login / Sign up).
+- **Admin Panel:**
+    - CRUD for products (using  for stock), users, subscriptions, coupons.
+    - **Automatic Discounts:** Admin can manage order-value-based discount tiers (e.g., 10% off for orders > ₹1500).
+    - **Analytics Dashboard:** A dedicated page to view key business metrics.
+- **Checkout & Payments:**
+    - A unified checkout page with a sticky payment summary.
+    - **Automatic Discounts:** Discounts are automatically applied to the cart based on the total value.
+    - Coupon/discount code functionality.
+    - Free delivery on all orders, advertised in a site-wide header banner.
+    - A test mode for payments in the testing environment.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The application is a full-stack e-commerce platform for selling microgreens. In this session, the agent has implemented a large number of user-requested features and UI/UX enhancements.
+
+A major feature, an automatic tiered discount system based on order value, was implemented. This includes a new admin management page and integration into the checkout flow. The agent also added a 40km delivery radius validation for new addresses.
+
+Significant effort was spent on refining the user-facing My Orders and Order Detail pages, including adding delivery dates, improving the product display to a grid format, and correcting price/quantity calculations. The  field has been completely removed and replaced with the  field across the entire application to resolve data inconsistencies. A site-wide promotional banner was also added to the header.
+
+**Last working item**:
+- Last item agent was working: The user requested to display the  in the address section for one-time orders on the My Orders page.
+- Status: IN PROGRESS
+- Agent Testing Done: N
+- Which testing method agent to use? screenshot tool
+- User Testing Done: N
+
+**All Pending/In progress Issue list**:
+- **Issue 1:** My Orders - Show receiver name (Priority: P0)
+- **Issue 2:** Admin user is logged out when navigating to the Analytics page (Priority: P1)
+- **Issue 3:** Subscription price does not recalculate on navigation (Priority: P2)
+- **Issue 4:** Incorrect coupon logic on Admin Payments page (Priority: P2)
+
+**Issues Detail:**
+-   **Issue 1: My Orders - Show receiver name**
+    -   **Attempted fixes:** The agent edited  to use  or fall back to . The code has been changed but not visually verified.
+    -   **Next debug checklist:**
+        -   Log in as user /.
+        -   Navigate to the  page.
+        -   Take a screenshot to verify that the receiver's name is correctly displayed in the address block for one-time orders. Ensure there is a fallback if  is not present.
+    -   **Why fix this issue and what will be achieved with the fix?** To provide more personalized and accurate information on the orders page, matching user expectations.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
+
+-   **Issue 2: Admin user is logged out when navigating to the Analytics page**
+    -   **Attempted fixes:** The previous agent made  more robust and added safeguards in .
+    -   **Next debug checklist:** User needs to test navigating to the admin analytics page using credentials /. If it fails, investigate token handling and session state on that specific route.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug blocking access to core admin features.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
+
+-   **Issue 3: Subscription price does not recalculate on navigation**
+    -   **Attempted fixes:** None directly.
+    -   **Next debug checklist:** Manually test navigating back and forth during the subscription creation process, changing product quantities/weights, and verifying the final price in the summary.
+    -   **Why fix this issue and what will be achieved with the fix?** Prevents user confusion and ensures accurate pricing for recurring payments.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
+
+-   **Issue 4: Incorrect coupon logic on Admin Payments page**
+    -   **Attempted fixes:** None.
+    -   **Next debug checklist:** Review the  endpoint and the  frontend to ensure coupon data is being passed and rendered correctly.
+    -   **Why fix this issue and what will be achieved with the fix?** Provides admin with accurate financial reporting.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
+
+**In progress Task List**:
+- **Task 1: Verify Receiver Name on My Orders page**
+    - **Where to resume:** Take a screenshot of the  page to confirm the change made in  is working as expected.
+    - **What will be achieved with this?** Fulfills the user's latest UI request.
+    - **Status:** IN PROGRESS
+    - **Should Test frontend/backend/both after fix?** frontend
+    - **Blocked on something:** None
+
+**Upcoming and Future Tasks**
+- **Upcoming Tasks:**
+    - (P1) Implement user-facing ability to pause/skip a subscription delivery.
+    - (P1) Refactor  into a modular, router-based architecture.
+- **Future Tasks:**
+    - Implement customer reviews and ratings for products.
+    - Add a social sharing feature for referral codes.
+    - Implement payment failure retry logic for subscriptions.
+    - Refactor large frontend components like .
+
+**Completed work in this session**
+- **Automatic Discount Tiers (Full Stack):**
+  - Created backend models () and REST APIs for CRUD operations on discount tiers.
+  - Seeded initial discount tiers (10% > ₹1500, 15% > ₹2500, 25% > ₹4000).
+  - Built a new admin page () with a rich UI to manage the tiers.
+  - Integrated logic into  to fetch tiers, calculate the applicable discount, and display it in the payment summary.
+- **Stock Logic Overhaul:**
+  - Removed the  field from the backend  model and all related API responses.
+  - Refactored all frontend components (, , , etc.) to use the  field as the source of truth for available quantity, fixing a major data inconsistency.
+- **Order & Subscription UI/UX Overhaul:**
+  - **Orders Page:** Enhanced both subscription and one-time order cards to show a grid of product images, names, and weights. Added  and .
+  - **Order Detail Page:** Iteratively refined the Order Items display to show correct calculations (), layout, and total weight/price, based on multiple user requests.
+  - **Subscription Pages:** Added delivery address display to subscription cards on , , and the  page.
+  - **Plan Names:** Replaced generic frequency names (e.g., Once a week) with proper plan names (e.g., Fresh Start Plan) across all user-facing subscription pages.
+- **Address & Delivery Validation:**
+  - Implemented a 40km delivery radius validation on the  page using a Haversine distance calculation, providing a clear warning/success message to the user.
+- **General UI/UX:**
+  - Added a site-wide promotional banner to the  component, dynamically displaying the highest available discount percentage.
+  - Improved the  page layout by wrapping it in  to ensure the sidebar is always visible.
+  - Cleaned up the  page to show only a single Add Address button when no addresses are saved.
+  - Responded to multiple iterative text and layout change requests on the  and  pages.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1:** Incorrect coupon logic on Admin Payments page (P2)
+-   **Issue 2:** Subscription price does not recalculate on navigation (P2)
+
+**Known issue recurrence from previous fork**
+- **Issue recurrence in previous fork:** Login Redirect Race Condition / Admin Logout
+- **Recurrence count:** 5+
+- **Status:** USER VERIFICATION PENDING
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend:** FastAPI, Pydantic, Motor ORM
+-   **Frontend:** React, React Router, TailwindCSS, , , Leaflet
+-   **State Management:** React Context API (, )
+
+**key DB schema**
+-   **Order:**
+    -    (NEW)
+    -    (NEW)
+-   **Product:**
+    -    (REMOVED)
+    -    (Now the source of truth for available quantity in grams)
+-   **DiscountTier:** (NEW Collection)
+    -   
+    -   
+    -   
+    -   
+    -   
+
+**changes in tech stack**
+-   None.
+
+**All files of reference**
+- 
+- 
+- 
+- 
+- 
+- 
+- 
+
+**Areas that need refactoring**:
+- The  function is duplicated in , , and . It should be centralized into a shared utility file.
+-  is becoming increasingly large and is a candidate for a router-based architecture (already an upcoming task).
+
+**key api endpoints**
+-   **NEW Endpoints:**
+    -   : Seeds default discount tiers.
+    -   : CRUD operations for discount tiers.
+    -   : Update/delete specific tiers.
+    -   : Fetches a single address by its ID.
+-   **Modified Endpoints:**
+    -   : Now calculates and saves .
+    -   , : No longer return the  field.
+
+**Critical Info for New Agent**
+- The user provides very specific, iterative UI feedback. Pay close attention to screenshots and the small details in their requests. The agent has been successful by making a change, taking a screenshot, and then refining based on the user's next message.
+- The  field is fully deprecated. **** is now the single source of truth for available product quantity in grams.
+- A new automatic, tiered discount system based on total order value is now live. It's managed via the  page and automatically applied at checkout.
+- A 40km delivery radius check is implemented on the frontend address creation form. Shop latitude/longitude are defined in  in .
+
+**documents and test reports created in this job**
+-  (Updated with completed tasks)
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** In order detail page instead of 400gm @ ₹160/100gm just show ₹160/100gm and in the last show total weight. (COMPLETED)
+2.  **User:** Show total price in order items in order detail page. (COMPLETED)
+3.  **User:** Order Items showing wrong calculation and duplication. (COMPLETED)
+4.  **User:** In order items, after name price is written. Fix the price in multiplication of weight. From bottom remove total weight. (COMPLETED)
+5.  **User:** Price showing ₹160 in other item show 640 as total calculation. (COMPLETED)
+6.  **User:** Add tiered discounts for bulk orders and an admin panel for it. (COMPLETED)
+7.  **User:** Add 40km delivery radius validation. (COMPLETED)
+8.  **User:** Improve the admin order discount page UI. (COMPLETED, including subsequent layout fix)
+9.  **User:** Remove stock field from everywhere and use weight field. (COMPLETED)
+10. **User:** In checkout if no address is added, show only one add button. (COMPLETED)
+11. **User:** My Orders, show receiver name in address. (PENDING - Last working item)
+
+**Project Health Check:**
+-   **Broken:** None known. The admin logout issue is unverified but not a new regression.
+-   **Mocked:** Payments are properly mocked for the testing environment via the  flag.
+
+**3rd Party Integrations**
+-   **Razorpay (Payments)**
+-   **MongoDB Atlas (Database)**
+-   **Leaflet & React-Leaflet (Maps)**
+-   **date-fns (Date Utility)**
+
+**Testing status**
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None
+-   **Known regressions:** Admin panel logout issue is still awaiting user verification.
+
+**Credentials to test flow:**
+-   **Admin Login:** 
+    -   Username: 
+    -   Password: 
+-   **User:**
+    -   Phone: 
+    -   Password: 
+
+**What agent forgot to execute**
+- The agent applied the code change for the last user request (showing  on the Orders page) but did not take a screenshot to verify the result before the session ended.</analysis>
