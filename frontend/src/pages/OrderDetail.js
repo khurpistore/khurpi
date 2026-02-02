@@ -197,10 +197,10 @@ const OrderDetail = () => {
                   const weight = item.quantity || 100;
                   const pricePerHundredGm = item.product?.price || 0;
                   const calculatedTotal = (weight / 100) * pricePerHundredGm;
-                  const deliveryInfo = getProductDeliveryDate(item.product);
+                  const isGrowing = item.product?.stock_status === 'growing';
                   
                   return (
-                    <div key={idx} className={`flex items-center gap-4 p-3 rounded-lg ${deliveryInfo.isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
+                    <div key={idx} className={`flex items-center gap-4 p-3 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
                       {item.product?.image ? (
                         <img 
                           src={item.product.image} 
@@ -216,10 +216,6 @@ const OrderDetail = () => {
                         <p className="font-medium">{item.product?.name || 'Product'}</p>
                         <p className="text-sm text-muted-foreground">
                           {weight}gm × ₹{pricePerHundredGm.toFixed(0)}/100gm
-                        </p>
-                        <p className={`text-xs flex items-center gap-1 mt-1 ${deliveryInfo.isGrowing ? 'text-amber-600' : 'text-green-600'}`}>
-                          {deliveryInfo.isGrowing ? <Sprout className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                          Delivery by {format(deliveryInfo.date, 'MMM d')}
                         </p>
                       </div>
                       <div className="text-right">
