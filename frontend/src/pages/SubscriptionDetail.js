@@ -356,110 +356,64 @@ const SubscriptionDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Actions */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Manage Subscription</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {subscription.status === 'active' && subscription.next_delivery_date && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      data-testid="skip-delivery-button"
-                      variant="outline"
-                      className="w-full rounded-full"
-                    >
-                      Skip Next Delivery
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Skip Next Delivery?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Your next delivery on {format(new Date(subscription.next_delivery_date), 'PPP')} will be skipped.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleSkipDelivery}>Confirm Skip</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-
-              {subscription.status === 'active' && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      data-testid="pause-subscription-detail-button"
-                      variant="outline"
-                      className="w-full rounded-full"
-                    >
-                      Pause Subscription
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Pause Subscription?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        <div className="flex items-start gap-2 text-amber-600 mb-2">
-                          <AlertTriangle className="w-5 h-5 mt-0.5" />
-                          <span>Cannot pause within 24 hours of next delivery</span>
-                        </div>
-                        Your subscription will be paused until you resume it.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleStatusChange('paused')}>Confirm Pause</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-
-              {subscription.status === 'paused' && (
-                <Button
-                  data-testid="resume-subscription-detail-button"
-                  onClick={() => handleStatusChange('active')}
-                  className="w-full bg-primary hover:bg-primary/90 rounded-full"
-                >
-                  Resume Subscription
-                </Button>
-              )}
-
-              {subscription.status !== 'cancelled' && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      data-testid="cancel-subscription-detail-button"
-                      variant="destructive"
-                      className="w-full rounded-full"
-                    >
-                      Cancel Subscription
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. Your subscription will be permanently cancelled.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleStatusChange('cancelled')}
-                        className="bg-destructive text-destructive-foreground"
-                      >
-                        Cancel Subscription
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </CardContent>
-          </Card>
+          {/* Cancel Subscription */}
+          {subscription.status !== 'cancelled' && (
+            <Card className="border-red-100">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm mb-1">Cancel Subscription</h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Once cancelled, your subscription will be permanently stopped. You will continue to receive deliveries until the end of your current billing cycle.
+                    </p>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">
+                      <p className="text-xs text-amber-800 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" />
+                        <span className="font-medium">No refunds will be issued for the remaining period.</span>
+                      </p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          data-testid="cancel-subscription-detail-button"
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 rounded-full"
+                        >
+                          Cancel Subscription
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            <p className="mb-3">This action cannot be undone. Your subscription will be permanently cancelled.</p>
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                              <p className="text-sm text-amber-800 font-medium">
+                                Please note: No refunds will be issued for any unused portion of your subscription.
+                              </p>
+                            </div>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleStatusChange('cancelled')}
+                            className="bg-destructive text-destructive-foreground"
+                          >
+                            Yes, Cancel
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Delivery History */}
           {deliveries.length > 0 && (
