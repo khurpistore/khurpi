@@ -527,6 +527,15 @@ const Checkout = () => {
                   <span className="text-muted-foreground">Delivery</span>
                   <span className="text-green-600 font-medium">FREE</span>
                 </div>
+                {orderDiscount && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Percent className="w-3 h-3" />
+                      Order Discount ({orderDiscount.tier.discount_percent}%)
+                    </span>
+                    <span>-₹{orderDiscountAmount.toFixed(0)}</span>
+                  </div>
+                )}
                 {appliedCoupon && (
                   <div className="flex justify-between text-green-600">
                     <span className="flex items-center gap-1"><Tag className="w-3 h-3" />{appliedCoupon.code}</span>
@@ -534,6 +543,27 @@ const Checkout = () => {
                   </div>
                 )}
               </div>
+
+              {/* Order Discount Banner */}
+              {orderDiscount && (
+                <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Percent className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-700">
+                      {orderDiscount.tier.discount_percent}% off on orders ₹{orderDiscount.tier.min_order_value.toLocaleString()}+
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Show next tier hint */}
+              {!orderDiscount && discountTiers.length > 0 && (
+                <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-xs text-amber-700">
+                    💡 Add ₹{(discountTiers[0]?.min_order_value - (cartSubtotal + subscriptionTotal)).toFixed(0)} more to get {discountTiers[0]?.discount_percent}% off!
+                  </p>
+                </div>
+              )}
 
               {/* Apply Coupon */}
               <div className="border-t pt-3 mt-3">
