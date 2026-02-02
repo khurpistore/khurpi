@@ -57,12 +57,12 @@ const Orders = () => {
 
   const getPlanDisplayName = (frequency) => {
     const planNames = {
-      'once_week': 'Once a Week',
-      'twice_week': 'Twice a Week',
-      'four_days_week': '4 Days a Week',
-      'weekly': 'Once a Week',
-      'twice_weekly': 'Twice a Week',
-      'four_days': '4 Days a Week'
+      'once_week': 'Fresh Start Plan',
+      'twice_week': 'Balanced Nutrition Plan',
+      'four_days_week': 'Power Greens Plan',
+      'weekly': 'Fresh Start Plan',
+      'twice_weekly': 'Balanced Nutrition Plan',
+      'four_days': 'Power Greens Plan'
     };
     return planNames[frequency] || frequency;
   };
