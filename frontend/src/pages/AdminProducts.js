@@ -283,8 +283,9 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
 
 const getStockStatusBadge = (product) => {
   const status = product.stock_status || 'in_stock';
+  const availableQty = product.weight || 0;
   
-  if (status === 'in_stock' && product.stock > 0) {
+  if (status === 'in_stock' && availableQty > 0) {
     return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">In Stock</Badge>;
   }
   if (status === 'growing') {
@@ -295,7 +296,7 @@ const getStockStatusBadge = (product) => {
       </Badge>
     );
   }
-  if (status === 'out_of_stock' || product.stock <= 0) {
+  if (status === 'out_of_stock' || availableQty <= 0) {
     return (
       <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
         <XCircle className="w-3 h-3 mr-1" />
