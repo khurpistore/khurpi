@@ -272,6 +272,50 @@ const SubscriptionDetail = () => {
             </CardContent>
           </Card>
 
+          {/* Delivery Address - Like Checkout */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg">Delivery Address</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {address ? (
+                <div className="p-4 rounded-lg border border-primary/20 bg-teal-50">
+                  <div className="flex items-center gap-2 mb-2">
+                    {address.receiver_name && (
+                      <span className="font-semibold text-primary">{address.receiver_name}</span>
+                    )}
+                    {address.name && (
+                      <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">{address.name}</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {[
+                      address.address_line || address.address_line_1,
+                      address.address_line_2,
+                      address.landmark,
+                      address.area,
+                      address.city
+                    ].filter(Boolean).join(', ')}
+                    {address.pincode && ` - ${address.pincode}`}
+                  </p>
+                  {address.phone && (
+                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                      📞 +91 {address.phone}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-6 bg-gray-50 rounded-lg">
+                  <MapPin className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-muted-foreground">No delivery address set</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Products */}
           <Card>
             <CardHeader className="pb-2">
