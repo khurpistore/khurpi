@@ -133,6 +133,8 @@ const Addresses = () => {
     setSearchQuery('');
     setSearchResults([]);
     setSearchedLocation(null);
+    setDeliveryEligible(true);
+    setDistanceFromShop(null);
   };
 
   const handleLocationSelect = (location) => {
