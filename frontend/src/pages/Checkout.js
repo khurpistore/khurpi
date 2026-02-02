@@ -183,7 +183,33 @@ const Checkout = () => {
         notes: { user_id: user.id, type: orderType }
       });
 
-      const { order_id, amount: orderAmount, currency, key_id } = orderResponse.data;
+      const { order_id, amount: orderAmount, currency, key_id, test_mode } = orderResponse.data;
+
+      // Test mode - bypass Razorpay UI and simulate successful payment
+      if (test_mode) {
+        try {
+          const mockPaymentId = `pay_test_${Date.now()}`;
+          const mockSignature = 'test_signature_mock';
+          
+          await axios.post(`${API}/payments/verify`, {
+            razorpay_order_id: order_id,
+            razorpay_payment_id: mockPaymentId,
+            razorpay_signature: mockSignature
+          });
+          
+          await createOrderFromCart(mockPaymentId, order_id);
+          await createSubscriptionFromPending(mockPaymentId, `sub_${order_id}`);
+          setOrderPlaced(true);
+          clearCart();
+          clearSubscription();
+          toast.success(hasOnlySubscription ? 'Subscription Created! (Test Mode)' : hasBoth ? 'Order & Subscription Created! (Test Mode)' : 'Order Placed! (Test Mode)');
+          navigate(hasOnlySubscription ? '/subscriptions' : '/orders');
+        } catch (error) {
+          toast.error('Order creation failed. Please contact support.');
+        }
+        setLoading(false);
+        return;
+      }
 
       const options = {
         key: key_id,
