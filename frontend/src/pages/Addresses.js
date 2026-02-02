@@ -25,11 +25,14 @@ const Addresses = () => {
     phone: '',
     address_line_1: '',
     address_line_2: '',
+    landmark: '',
     area: '',
-    city: '',
+    city: 'NOIDA',
+    state: 'Uttar Pradesh',
     pincode: '',
     latitude: null,
     longitude: null,
+    address_type: 'home',
     is_default: false
   });
   const [loading, setLoading] = useState(false);
