@@ -234,6 +234,7 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 February 1, 2026
 
 ## Change Log
+- **Feb 2, 2026:** Added delivery address display to subscription cards on both My Orders and My Subscriptions pages
 - **Feb 2, 2026:** Enhanced My Orders page - Subscription cards now show product info (image, name, weight) same as MySubscriptions page
 - **Feb 2, 2026:** Added contextual back button - When navigating to subscription detail from Orders page, shows "Back to Orders" button; from MySubscriptions shows "Back to Subscriptions"
 - **Feb 1, 2026:** P0 COMPLETED - Updated Subscription Pages with New Product Logic:
