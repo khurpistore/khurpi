@@ -2642,15 +2642,54 @@ async def get_inventory_planning():
     return list(product_demand.values())
 
 # Helper function to calculate estimated delivery date (next day, skipping Sunday)
-def calculate_estimated_delivery_date():
+def calculate_estimated_delivery_date(items=None, products_cache=None):
+    """Calculate estimated delivery date based on product stock status.
+    For 'growing' products, use availability_date + 1 day.
+    For 'in_stock' products, use next day delivery.
+    Returns the latest delivery date among all items.
+    """
     from datetime import timedelta
     today = datetime.now(timezone.utc)
-    # Next day delivery
-    delivery_date = today + timedelta(days=1)
-    # Skip Sunday (weekday 6)
-    if delivery_date.weekday() == 6:
-        delivery_date = delivery_date + timedelta(days=1)
-    return delivery_date.strftime("%Y-%m-%d")
+    
+    # Default: next day delivery (skip Sunday)
+    default_delivery = today + timedelta(days=1)
+    if default_delivery.weekday() == 6:  # Sunday
+        default_delivery = default_delivery + timedelta(days=1)
+    
+    if not items or not products_cache:
+        return default_delivery.strftime("%Y-%m-%d")
+    
+    latest_delivery = default_delivery
+    
+    for item in items:
+        product_id = item.get("product_id") if isinstance(item, dict) else item.product_id
+        product = products_cache.get(product_id)
+        
+        if product and product.get("stock_status") == "growing":
+            # Growing product - check availability_date
+            avail_date = product.get("availability_date")
+            if avail_date:
+                try:
+                    avail = datetime.fromisoformat(avail_date.replace('Z', '+00:00'))
+                    # Delivery is 1 day after availability
+                    product_delivery = avail + timedelta(days=1)
+                except:
+                    # Fallback: use ready_in_days or default 7 days
+                    ready_days = product.get("ready_in_days") or product.get("growth_days") or 7
+                    product_delivery = today + timedelta(days=ready_days + 1)
+            else:
+                # Use ready_in_days or default 7 days
+                ready_days = product.get("ready_in_days") or product.get("growth_days") or 7
+                product_delivery = today + timedelta(days=ready_days + 1)
+            
+            # Skip Sunday
+            if product_delivery.weekday() == 6:
+                product_delivery = product_delivery + timedelta(days=1)
+            
+            if product_delivery > latest_delivery:
+                latest_delivery = product_delivery
+    
+    return latest_delivery.strftime("%Y-%m-%d")
 
 # Orders API (for single purchases)
 @api_router.post("/orders", response_model=Order)
