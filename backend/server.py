@@ -241,9 +241,8 @@ class Product(BaseModel):
     nutrients: Optional[str] = None
     price: float
     growth_days: int
-    weight: int = 100  # Weight in grams (multiples of 100)
+    weight: int = 100  # Weight in grams - represents available stock quantity
     pack_size: str = "100g"  # Display string
-    stock: int = 100
     active: bool = True
     # Stock availability status
     stock_status: str = "in_stock"  # in_stock, growing, out_of_stock
@@ -259,9 +258,8 @@ class ProductCreate(BaseModel):
     nutrients: Optional[str] = None
     price: float
     growth_days: int
-    weight: int = 100  # Weight in grams (multiples of 100)
+    weight: int = 100  # Weight in grams - represents available stock quantity
     pack_size: str = "100g"  # Display string
-    stock: int = 100
     active: bool = True
     stock_status: str = "in_stock"
     ready_in_days: Optional[int] = None
@@ -275,9 +273,8 @@ class ProductUpdate(BaseModel):
     nutrients: Optional[str] = None
     price: Optional[float] = None
     growth_days: Optional[int] = None
-    weight: Optional[int] = None  # Weight in grams (multiples of 100)
+    weight: Optional[int] = None  # Weight in grams - represents available stock quantity
     pack_size: Optional[str] = None  # Display string
-    stock: Optional[int] = None
     active: Optional[bool] = None
     stock_status: Optional[str] = None
     ready_in_days: Optional[int] = None
