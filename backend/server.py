@@ -3035,6 +3035,13 @@ async def get_user_addresses(user_id: str):
     addresses = await db.addresses.find({"user_id": user_id}, {"_id": 0}).to_list(100)
     return addresses
 
+@api_router.get("/addresses/{address_id}")
+async def get_address(address_id: str):
+    address = await db.addresses.find_one({"id": address_id}, {"_id": 0})
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found")
+    return address
+
 @api_router.post("/users/{user_id}/addresses", response_model=Address)
 async def add_user_address(user_id: str, address_data: AddressCreate):
     import uuid
