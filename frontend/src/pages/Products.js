@@ -214,20 +214,9 @@ const Products = () => {
                   Subscribe & Unlock Premium Benefits
                 </h3>
               </div>
-              <p className="text-base sm:text-lg opacity-95 mb-4">
+              <p className="text-base sm:text-lg opacity-95">
                 Why pay more? Get fresh microgreens delivered on autopilot.
               </p>
-              <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
-                  <Truck className="w-4 h-4" /> FREE Delivery
-                </span>
-                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
-                  <Sparkles className="w-4 h-4" /> Priority Harvest
-                </span>
-                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium">
-                  <Tag className="w-4 h-4" /> Flexible Plans
-                </span>
-              </div>
             </div>
             <Button
               data-testid="subscribe-banner-button"
