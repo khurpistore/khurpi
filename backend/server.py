@@ -2098,12 +2098,13 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     
     discount_percent = selected_plan.get("discount", 0) if selected_plan else 0
     
-    # Calculate subtotal from products
+    # Calculate subtotal from products using weight-based pricing
     subtotal = 0
     for item in sub_data.items:
         product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
         if product:
-            subtotal += product["price"] * item.quantity
+            # Price is per 100gm, quantity is in grams
+            subtotal += (product["price"] / 100) * item.quantity
     
     # Calculate discount amount
     discount_amount = (subtotal * discount_percent) / 100
@@ -2111,51 +2112,40 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     # Calculate final total
     final_total = subtotal - discount_amount + delivery_fee
     
-    # Check stock availability and calculate earliest delivery date for ALL products
+    # Check stock availability based on stock_status and weight
+    # For subscriptions, we allow "growing" products as they will be available by delivery date
     today = datetime.now(timezone.utc).date()
     requested_date = datetime.fromisoformat(sub_data.start_date).date()
     
-    earliest_available_date = today
     out_of_stock_products = []
-    low_stock_products = []
     
     for item in sub_data.items:
         product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
         if not product:
             raise HTTPException(status_code=404, detail=f"Product not found")
         
-        stock = product.get("stock", 0)
+        stock_status = product.get("stock_status", "in_stock")
+        available_weight = product.get("weight", 5000)  # Weight represents available stock in grams
         
-        # Check if out of stock
-        if stock < item.quantity:
-            grow_date = today + timedelta(days=product["growth_days"])
-            # Track the latest date needed for any out-of-stock product
-            if grow_date > earliest_available_date:
-                earliest_available_date = grow_date
-            
+        # Only block if product is out_of_stock or requested quantity exceeds available weight
+        if stock_status == "out_of_stock":
             out_of_stock_products.append({
                 "name": product["name"],
-                "requested": item.quantity,
-                "available": stock,
-                "needed": item.quantity - stock,
-                "grow_days": product["growth_days"],
-                "available_date": grow_date.isoformat()
+                "reason": "Out of stock"
             })
-        elif stock < 10:
-            low_stock_products.append({
+        elif item.quantity > available_weight:
+            out_of_stock_products.append({
                 "name": product["name"],
-                "stock": stock
+                "reason": f"Only {available_weight}gm available, requested {item.quantity}gm"
             })
     
-    # If any products are out of stock, enforce earliest available date
+    # If any products are truly out of stock, reject the order
     if out_of_stock_products:
-        if requested_date < earliest_available_date:
-            # Build detailed error message
-            products_list = ", ".join([f"{p['name']} (needs {p['grow_days']} days)" for p in out_of_stock_products])
-            raise HTTPException(
-                status_code=400,
-                detail=f"Some products are out of stock: {products_list}. Earliest delivery date for all products: {earliest_available_date.isoformat()}. Please select a start date on or after this date."
-            )
+        products_list = ", ".join([f"{p['name']} ({p['reason']})" for p in out_of_stock_products])
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot create subscription: {products_list}"
+        )
     
     # Apply coupon discount
     coupon_discount = sub_data.coupon_discount or 0
