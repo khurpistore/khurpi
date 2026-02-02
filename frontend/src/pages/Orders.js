@@ -181,22 +181,41 @@ const Orders = () => {
                       </div>
                     </div>
                     
-                    {/* Products */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {item.items?.slice(0, 3).map((orderItem, idx) => (
-                        <span key={idx} className="text-sm bg-gray-100 px-2 py-1 rounded">
-                          {orderItem.product?.name || 'Product'} × {orderItem.quantity}
-                        </span>
-                      ))}
-                      {item.items?.length > 3 && (
-                        <button 
-                          className="text-sm text-primary font-medium hover:underline"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/order/${item.id}`); }}
-                        >
-                          +{item.items.length - 3} more
-                        </button>
-                      )}
-                    </div>
+                    {/* Products - Grid with images like subscription */}
+                    {item.items && item.items.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {item.items.slice(0, 6).map((orderItem, idx) => (
+                            <div 
+                              key={idx} 
+                              className="flex items-center gap-2 p-2 rounded-lg bg-gray-50"
+                            >
+                              {orderItem.product?.image ? (
+                                <img 
+                                  src={orderItem.product.image} 
+                                  alt={orderItem.product?.name} 
+                                  className="w-10 h-10 rounded object-cover" 
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                                  <Package className="w-5 h-5 text-gray-400" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium truncate">{orderItem.product?.name || 'Product'}</p>
+                                <p className="text-xs text-muted-foreground">Qty: {orderItem.quantity}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {item.items.length > 6 && (
+                          <p className="text-xs text-primary font-medium mt-2 text-center">
+                            +{item.items.length - 6} more items
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Delivery Address */}
                     {item.address && (
