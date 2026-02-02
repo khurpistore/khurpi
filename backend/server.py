@@ -3046,6 +3046,9 @@ async def update_user_address_by_id(user_id: str, address_id: str, address_data:
             {"$set": {"is_default": False}}
         )
     
+    # Always update the updated_at timestamp
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
     await db.addresses.update_one({"id": address_id}, {"$set": update_data})
     
     updated_address = await db.addresses.find_one({"id": address_id}, {"_id": 0})
