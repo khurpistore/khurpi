@@ -338,20 +338,25 @@ const Checkout = () => {
                   <MapPin className="w-4 h-4 text-primary" />
                   <h3 className="font-semibold">Delivery Address</h3>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => {
-                  localStorage.setItem('checkoutReturn', 'true');
-                  navigate('/addresses');
-                }} className="h-8 px-2 text-xs">
-                  {addresses.length > 0 ? 'Change Address' : 'Add'}
-                </Button>
+                {addresses.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    localStorage.setItem('checkoutReturn', 'true');
+                    navigate('/addresses');
+                  }} className="h-8 px-2 text-xs">
+                    Change Address
+                  </Button>
+                )}
               </div>
 
               {addresses.length === 0 ? (
-                <div className="text-center py-6 bg-gray-50 rounded-lg">
-                  <MapPin className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">No address found</p>
-                  <Button size="sm" onClick={() => navigate('/addresses')} className="rounded-full">
-                    <Plus className="w-3 h-3 mr-1" /> Add Address
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <MapPin className="w-10 h-10 mx-auto text-gray-400 mb-3" />
+                  <p className="text-muted-foreground mb-4">Please add a delivery address to continue</p>
+                  <Button onClick={() => {
+                    localStorage.setItem('checkoutReturn', 'true');
+                    navigate('/addresses');
+                  }} className="rounded-full">
+                    <Plus className="w-4 h-4 mr-2" /> Add Delivery Address
                   </Button>
                 </div>
               ) : (
