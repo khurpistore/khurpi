@@ -165,26 +165,15 @@ const OrderDetail = () => {
                       <div className="flex-1">
                         <p className="font-medium">{item.product?.name || 'Product'}</p>
                         <p className="text-sm text-muted-foreground">
-                          ₹{pricePerHundredGm.toFixed(0)}/100gm
+                          {weight}gm × ₹{pricePerHundredGm.toFixed(0)}/100gm
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-primary">₹{itemPrice.toFixed(0)}</p>
-                        <p className="text-xs text-muted-foreground">{weight}gm</p>
                       </div>
                     </div>
                   );
                 })}
-              </div>
-              
-              {/* Total Weight */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Total Weight</span>
-                  <span className="font-semibold">
-                    {order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0)}gm
-                  </span>
-                </div>
               </div>
             </CardContent>
           </Card>
