@@ -157,14 +157,24 @@ const Checkout = () => {
 
     const createSubscriptionFromPending = async (paymentId, razorpaySubId) => {
       if (!pendingSubscription) return;
-      const items = pendingSubscription.products.map(p => ({ product_id: p.product_id || p.id, quantity: p.quantity }));
+      
+      // Get the default address if selectedAddressId is not set
+      const addressId = selectedAddressId || addresses.find(a => a.is_default)?.id || addresses[0]?.id;
+      if (!addressId) {
+        throw new Error('No delivery address selected');
+      }
+      
+      const items = pendingSubscription.products.map(p => ({ 
+        product_id: p.product_id || p.id, 
+        quantity: p.selectedQty || 100 
+      }));
       const subscriptionData = {
         frequency: pendingSubscription.plan.frequency,
         delivery_days: pendingSubscription.deliveryDays,
         delivery_day: pendingSubscription.deliveryDays[0],
         deliveries_per_week: pendingSubscription.deliveriesPerWeek,
         start_date: pendingSubscription.startDate,
-        tray_count: pendingSubscription.products.reduce((sum, p) => sum + p.quantity, 0),
+        tray_count: pendingSubscription.products.reduce((sum, p) => sum + (p.selectedQty || 100), 0),
         items: items,
         total_price: pendingSubscription.monthlyTotal,
         subtotal: pendingSubscription.perDeliveryTotal,
@@ -173,7 +183,7 @@ const Checkout = () => {
         plan_discount: pendingSubscription.plan.discount,
         discount_amount: pendingSubscription.discount,
         plan_id: pendingSubscription.plan.id,
-        address_id: selectedAddressId,
+        address_id: addressId,
         payment_method: 'online',
         payment_status: 'paid',
         razorpay_payment_id: paymentId,
