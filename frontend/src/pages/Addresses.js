@@ -659,8 +659,18 @@ const Addresses = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
-            {addresses.map((address) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[...addresses]
+              .sort((a, b) => {
+                // Default address first, then sort by created_at (most recent first)
+                if (a.is_default && !b.is_default) return -1;
+                if (!a.is_default && b.is_default) return 1;
+                // Sort by created_at descending (most recent first)
+                const dateA = new Date(a.created_at || 0);
+                const dateB = new Date(b.created_at || 0);
+                return dateB - dateA;
+              })
+              .map((address) => {
               return (
                 <Card 
                   key={address.id} 
@@ -668,71 +678,49 @@ const Addresses = () => {
                   className={`transition-all cursor-pointer hover:shadow-md ${address.is_default ? 'border-primary border-2 bg-primary/5' : 'hover:border-primary/50'}`}
                   onClick={() => !address.is_default && handleSetDefault(address.id)}
                 >
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
                             address.is_default ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
                           }`}>
-                            <MapPin className="w-4 h-4" />
+                            <MapPin className="w-3 h-3" />
                           </div>
-                          <div>
-                            <span className="font-semibold text-lg">{address.name || 'Address'}</span>
-                            {address.is_default && (
-                              <Badge className="ml-2 bg-primary text-white">
-                                <Star className="w-3 h-3 mr-1" />
-                                Default
-                              </Badge>
-                            )}
-                          </div>
+                          <span className="font-medium text-sm truncate">{address.name || 'Address'}</span>
+                          {address.is_default && (
+                            <Badge className="bg-primary text-white text-xs px-1.5 py-0">
+                              Default
+                            </Badge>
+                          )}
                         </div>
-                        <p className="text-base text-gray-700 ml-10">{address.address_line}</p>
+                        <p className="text-xs text-gray-600 ml-8 line-clamp-2">{address.address_line}</p>
                         {address.phone && (
-                          <p className="text-sm text-muted-foreground ml-10 mt-1 flex items-center gap-1">
+                          <p className="text-xs text-muted-foreground ml-8 mt-0.5 flex items-center gap-1">
                             <Phone className="w-3 h-3" />
                             +91 {address.phone}
                           </p>
                         )}
-                        {address.pincode && (
-                          <p className="text-sm text-muted-foreground ml-10 mt-1">PIN: {address.pincode}</p>
-                        )}
-                        <p className="text-sm ml-10 mt-2 flex items-center gap-1">
-                          <Truck className="w-3 h-3" />
-                          <span className="text-green-600 font-medium">Free Delivery</span>
-                        </p>
                       </div>
 
-                      <div className="flex items-center gap-2 ml-10 sm:ml-0" onClick={(e) => e.stopPropagation()}>
-                        {!address.is_default && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSetDefault(address.id)}
-                            className="rounded-full text-xs"
-                            data-testid={`set-default-${address.id}`}
-                          >
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Set Default
-                          </Button>
-                        )}
+                      <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(address)}
-                          className="rounded-full"
+                          className="h-7 w-7 p-0"
                           data-testid={`edit-address-${address.id}`}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-3.5 h-3.5" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(address.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full"
+                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                           data-testid={`delete-address-${address.id}`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
