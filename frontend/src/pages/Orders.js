@@ -204,7 +204,7 @@ const Orders = () => {
                               )}
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{orderItem.product?.name || 'Product'}</p>
-                                <p className="text-xs text-muted-foreground">{orderItem.quantity}gm</p>
+                                <p className="text-xs text-muted-foreground">Qty: {orderItem.quantity}</p>
                               </div>
                             </div>
                           ))}
