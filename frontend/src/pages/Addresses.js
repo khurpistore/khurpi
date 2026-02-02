@@ -8,11 +8,31 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2, Phone, Truck } from 'lucide-react';
+import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2, Phone, Truck, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import SimpleMapPicker from '@/components/SimpleMapPicker';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Shop coordinates (ACE City, Noida Extension)
+const SHOP_LOCATION = {
+  lat: 28.5672,
+  lng: 77.4538
+};
+const MAX_DELIVERY_DISTANCE_KM = 40;
+
+// Calculate distance between two coordinates using Haversine formula
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 const Addresses = () => {
   const { user, addresses, addAddress, updateAddressById, deleteAddress, setDefaultAddress, fetchAddresses } = useAuth();
@@ -41,6 +61,8 @@ const Addresses = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchedLocation, setSearchedLocation] = useState(null);
   const [deliveryFees, setDeliveryFees] = useState({});
+  const [deliveryEligible, setDeliveryEligible] = useState(true);
+  const [distanceFromShop, setDistanceFromShop] = useState(null);
   
   // Check if coming from checkout or subscription flow
   const params = new URLSearchParams(location.search);
