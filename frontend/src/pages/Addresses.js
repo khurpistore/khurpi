@@ -554,6 +554,41 @@ const Addresses = () => {
                   {!formData.latitude && !formData.longitude && (
                     <p className="text-xs text-red-500 mt-2">Click on the map to pin your delivery location</p>
                   )}
+                  
+                  {/* Delivery Eligibility Warning */}
+                  {formData.latitude && formData.longitude && !deliveryEligible && (
+                    <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                          <AlertTriangle className="w-5 h-5 text-red-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-red-800">Delivery Not Available</h4>
+                          <p className="text-sm text-red-700 mt-1">
+                            Sorry, we currently deliver only within <span className="font-bold">{MAX_DELIVERY_DISTANCE_KM}km</span> of our store in Noida Extension.
+                          </p>
+                          <p className="text-sm text-red-600 mt-1">
+                            Your selected location is <span className="font-bold">{distanceFromShop?.toFixed(1)}km</span> away.
+                          </p>
+                          <p className="text-xs text-red-500 mt-2">
+                            💡 Please select a different address within our delivery zone.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Delivery Distance Info (when eligible) */}
+                  {formData.latitude && formData.longitude && deliveryEligible && distanceFromShop && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Truck className="w-4 h-4 text-green-600" />
+                        <span className="text-sm text-green-700">
+                          ✓ Delivery available! Your location is <span className="font-semibold">{distanceFromShop.toFixed(1)}km</span> from our store.
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Address Type Selection */}
