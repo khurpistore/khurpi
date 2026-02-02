@@ -739,72 +739,93 @@ const Addresses = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[...addresses]
               .sort((a, b) => {
-                // Default address first, then sort by created_at (most recent first)
+                // Default address first, then sort by updated_at or created_at (most recent first)
                 if (a.is_default && !b.is_default) return -1;
                 if (!a.is_default && b.is_default) return 1;
-                // Sort by created_at descending (most recent first)
-                const dateA = new Date(a.created_at || 0);
-                const dateB = new Date(b.created_at || 0);
+                // Sort by updated_at or created_at descending (most recent first)
+                const dateA = new Date(a.updated_at || a.created_at || 0);
+                const dateB = new Date(b.updated_at || b.created_at || 0);
                 return dateB - dateA;
               })
               .map((address) => {
-              return (
-                <Card 
-                  key={address.id} 
-                  data-testid={`address-card-${address.id}`}
-                  className={`transition-all cursor-pointer hover:shadow-md ${address.is_default ? 'border-primary border-2 bg-primary/5' : 'hover:border-primary/50'}`}
-                  onClick={() => !address.is_default && handleSetDefault(address.id)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            address.is_default ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            <MapPin className="w-3 h-3" />
+                // Get address type icon
+                const AddressTypeIcon = address.address_type === 'office' ? Building2 : address.address_type === 'other' ? MapPin : Home;
+                const addressTypeLabel = address.address_type === 'office' ? 'Office' : address.address_type === 'other' ? 'Other' : 'Home';
+                
+                return (
+                  <Card 
+                    key={address.id} 
+                    data-testid={`address-card-${address.id}`}
+                    className={`transition-all cursor-pointer hover:shadow-md ${address.is_default ? 'border-primary border-2 bg-primary/5' : 'hover:border-primary/50'}`}
+                    onClick={() => !address.is_default && handleSetDefault(address.id)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          {/* Address Type & Default Badge */}
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                              address.is_default ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              <AddressTypeIcon className="w-4 h-4" />
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-medium text-muted-foreground uppercase">{addressTypeLabel}</span>
+                              {address.is_default && (
+                                <Badge className="bg-primary text-white text-xs px-1.5 py-0">
+                                  Default
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <span className="font-medium text-sm truncate">{address.name || 'Address'}</span>
-                          {address.is_default && (
-                            <Badge className="bg-primary text-white text-xs px-1.5 py-0">
-                              Default
-                            </Badge>
+                          
+                          {/* Receiver Name */}
+                          <p className="font-semibold text-sm mb-0.5">{address.name || 'Receiver'}</p>
+                          
+                          {/* Phone */}
+                          {address.phone && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+                              <Phone className="w-3 h-3" />
+                              +91 {address.phone}
+                            </p>
+                          )}
+                          
+                          {/* Address */}
+                          <p className="text-xs text-gray-600 line-clamp-2">{address.address_line}</p>
+                          
+                          {/* Landmark if available */}
+                          {address.landmark && (
+                            <p className="text-xs text-muted-foreground mt-0.5 italic">
+                              Near: {address.landmark}
+                            </p>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 ml-8 line-clamp-2">{address.address_line}</p>
-                        {address.phone && (
-                          <p className="text-xs text-muted-foreground ml-8 mt-0.5 flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            +91 {address.phone}
-                          </p>
-                        )}
-                      </div>
 
-                      <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(address)}
-                          className="h-7 w-7 p-0"
-                          data-testid={`edit-address-${address.id}`}
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(address.id)}
-                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          data-testid={`delete-address-${address.id}`}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(address)}
+                            className="h-7 w-7 p-0"
+                            data-testid={`edit-address-${address.id}`}
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(address.id)}
+                            className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            data-testid={`delete-address-${address.id}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </CardContent>
+                  </Card>
+                );
+              })}
           </div>
         )}
       </div>
