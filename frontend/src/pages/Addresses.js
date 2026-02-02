@@ -335,9 +335,12 @@ const Addresses = () => {
     let phone = address.phone || '';
     let address_line_1 = address.address_line_1 || '';
     let address_line_2 = address.address_line_2 || '';
+    let landmark = address.landmark || '';
     let area = address.area || '';
-    let city = address.city || '';
+    let city = address.city || 'NOIDA';
+    let state = address.state || 'Uttar Pradesh';
     let pincode = address.pincode || '';
+    let address_type = address.address_type || 'home';
     
     // If individual fields are not stored, try to parse from address_line
     if (!address_line_1 && address.address_line) {
@@ -355,11 +358,14 @@ const Addresses = () => {
       phone: phone,
       address_line_1: address_line_1,
       address_line_2: address_line_2,
+      landmark: landmark,
       area: area,
-      city: city || 'NOIDA',
+      city: city,
+      state: state,
       pincode: pincode,
       latitude: address.latitude || null,
       longitude: address.longitude || null,
+      address_type: address_type,
       is_default: address.is_default || false
     });
     
