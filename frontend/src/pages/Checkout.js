@@ -226,7 +226,9 @@ const Checkout = () => {
           toast.success(hasOnlySubscription ? 'Subscription Created! (Test Mode)' : hasBoth ? 'Order & Subscription Created! (Test Mode)' : 'Order Placed! (Test Mode)');
           navigate(hasOnlySubscription ? '/subscriptions' : '/orders');
         } catch (error) {
-          toast.error('Order creation failed. Please contact support.');
+          console.error('Order creation error:', error);
+          const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+          toast.error(`Order creation failed: ${errorMsg}`);
         }
         setLoading(false);
         return;
