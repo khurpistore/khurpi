@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Calendar, Package, Clock, MapPin, AlertTriangle, ArrowLeft, CreditCard, Tag, Truck, Sparkles } from 'lucide-react';
+import { Calendar, Package, Clock, MapPin, AlertTriangle, ArrowLeft, CreditCard, Tag, Truck, Sparkles, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -19,8 +19,12 @@ const SubscriptionDetail = () => {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { id } = useParams();
+  
+  // Check if user came from Orders page
+  const cameFromOrders = location.state?.from === 'orders';
 
   useEffect(() => {
     if (!user) {
@@ -145,17 +149,28 @@ const SubscriptionDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      {/* Simple Back Header */}
+      {/* Simple Back Header - Dynamic based on navigation source */}
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-green-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/subscriptions')}
+            onClick={() => navigate(cameFromOrders ? '/orders' : '/subscriptions')}
             className="rounded-full"
+            data-testid="back-button"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Subscriptions
+            {cameFromOrders ? (
+              <>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ShoppingBag className="w-4 h-4 mr-1" />
+                Back to Orders
+              </>
+            ) : (
+              <>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Subscriptions
+              </>
+            )}
           </Button>
         </div>
       </div>

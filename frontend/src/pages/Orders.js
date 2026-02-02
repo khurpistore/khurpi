@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/context/AuthContext';
-import { Package, MapPin, Calendar, ChevronRight, ShoppingBag, CalendarCheck, Repeat } from 'lucide-react';
+import { Package, MapPin, Calendar, ChevronRight, ShoppingBag, CalendarCheck, Repeat, Truck } from 'lucide-react';
 import { format } from 'date-fns';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -219,53 +219,98 @@ const Orders = () => {
                   </CardContent>
                 </Card>
               ) : (
-                // Subscription Card
+                // Subscription Card - Enhanced with product info like MySubscriptions
                 <Card 
                   key={`sub-${item.id}`} 
                   data-testid={`subscription-${item.id}`} 
                   className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-primary/50"
-                  onClick={() => navigate(`/subscription/${item.id}`)}
+                  onClick={() => navigate(`/subscription/${item.id}`, { state: { from: 'orders' } })}
                 >
                   <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                    {/* Header Row */}
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
                           <Repeat className="w-4 h-4 text-primary" />
                           <Badge className={getStatusColor(item.status)}>
                             {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                           </Badge>
                           <Badge variant="outline" className="text-xs">Subscription</Badge>
                         </div>
-                        
-                        <h3 className="font-semibold text-primary mb-1">
+                        <h3 className="font-semibold text-primary">
                           {getPlanDisplayName(item.frequency)}
                         </h3>
-                        
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <Calendar className="w-4 h-4" />
-                          Started {format(new Date(item.created_at), 'PPP')}
-                        </div>
-                        
                         <p className="text-sm text-muted-foreground">
-                          {item.tray_count} pack{item.tray_count > 1 ? 's' : ''} • {item.delivery_days?.join(', ') || item.delivery_day}
+                          {item.tray_count}gm • {(item.delivery_days?.length || 1) * 4} deliveries/month
                         </p>
-
-                        {item.next_delivery_date && item.status === 'active' && (
-                          <p className="text-sm text-primary mt-2">
-                            📦 Next: {format(new Date(item.next_delivery_date), 'PP')}
-                          </p>
-                        )}
+                        <p className="text-sm text-muted-foreground">
+                          📅 {item.delivery_days && item.delivery_days.length > 0 
+                            ? item.delivery_days.join(', ')
+                            : item.delivery_day || 'Not set'}
+                        </p>
                       </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-primary">
+                          ₹{(item.total_price * (item.delivery_days?.length || 1) * 4).toFixed(0)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">per month</p>
+                      </div>
+                    </div>
 
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-primary">
-                            ₹{(item.total_price * (item.delivery_days?.length || 1) * 4).toFixed(0)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">per month</p>
+                    {/* Products Grid - Same as MySubscriptions */}
+                    {item.items && item.items.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {item.items.map((subItem) => (
+                            <div 
+                              key={subItem.id} 
+                              className="flex items-center gap-2 p-2 rounded-lg bg-gray-50"
+                            >
+                              <img 
+                                src={subItem.product?.image} 
+                                alt={subItem.product?.name} 
+                                className="w-10 h-10 rounded object-cover" 
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium truncate">{subItem.product?.name}</p>
+                                <p className="text-xs text-muted-foreground">{subItem.quantity}gm</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground hidden sm:block" />
                       </div>
+                    )}
+
+                    {/* Important Dates */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="bg-gray-50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-muted-foreground">Created</p>
+                        <p className="text-xs font-medium">{format(new Date(item.created_at), 'MMM d, yyyy')}</p>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-green-700">Next Delivery</p>
+                        <p className="text-xs font-medium text-green-800">
+                          {item.next_delivery_date 
+                            ? format(new Date(item.next_delivery_date), 'MMM d')
+                            : '-'}
+                        </p>
+                      </div>
+                      <div className="bg-blue-50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-blue-700">Renews On</p>
+                        <p className="text-xs font-medium text-blue-800">
+                          {item.renewal_date 
+                            ? format(new Date(item.renewal_date), 'MMM d')
+                            : format(new Date(new Date(item.start_date).setMonth(new Date(item.start_date).getMonth() + 1)), 'MMM d')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* View Details */}
+                    <div className="flex items-center justify-end">
+                      <span className="text-sm text-primary font-medium flex items-center gap-1">
+                        View Details <ChevronRight className="w-4 h-4" />
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
