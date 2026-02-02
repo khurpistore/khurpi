@@ -45,6 +45,16 @@ const SubscriptionDetail = () => {
       setSubscription(subRes.data);
       setItems(itemsRes.data);
       setDeliveries(deliveriesRes.data);
+      
+      // Fetch address if address_id exists
+      if (subRes.data.address_id) {
+        try {
+          const addressRes = await axios.get(`${API}/addresses/${subRes.data.address_id}`);
+          setAddress(addressRes.data);
+        } catch (err) {
+          console.log('Address not found');
+        }
+      }
     } catch (error) {
       toast.error('Failed to load subscription details');
       navigate('/subscriptions');
