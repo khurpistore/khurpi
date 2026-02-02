@@ -469,6 +469,20 @@ class AnalyticsEvent(BaseModel):
     referrer: Optional[str] = None
     landing_page: Optional[str] = None
 
+# Order Discount Tiers Model
+class DiscountTier(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: Optional[str] = None
+    min_order_value: float  # Minimum order value to qualify
+    discount_percent: float  # Discount percentage
+    active: bool = True
+    created_at: Optional[str] = None
+
+class DiscountTierCreate(BaseModel):
+    min_order_value: float
+    discount_percent: float
+    active: bool = True
+
 @api_router.post("/analytics/track")
 async def track_analytics_event(event: AnalyticsEvent):
     """Track an analytics event with advanced data"""
