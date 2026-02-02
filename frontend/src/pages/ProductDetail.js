@@ -74,7 +74,8 @@ const ProductDetail = () => {
   const getStockStatus = () => {
     if (!product) return { status: 'loading' };
     const status = product.stock_status || 'in_stock';
-    if (status === 'out_of_stock' || product.stock <= 0) {
+    const availableQty = product.weight || 0;
+    if (status === 'out_of_stock' || availableQty <= 0) {
       return { status: 'out_of_stock' };
     }
     if (status === 'growing') {
