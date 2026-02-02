@@ -409,6 +409,7 @@ class Order(BaseModel):
     payment_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"
+    estimated_delivery_date: Optional[str] = None
     created_at: str
 
 class OrderCreate(BaseModel):
