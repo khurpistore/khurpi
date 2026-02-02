@@ -113,6 +113,30 @@ const OrderDetail = () => {
             </CardContent>
           </Card>
 
+          {/* Order Date & Delivery Date */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4 text-center">
+                  <Calendar className="w-5 h-5 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Order Date</p>
+                  <p className="font-semibold text-primary">{format(new Date(order.created_at), 'MMM d, yyyy')}</p>
+                  <p className="text-xs text-muted-foreground">{format(new Date(order.created_at), 'hh:mm a')}</p>
+                </div>
+                <div className="bg-green-50 rounded-lg p-4 text-center">
+                  <Package className="w-5 h-5 mx-auto text-green-600 mb-2" />
+                  <p className="text-xs text-green-700 uppercase tracking-wide">Delivery Date</p>
+                  <p className="font-semibold text-green-800">
+                    {order.estimated_delivery_date 
+                      ? format(new Date(order.estimated_delivery_date), 'MMM d, yyyy')
+                      : format(new Date(new Date(order.created_at).getTime() + 86400000), 'MMM d, yyyy')}
+                  </p>
+                  <p className="text-xs text-green-600">Expected</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Order Items */}
           <Card>
             <CardHeader>
