@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -23,11 +24,16 @@ import {
   LogOut,
   ChevronDown,
   CalendarCheck,
-  Gift
+  Gift,
+  Truck,
+  Percent
 } from 'lucide-react';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [maxDiscount, setMaxDiscount] = useState(0);
   const [notifications] = useState([
     { id: 1, message: 'Your subscription delivery is scheduled for tomorrow', unread: true },
     { id: 2, message: 'New microgreens added to our collection!', unread: true },
@@ -39,6 +45,22 @@ const Header = () => {
 
   const cartCount = getCartCount();
   const unreadCount = notifications.filter(n => n.unread).length;
+
+  // Fetch max discount on mount
+  useEffect(() => {
+    const fetchDiscountTiers = async () => {
+      try {
+        const res = await axios.get(`${BACKEND_URL}/api/discount-tiers`);
+        if (res.data && res.data.length > 0) {
+          const max = Math.max(...res.data.map(t => t.discount_percent));
+          setMaxDiscount(max);
+        }
+      } catch (error) {
+        console.log('No discount tiers');
+      }
+    };
+    fetchDiscountTiers();
+  }, []);
 
   // Don't show header on admin pages
   if (location.pathname.startsWith('/admin')) {
