@@ -2717,6 +2717,19 @@ async def create_order(order_data: OrderCreate):
     # Determine order status based on payment
     order_status = "confirmed" if order_data.payment_status == "paid" else "pending"
     
+    # Fetch product details for delivery date calculation
+    products_cache = {}
+    for item in order_data.items:
+        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        if product:
+            products_cache[item.product_id] = product
+    
+    # Calculate estimated delivery date based on product stock status
+    estimated_delivery = calculate_estimated_delivery_date(
+        items=[item.model_dump() for item in order_data.items],
+        products_cache=products_cache
+    )
+    
     # Create order with address snapshot
     order_doc = {
         "id": str(uuid.uuid4()),
@@ -2730,7 +2743,8 @@ async def create_order(order_data: OrderCreate):
             "pincode": address.get("pincode"),
             "phone": address.get("phone"),
             "latitude": address.get("latitude"),
-            "longitude": address.get("longitude")
+            "longitude": address.get("longitude"),
+            "receiver_name": address.get("receiver_name")
         },
         "items": [item.model_dump() for item in order_data.items],
         "subtotal": order_data.subtotal,
@@ -2744,7 +2758,7 @@ async def create_order(order_data: OrderCreate):
         "payment_id": order_data.payment_id,
         "razorpay_order_id": order_data.razorpay_order_id,
         "payment_status": order_data.payment_status,
-        "estimated_delivery_date": calculate_estimated_delivery_date(),
+        "estimated_delivery_date": estimated_delivery,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
