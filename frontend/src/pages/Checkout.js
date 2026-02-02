@@ -551,11 +551,11 @@ const Checkout = () => {
 
               {/* Order Discount Banner */}
               {orderDiscount && (
-                <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                <div className="mt-3 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Percent className="w-4 h-4 text-green-600" />
+                    <span className="text-lg">🎉</span>
                     <span className="text-sm font-medium text-green-700">
-                      {orderDiscount.tier.discount_percent}% off on orders ₹{orderDiscount.tier.min_order_value.toLocaleString()}+
+                      You saved {orderDiscount.tier.discount_percent}% on orders above ₹{orderDiscount.tier.min_order_value.toLocaleString()}
                     </span>
                   </div>
                 </div>
