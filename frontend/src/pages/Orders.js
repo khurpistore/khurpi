@@ -291,6 +291,7 @@ const Orders = () => {
                           <div className="bg-gray-50 rounded-lg p-2 text-center">
                             <p className="text-xs text-muted-foreground">Order Date</p>
                             <p className="text-xs font-medium">{format(new Date(item.created_at), 'MMM d, yyyy')}</p>
+                            <p className="text-xs text-muted-foreground">{format(new Date(item.created_at), 'hh:mm a')}</p>
                           </div>
                           <div className="bg-green-50 rounded-lg p-2 text-center">
                             <p className="text-xs text-green-700">Delivery Date</p>
