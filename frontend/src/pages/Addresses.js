@@ -298,6 +298,14 @@ const Addresses = () => {
       return;
     }
 
+    // Check delivery eligibility
+    if (!deliveryEligible) {
+      toast.error('Delivery Not Available', {
+        description: `We currently deliver within ${MAX_DELIVERY_DISTANCE_KM}km of our store. Your location is ${distanceFromShop?.toFixed(1)}km away.`
+      });
+      return;
+    }
+
     // Validate receiver name
     if (!formData.name || formData.name.trim().length < 2) {
       toast.error('Receiver Name Required', {
