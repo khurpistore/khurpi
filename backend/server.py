@@ -2683,6 +2683,7 @@ async def create_order(order_data: OrderCreate):
         "payment_id": order_data.payment_id,
         "razorpay_order_id": order_data.razorpay_order_id,
         "payment_status": order_data.payment_status,
+        "estimated_delivery_date": calculate_estimated_delivery_date(),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
