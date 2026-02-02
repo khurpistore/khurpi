@@ -313,7 +313,8 @@ const Checkout = () => {
   const cartSubtotal = getCartTotal();
   const subscriptionTotal = pendingSubscription?.monthlyTotal || 0;
   const couponDiscount = appliedCoupon?.discount_amount || 0;
-  const grandTotal = Math.max(0, cartSubtotal + subscriptionTotal - couponDiscount);
+  const orderDiscountAmount = orderDiscount?.discount_amount || 0;
+  const grandTotal = Math.max(0, cartSubtotal + subscriptionTotal - couponDiscount - orderDiscountAmount);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
