@@ -2232,7 +2232,7 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     
     return Subscription(**subscription_doc)
 
-@api_router.get("/subscriptions", response_model=List[Subscription])
+@api_router.get("/subscriptions")
 async def get_subscriptions(user_id: Optional[str] = None):
     query = {"user_id": user_id} if user_id else {}
     subscriptions = await db.subscriptions.find(query, {"_id": 0}).to_list(100)
