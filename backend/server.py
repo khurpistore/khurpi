@@ -2630,6 +2630,17 @@ async def get_inventory_planning():
     
     return list(product_demand.values())
 
+# Helper function to calculate estimated delivery date (next day, skipping Sunday)
+def calculate_estimated_delivery_date():
+    from datetime import timedelta
+    today = datetime.now(timezone.utc)
+    # Next day delivery
+    delivery_date = today + timedelta(days=1)
+    # Skip Sunday (weekday 6)
+    if delivery_date.weekday() == 6:
+        delivery_date = delivery_date + timedelta(days=1)
+    return delivery_date.strftime("%Y-%m-%d")
+
 # Orders API (for single purchases)
 @api_router.post("/orders", response_model=Order)
 async def create_order(order_data: OrderCreate):
