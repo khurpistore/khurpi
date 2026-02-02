@@ -36,18 +36,9 @@ const Landing = () => {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary mb-4 sm:mb-6 heading-text leading-tight">
                 Freshness Delivered to Your Doorstep
               </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-4 body-text">
-                Subscribe to premium microgreens grown with care. Get fresh, nutrient-rich 80g packs delivered on your schedule.
+              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-6 sm:mb-8 body-text">
+                Experience farm-fresh microgreens, carefully grown and harvested just for you. Packed with nutrients and delivered straight to your door on your schedule.
               </p>
-              {/* FREE Delivery Highlight */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-6 sm:mb-8">
-                <span className="px-4 py-2 bg-green-100 text-green-800 text-sm font-bold rounded-full flex items-center gap-2">
-                  <Truck className="w-4 h-4" /> FREE Delivery on All Orders
-                </span>
-                <span className="px-4 py-2 bg-amber-100 text-amber-800 text-sm font-bold rounded-full">
-                  Save up to 50%
-                </span>
-              </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                 <Button
                   data-testid="subscribe-hero-button"
