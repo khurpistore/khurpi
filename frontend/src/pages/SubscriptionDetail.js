@@ -17,6 +17,7 @@ const SubscriptionDetail = () => {
   const [subscription, setSubscription] = useState(null);
   const [items, setItems] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
+  const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
