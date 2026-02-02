@@ -484,13 +484,16 @@ const Checkout = () => {
                       
                       if (isGrowing) {
                         if (item.product.availability_date) {
-                          itemDelivery = addDays(new Date(item.product.availability_date), 1);
+                          // availability_date + 1 day (growing) + 1 day (delivery) = +2 days
+                          itemDelivery = addDays(new Date(item.product.availability_date), 2);
                         } else {
                           const readyDays = item.product.ready_in_days || item.product.deliveryDays || 7;
-                          itemDelivery = addDays(new Date(), readyDays + 1);
+                          itemDelivery = addDays(new Date(), readyDays + 2);
                         }
+                        // Skip Sunday
                         if (itemDelivery.getDay() === 0) itemDelivery = addDays(itemDelivery, 1);
                       } else {
+                        // In-stock: next day delivery, skip Sunday
                         itemDelivery = addDays(new Date(), 1);
                         if (itemDelivery.getDay() === 0) itemDelivery = addDays(itemDelivery, 1);
                       }
