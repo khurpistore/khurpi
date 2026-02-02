@@ -186,6 +186,31 @@ const MySubscriptions = () => {
                     </div>
                   )}
 
+                  {/* Delivery Address */}
+                  {subscription.address && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Delivery Address</p>
+                          <p className="text-sm font-medium">{subscription.address.receiver_name || 'Customer'}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {[
+                              subscription.address.address_line || subscription.address.address_line_1,
+                              subscription.address.landmark,
+                              subscription.address.area,
+                              subscription.address.city
+                            ].filter(Boolean).join(', ')}
+                            {subscription.address.pincode && ` - ${subscription.address.pincode}`}
+                          </p>
+                          {subscription.address.phone && (
+                            <p className="text-xs text-muted-foreground mt-1">📞 +91 {subscription.address.phone}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Important Dates */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
