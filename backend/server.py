@@ -2259,6 +2259,13 @@ async def get_subscriptions(user_id: Optional[str] = None):
                 })
         
         sub["items"] = enriched_items
+        
+        # Fetch address details if address_id exists
+        if sub.get("address_id"):
+            address = await db.addresses.find_one({"id": sub["address_id"]}, {"_id": 0})
+            if address:
+                sub["address"] = address
+        
         result.append(sub)
     
     return result
