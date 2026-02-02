@@ -186,28 +186,34 @@ const Orders = () => {
                       <div className="mb-3">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {item.items.slice(0, 6).map((orderItem, idx) => (
-                            <div 
-                              key={idx} 
-                              className="flex items-center gap-2 p-2 rounded-lg bg-gray-50"
-                            >
-                              {orderItem.product?.image ? (
-                                <img 
-                                  src={orderItem.product.image} 
-                                  alt={orderItem.product?.name} 
-                                  className="w-10 h-10 rounded object-cover" 
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                                  <Package className="w-5 h-5 text-gray-400" />
+                          {item.items.slice(0, 6).map((orderItem, idx) => {
+                            const isGrowing = orderItem.product?.stock_status === 'growing';
+                            return (
+                              <div 
+                                key={idx} 
+                                className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
+                              >
+                                {orderItem.product?.image ? (
+                                  <img 
+                                    src={orderItem.product.image} 
+                                    alt={orderItem.product?.name} 
+                                    className="w-10 h-10 rounded object-cover" 
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium truncate">{orderItem.product?.name || 'Product'}</p>
+                                  <p className="text-xs text-muted-foreground">{orderItem.quantity}gm</p>
+                                  {isGrowing && (
+                                    <p className="text-xs text-amber-600">🌱 Growing</p>
+                                  )}
                                 </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium truncate">{orderItem.product?.name || 'Product'}</p>
-                                <p className="text-xs text-muted-foreground">{orderItem.quantity}gm</p>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                         {item.items.length > 6 && (
                           <p className="text-xs text-primary font-medium mt-2 text-center">
