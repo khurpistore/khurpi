@@ -162,13 +162,17 @@ class Address(BaseModel):
     address_line: str
     address_line_1: Optional[str] = None
     address_line_2: Optional[str] = None
+    landmark: Optional[str] = None
     area: Optional[str] = None
     city: Optional[str] = "NOIDA"
+    state: Optional[str] = "Uttar Pradesh"
     pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    address_type: Optional[str] = "home"  # home, office, other
     is_default: bool = False
     created_at: str
+    updated_at: Optional[str] = None
 
 class AddressCreate(BaseModel):
     name: Optional[str] = None
@@ -176,11 +180,14 @@ class AddressCreate(BaseModel):
     address_line: str
     address_line_1: Optional[str] = None
     address_line_2: Optional[str] = None
+    landmark: Optional[str] = None
     area: Optional[str] = None
     city: Optional[str] = "NOIDA"
+    state: Optional[str] = "Uttar Pradesh"
     pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    address_type: Optional[str] = "home"
     is_default: bool = False
 
 class AddressUpdate(BaseModel):
@@ -189,11 +196,14 @@ class AddressUpdate(BaseModel):
     address_line: Optional[str] = None
     address_line_1: Optional[str] = None
     address_line_2: Optional[str] = None
+    landmark: Optional[str] = None
     area: Optional[str] = None
     city: Optional[str] = "NOIDA"
+    state: Optional[str] = None
     pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    address_type: Optional[str] = None
     is_default: Optional[bool] = None
 
 class User(BaseModel):
