@@ -106,15 +106,24 @@ const Orders = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-3 bg-primary p-1 rounded-full">
+            <TabsTrigger 
+              value="all" 
+              className="flex items-center gap-2 rounded-full text-white data-[state=active]:bg-white data-[state=active]:text-primary data-[state=inactive]:text-white"
+            >
               All ({allOrders.length})
             </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="orders" 
+              className="flex items-center gap-2 rounded-full text-white data-[state=active]:bg-white data-[state=active]:text-primary data-[state=inactive]:text-white"
+            >
               <ShoppingBag className="w-4 h-4" />
               One-time ({orders.length})
             </TabsTrigger>
-            <TabsTrigger value="subscriptions" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="subscriptions" 
+              className="flex items-center gap-2 rounded-full text-white data-[state=active]:bg-white data-[state=active]:text-primary data-[state=inactive]:text-white"
+            >
               <Repeat className="w-4 h-4" />
               Subscriptions ({subscriptions.length})
             </TabsTrigger>
