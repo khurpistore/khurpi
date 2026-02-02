@@ -279,11 +279,8 @@ const Orders = () => {
                       let latestDeliveryDate = addDays(new Date(), 1);
                       if (latestDeliveryDate.getDay() === 0) latestDeliveryDate = addDays(latestDeliveryDate, 1);
                       
-                      let hasGrowingItems = false;
-                      
                       item.items?.forEach(orderItem => {
                         const deliveryInfo = getProductDeliveryDate(orderItem.product);
-                        if (deliveryInfo.isGrowing) hasGrowingItems = true;
                         if (deliveryInfo.date > latestDeliveryDate) {
                           latestDeliveryDate = deliveryInfo.date;
                         }
@@ -295,9 +292,9 @@ const Orders = () => {
                             <p className="text-xs text-muted-foreground">Order Date</p>
                             <p className="text-xs font-medium">{format(new Date(item.created_at), 'MMM d, yyyy')}</p>
                           </div>
-                          <div className={`rounded-lg p-2 text-center ${hasGrowingItems ? 'bg-amber-50' : 'bg-green-50'}`}>
-                            <p className={`text-xs ${hasGrowingItems ? 'text-amber-700' : 'text-green-700'}`}>Delivery Date</p>
-                            <p className={`text-xs font-medium ${hasGrowingItems ? 'text-amber-800' : 'text-green-800'}`}>
+                          <div className="bg-green-50 rounded-lg p-2 text-center">
+                            <p className="text-xs text-green-700">Delivery Date</p>
+                            <p className="text-xs font-medium text-green-800">
                               {format(latestDeliveryDate, 'MMM d, yyyy')}
                             </p>
                           </div>
