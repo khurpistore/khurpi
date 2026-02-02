@@ -2236,7 +2236,32 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
 async def get_subscriptions(user_id: Optional[str] = None):
     query = {"user_id": user_id} if user_id else {}
     subscriptions = await db.subscriptions.find(query, {"_id": 0}).to_list(100)
-    return subscriptions
+    
+    # Enrich subscriptions with items and product details
+    result = []
+    for sub in subscriptions:
+        items = await db.subscription_items.find({"subscription_id": sub["id"]}, {"_id": 0}).to_list(100)
+        
+        # Get product details for each item
+        enriched_items = []
+        for item in items:
+            product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+            if product:
+                enriched_items.append({
+                    **item,
+                    "product": {
+                        "id": product["id"],
+                        "name": product["name"],
+                        "image": product.get("image", ""),
+                        "price": product["price"],
+                        "stock_status": product.get("stock_status", "in_stock")
+                    }
+                })
+        
+        sub["items"] = enriched_items
+        result.append(sub)
+    
+    return result
 
 @api_router.get("/subscriptions/{subscription_id}", response_model=Subscription)
 async def get_subscription(subscription_id: str):
