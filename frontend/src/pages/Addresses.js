@@ -186,6 +186,11 @@ const Addresses = () => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
     
+    // Calculate distance from shop
+    const distance = calculateDistance(SHOP_LOCATION.lat, SHOP_LOCATION.lng, lat, lng);
+    setDistanceFromShop(distance);
+    setDeliveryEligible(distance <= MAX_DELIVERY_DISTANCE_KM);
+    
     // Parse address components
     const displayName = result.display_name || '';
     const parts = displayName.split(',').map(p => p.trim());
