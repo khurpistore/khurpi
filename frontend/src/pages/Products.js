@@ -51,13 +51,15 @@ const Products = () => {
 
   const getStockStatus = (product) => {
     const status = product.stock_status || 'in_stock';
-    if (status === 'out_of_stock' || product.stock <= 0) {
-      return { status: 'out_of_stock', canBuy: false, canBook: false };
+    const availableQty = product.weight || 0; // weight represents available stock in grams
+    
+    if (status === 'out_of_stock' || availableQty <= 0) {
+      return { status: 'out_of_stock', canBuy: false, canBook: false, availableQty: 0 };
     }
     if (status === 'growing') {
-      return { status: 'growing', canBuy: false, canBook: true, readyInDays: product.ready_in_days };
+      return { status: 'growing', canBuy: false, canBook: true, readyInDays: product.ready_in_days, availableQty };
     }
-    return { status: 'in_stock', canBuy: true, canBook: false };
+    return { status: 'in_stock', canBuy: true, canBook: false, availableQty };
   };
 
   const handleAddToCart = (e, product) => {
