@@ -44,6 +44,7 @@ const Checkout = () => {
       return;
     }
     loadRazorpayScript();
+    fetchDiscountTiers();
     trackPageView('Checkout');
     trackCheckoutStarted(getCartTotal() + (pendingSubscription?.monthlyTotal || 0));
     const defaultAddr = addresses.find(a => a.is_default);
@@ -55,6 +56,38 @@ const Checkout = () => {
       checkNoidaDelivery(addresses[0]);
     }
   }, [user, cartItems, addresses, navigate]);
+
+  // Fetch discount tiers
+  const fetchDiscountTiers = async () => {
+    try {
+      const res = await axios.get(`${API}/discount-tiers`);
+      setDiscountTiers(res.data);
+    } catch (error) {
+      console.log('No discount tiers');
+    }
+  };
+
+  // Calculate order discount whenever cart total changes
+  useEffect(() => {
+    const subtotal = getCartTotal() + (pendingSubscription?.monthlyTotal || 0);
+    if (subtotal > 0 && discountTiers.length > 0) {
+      // Find the highest applicable tier
+      const sortedTiers = [...discountTiers].sort((a, b) => b.min_order_value - a.min_order_value);
+      const applicableTier = sortedTiers.find(tier => subtotal >= tier.min_order_value);
+      
+      if (applicableTier) {
+        const discountAmount = (subtotal * applicableTier.discount_percent) / 100;
+        setOrderDiscount({
+          tier: applicableTier,
+          discount_amount: discountAmount
+        });
+      } else {
+        setOrderDiscount(null);
+      }
+    } else {
+      setOrderDiscount(null);
+    }
+  }, [cartItems, pendingSubscription, discountTiers]);
 
   useEffect(() => {
     if (selectedAddressId) {
