@@ -19,11 +19,11 @@ const getProductDeliveryDate = (product) => {
   if (isGrowing) {
     let deliveryDate;
     if (product.availability_date) {
-      // availability_date + 1 day (growing) + 1 day (delivery) = +2 days
-      deliveryDate = addDays(new Date(product.availability_date), 2);
+      // availability_date + 1 day, skip Sunday
+      deliveryDate = addDays(new Date(product.availability_date), 1);
     } else {
       const readyDays = product.ready_in_days || product.growth_days || 7;
-      deliveryDate = addDays(new Date(), readyDays + 2);
+      deliveryDate = addDays(new Date(), readyDays + 1);
     }
     // Skip Sunday
     if (deliveryDate.getDay() === 0) {

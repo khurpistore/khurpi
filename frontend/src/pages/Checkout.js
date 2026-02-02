@@ -484,11 +484,11 @@ const Checkout = () => {
                       
                       if (isGrowing) {
                         if (item.product.availability_date) {
-                          // availability_date + 1 day (growing) + 1 day (delivery) = +2 days
-                          itemDelivery = addDays(new Date(item.product.availability_date), 2);
+                          // availability_date + 1 day, skip Sunday
+                          itemDelivery = addDays(new Date(item.product.availability_date), 1);
                         } else {
                           const readyDays = item.product.ready_in_days || item.product.deliveryDays || 7;
-                          itemDelivery = addDays(new Date(), readyDays + 2);
+                          itemDelivery = addDays(new Date(), readyDays + 1);
                         }
                         // Skip Sunday
                         if (itemDelivery.getDay() === 0) itemDelivery = addDays(itemDelivery, 1);
