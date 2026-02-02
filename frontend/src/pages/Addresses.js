@@ -511,47 +511,75 @@ const Addresses = () => {
                   )}
                 </div>
 
-                {/* Address Label */}
+                {/* Address Type Selection */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <MapPin className="w-4 h-4" />
+                    Address Type *
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'home', label: 'Home', icon: Home },
+                      { value: 'office', label: 'Office', icon: Building2 },
+                      { value: 'other', label: 'Other', icon: MapPin }
+                    ].map(({ value, label, icon: Icon }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, address_type: value }))}
+                        className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                          formData.address_type === value
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="text-xs font-medium">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Receiver Details */}
                 <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                     <Home className="w-4 h-4" />
-                    Address Label *
+                    Receiver Details *
                   </div>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g., Home, Office, Mom's Place"
-                    required
-                    className="bg-white"
-                    data-testid="address-name-input"
-                  />
-                </div>
-
-                {/* Phone Number */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <Phone className="w-4 h-4" />
-                    Phone Number *
-                  </div>
-                  <div className="flex">
-                    <div className="flex items-center px-3 bg-gray-100 border border-r-0 rounded-l-lg text-sm text-muted-foreground">
-                      +91
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Receiver Name *</Label>
+                      <Input
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., John Doe"
+                        required
+                        className="mt-1 bg-white"
+                        data-testid="address-name-input"
+                      />
                     </div>
-                    <Input
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                      placeholder="10-digit mobile number"
-                      required
-                      maxLength={10}
-                      className="bg-white rounded-l-none"
-                      data-testid="address-phone-input"
-                    />
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Phone Number *</Label>
+                      <div className="flex mt-1">
+                        <div className="flex items-center px-2 bg-gray-100 border border-r-0 rounded-l-lg text-xs text-muted-foreground">
+                          +91
+                        </div>
+                        <Input
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                          placeholder="10-digit number"
+                          required
+                          maxLength={10}
+                          className="bg-white rounded-l-none"
+                          data-testid="address-phone-input"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">This number will be used for delivery updates</p>
                 </div>
 
                 {/* Address Details */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                     <Building2 className="w-4 h-4" />
                     Address Details
@@ -570,13 +598,24 @@ const Addresses = () => {
                   </div>
 
                   <div>
-                    <Label className="text-xs text-muted-foreground">Street, Landmark (optional)</Label>
+                    <Label className="text-xs text-muted-foreground">Street / Road</Label>
                     <Input
                       value={formData.address_line_2}
                       onChange={(e) => setFormData(prev => ({ ...prev, address_line_2: e.target.value }))}
-                      placeholder="e.g., Near City Mall, Main Road"
+                      placeholder="e.g., Main Road, Block A"
                       className="mt-1 bg-white"
                       data-testid="address-line2-input"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Landmark (for easy delivery)</Label>
+                    <Input
+                      value={formData.landmark}
+                      onChange={(e) => setFormData(prev => ({ ...prev, landmark: e.target.value }))}
+                      placeholder="e.g., Near City Mall, Opposite Metro Station"
+                      className="mt-1 bg-white"
+                      data-testid="address-landmark-input"
                     />
                   </div>
 
@@ -605,17 +644,30 @@ const Addresses = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-xs text-muted-foreground">PIN Code *</Label>
-                    <Input
-                      value={formData.pincode}
-                      onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
-                      placeholder="e.g., 201301"
-                      required
-                      maxLength={6}
-                      className="mt-1 bg-white"
-                      data-testid="address-pincode-input"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">State *</Label>
+                      <Input
+                        value={formData.state}
+                        onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                        placeholder="e.g., Uttar Pradesh"
+                        required
+                        className="mt-1 bg-white"
+                        data-testid="address-state-input"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">PIN Code *</Label>
+                      <Input
+                        value={formData.pincode}
+                        onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                        placeholder="e.g., 201301"
+                        required
+                        maxLength={6}
+                        className="mt-1 bg-white"
+                        data-testid="address-pincode-input"
+                      />
+                    </div>
                   </div>
                 </div>
 
