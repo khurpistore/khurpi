@@ -188,36 +188,6 @@ const MySubscriptions = () => {
 
                   {/* Important Dates */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
-                    <div className="bg-gray-50 rounded-lg p-2 text-center">
-                      <p className="text-xs text-muted-foreground">Created</p>
-                      <p className="text-xs font-medium">{format(new Date(subscription.created_at), 'MMM d, yyyy')}</p>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-2 text-center">
-                      <p className="text-xs text-green-700">Next Delivery</p>
-                      <p className="text-xs font-medium text-green-800">
-                        {subscription.next_delivery_date 
-                          ? format(new Date(subscription.next_delivery_date), 'MMM d')
-                          : '-'}
-                      </p>
-                    </div>
-                    <div className="bg-blue-50 rounded-lg p-2 text-center">
-                      <p className="text-xs text-blue-700">Renews On</p>
-                      <p className="text-xs font-medium text-blue-800">
-                        {subscription.renewal_date 
-                          ? format(new Date(subscription.renewal_date), 'MMM d')
-                          : format(new Date(new Date(subscription.start_date).setMonth(new Date(subscription.start_date).getMonth() + 1)), 'MMM d')}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Next Delivery Banner (if active) */}
-                  {subscription.next_delivery_date && subscription.status === 'active' && (
-                    <div className="bg-primary/10 rounded-lg p-3 mb-4">
-                      <p className="text-sm font-medium text-primary">
-                        📦 Next: {format(new Date(subscription.next_delivery_date), 'PPP')}
-                      </p>
-                    </div>
-                  )}
 
                   {/* Actions */}
                   <div className="flex gap-2 flex-wrap">
