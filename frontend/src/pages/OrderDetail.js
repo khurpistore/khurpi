@@ -5,10 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Package, MapPin, Calendar, CreditCard, Phone, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, Package, MapPin, Calendar, CreditCard, Phone, Loader2, Sprout, Clock } from 'lucide-react';
+import { format, addDays } from 'date-fns';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Calculate delivery date for a product
+const getProductDeliveryDate = (product) => {
+  const isGrowing = product?.stock_status === 'growing';
+  
+  if (isGrowing) {
+    let deliveryDate;
+    if (product.availability_date) {
+      deliveryDate = addDays(new Date(product.availability_date), 1);
+    } else {
+      const readyDays = product.ready_in_days || product.growth_days || 7;
+      deliveryDate = addDays(new Date(), readyDays + 1);
+    }
+    // Skip Sunday
+    if (deliveryDate.getDay() === 0) {
+      deliveryDate = addDays(deliveryDate, 1);
+    }
+    return { date: deliveryDate, isGrowing: true };
+  } else {
+    // In stock: next day, skip Sunday
+    let deliveryDate = addDays(new Date(), 1);
+    if (deliveryDate.getDay() === 0) {
+      deliveryDate = addDays(deliveryDate, 1);
+    }
+    return { date: deliveryDate, isGrowing: false };
+  }
+};
 
 const OrderDetail = () => {
   const { orderId } = useParams();
