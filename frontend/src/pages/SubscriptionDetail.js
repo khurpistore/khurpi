@@ -203,8 +203,8 @@ const SubscriptionDetail = () => {
                 <div className="flex items-start gap-3">
                   <Package className="w-5 h-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Packs per Delivery</p>
-                    <p className="font-medium">{subscription.tray_count} pack{subscription.tray_count > 1 ? 's' : ''}</p>
+                    <p className="text-xs text-muted-foreground">Quantity per Delivery</p>
+                    <p className="font-medium">{subscription.tray_count}gm</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -215,6 +215,34 @@ const SubscriptionDetail = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Important Dates Section */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Important Dates</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">Created On</p>
+                    <p className="font-medium text-sm">{format(new Date(subscription.created_at), 'PP')}</p>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-3">
+                    <p className="text-xs text-green-700">Next Delivery</p>
+                    <p className="font-medium text-sm text-green-800">
+                      {subscription.next_delivery_date 
+                        ? format(new Date(subscription.next_delivery_date), 'PP')
+                        : 'Not scheduled'}
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-xs text-blue-700">Renewal Date</p>
+                    <p className="font-medium text-sm text-blue-800">
+                      {subscription.renewal_date 
+                        ? format(new Date(subscription.renewal_date), 'PP')
+                        : format(new Date(new Date(subscription.start_date).setMonth(new Date(subscription.start_date).getMonth() + 1)), 'PP')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {subscription.next_delivery_date && subscription.status === 'active' && (
                 <div className="mt-4 bg-primary/10 rounded-lg p-3">
                   <p className="text-sm font-medium text-primary">
