@@ -136,6 +136,14 @@ const Addresses = () => {
   };
 
   const handleLocationSelect = (location) => {
+    const distance = calculateDistance(
+      SHOP_LOCATION.lat, SHOP_LOCATION.lng,
+      location.lat, location.lng
+    );
+    
+    setDistanceFromShop(distance);
+    setDeliveryEligible(distance <= MAX_DELIVERY_DISTANCE_KM);
+    
     setFormData(prev => ({
       ...prev,
       latitude: location.lat,
