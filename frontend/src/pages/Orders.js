@@ -282,6 +282,31 @@ const Orders = () => {
                       </div>
                     )}
 
+                    {/* Delivery Address */}
+                    {item.address && (
+                      <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Delivery Address</p>
+                            <p className="text-sm font-medium">{item.address.receiver_name || 'Customer'}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {[
+                                item.address.address_line || item.address.address_line_1,
+                                item.address.landmark,
+                                item.address.area,
+                                item.address.city
+                              ].filter(Boolean).join(', ')}
+                              {item.address.pincode && ` - ${item.address.pincode}`}
+                            </p>
+                            {item.address.phone && (
+                              <p className="text-xs text-muted-foreground mt-1">📞 +91 {item.address.phone}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Important Dates */}
                     <div className="grid grid-cols-3 gap-2 mb-3">
                       <div className="bg-gray-50 rounded-lg p-2 text-center">
