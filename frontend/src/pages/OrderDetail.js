@@ -146,8 +146,8 @@ const OrderDetail = () => {
               <div className="space-y-4">
                 {order.items?.map((item, idx) => {
                   const weight = item.quantity || 100;
-                  const itemPrice = item.price || 0;
                   const pricePerHundredGm = item.product?.price || 0;
+                  const calculatedTotal = (weight / 100) * pricePerHundredGm;
                   
                   return (
                     <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
@@ -169,7 +169,7 @@ const OrderDetail = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-primary">₹{itemPrice.toFixed(0)}</p>
+                        <p className="font-semibold text-primary">₹{calculatedTotal.toFixed(0)}</p>
                       </div>
                     </div>
                   );
