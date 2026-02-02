@@ -234,6 +234,8 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 February 1, 2026
 
 ## Change Log
+- **Feb 2, 2026:** Enhanced My Orders page - Subscription cards now show product info (image, name, weight) same as MySubscriptions page
+- **Feb 2, 2026:** Added contextual back button - When navigating to subscription detail from Orders page, shows "Back to Orders" button; from MySubscriptions shows "Back to Subscriptions"
 - **Feb 1, 2026:** P0 COMPLETED - Updated Subscription Pages with New Product Logic:
   - SubscriptionCreate.js: Replaced quantity input with weight dropdown (100-5000gm options)
   - SubscriptionCreate.js: Price calculation now uses (price/100) * selectedQty formula
