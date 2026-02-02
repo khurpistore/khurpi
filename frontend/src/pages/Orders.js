@@ -160,9 +160,10 @@ const Orders = () => {
                   onClick={() => navigate(`/order/${item.id}`)}
                 >
                   <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                    {/* Header Row */}
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
                           <ShoppingBag className="w-4 h-4 text-muted-foreground" />
                           <Badge className={getStatusColor(item.status)}>
                             {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
@@ -171,50 +172,69 @@ const Orders = () => {
                             Order #{item.id.slice(0, 8)}
                           </span>
                         </div>
-                        
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <Calendar className="w-4 h-4" />
-                          {format(new Date(item.created_at), 'PPP')}
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {item.items?.slice(0, 3).map((orderItem, idx) => (
-                            <span key={idx} className="text-sm bg-gray-100 px-2 py-1 rounded">
-                              {orderItem.product?.name || 'Product'} × {orderItem.quantity}
-                            </span>
-                          ))}
-                          {item.items?.length > 3 && (
-                            <button 
-                              className="text-sm text-primary font-medium hover:underline"
-                              onClick={(e) => { e.stopPropagation(); navigate(`/order/${item.id}`); }}
-                            >
-                              +{item.items.length - 3} more
-                            </button>
-                          )}
-                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-primary">₹{item.total?.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.items?.length || 0} item(s)
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Products */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {item.items?.slice(0, 3).map((orderItem, idx) => (
+                        <span key={idx} className="text-sm bg-gray-100 px-2 py-1 rounded">
+                          {orderItem.product?.name || 'Product'} × {orderItem.quantity}
+                        </span>
+                      ))}
+                      {item.items?.length > 3 && (
+                        <button 
+                          className="text-sm text-primary font-medium hover:underline"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/order/${item.id}`); }}
+                        >
+                          +{item.items.length - 3} more
+                        </button>
+                      )}
+                    </div>
 
-                        {item.address && (
-                          <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <span className="line-clamp-1">{item.address.address_line}</span>
-                              {item.address.phone && (
-                                <span className="block text-xs">📞 +91 {item.address.phone}</span>
-                              )}
-                            </div>
+                    {/* Delivery Address */}
+                    {item.address && (
+                      <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Delivery Address</p>
+                            <p className="text-xs text-muted-foreground line-clamp-1">{item.address.address_line}</p>
+                            {item.address.phone && (
+                              <p className="text-xs text-muted-foreground">📞 +91 {item.address.phone}</p>
+                            )}
                           </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-primary">₹{item.total?.toFixed(2)}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.items?.length || 0} item(s)
-                          </p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
+                    )}
+
+                    {/* Order Date and Delivery Date */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className="bg-gray-50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-muted-foreground">Order Date</p>
+                        <p className="text-xs font-medium">{format(new Date(item.created_at), 'MMM d, yyyy')}</p>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-green-700">Delivery Date</p>
+                        <p className="text-xs font-medium text-green-800">
+                          {item.estimated_delivery_date 
+                            ? format(new Date(item.estimated_delivery_date), 'MMM d, yyyy')
+                            : format(new Date(new Date(item.created_at).getTime() + 86400000), 'MMM d, yyyy')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* View Details */}
+                    <div className="flex items-center justify-end">
+                      <span className="text-sm text-primary font-medium flex items-center gap-1">
+                        View Details <ChevronRight className="w-4 h-4" />
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
