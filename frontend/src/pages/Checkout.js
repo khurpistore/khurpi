@@ -179,6 +179,12 @@ const Checkout = () => {
         })),
         subtotal: cartSubtotal,
         delivery_fee: 0,
+        // Automatic order-value based discount
+        discount_type: orderDiscount ? 'bulk_discount' : null,
+        discount_percent: orderDiscount?.tier?.discount_percent || 0,
+        discount_amount: orderDiscountAmount,
+        discount_min_order_value: orderDiscount?.tier?.min_order_value || null,
+        // Coupon discount
         coupon_code: appliedCoupon?.code || null,
         coupon_discount: couponDiscount,
         total: grandTotal,
