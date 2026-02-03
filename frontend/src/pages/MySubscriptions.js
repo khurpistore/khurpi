@@ -128,21 +128,26 @@ const MySubscriptions = () => {
               const packsPerDelivery = subscription.tray_count || 1;
               const totalPacksPerMonth = packsPerDelivery * totalDeliveriesPerMonth;
               
-              // Get discount percentage - from plan_discount or plan's default
-              const discountPercent = subscription.plan_discount || subscription.discount || getPlanDiscount(subscription.frequency);
+              // Get discount percentage from subscription data or plan
+              const discountPercent = subscription.discount_percent || subscription.plan_discount || subscription.discount || getPlanDiscount(subscription.frequency);
               
-              // Per delivery total before discount (subtotal)
+              // Per delivery subtotal (before discount)
               const perDeliverySubtotal = subscription.subtotal || subscription.total_price || 0;
               
-              // Calculate monthly subtotal (before discount)
+              // Monthly subtotal before discount
               const monthlySubtotal = perDeliverySubtotal * totalDeliveriesPerMonth;
               
-              // Calculate discounted monthly total
-              const discountAmount = discountPercent > 0 ? (monthlySubtotal * discountPercent / 100) : 0;
-              const monthlyTotal = Math.round(monthlySubtotal - discountAmount);
+              // Use saved total_price as the actual paid amount (per delivery after discount)
+              // If discount was applied during checkout, total_price already has discount applied
+              const perDeliveryTotal = subscription.total_price || perDeliverySubtotal;
               
-              // Original price (before discount) for display
-              const originalMonthlyTotal = Math.round(monthlySubtotal);
+              // Monthly total = paid per delivery × deliveries per month
+              const monthlyTotal = Math.round(perDeliveryTotal * totalDeliveriesPerMonth);
+              
+              // Calculate original price for strikethrough display
+              const originalMonthlyTotal = discountPercent > 0 
+                ? Math.round(monthlySubtotal)
+                : monthlyTotal;
               
               return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
