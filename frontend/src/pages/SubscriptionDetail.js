@@ -131,32 +131,19 @@ const SubscriptionDetail = () => {
 
   if (!subscription) return null;
 
-  // Calculate pricing - total_price in DB is PER DELIVERY price
+  // Simple: Use stored values directly from DB
+  // subtotal = original monthly amount (before discount)
+  // total_price = final monthly amount paid (after discount)
+  // bulk_discount_percent = discount percentage applied
+  // bulk_discount_amount = discount amount in rupees
+  const originalAmount = subscription.subtotal || 0;
+  const paidAmount = subscription.total_price || 0;
+  const discountPercent = subscription.bulk_discount_percent || 0;
+  const discountAmount = subscription.bulk_discount_amount || 0;
+  
+  // Delivery info
   const deliveriesPerWeek = subscription.delivery_days?.length || 1;
-  const weeksPerMonth = 4;
-  const totalDeliveriesPerMonth = deliveriesPerWeek * weeksPerMonth;
-  
-  // Per delivery values from subscription
-  const perDeliveryTotal = subscription.total_price || 0;
-  const perDeliveryFee = subscription.delivery_fee || 0;
-  
-  // Calculate per delivery subtotal from items using weight-based pricing
-  const perDeliverySubtotal = items.reduce((sum, item) => {
-    const qty = item.selected_qty || item.selectedQty || 100;
-    return sum + ((item.product?.price || 0) / 100) * qty;
-  }, 0) || subscription.subtotal || perDeliveryTotal;
-  
-  // Monthly calculations
-  const monthlySubtotal = perDeliverySubtotal * totalDeliveriesPerMonth;
-  const monthlyDeliveryFee = perDeliveryFee * totalDeliveriesPerMonth;
-  const monthlyTotal = perDeliveryTotal * totalDeliveriesPerMonth;
-  
-  // Discounts
-  const planDiscountPercent = subscription.discount_percent || getPlanDiscountPercent(subscription.frequency);
-  const planDiscountAmount = subscription.discount_amount ? subscription.discount_amount * totalDeliveriesPerMonth : 0;
-  const couponDiscount = (subscription.coupon_discount || 0) * totalDeliveriesPerMonth;
-  const referralDiscount = (subscription.referral_discount || 0) * totalDeliveriesPerMonth;
-  const totalSavings = planDiscountAmount + couponDiscount + referralDiscount;
+  const totalDeliveriesPerMonth = deliveriesPerWeek * 4;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
