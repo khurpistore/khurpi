@@ -587,11 +587,18 @@ const SubscriptionCreate = () => {
   };
 
   const updateSelectedQty = (productId, selectedQty) => {
-    setSelectedProducts(
-      selectedProducts.map(p =>
-        p.product_id === productId ? { ...p, selectedQty: parseInt(selectedQty) || 100 } : p
-      )
-    );
+    const existingProduct = selectedProducts.find(p => p.product_id === productId);
+    if (existingProduct) {
+      // Update existing product's quantity
+      setSelectedProducts(
+        selectedProducts.map(p =>
+          p.product_id === productId ? { ...p, selectedQty: parseInt(selectedQty) || 100 } : p
+        )
+      );
+    } else {
+      // Add the product with the selected quantity (auto-select when changing qty)
+      setSelectedProducts([...selectedProducts, { product_id: productId, selectedQty: parseInt(selectedQty) || 100 }]);
+    }
   };
 
   // Calculate per-delivery cost based on weight (price per 100gm)
