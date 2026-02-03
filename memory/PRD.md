@@ -109,17 +109,20 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 
 ### 8. Order Discounts & Savings
 - **Automatic Bulk Discounts**: Order-value based discounts applied automatically
-  - Discount tiers configurable by admin (e.g., 10% off for orders > ₹1500)
+  - Discount tiers configurable by admin (e.g., 20% off for orders > ₹4,000)
   - Displayed during checkout with clear breakdown
-- **Discount Details Saved in DB**: All discount information stored with each order:
-  - `discount_type`: Type of discount (e.g., "bulk_discount")
-  - `discount_percent`: Percentage discount applied
-  - `discount_amount`: Actual discount amount in ₹
-  - `discount_min_order_value`: Minimum order value threshold
+- **Discount Details Saved in DB**: All discount information stored with each order/subscription:
+  - `subtotal`: Original amount before discount
+  - `total_price`: Final paid amount after discount
+  - `bulk_discount_percent`: Percentage discount applied
+  - `bulk_discount_amount`: Actual discount amount in ₹
+  - `bulk_discount_min_order_value`: Minimum order value threshold
   - `coupon_code` & `coupon_discount`: Coupon details (separate from bulk discount)
-- **Order Detail Page**: Shows complete payment breakdown:
-  - Subtotal, Delivery (FREE), Bulk Discount, Coupon Discount
-  - Total savings banner ("You saved ₹X on this order!")
+- **My Subscriptions Page**: Shows clean payment breakdown:
+  - Original price (strikethrough)
+  - Final paid amount per month
+  - Savings banner ("You saved 20% on orders above ₹4,000")
+- **Order Detail Page**: Shows complete payment breakdown with savings banner
 
 ### 9. Subscription Checkout
 - Order summary with all price breakdowns
