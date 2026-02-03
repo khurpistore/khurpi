@@ -81,6 +81,7 @@ const Cart = () => {
                     <div className="flex items-center gap-2">
                       <Repeat className="w-4 h-4 text-green-600" />
                       <span className="font-medium text-sm text-green-800">Subscription</span>
+                      <span className="text-xs text-green-600">({pendingSubscription.products?.length || 0} items)</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
