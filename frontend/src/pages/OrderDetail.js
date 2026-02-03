@@ -267,6 +267,14 @@ const OrderDetail = () => {
                   <span className="text-muted-foreground">Delivery</span>
                   <span className="text-green-600 font-medium">FREE</span>
                 </div>
+                {/* Bulk/Auto Discount */}
+                {order.discount_amount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Bulk Discount ({order.discount_percent}%)</span>
+                    <span>-₹{order.discount_amount?.toFixed(2)}</span>
+                  </div>
+                )}
+                {/* Coupon Discount */}
                 {order.coupon_discount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Coupon ({order.coupon_code})</span>
