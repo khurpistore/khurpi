@@ -164,15 +164,27 @@ const MySubscriptions = () => {
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
                       {discountPercent > 0 && (
-                        <p className="text-sm text-muted-foreground line-through">₹{originalMonthlyTotal}</p>
+                        <p className="text-sm text-muted-foreground line-through">₹{originalMonthlyTotal.toLocaleString()}</p>
                       )}
-                      <p className="text-2xl font-bold text-primary">₹{monthlyTotal}</p>
+                      <p className="text-2xl font-bold text-primary">₹{monthlyTotal.toLocaleString()}</p>
                       <p className="text-xs text-muted-foreground">per month</p>
-                      {discountPercent > 0 && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">{discountPercent}% OFF</span>
-                      )}
                     </div>
                   </div>
+
+                  {/* Savings Banner */}
+                  {discountPercent > 0 && (
+                    <div className="mb-4 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-700">
+                          You saved {discountPercent}% on orders above ₹{(4000).toLocaleString()}
+                        </span>
+                        <span className="ml-auto text-sm font-bold text-green-700">
+                          -₹{(originalMonthlyTotal - monthlyTotal).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Products in Subscription */}
                   {subscription.items && subscription.items.length > 0 && (
