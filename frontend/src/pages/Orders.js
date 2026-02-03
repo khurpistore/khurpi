@@ -352,10 +352,21 @@ const Orders = () => {
                         </p>
                       </div>
                       <div className="text-right">
+                        {/* Show original price if discount applied */}
+                        {(item.discount_percent > 0 || item.discount_amount > 0) && (
+                          <p className="text-sm text-muted-foreground line-through">
+                            ₹{(item.subtotal * (item.delivery_days?.length || 1) * 4).toLocaleString()}
+                          </p>
+                        )}
                         <p className="text-xl font-bold text-primary">
-                          ₹{(item.total_price * (item.delivery_days?.length || 1) * 4).toFixed(0)}
+                          ₹{(item.total_price * (item.delivery_days?.length || 1) * 4).toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">per month</p>
+                        {(item.discount_percent > 0) && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                            {item.discount_percent}% OFF
+                          </span>
+                        )}
                       </div>
                     </div>
 
