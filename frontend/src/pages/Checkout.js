@@ -409,7 +409,7 @@ const Checkout = () => {
                       {pendingSubscription.plan?.name}
                     </span>
                   </div>
-                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                  <div className="space-y-2">
                     {pendingSubscription.products?.map((product) => {
                       const qty = product.selectedQty || 100;
                       const price = (product.price / 100) * qty;
