@@ -299,8 +299,9 @@ const SubscriptionDetail = () => {
             <CardContent>
               <div className="space-y-3" data-testid="subscription-items">
                 {items.map((item) => {
-                  const qty = item.selected_qty || item.selectedQty || 100;
-                  const unitPrice = (item.product?.price / 100) * qty;
+                  const qty = item.selected_qty || item.selectedQty || item.quantity || 100;
+                  const pricePerUnit = item.product?.price || 0;
+                  const totalPrice = (qty / 100) * pricePerUnit;
                   return (
                     <div
                       key={item.id}
@@ -314,10 +315,10 @@ const SubscriptionDetail = () => {
                       />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">{item.product?.name}</h4>
-                        <p className="text-xs text-muted-foreground">{qty}gm</p>
+                        <p className="text-xs text-muted-foreground">{qty}gm × ₹{pricePerUnit}/100gm</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-primary">₹{unitPrice.toFixed(0)}</p>
+                        <p className="font-semibold text-primary">₹{totalPrice.toFixed(0)}</p>
                         <p className="text-xs text-muted-foreground">per delivery</p>
                       </div>
                     </div>
