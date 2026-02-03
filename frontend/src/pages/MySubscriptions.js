@@ -161,7 +161,11 @@ const MySubscriptions = () => {
                     <div className="mb-4">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {subscription.items.map((item) => (
+                        {subscription.items.map((item) => {
+                          const pricePerUnit = item.product?.price || 0;
+                          const quantity = item.quantity || 100;
+                          const totalPrice = (quantity / 100) * pricePerUnit;
+                          return (
                           <div 
                             key={item.id} 
                             className="flex items-center gap-2 p-2 rounded-lg bg-gray-50"
@@ -173,10 +177,12 @@ const MySubscriptions = () => {
                             />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium truncate">{item.product?.name}</p>
-                              <p className="text-xs text-muted-foreground">{item.quantity}gm</p>
+                              <p className="text-xs text-muted-foreground">{quantity}gm × ₹{pricePerUnit}/100gm</p>
+                              <p className="text-xs text-primary font-medium">₹{totalPrice.toFixed(0)}</p>
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
