@@ -131,35 +131,14 @@ const MySubscriptions = () => {
               // Get discount percentage from subscription data or plan
               const discountPercent = subscription.discount_percent || subscription.plan_discount || subscription.discount || getPlanDiscount(subscription.frequency);
               
-              // total_price stored in DB is the MONTHLY total (what user paid)
-              // For older subscriptions, total_price might be per-delivery, so we need to handle both cases
-              const storedTotalPrice = subscription.total_price || 0;
+              // total_price in DB is PER DELIVERY amount (after discount)
+              // subtotal in DB is PER DELIVERY amount (before discount)
+              const perDeliveryAfterDiscount = subscription.total_price || 0;
+              const perDeliveryBeforeDiscount = subscription.subtotal || perDeliveryAfterDiscount;
               
-              // If subtotal is stored, we can calculate properly
-              // subtotal is per-delivery amount before discount
-              const perDeliverySubtotal = subscription.subtotal || 0;
-              
-              // Determine if total_price is monthly or per-delivery
-              // If discount_amount is stored, total_price is likely monthly
-              const hasMonthlyTotal = subscription.discount_amount !== undefined || subscription.plan_discount !== undefined;
-              
-              let monthlyTotal, originalMonthlyTotal;
-              
-              if (hasMonthlyTotal) {
-                // New format: total_price is the monthly paid amount
-                monthlyTotal = Math.round(storedTotalPrice);
-                // Calculate original from subtotal × deliveries
-                originalMonthlyTotal = perDeliverySubtotal > 0 
-                  ? Math.round(perDeliverySubtotal * totalDeliveriesPerMonth)
-                  : Math.round(monthlyTotal / (1 - discountPercent / 100));
-              } else {
-                // Old format: total_price is per-delivery
-                const perDeliveryTotal = storedTotalPrice;
-                monthlyTotal = Math.round(perDeliveryTotal * totalDeliveriesPerMonth);
-                originalMonthlyTotal = discountPercent > 0
-                  ? Math.round(monthlyTotal / (1 - discountPercent / 100))
-                  : monthlyTotal;
-              }
+              // Calculate monthly totals
+              const monthlyTotal = Math.round(perDeliveryAfterDiscount * totalDeliveriesPerMonth);
+              const originalMonthlyTotal = Math.round(perDeliveryBeforeDiscount * totalDeliveriesPerMonth);
               
               return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
