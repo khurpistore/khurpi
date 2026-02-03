@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/context/AuthContext';
-import { Package, MapPin, Calendar, ChevronRight, ShoppingBag, CalendarCheck, Repeat, Truck, Sprout, Clock } from 'lucide-react';
+import { Package, MapPin, Calendar, ChevronRight, ShoppingBag, CalendarCheck, Repeat, Truck, Sprout, Clock, Tag } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
