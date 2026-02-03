@@ -2256,7 +2256,7 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "id": str(uuid.uuid4()),
         "subscription_id": subscription_doc["id"],
         "user_id": user_id,
-        "amount": final_total,
+        "amount": sub_data.total_price,  # Use the actual paid amount
         "status": payment_status,
         "payment_id": sub_data.payment_id,
         "razorpay_order_id": sub_data.razorpay_order_id,
