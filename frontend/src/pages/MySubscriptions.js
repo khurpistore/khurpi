@@ -162,6 +162,7 @@ const MySubscriptions = () => {
                       </p>
                     </div>
                     <div className="text-right">
+                      <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
                       {discountPercent > 0 && (
                         <p className="text-sm text-muted-foreground line-through">₹{originalMonthlyTotal}</p>
                       )}
