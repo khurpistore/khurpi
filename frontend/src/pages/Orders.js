@@ -5,40 +5,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
-import { Package, MapPin, ChevronRight, ShoppingBag, Repeat, Clock, Tag } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { Package, MapPin, ChevronRight, ShoppingBag, Repeat, Clock, Tag, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Calculate delivery date for a product
-const getProductDeliveryDate = (product) => {
-  const isGrowing = product?.stock_status === 'growing';
-  
-  if (isGrowing) {
-    let deliveryDate;
-    if (product.availability_date) {
-      deliveryDate = addDays(new Date(product.availability_date), 1);
-    } else {
-      const readyDays = product.ready_in_days || product.growth_days || 7;
-      deliveryDate = addDays(new Date(), readyDays + 1);
-    }
-    if (deliveryDate.getDay() === 0) {
-      deliveryDate = addDays(deliveryDate, 1);
-    }
-    return { date: deliveryDate, isGrowing: true };
-  } else {
-    let deliveryDate = addDays(new Date(), 1);
-    if (deliveryDate.getDay() === 0) {
-      deliveryDate = addDays(deliveryDate, 1);
-    }
-    return { date: deliveryDate, isGrowing: false };
-  }
-};
-
 const Orders = () => {
   const [orders, setOrders] = useState([]);
-  const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -57,8 +31,18 @@ const Orders = () => {
         axios.get(`${API}/orders?user_id=${user.id}`),
         axios.get(`${API}/subscriptions?user_id=${user.id}`)
       ]);
-      setOrders(ordersRes.data);
-      setSubscriptions(subscriptionsRes.data);
+      
+      // Combine orders and subscriptions into unified orders
+      // Group by created_at date (same day = same order)
+      const allItems = [
+        ...ordersRes.data.map(o => ({ ...o, itemType: 'one_time' })),
+        ...subscriptionsRes.data.map(s => ({ ...s, itemType: 'subscription' }))
+      ];
+      
+      // Sort by date descending
+      allItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      setOrders(allItems);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
     } finally {
@@ -91,15 +75,6 @@ const Orders = () => {
     return planNames[frequency] || frequency;
   };
 
-  // Combine and sort all orders by date
-  const getAllOrdersSorted = () => {
-    const oneTimeOrders = orders.map(o => ({ ...o, type: 'order' }));
-    const subOrders = subscriptions.map(s => ({ ...s, type: 'subscription' }));
-    return [...oneTimeOrders, ...subOrders].sort((a, b) => 
-      new Date(b.created_at) - new Date(a.created_at)
-    );
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
@@ -108,11 +83,10 @@ const Orders = () => {
     );
   }
 
-  const allOrders = getAllOrdersSorted();
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-primary flex items-center gap-2">
             <ShoppingBag className="w-7 h-7" />
@@ -123,7 +97,7 @@ const Orders = () => {
           </Button>
         </div>
 
-        {allOrders.length === 0 ? (
+        {orders.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
               <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
@@ -138,234 +112,258 @@ const Orders = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {allOrders.map((item) => (
-              <Card 
-                key={`${item.type}-${item.id}`} 
-                data-testid={`${item.type}-${item.id}`} 
-                className="overflow-hidden"
-              >
-                <CardContent className="p-4 sm:p-6">
-                  {/* Order Header */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        {item.type === 'subscription' ? (
-                          <Repeat className="w-4 h-4 text-primary" />
-                        ) : (
-                          <ShoppingBag className="w-4 h-4 text-muted-foreground" />
-                        )}
-                        <Badge className={getStatusColor(item.status)}>
-                          {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                        </Badge>
-                        {item.type === 'subscription' && (
-                          <Badge variant="outline" className="text-xs">Subscription</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(item.created_at), 'MMM d, yyyy • hh:mm a')}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
-                      {item.type === 'order' ? (
-                        <>
-                          {(item.discount_amount > 0 || item.coupon_discount > 0) && (
-                            <p className="text-sm text-muted-foreground line-through">₹{item.subtotal?.toLocaleString()}</p>
-                          )}
-                          <p className="text-xl font-bold text-primary">₹{item.total?.toLocaleString()}</p>
-                          {(item.discount_amount > 0 || item.coupon_discount > 0) && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                              Saved ₹{((item.discount_amount || 0) + (item.coupon_discount || 0)).toLocaleString()}
+            {orders.map((order) => {
+              const isSubscription = order.itemType === 'subscription';
+              
+              // Calculate totals and discounts
+              const originalAmount = isSubscription ? order.subtotal : order.subtotal;
+              const paidAmount = isSubscription ? order.total_price : order.total;
+              const discountAmount = isSubscription 
+                ? (order.bulk_discount_amount || 0)
+                : ((order.discount_amount || 0) + (order.coupon_discount || 0));
+              const discountPercent = isSubscription 
+                ? order.bulk_discount_percent 
+                : order.discount_percent;
+              
+              return (
+                <Card 
+                  key={`${order.itemType}-${order.id}`}
+                  data-testid={`order-${order.id}`}
+                  className="overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-0">
+                    {/* Order Header */}
+                    <div className="p-4 sm:p-6 border-b bg-gray-50/50">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap mb-2">
+                            <Badge className={getStatusColor(order.status)}>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              Order #{order.id.slice(0, 8)}
                             </span>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {(item.bulk_discount_amount > 0) && (
-                            <p className="text-sm text-muted-foreground line-through">₹{item.subtotal?.toLocaleString()}</p>
-                          )}
-                          <p className="text-xl font-bold text-primary">₹{item.total_price?.toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">per month</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Subscription Info */}
-                  {item.type === 'subscription' && (
-                    <div className="mb-4 p-3 bg-primary/5 rounded-lg">
-                      <h3 className="font-semibold text-primary mb-1">
-                        {getPlanDisplayName(item.frequency)}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {item.tray_count}gm • {(item.delivery_days?.length || 1) * 4} deliveries/month
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        📅 {item.delivery_days && item.delivery_days.length > 0 
-                          ? item.delivery_days.join(', ')
-                          : item.delivery_day || 'Not set'}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Savings Banner */}
-                  {item.type === 'subscription' && item.bulk_discount_amount > 0 && (
-                    <div className="mb-4 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-700">
-                          You saved {item.bulk_discount_percent}% on orders above ₹4,000
-                        </span>
-                        <span className="ml-auto text-sm font-bold text-green-700">
-                          -₹{item.bulk_discount_amount?.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* One-time Order Savings Banner */}
-                  {item.type === 'order' && (item.discount_amount > 0 || item.coupon_discount > 0) && (
-                    <div className="mb-4 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-700">
-                          {item.discount_percent > 0 && `${item.discount_percent}% bulk discount`}
-                          {item.discount_percent > 0 && item.coupon_code && ' + '}
-                          {item.coupon_code && `Coupon: ${item.coupon_code}`}
-                        </span>
-                        <span className="ml-auto text-sm font-bold text-green-700">
-                          -₹{((item.discount_amount || 0) + (item.coupon_discount || 0)).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Products */}
-                  {item.items && item.items.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                        {item.type === 'subscription' ? 'Subscription Products' : 'Order Items'}
-                      </p>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {item.items.slice(0, 6).map((orderItem, idx) => {
-                          const pricePerUnit = orderItem.price || orderItem.product?.price || 0;
-                          const quantity = orderItem.quantity || 100;
-                          const totalPrice = (quantity / 100) * pricePerUnit;
-                          const isGrowing = orderItem.product?.stock_status === 'growing';
-                          return (
-                            <div 
-                              key={idx} 
-                              className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
-                            >
-                              {orderItem.product?.image ? (
-                                <img 
-                                  src={orderItem.product.image} 
-                                  alt={orderItem.product?.name} 
-                                  className="w-10 h-10 rounded object-cover" 
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                                  <Package className="w-5 h-5 text-gray-400" />
-                                </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium truncate">{orderItem.product?.name || 'Product'}</p>
-                                <p className="text-xs text-muted-foreground">{quantity}gm × ₹{pricePerUnit}/100gm</p>
-                                <p className="text-xs text-primary font-medium">₹{totalPrice.toFixed(0)}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      {item.items.length > 6 && (
-                        <p className="text-xs text-primary font-medium mt-2 text-center">
-                          +{item.items.length - 6} more items
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Delivery Address */}
-                  {(item.address || item.delivery_address) && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Delivery Address</p>
-                          {(item.address?.receiver_name || item.delivery_address?.receiver_name) && (
-                            <p className="text-sm font-semibold text-primary">
-                              {item.address?.receiver_name || item.delivery_address?.receiver_name}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4" />
+                            {format(new Date(order.created_at), 'MMM d, yyyy • hh:mm a')}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {discountAmount > 0 && (
+                            <p className="text-sm text-muted-foreground line-through">
+                              ₹{originalAmount?.toLocaleString()}
                             </p>
                           )}
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {item.address?.address_line || item.delivery_address?.address_line}
+                          <p className="text-2xl font-bold text-primary">
+                            ₹{paidAmount?.toLocaleString()}
                           </p>
-                          {(item.address?.phone || item.delivery_address?.phone) && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              📞 +91 {item.address?.phone || item.delivery_address?.phone}
-                            </p>
+                          {isSubscription && (
+                            <p className="text-xs text-muted-foreground">per month</p>
+                          )}
+                          {discountAmount > 0 && (
+                            <Badge className="bg-green-100 text-green-800 mt-1">
+                              Saved ₹{discountAmount.toLocaleString()}
+                            </Badge>
                           )}
                         </div>
                       </div>
                     </div>
-                  )}
 
-                  {/* Delivery/Dates Info */}
-                  {item.type === 'order' ? (
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-gray-50 rounded-lg p-2 text-center">
-                        <p className="text-xs text-muted-foreground">Order Date</p>
-                        <p className="text-xs font-medium">{format(new Date(item.created_at), 'MMM d, yyyy')}</p>
-                      </div>
-                      <div className="bg-green-50 rounded-lg p-2 text-center">
-                        <Clock className="w-3 h-3 mx-auto text-green-600 mb-1" />
-                        <p className="text-xs text-green-700">Delivery</p>
-                        <p className="text-xs font-medium text-green-800">
-                          {item.estimated_delivery_date 
-                            ? format(new Date(item.estimated_delivery_date), 'MMM d')
-                            : '-'}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                      <div className="bg-gray-50 rounded-lg p-2 text-center">
-                        <p className="text-xs text-muted-foreground">Created</p>
-                        <p className="text-xs font-medium">{format(new Date(item.created_at), 'MMM d, yyyy')}</p>
-                      </div>
-                      <div className="bg-green-50 rounded-lg p-2 text-center">
-                        <p className="text-xs text-green-700">Next Delivery</p>
-                        <p className="text-xs font-medium text-green-800">
-                          {item.next_delivery_date 
-                            ? format(new Date(item.next_delivery_date), 'MMM d')
-                            : '-'}
-                        </p>
-                      </div>
-                      <div className="bg-blue-50 rounded-lg p-2 text-center">
-                        <p className="text-xs text-blue-700">Renews On</p>
-                        <p className="text-xs font-medium text-blue-800">
-                          {item.renewal_date 
-                            ? format(new Date(item.renewal_date), 'MMM d')
-                            : format(new Date(new Date(item.start_date).setMonth(new Date(item.start_date).getMonth() + 1)), 'MMM d')}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    {/* Order Body */}
+                    <div className="p-4 sm:p-6">
+                      {/* Subscription Section */}
+                      {isSubscription && (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Repeat className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-semibold text-primary">Subscription</span>
+                            <Badge variant="outline" className="text-xs">{getPlanDisplayName(order.frequency)}</Badge>
+                          </div>
+                          
+                          {/* Subscription Info */}
+                          <div className="p-3 bg-primary/5 rounded-lg mb-3">
+                            <p className="text-sm font-medium text-primary">
+                              {order.tray_count}gm • {(order.delivery_days?.length || 1) * 4} deliveries/month
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              📅 {order.delivery_days?.join(', ') || order.delivery_day || 'Not set'}
+                            </p>
+                          </div>
 
-                  {/* View Details */}
-                  <div 
-                    className="flex items-center justify-end cursor-pointer"
-                    onClick={() => navigate(item.type === 'subscription' ? `/subscription/${item.id}` : `/order/${item.id}`, 
-                      item.type === 'subscription' ? { state: { from: 'orders' } } : {}
-                    )}
-                  >
-                    <span className="text-sm text-primary font-medium flex items-center gap-1">
-                      View Details <ChevronRight className="w-4 h-4" />
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                          {/* Subscription Products */}
+                          {order.items && order.items.length > 0 && (
+                            <div className="space-y-2">
+                              {order.items.map((item, idx) => {
+                                const pricePerUnit = item.product?.price || 0;
+                                const quantity = item.quantity || 100;
+                                const totalPrice = (quantity / 100) * pricePerUnit;
+                                return (
+                                  <div 
+                                    key={idx}
+                                    className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg"
+                                  >
+                                    <img 
+                                      src={item.product?.image} 
+                                      alt={item.product?.name}
+                                      className="w-12 h-12 rounded-lg object-cover"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{item.product?.name}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {quantity}gm × ₹{pricePerUnit}/100gm
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-semibold text-primary">₹{totalPrice.toFixed(0)}</p>
+                                      <p className="text-xs text-muted-foreground">per delivery</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Subscription Dates */}
+                          <div className="grid grid-cols-2 gap-2 mt-3">
+                            <div className="bg-green-50 rounded-lg p-2 text-center">
+                              <p className="text-xs text-green-700">Next Delivery</p>
+                              <p className="text-sm font-medium text-green-800">
+                                {order.next_delivery_date 
+                                  ? format(new Date(order.next_delivery_date), 'MMM d')
+                                  : '-'}
+                              </p>
+                            </div>
+                            <div className="bg-blue-50 rounded-lg p-2 text-center">
+                              <p className="text-xs text-blue-700">Renews On</p>
+                              <p className="text-sm font-medium text-blue-800">
+                                {order.renewal_date 
+                                  ? format(new Date(order.renewal_date), 'MMM d')
+                                  : format(new Date(new Date(order.start_date).setMonth(new Date(order.start_date).getMonth() + 1)), 'MMM d')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* One-time Products Section */}
+                      {!isSubscription && (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm font-semibold">One-time Purchase</span>
+                          </div>
+
+                          {/* One-time Products */}
+                          {order.items && order.items.length > 0 && (
+                            <div className="space-y-2">
+                              {order.items.map((item, idx) => {
+                                const pricePerUnit = item.price || item.product?.price || 0;
+                                const quantity = item.quantity || 100;
+                                const totalPrice = (quantity / 100) * pricePerUnit;
+                                const isGrowing = item.product?.stock_status === 'growing';
+                                return (
+                                  <div 
+                                    key={idx}
+                                    className={`flex items-center gap-3 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
+                                  >
+                                    {item.product?.image ? (
+                                      <img 
+                                        src={item.product.image} 
+                                        alt={item.product?.name}
+                                        className="w-12 h-12 rounded-lg object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                        <Package className="w-6 h-6 text-gray-400" />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{item.product?.name || 'Product'}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {quantity}gm × ₹{pricePerUnit}/100gm
+                                      </p>
+                                    </div>
+                                    <p className="text-sm font-semibold text-primary">₹{totalPrice.toFixed(0)}</p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* One-time Delivery Date */}
+                          <div className="mt-3 bg-green-50 rounded-lg p-2 flex items-center justify-center gap-2">
+                            <Clock className="w-4 h-4 text-green-600" />
+                            <span className="text-sm text-green-700">Delivery:</span>
+                            <span className="text-sm font-medium text-green-800">
+                              {order.estimated_delivery_date 
+                                ? format(new Date(order.estimated_delivery_date), 'MMM d, yyyy')
+                                : '-'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Savings Banner */}
+                      {discountAmount > 0 && (
+                        <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg mb-4">
+                          <div className="flex items-center gap-2">
+                            <Tag className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-medium text-green-700">
+                              {isSubscription 
+                                ? `You saved ${discountPercent}% on orders above ₹4,000`
+                                : `${discountPercent > 0 ? `${discountPercent}% bulk discount` : ''}${discountPercent > 0 && order.coupon_code ? ' + ' : ''}${order.coupon_code ? `Coupon: ${order.coupon_code}` : ''}`
+                              }
+                            </span>
+                            <span className="ml-auto text-sm font-bold text-green-700">
+                              -₹{discountAmount.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Delivery Address */}
+                      {(order.address || order.delivery_address) && (
+                        <div className="p-3 bg-gray-50 rounded-lg mb-4">
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Delivery Address</p>
+                              {(order.address?.receiver_name || order.delivery_address?.receiver_name) && (
+                                <p className="text-sm font-semibold text-primary">
+                                  {order.address?.receiver_name || order.delivery_address?.receiver_name}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground">
+                                {order.address?.address_line || order.delivery_address?.address_line}
+                              </p>
+                              {(order.address?.phone || order.delivery_address?.phone) && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  📞 +91 {order.address?.phone || order.delivery_address?.phone}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* View Details Button */}
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => navigate(
+                          isSubscription ? `/subscription/${order.id}` : `/order/${order.id}`,
+                          isSubscription ? { state: { from: 'orders' } } : {}
+                        )}
+                      >
+                        View Details
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
