@@ -2209,13 +2209,19 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         "start_date": sub_data.start_date,
         "status": "active",
         "tray_count": sub_data.tray_count,
-        "subtotal": subtotal,
+        # Use subtotal from frontend if provided (monthly total before bulk discount)
+        "subtotal": sub_data.subtotal if sub_data.subtotal else subtotal,
         "discount_percent": discount_percent,
         "discount_amount": discount_amount,
+        # Bulk discount fields (order-value based)
+        "bulk_discount_percent": sub_data.bulk_discount_percent or 0,
+        "bulk_discount_amount": sub_data.bulk_discount_amount or 0,
+        "bulk_discount_min_order_value": sub_data.bulk_discount_min_order_value,
         "delivery_fee": delivery_fee,
         "coupon_code": sub_data.coupon_code,
         "coupon_discount": coupon_discount,
-        "total_price": final_total,
+        # Use the frontend's total_price which includes bulk discount
+        "total_price": sub_data.total_price,
         "address_id": selected_address.get("id") if selected_address else None,
         "payment_method": sub_data.payment_method or "razorpay",
         "payment_status": sub_data.payment_status or "pending",
