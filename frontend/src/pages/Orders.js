@@ -377,7 +377,9 @@ const Orders = () => {
                       <div className="mb-3">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {item.items.map((subItem) => (
+                          {item.items.map((subItem) => {
+                            const pricePerUnit = subItem.product?.price || 0;
+                            return (
                             <div 
                               key={subItem.id} 
                               className="flex items-center gap-2 p-2 rounded-lg bg-gray-50"
@@ -390,9 +392,11 @@ const Orders = () => {
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{subItem.product?.name}</p>
                                 <p className="text-xs text-muted-foreground">{subItem.quantity}gm</p>
+                                <p className="text-xs text-primary font-medium">₹{pricePerUnit}/100gm</p>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
