@@ -95,7 +95,7 @@ const Cart = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                     {pendingSubscription.products?.map((product) => {
                       const qty = product.selectedQty || 100;
                       const price = (product.price / 100) * qty;
