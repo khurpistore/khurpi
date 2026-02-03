@@ -325,7 +325,7 @@ const Orders = () => {
                   </CardContent>
                 </Card>
               ) : (
-                // Subscription Card - Same as MySubscriptions
+                // Subscription Card - Using simplified logic like MySubscriptions
                 (() => {
                   // Simple: Use stored values directly from DB
                   const originalAmount = item.subtotal || 0;
@@ -338,20 +338,23 @@ const Orders = () => {
                 <Card 
                   key={`sub-${item.id}`} 
                   data-testid={`subscription-${item.id}`} 
-                  className="overflow-hidden"
+                  className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-primary/50"
+                  onClick={() => navigate(`/subscription/${item.id}`, { state: { from: 'orders' } })}
                 >
                   <CardContent className="p-4 sm:p-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-4">
+                    {/* Header Row */}
+                    <div className="flex justify-between items-start mb-3">
                       <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-lg font-semibold text-primary">
-                            {getPlanDisplayName(item.frequency)}
-                          </h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Repeat className="w-4 h-4 text-primary" />
                           <Badge className={getStatusColor(item.status)}>
                             {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                           </Badge>
+                          <Badge variant="outline" className="text-xs">Subscription</Badge>
                         </div>
+                        <h3 className="font-semibold text-primary">
+                          {getPlanDisplayName(item.frequency)}
+                        </h3>
                         <p className="text-sm text-muted-foreground">
                           {item.tray_count}gm • {deliveriesPerMonth} deliveries/month
                         </p>
@@ -364,16 +367,20 @@ const Orders = () => {
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
                         {discountAmount > 0 && (
-                          <p className="text-sm text-muted-foreground line-through">₹{originalAmount.toLocaleString()}</p>
+                          <p className="text-sm text-muted-foreground line-through">
+                            ₹{originalAmount.toLocaleString()}
+                          </p>
                         )}
-                        <p className="text-2xl font-bold text-primary">₹{paidAmount.toLocaleString()}</p>
+                        <p className="text-xl font-bold text-primary">
+                          ₹{paidAmount.toLocaleString()}
+                        </p>
                         <p className="text-xs text-muted-foreground">per month</p>
                       </div>
                     </div>
 
                     {/* Savings Banner */}
                     {discountAmount > 0 && (
-                      <div className="mb-4 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                      <div className="mb-3 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
                         <div className="flex items-center gap-2">
                           <Tag className="w-4 h-4 text-green-600" />
                           <span className="text-sm font-medium text-green-700">
@@ -385,13 +392,15 @@ const Orders = () => {
                         </div>
                       </div>
                     )}
-
-                    {/* Products in Subscription */}
                     {item.items && item.items.length > 0 && (
-                      <div className="mb-4">
+                      <div className="mb-3">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {item.items.map((subItem) => (
+                          {item.items.map((subItem) => {
+                            const pricePerUnit = subItem.product?.price || 0;
+                            const quantity = subItem.quantity || 100;
+                            const totalPrice = (quantity / 100) * pricePerUnit;
+                            return (
                             <div 
                               key={subItem.id} 
                               className="flex items-center gap-2 p-2 rounded-lg bg-gray-50"
@@ -403,17 +412,19 @@ const Orders = () => {
                               />
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{subItem.product?.name}</p>
-                                <p className="text-xs text-muted-foreground">{subItem.quantity}gm</p>
+                                <p className="text-xs text-muted-foreground">{quantity}gm × ₹{pricePerUnit}/100gm</p>
+                                <p className="text-xs text-primary font-medium">₹{totalPrice.toFixed(0)}</p>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
 
                     {/* Delivery Address */}
                     {item.address && (
-                      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="mb-3 p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -446,7 +457,7 @@ const Orders = () => {
                     )}
 
                     {/* Important Dates */}
-                    <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="grid grid-cols-3 gap-2 mb-3">
                       <div className="bg-gray-50 rounded-lg p-2 text-center">
                         <p className="text-xs text-muted-foreground">Created</p>
                         <p className="text-xs font-medium">{format(new Date(item.created_at), 'MMM d, yyyy')}</p>
@@ -469,17 +480,11 @@ const Orders = () => {
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2 flex-wrap">
-                      <Button
-                        data-testid={`view-details-button-${item.id}`}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/subscription/${item.id}`, { state: { from: 'orders' } })}
-                        className="rounded-full"
-                      >
-                        View Details
-                      </Button>
+                    {/* View Details */}
+                    <div className="flex items-center justify-end">
+                      <span className="text-sm text-primary font-medium flex items-center gap-1">
+                        View Details <ChevronRight className="w-4 h-4" />
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
