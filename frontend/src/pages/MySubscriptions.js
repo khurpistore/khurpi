@@ -121,28 +121,19 @@ const MySubscriptions = () => {
         ) : (
           <div className="space-y-6" data-testid="subscriptions-list">
             {[...subscriptions].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map((subscription) => {
-              // Calculate monthly values - use delivery_days array if available
-              const deliveriesPerWeek = subscription.delivery_days?.length || subscription.deliveries_per_week || getDeliveriesPerWeek(subscription.frequency);
-              const weeksPerMonth = 4;
-              const totalDeliveriesPerMonth = deliveriesPerWeek * weeksPerMonth;
+              // Delivery info
+              const deliveriesPerWeek = subscription.delivery_days?.length || 1;
+              const totalDeliveriesPerMonth = deliveriesPerWeek * 4;
               
-              // Get discount percentages
-              const planDiscountPercent = subscription.discount_percent || subscription.plan_discount || getPlanDiscount(subscription.frequency);
-              const bulkDiscountPercent = subscription.bulk_discount_percent || 0;
-              const totalDiscountPercent = planDiscountPercent + bulkDiscountPercent;
-              
-              // total_price is the MONTHLY PAID AMOUNT (after all discounts)
-              // subtotal is the MONTHLY SUBTOTAL (before bulk discount, may include plan discount)
-              const monthlyPaid = subscription.total_price || 0;
-              const monthlySubtotal = subscription.subtotal || monthlyPaid;
-              
-              // Calculate what the original would be (before any discount)
-              // If subtotal includes plan discount, we need to reverse it
-              const originalMonthlyTotal = totalDiscountPercent > 0 
-                ? Math.round(monthlyPaid / (1 - totalDiscountPercent / 100))
-                : monthlySubtotal;
-              
-              const totalSavings = originalMonthlyTotal - monthlyPaid;
+              // Simple: Use stored values directly from DB
+              // subtotal = original monthly amount (before discount)
+              // total_price = final monthly amount paid (after discount)
+              // bulk_discount_percent = discount percentage applied
+              // bulk_discount_amount = discount amount in rupees
+              const originalAmount = subscription.subtotal || 0;
+              const paidAmount = subscription.total_price || 0;
+              const discountPercent = subscription.bulk_discount_percent || 0;
+              const discountAmount = subscription.bulk_discount_amount || 0;
               
               return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
@@ -167,24 +158,24 @@ const MySubscriptions = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
-                      {totalSavings > 0 && (
-                        <p className="text-sm text-muted-foreground line-through">₹{originalMonthlyTotal.toLocaleString()}</p>
+                      {discountAmount > 0 && (
+                        <p className="text-sm text-muted-foreground line-through">₹{originalAmount.toLocaleString()}</p>
                       )}
-                      <p className="text-2xl font-bold text-primary">₹{monthlyPaid.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-primary">₹{paidAmount.toLocaleString()}</p>
                       <p className="text-xs text-muted-foreground">per month</p>
                     </div>
                   </div>
 
                   {/* Savings Banner */}
-                  {totalSavings > 0 && (
+                  {discountAmount > 0 && (
                     <div className="mb-4 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2">
                         <Tag className="w-4 h-4 text-green-600" />
                         <span className="text-sm font-medium text-green-700">
-                          You saved {totalDiscountPercent}% on orders above ₹{(4000).toLocaleString()}
+                          You saved {discountPercent}% on orders above ₹4,000
                         </span>
                         <span className="ml-auto text-sm font-bold text-green-700">
-                          -₹{totalSavings.toLocaleString()}
+                          -₹{discountAmount.toLocaleString()}
                         </span>
                       </div>
                     </div>
