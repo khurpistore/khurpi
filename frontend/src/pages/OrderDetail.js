@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Package, MapPin, Calendar, CreditCard, Phone, Loader2, Sprout, Clock } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, Calendar, CreditCard, Phone, Loader2, Sprout, Clock, Tag } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
