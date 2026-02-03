@@ -225,6 +225,8 @@ const Orders = () => {
                           {item.items.slice(0, 6).map((orderItem, idx) => {
                             const isGrowing = orderItem.product?.stock_status === 'growing';
                             const pricePerUnit = orderItem.price || orderItem.product?.price || 0;
+                            const quantity = orderItem.quantity || 100;
+                            const totalPrice = (quantity / 100) * pricePerUnit;
                             return (
                               <div 
                                 key={idx} 
@@ -243,8 +245,8 @@ const Orders = () => {
                                 )}
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs font-medium truncate">{orderItem.product?.name || 'Product'}</p>
-                                  <p className="text-xs text-muted-foreground">{orderItem.quantity}gm</p>
-                                  <p className="text-xs text-primary font-medium">₹{pricePerUnit}/100gm</p>
+                                  <p className="text-xs text-muted-foreground">{quantity}gm × ₹{pricePerUnit}/100gm</p>
+                                  <p className="text-xs text-primary font-medium">₹{totalPrice.toFixed(0)}</p>
                                 </div>
                               </div>
                             );
