@@ -325,7 +325,16 @@ const Orders = () => {
                   </CardContent>
                 </Card>
               ) : (
-                // Subscription Card - Enhanced with product info like MySubscriptions
+                // Subscription Card - Using simplified logic like MySubscriptions
+                (() => {
+                  // Simple: Use stored values directly from DB
+                  const originalAmount = item.subtotal || 0;
+                  const paidAmount = item.total_price || 0;
+                  const discountPercent = item.bulk_discount_percent || 0;
+                  const discountAmount = item.bulk_discount_amount || 0;
+                  const deliveriesPerMonth = (item.delivery_days?.length || 1) * 4;
+                  
+                  return (
                 <Card 
                   key={`sub-${item.id}`} 
                   data-testid={`subscription-${item.id}`} 
@@ -347,7 +356,7 @@ const Orders = () => {
                           {getPlanDisplayName(item.frequency)}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {item.tray_count}gm • {(item.delivery_days?.length || 1) * 4} deliveries/month
+                          {item.tray_count}gm • {deliveriesPerMonth} deliveries/month
                         </p>
                         <p className="text-sm text-muted-foreground">
                           📅 {item.delivery_days && item.delivery_days.length > 0 
@@ -356,25 +365,33 @@ const Orders = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        {/* Show original price if discount applied */}
-                        {(item.discount_percent > 0 || item.discount_amount > 0) && (
+                        <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
+                        {discountAmount > 0 && (
                           <p className="text-sm text-muted-foreground line-through">
-                            ₹{(item.subtotal * (item.delivery_days?.length || 1) * 4).toLocaleString()}
+                            ₹{originalAmount.toLocaleString()}
                           </p>
                         )}
                         <p className="text-xl font-bold text-primary">
-                          ₹{(item.total_price * (item.delivery_days?.length || 1) * 4).toLocaleString()}
+                          ₹{paidAmount.toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">per month</p>
-                        {(item.discount_percent > 0) && (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                            {item.discount_percent}% OFF
-                          </span>
-                        )}
                       </div>
                     </div>
 
-                    {/* Products Grid - Same as MySubscriptions */}
+                    {/* Savings Banner */}
+                    {discountAmount > 0 && (
+                      <div className="mb-3 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-700">
+                            You saved {discountPercent}% on orders above ₹4,000
+                          </span>
+                          <span className="ml-auto text-sm font-bold text-green-700">
+                            -₹{discountAmount.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                     {item.items && item.items.length > 0 && (
                       <div className="mb-3">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
