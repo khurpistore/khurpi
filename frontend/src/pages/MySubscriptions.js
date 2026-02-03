@@ -125,20 +125,24 @@ const MySubscriptions = () => {
               const deliveriesPerWeek = subscription.delivery_days?.length || subscription.deliveries_per_week || getDeliveriesPerWeek(subscription.frequency);
               const weeksPerMonth = 4;
               const totalDeliveriesPerMonth = deliveriesPerWeek * weeksPerMonth;
-              const packsPerDelivery = subscription.tray_count || 1;
-              const totalPacksPerMonth = packsPerDelivery * totalDeliveriesPerMonth;
               
-              // Get discount percentage from subscription data or plan
-              const discountPercent = subscription.discount_percent || subscription.plan_discount || subscription.discount || getPlanDiscount(subscription.frequency);
+              // Get discount percentages
+              const planDiscountPercent = subscription.discount_percent || subscription.plan_discount || getPlanDiscount(subscription.frequency);
+              const bulkDiscountPercent = subscription.bulk_discount_percent || 0;
+              const totalDiscountPercent = planDiscountPercent + bulkDiscountPercent;
               
-              // total_price in DB is PER DELIVERY amount (after discount)
-              // subtotal in DB is PER DELIVERY amount (before discount)
-              const perDeliveryAfterDiscount = subscription.total_price || 0;
-              const perDeliveryBeforeDiscount = subscription.subtotal || perDeliveryAfterDiscount;
+              // total_price is the MONTHLY PAID AMOUNT (after all discounts)
+              // subtotal is the MONTHLY SUBTOTAL (before bulk discount, may include plan discount)
+              const monthlyPaid = subscription.total_price || 0;
+              const monthlySubtotal = subscription.subtotal || monthlyPaid;
               
-              // Calculate monthly totals
-              const monthlyTotal = Math.round(perDeliveryAfterDiscount * totalDeliveriesPerMonth);
-              const originalMonthlyTotal = Math.round(perDeliveryBeforeDiscount * totalDeliveriesPerMonth);
+              // Calculate what the original would be (before any discount)
+              // If subtotal includes plan discount, we need to reverse it
+              const originalMonthlyTotal = totalDiscountPercent > 0 
+                ? Math.round(monthlyPaid / (1 - totalDiscountPercent / 100))
+                : monthlySubtotal;
+              
+              const totalSavings = originalMonthlyTotal - monthlyPaid;
               
               return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
