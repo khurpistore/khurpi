@@ -128,19 +128,21 @@ const MySubscriptions = () => {
               const packsPerDelivery = subscription.tray_count || 1;
               const totalPacksPerMonth = packsPerDelivery * totalDeliveriesPerMonth;
               
-              // Per delivery total from subscription (this is what's stored in DB - already discounted)
-              const perDeliveryTotal = subscription.total_price || 0;
+              // Get discount percentage - from plan_discount or plan's default
+              const discountPercent = subscription.plan_discount || subscription.discount || getPlanDiscount(subscription.frequency);
               
-              // Monthly total = per delivery total × deliveries per month (this is the actual paid amount after discount)
-              const monthlyTotal = perDeliveryTotal * totalDeliveriesPerMonth;
+              // Per delivery total before discount (subtotal)
+              const perDeliverySubtotal = subscription.subtotal || subscription.total_price || 0;
               
-              // Get discount percentage for display
-              const discountPercent = subscription.discount || getPlanDiscount(subscription.frequency);
+              // Calculate monthly subtotal (before discount)
+              const monthlySubtotal = perDeliverySubtotal * totalDeliveriesPerMonth;
               
-              // Calculate original price before discount (for display purposes)
-              const originalMonthlyTotal = discountPercent > 0 
-                ? Math.round(monthlyTotal / (1 - discountPercent / 100))
-                : monthlyTotal;
+              // Calculate discounted monthly total
+              const discountAmount = discountPercent > 0 ? (monthlySubtotal * discountPercent / 100) : 0;
+              const monthlyTotal = Math.round(monthlySubtotal - discountAmount);
+              
+              // Original price (before discount) for display
+              const originalMonthlyTotal = Math.round(monthlySubtotal);
               
               return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
