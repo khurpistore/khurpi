@@ -209,6 +209,12 @@ const Checkout = () => {
         product_id: p.product_id || p.id, 
         quantity: p.selectedQty || 100 
       }));
+      
+      // Calculate the actual monthly total after bulk discount
+      const subscriptionSubtotal = pendingSubscription.monthlyTotal || 0;
+      const bulkDiscountOnSubscription = orderDiscount ? (subscriptionSubtotal * orderDiscount.tier.discount_percent) / 100 : 0;
+      const actualMonthlyPaid = subscriptionSubtotal - bulkDiscountOnSubscription;
+      
       const subscriptionData = {
         frequency: pendingSubscription.plan.frequency,
         delivery_days: pendingSubscription.deliveryDays,
@@ -217,12 +223,18 @@ const Checkout = () => {
         start_date: pendingSubscription.startDate,
         tray_count: pendingSubscription.products.reduce((sum, p) => sum + (p.selectedQty || 100), 0),
         items: items,
-        total_price: pendingSubscription.monthlyTotal,
-        subtotal: pendingSubscription.perDeliveryTotal,
+        // Save the actual paid amount (after bulk discount)
+        total_price: actualMonthlyPaid,
+        subtotal: subscriptionSubtotal,
         delivery_fee: 0,
         monthly_delivery_fee: 0,
+        // Plan discount (e.g., 10% for twice_week plan)
         plan_discount: pendingSubscription.plan.discount,
         discount_amount: pendingSubscription.discount,
+        // Bulk discount (order-value based)
+        bulk_discount_percent: orderDiscount?.tier?.discount_percent || 0,
+        bulk_discount_amount: bulkDiscountOnSubscription,
+        bulk_discount_min_order_value: orderDiscount?.tier?.min_order_value || null,
         plan_id: pendingSubscription.plan.id,
         address_id: addressId,
         payment_method: 'online',
