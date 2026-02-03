@@ -287,6 +287,18 @@ const OrderDetail = () => {
                     <span className="text-primary">₹{order.total?.toFixed(2)}</span>
                   </div>
                 </div>
+
+                {/* Total Savings Banner */}
+                {(order.discount_amount > 0 || order.coupon_discount > 0) && (
+                  <div className="mt-3 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-700">
+                        You saved ₹{((order.discount_amount || 0) + (order.coupon_discount || 0)).toFixed(0)} on this order!
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {order.payment_id && (
