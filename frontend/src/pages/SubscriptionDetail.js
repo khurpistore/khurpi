@@ -339,7 +339,7 @@ const SubscriptionDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Monthly Cost Summary - Clean Design */}
+          {/* Monthly Cost Summary - Simple Design */}
           <Card className="border-2 border-primary/20 overflow-hidden">
             <div className="bg-primary/5 px-4 py-3 border-b border-primary/10">
               <h3 className="font-semibold text-primary flex items-center gap-2">
@@ -349,66 +349,54 @@ const SubscriptionDetail = () => {
             </div>
             <CardContent className="p-4">
               <div className="space-y-3">
-                {/* Summary Line */}
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Per delivery × {deliveriesPerWeek} day{deliveriesPerWeek > 1 ? 's' : ''}/week × 4 weeks</span>
-                  <span>₹{monthlySubtotal.toFixed(0)}</span>
+                {/* Subtotal */}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal ({totalDeliveriesPerMonth} deliveries/month)</span>
+                  <span>₹{originalAmount.toLocaleString()}</span>
                 </div>
 
-                {/* Discounts */}
-                {planDiscountPercent > 0 && planDiscountAmount > 0 && (
+                {/* Delivery */}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Delivery</span>
+                  <span className="text-green-600 font-medium">FREE</span>
+                </div>
+
+                {/* Bulk Discount */}
+                {discountAmount > 0 && (
                   <div className="flex items-center justify-between text-sm text-green-600">
                     <span className="flex items-center gap-1">
                       <Tag className="w-3 h-3" />
-                      Plan Discount ({planDiscountPercent}%)
+                      Bulk Discount ({discountPercent}% off)
                     </span>
-                    <span>-₹{planDiscountAmount.toFixed(0)}</span>
-                  </div>
-                )}
-
-                {monthlyDeliveryFee > 0 && (
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Truck className="w-3 h-3" />
-                      Delivery ({totalDeliveriesPerMonth} deliveries)
-                    </span>
-                    <span>+₹{monthlyDeliveryFee.toFixed(0)}</span>
-                  </div>
-                )}
-
-                {couponDiscount > 0 && (
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="flex items-center gap-1">
-                      <Tag className="w-3 h-3" />
-                      Coupon ({subscription.coupon_code})
-                    </span>
-                    <span>-₹{couponDiscount.toFixed(0)}</span>
-                  </div>
-                )}
-
-                {referralDiscount > 0 && (
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      Referral
-                    </span>
-                    <span>-₹{referralDiscount.toFixed(0)}</span>
+                    <span>-₹{discountAmount.toLocaleString()}</span>
                   </div>
                 )}
 
                 {/* Total */}
                 <div className="flex justify-between items-center pt-3 border-t border-gray-200">
                   <div>
-                    <p className="font-semibold text-lg">Monthly Total</p>
-                    {totalSavings > 0 && (
-                      <p className="text-xs text-green-600">You save ₹{totalSavings.toFixed(0)}/month</p>
-                    )}
+                    <p className="font-semibold text-lg">Total Paid</p>
                   </div>
                   <p className="text-2xl font-bold text-primary">
-                    ₹{monthlyTotal.toFixed(0)}
+                    ₹{paidAmount.toLocaleString()}
                     <span className="text-sm font-normal text-muted-foreground">/mo</span>
                   </p>
                 </div>
+
+                {/* Savings Banner */}
+                {discountAmount > 0 && (
+                  <div className="p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-700">
+                        You saved {discountPercent}% on orders above ₹4,000
+                      </span>
+                      <span className="ml-auto text-sm font-bold text-green-700">
+                        -₹{discountAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
