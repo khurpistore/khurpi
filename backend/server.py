@@ -398,6 +398,12 @@ class Order(BaseModel):
     subtotal: float
     delivery_fee: float = 0
     delivery_distance: Optional[float] = None
+    # Automatic order-value based discount
+    discount_type: Optional[str] = None  # "bulk_discount" for order-value based
+    discount_percent: float = 0
+    discount_amount: float = 0
+    discount_min_order_value: Optional[float] = None  # Min order value for this discount
+    # Coupon discount
     coupon_code: Optional[str] = None
     coupon_discount: float = 0
     total: float
@@ -415,6 +421,12 @@ class OrderCreate(BaseModel):
     items: List[OrderItem]
     subtotal: float
     delivery_fee: float = 0
+    # Automatic order-value based discount
+    discount_type: Optional[str] = None  # "bulk_discount" for order-value based
+    discount_percent: float = 0
+    discount_amount: float = 0
+    discount_min_order_value: Optional[float] = None
+    # Coupon discount
     coupon_code: Optional[str] = None
     coupon_discount: float = 0
     total: float
