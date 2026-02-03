@@ -488,6 +488,8 @@ const Orders = () => {
                     </div>
                   </CardContent>
                 </Card>
+                  );
+                })()
               )
             ))}
           </div>
