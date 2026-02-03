@@ -435,8 +435,22 @@ const Checkout = () => {
                       <span className="text-green-700">Per Delivery</span>
                       <span className="font-medium text-green-700">₹{pendingSubscription.perDeliveryTotal?.toFixed(0)}</span>
                     </div>
+                    {pendingSubscription.plan?.discount > 0 && (
+                      <>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Subtotal ({pendingSubscription.deliveriesPerWeek || 1} day/week × 4 weeks)</span>
+                          <span className="text-muted-foreground line-through">
+                            ₹{(pendingSubscription.perDeliveryTotal * (pendingSubscription.deliveriesPerWeek || 1) * 4).toFixed(0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs text-green-600">
+                          <span>Plan Discount ({pendingSubscription.plan.discount}% OFF)</span>
+                          <span>-₹{pendingSubscription.discount?.toFixed(0)}</span>
+                        </div>
+                      </>
+                    )}
                     <div className="flex justify-between text-sm">
-                      <span className="text-green-700">Monthly ({pendingSubscription.deliveriesPerWeek || 1} day/week × 4 weeks)</span>
+                      <span className="text-green-700 font-medium">Monthly Total</span>
                       <span className="font-semibold text-green-700">₹{subscriptionTotal.toFixed(0)}/mo</span>
                     </div>
                   </div>
