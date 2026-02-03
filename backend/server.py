@@ -295,13 +295,18 @@ class Subscription(BaseModel):
     start_date: str
     status: str = "active"
     tray_count: int
-    subtotal: float = 0
+    subtotal: float = 0  # Monthly subtotal before any discount
+    # Plan discount (e.g., 10% for twice_week)
     discount_percent: float = 0
     discount_amount: float = 0
+    # Bulk discount (order-value based, e.g., 20% off for orders > ₹4000)
+    bulk_discount_percent: float = 0
+    bulk_discount_amount: float = 0
+    bulk_discount_min_order_value: Optional[float] = None
     delivery_fee: float = 0
     coupon_code: Optional[str] = None
     coupon_discount: float = 0
-    total_price: float
+    total_price: float  # Final monthly amount paid (after all discounts)
     address_id: Optional[str] = None
     payment_method: str = "razorpay"
     payment_status: str = "pending"
@@ -318,7 +323,15 @@ class SubscriptionCreate(BaseModel):
     start_date: str
     tray_count: int
     items: List[SubscriptionItem]
-    total_price: float
+    total_price: float  # Final monthly amount paid (after all discounts)
+    subtotal: Optional[float] = None  # Monthly subtotal before bulk discount
+    # Plan discount
+    plan_discount: Optional[float] = 0
+    discount_amount: Optional[float] = 0
+    # Bulk discount (order-value based)
+    bulk_discount_percent: Optional[float] = 0
+    bulk_discount_amount: Optional[float] = 0
+    bulk_discount_min_order_value: Optional[float] = None
     plan_id: Optional[str] = None
     address_id: Optional[str] = None
     coupon_code: Optional[str] = None
@@ -328,6 +341,8 @@ class SubscriptionCreate(BaseModel):
     payment_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"
+    delivery_fee: Optional[float] = 0
+    monthly_delivery_fee: Optional[float] = 0
 
 class SubscriptionUpdate(BaseModel):
     status: Optional[str] = None
