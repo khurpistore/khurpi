@@ -107,7 +107,21 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - Referral statistics dashboard
 - **Customers can enter referral codes during checkout**
 
-### 8. Subscription Checkout
+### 8. Order Discounts & Savings
+- **Automatic Bulk Discounts**: Order-value based discounts applied automatically
+  - Discount tiers configurable by admin (e.g., 10% off for orders > ₹1500)
+  - Displayed during checkout with clear breakdown
+- **Discount Details Saved in DB**: All discount information stored with each order:
+  - `discount_type`: Type of discount (e.g., "bulk_discount")
+  - `discount_percent`: Percentage discount applied
+  - `discount_amount`: Actual discount amount in ₹
+  - `discount_min_order_value`: Minimum order value threshold
+  - `coupon_code` & `coupon_discount`: Coupon details (separate from bulk discount)
+- **Order Detail Page**: Shows complete payment breakdown:
+  - Subtotal, Delivery (FREE), Bulk Discount, Coupon Discount
+  - Total savings banner ("You saved ₹X on this order!")
+
+### 9. Subscription Checkout
 - Order summary with all price breakdowns
 - Apply coupon code with instant discount calculation
 - Enter referral code to credit referrer
