@@ -381,6 +381,8 @@ const Orders = () => {
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {item.items.map((subItem) => {
                             const pricePerUnit = subItem.product?.price || 0;
+                            const quantity = subItem.quantity || 100;
+                            const totalPrice = (quantity / 100) * pricePerUnit;
                             return (
                             <div 
                               key={subItem.id} 
@@ -393,8 +395,8 @@ const Orders = () => {
                               />
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{subItem.product?.name}</p>
-                                <p className="text-xs text-muted-foreground">{subItem.quantity}gm</p>
-                                <p className="text-xs text-primary font-medium">₹{pricePerUnit}/100gm</p>
+                                <p className="text-xs text-muted-foreground">{quantity}gm × ₹{pricePerUnit}/100gm</p>
+                                <p className="text-xs text-primary font-medium">₹{totalPrice.toFixed(0)}</p>
                               </div>
                             </div>
                             );
