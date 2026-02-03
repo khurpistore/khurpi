@@ -2762,6 +2762,12 @@ async def create_order(order_data: OrderCreate):
         "subtotal": order_data.subtotal,
         "delivery_fee": delivery_fee,
         "delivery_distance": delivery_distance,
+        # Automatic order-value based discount
+        "discount_type": order_data.discount_type,
+        "discount_percent": order_data.discount_percent or 0,
+        "discount_amount": order_data.discount_amount or 0,
+        "discount_min_order_value": order_data.discount_min_order_value,
+        # Coupon discount
         "coupon_code": order_data.coupon_code,
         "coupon_discount": order_data.coupon_discount or 0,
         "total": order_data.total,
