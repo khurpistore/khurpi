@@ -20,35 +20,10 @@ const getPlanDisplayName = (frequency) => {
     'four_days_week': 'Power Greens Plan',
     'weekly': 'Fresh Start Plan',
     'twice_weekly': 'Balanced Nutrition Plan',
-    'four_days': 'Power Greens Plan'
+    'four_days': 'Power Greens Plan',
+    'daily': 'Daily Plan'
   };
   return planNames[frequency] || frequency;
-};
-
-// Get deliveries per week based on frequency
-const getDeliveriesPerWeek = (frequency) => {
-  const deliveries = {
-    'once_week': 1,
-    'twice_week': 2,
-    'four_days_week': 4,
-    'weekly': 1,
-    'twice_weekly': 2,
-    'four_days': 4
-  };
-  return deliveries[frequency] || 1;
-};
-
-// Get plan discount
-const getPlanDiscount = (frequency) => {
-  const discounts = {
-    'once_week': 0,
-    'twice_week': 10,
-    'four_days_week': 50,
-    'weekly': 0,
-    'twice_weekly': 10,
-    'four_days': 50
-  };
-  return discounts[frequency] || 0;
 };
 
 const MySubscriptions = () => {
