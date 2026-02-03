@@ -128,11 +128,19 @@ const MySubscriptions = () => {
               const packsPerDelivery = subscription.tray_count || 1;
               const totalPacksPerMonth = packsPerDelivery * totalDeliveriesPerMonth;
               
-              // Per delivery total from subscription (this is what's stored in DB)
+              // Per delivery total from subscription (this is what's stored in DB - already discounted)
               const perDeliveryTotal = subscription.total_price || 0;
               
-              // Monthly total = per delivery total × deliveries per month
+              // Monthly total = per delivery total × deliveries per month (this is the actual paid amount after discount)
               const monthlyTotal = perDeliveryTotal * totalDeliveriesPerMonth;
+              
+              // Get discount percentage for display
+              const discountPercent = subscription.discount || getPlanDiscount(subscription.frequency);
+              
+              // Calculate original price before discount (for display purposes)
+              const originalMonthlyTotal = discountPercent > 0 
+                ? Math.round(monthlyTotal / (1 - discountPercent / 100))
+                : monthlyTotal;
               
               return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
