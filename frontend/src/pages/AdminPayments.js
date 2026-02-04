@@ -85,15 +85,10 @@ const AdminPayments = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/login');
-      return;
-    }
     fetchPayments();
-  }, [user, navigate]);
+  }, []);
 
   useEffect(() => {
     filterPayments();
