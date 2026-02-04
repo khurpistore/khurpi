@@ -3523,13 +3523,50 @@ async def admin_update_subscription(subscription_id: str, sub_data: Subscription
     if not update_data:
         raise HTTPException(status_code=400, detail="No data to update")
     
+    # First try to update in standalone subscriptions collection
     result = await db.subscriptions.update_one({"id": subscription_id}, {"$set": update_data})
     
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Subscription not found")
+    if result.matched_count > 0:
+        subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+        return Subscription(**subscription)
     
-    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
-    return Subscription(**subscription)
+    # If not found in subscriptions, try to update embedded subscription in orders
+    # For order-embedded subscriptions, the subscription_id is the order_id
+    # Map subscription fields to order/subscription fields
+    order_update = {}
+    sub_update = {}
+    
+    for key, value in update_data.items():
+        if key == "status":
+            # Update the subscription status in the embedded subscription object
+            sub_update["subscription.status"] = value
+        elif key in ["frequency", "delivery_day", "delivery_days", "next_delivery_date"]:
+            sub_update[f"subscription.{key}"] = value
+    
+    if sub_update:
+        order_result = await db.orders.update_one(
+            {"id": subscription_id, "subscription": {"$exists": True}},
+            {"$set": sub_update}
+        )
+        
+        if order_result.matched_count > 0:
+            order = await db.orders.find_one({"id": subscription_id}, {"_id": 0})
+            # Return the subscription data from the order
+            sub = order.get("subscription", {})
+            return {
+                "id": order["id"],
+                "user_id": order["user_id"],
+                "frequency": sub.get("frequency"),
+                "delivery_days": sub.get("delivery_days"),
+                "delivery_day": sub.get("delivery_days", [None])[0] if sub.get("delivery_days") else None,
+                "start_date": sub.get("start_date"),
+                "next_delivery_date": sub.get("next_delivery_date"),
+                "status": sub.get("status", "active"),
+                "created_at": order.get("created_at"),
+                "tray_count": sum(item.get("quantity", 100) for item in sub.get("items", []))
+            }
+    
+    raise HTTPException(status_code=404, detail="Subscription not found")
 
 @api_router.delete("/admin/subscriptions/{subscription_id}")
 async def admin_delete_subscription(subscription_id: str):
