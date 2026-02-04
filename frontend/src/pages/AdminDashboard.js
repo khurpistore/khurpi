@@ -15,15 +15,10 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/login');
-      return;
-    }
     fetchDashboardData();
-  }, [user, navigate]);
+  }, []);
 
   const fetchDashboardData = async () => {
     try {
