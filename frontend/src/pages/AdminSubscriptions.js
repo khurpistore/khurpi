@@ -376,7 +376,7 @@ const AdminSubscriptions = () => {
                 <div>
                   <p className="font-semibold text-sm mb-2">Update Status</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {['active', 'paused', 'cancelled'].map((status) => (
+                    {['active', 'paused', 'cancelled', 'expired'].map((status) => (
                       <Button
                         key={status}
                         variant={selectedSubscription.status === status ? 'default' : 'outline'}
