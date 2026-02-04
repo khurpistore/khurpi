@@ -278,10 +278,7 @@ const AdminSubscriptions = () => {
                       Created {format(new Date(selectedSubscription.created_at), 'MMM d, yyyy')}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">₹{(selectedSubscription.total_price || selectedSubscription.monthly_total || 0).toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">per month</p>
-                  </div>
+                  {getStatusBadge(selectedSubscription.status)}
                 </div>
 
                 {/* Customer Info */}
