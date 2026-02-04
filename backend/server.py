@@ -2531,7 +2531,17 @@ async def get_user_subscription_deliveries(subscription_id: str):
     if not subscription:
         return existing_deliveries
     
-    # Generate future delivery dates
+    # Calculate deliveries per month based on frequency
+    frequency = subscription.get("frequency", "once_week")
+    deliveries_per_month_map = {
+        "once_week": 4,
+        "twice_week": 8,
+        "four_days_week": 16,
+        "daily": 24
+    }
+    total_deliveries = deliveries_per_month_map.get(frequency, 4)
+    
+    # Generate delivery dates based on frequency
     delivery_days = subscription.get("delivery_days", [])
     start_date_str = subscription.get("start_date") or subscription.get("next_delivery_date")
     
