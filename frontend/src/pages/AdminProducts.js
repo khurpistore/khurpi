@@ -316,32 +316,13 @@ const AdminProducts = () => {
   const [editedProducts, setEditedProducts] = useState({});
   const [saving, setSaving] = useState({});
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
 
   useEffect(() => {
-    // Wait for auth to be resolved before checking
+    // Wait for auth to be resolved before fetching
     if (authLoading) return;
-    
-    // Check localStorage directly to avoid race conditions with user state
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      navigate('/admin/login');
-      return;
-    }
-    
-    try {
-      const parsedUser = JSON.parse(storedUser);
-      if (parsedUser.role !== 'admin') {
-        navigate('/admin/login');
-        return;
-      }
-    } catch (e) {
-      navigate('/admin/login');
-      return;
-    }
-    
     fetchProducts();
-  }, [authLoading, navigate]); // Only depends on authLoading, not user
+  }, [authLoading]);
 
   const fetchProducts = async () => {
     try {
