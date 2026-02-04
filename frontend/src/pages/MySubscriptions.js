@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Package, Clock, Truck, Sprout, MapPin, Tag, Repeat } from 'lucide-react';
+import { Package, MapPin, Repeat } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -137,16 +137,6 @@ const MySubscriptions = () => {
               // Delivery info
               const deliveriesPerWeek = subscription.delivery_days?.length || 1;
               const totalDeliveriesPerMonth = deliveriesPerWeek * 4;
-              
-              // Simple: Use stored values directly from DB
-              // subtotal = original monthly amount (before discount)
-              // total_price = final monthly amount paid (after discount)
-              // bulk_discount_percent = discount percentage applied
-              // bulk_discount_amount = discount amount in rupees
-              const originalAmount = subscription.subtotal || 0;
-              const paidAmount = subscription.total_price || 0;
-              const discountPercent = subscription.bulk_discount_percent || 0;
-              const discountAmount = subscription.bulk_discount_amount || 0;
               
               return (
               <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
