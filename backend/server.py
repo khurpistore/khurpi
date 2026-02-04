@@ -2867,6 +2867,18 @@ async def create_order(order_data: OrderCreate):
     
     await db.orders.insert_one(order_doc)
     
+    # Update product stock (weight) for one-time items
+    if one_time_items_data:
+        for item in one_time_items_data:
+            product_id = item.get("product_id")
+            quantity = item.get("quantity", 0)  # quantity is in grams
+            if product_id and quantity > 0:
+                # Decrement the weight (available stock) by the ordered quantity
+                await db.products.update_one(
+                    {"id": product_id},
+                    {"$inc": {"weight": -quantity}}
+                )
+    
     # Update coupon usage if used
     if order_data.coupon_code:
         await db.coupons.update_one(
