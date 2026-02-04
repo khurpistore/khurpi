@@ -3689,34 +3689,44 @@ async def get_subscription_deliveries(subscription_id: str):
             }
     
     if not subscription:
-        return existing_deliveries
+        return {"deliveries": existing_deliveries, "total_deliveries_per_month": 0, "frequency": None}
     
-    # Generate future delivery dates based on frequency
+    # Calculate deliveries per month based on frequency
+    frequency = subscription.get("frequency", "once_week")
+    deliveries_per_month_map = {
+        "once_week": 4,      # 1x per week = 4/month
+        "twice_week": 8,     # 2x per week = 8/month
+        "four_days_week": 16, # 4x per week = 16/month
+        "daily": 24          # 6 days/week (excluding Sunday) = 24/month
+    }
+    total_deliveries_per_month = deliveries_per_month_map.get(frequency, 4)
+    
+    # Generate delivery dates based on frequency
     delivery_days = subscription.get("delivery_days", [])
     start_date_str = subscription.get("start_date") or subscription.get("next_delivery_date")
     
     if not start_date_str or not delivery_days:
-        return existing_deliveries
+        return {"deliveries": existing_deliveries, "total_deliveries_per_month": total_deliveries_per_month, "frequency": frequency}
     
     # Parse start date
     try:
         start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00')).date() if 'T' in start_date_str else datetime.strptime(start_date_str, "%Y-%m-%d").date()
     except:
-        return existing_deliveries
+        return {"deliveries": existing_deliveries, "total_deliveries_per_month": total_deliveries_per_month, "frequency": frequency}
     
     # Map day names to weekday numbers
     day_map = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
     selected_days = [day_map.get(d) for d in delivery_days if d in day_map]
     
     if not selected_days:
-        return existing_deliveries
+        return {"deliveries": existing_deliveries, "total_deliveries_per_month": total_deliveries_per_month, "frequency": frequency}
     
-    # Generate next 12 delivery dates
+    # Generate exactly the number of deliveries for the month
     today = datetime.now(timezone.utc).date()
     current_date = max(start_date, today)
     generated_dates = []
     
-    while len(generated_dates) < 12:
+    while len(generated_dates) < total_deliveries_per_month:
         if current_date.weekday() in selected_days and current_date.weekday() != 6:  # Skip Sundays
             date_str = current_date.isoformat()
             # Check if this date already has a delivery record
@@ -3744,7 +3754,11 @@ async def get_subscription_deliveries(subscription_id: str):
                 })
         current_date += timedelta(days=1)
     
-    return generated_dates
+    return {
+        "deliveries": generated_dates,
+        "total_deliveries_per_month": total_deliveries_per_month,
+        "frequency": frequency
+    }
 
 @api_router.post("/admin/subscriptions/{subscription_id}/deliveries")
 async def create_subscription_delivery(subscription_id: str, delivery_data: dict):
