@@ -2744,11 +2744,21 @@ async def get_all_subscriptions_admin():
 @api_router.get("/admin/deliveries/today")
 async def get_today_deliveries():
     today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Get deliveries from the deliveries collection
     deliveries = await db.deliveries.find({"delivery_date": today}, {"_id": 0}).to_list(100)
     
     result = []
+    processed_sub_ids = set()
+    
+    # Process deliveries from deliveries collection
     for delivery in deliveries:
-        subscription = await db.subscriptions.find_one({"id": delivery["subscription_id"]}, {"_id": 0})
+        sub_id = delivery["subscription_id"]
+        processed_sub_ids.add(sub_id)
+        
+        # First try standalone subscriptions
+        subscription = await db.subscriptions.find_one({"id": sub_id}, {"_id": 0})
+        
         if subscription:
             user = await db.users.find_one({"id": subscription["user_id"]}, {"_id": 0})
             items = await db.subscription_items.find({"subscription_id": subscription["id"]}, {"_id": 0}).to_list(100)
@@ -2796,6 +2806,56 @@ async def get_today_deliveries():
                 "total_items": total_items,
                 "monthly_total": subscription.get("total_price", 0)
             })
+        else:
+            # Try to find in orders (order-based subscriptions)
+            order = await db.orders.find_one({"id": sub_id, "subscription": {"$exists": True}}, {"_id": 0})
+            if order:
+                sub_data = order.get("subscription", {})
+                user = await db.users.find_one({"id": order["user_id"]}, {"_id": 0})
+                
+                # Get address
+                address = order.get("address") or order.get("delivery_address")
+                if not address and order.get("address_id"):
+                    address = await db.addresses.find_one({"id": order["address_id"]}, {"_id": 0})
+                
+                # Format address
+                delivery_address = "No address"
+                if isinstance(address, dict):
+                    parts = [address.get("address_line", ""), address.get("area", ""), address.get("city", "")]
+                    delivery_address = ", ".join([p for p in parts if p])
+                    if address.get("pincode"):
+                        delivery_address += f" - {address['pincode']}"
+                elif isinstance(address, str):
+                    delivery_address = address
+                
+                # Get products from subscription items
+                product_details = []
+                total_items = 0
+                for item in sub_data.get("items", []):
+                    product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
+                    if product:
+                        product_details.append({
+                            "name": product["name"],
+                            "quantity": item.get("quantity", 100),
+                            "price": product["price"],
+                            "image": product.get("image", "")
+                        })
+                        total_items += item.get("quantity", 100)
+                
+                result.append({
+                    **delivery,
+                    "subscription": sub_data,
+                    "subscription_status": sub_data.get("status", "active"),
+                    "subscription_frequency": sub_data.get("frequency", ""),
+                    "delivery_days": sub_data.get("delivery_days", []),
+                    "skipped_deliveries": sub_data.get("skipped_deliveries", []),
+                    "is_skipped": today in sub_data.get("skipped_deliveries", []),
+                    "user": user,
+                    "delivery_address": delivery_address,
+                    "products": product_details,
+                    "total_items": total_items,
+                    "monthly_total": sub_data.get("total_price", 0)
+                })
     
     # Sort: scheduled first, then by user name
     result.sort(key=lambda x: (0 if x["status"] == "scheduled" else 1, x["user"]["name"] if x.get("user") else ""))
