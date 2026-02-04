@@ -148,6 +148,11 @@ const AdminPayments = () => {
   };
 
   const totalRevenue = filteredPayments.filter(p => p.status === 'success').reduce((sum, p) => sum + p.amount, 0);
+  const totalDiscounts = filteredPayments.reduce((sum, p) => {
+    const order = p.order || {};
+    return sum + (order.discount_amount || 0) + (order.coupon_discount || 0);
+  }, 0);
+  const couponUsageCount = filteredPayments.filter(p => p.order?.coupon_code).length;
 
   return (
     <AdminLayout active="payments" title="Payment Management">
