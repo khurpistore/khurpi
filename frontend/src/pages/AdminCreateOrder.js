@@ -211,9 +211,9 @@ const AdminCreateOrder = () => {
 
   const canProceedToStep2 = () => {
     if (isNewCustomer) {
-      return customerPhone.length === 10 && newCustomerName.trim().length > 0;
+      return customerPhone.length === 10 && customerName.trim().length > 0;
     }
-    return customer !== null;
+    return customer !== null && customerName.trim().length > 0;
   };
 
   const canProceedToStep3 = () => {
