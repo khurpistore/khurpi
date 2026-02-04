@@ -351,7 +351,7 @@ const AdminProducts = () => {
     } catch (error) {
       toast.error('Failed to load products');
     } finally {
-      setLoading(false);
+      setProductsLoading(false);
     }
   };
 
