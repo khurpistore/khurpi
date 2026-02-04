@@ -63,7 +63,7 @@ const AdminCustomerView = () => {
       setSubscriptions(customerSubs);
 
       // Fetch customer's addresses
-      const addressesRes = await axios.get(`${API}/addresses?user_id=${foundCustomer.id}`);
+      const addressesRes = await axios.get(`${API}/users/${foundCustomer.id}/addresses`);
       setAddresses(addressesRes.data || []);
 
       // Fetch referral data
