@@ -422,9 +422,9 @@ const AdminOrders = () => {
                 <div className="bg-gray-50 rounded-lg p-3 mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <CreditCard className="w-4 h-4 text-primary" />
-                    <span className="font-semibold text-sm">Payment</span>
+                    <span className="font-semibold text-sm">Payment Summary</span>
                   </div>
-                  <div className="space-y-1 text-sm">
+                  <div className="space-y-1.5 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span>₹{selectedOrder.subtotal?.toLocaleString()}</span>
@@ -435,20 +435,40 @@ const AdminOrders = () => {
                     </div>
                     {selectedOrder.discount_amount > 0 && (
                       <div className="flex justify-between text-green-600">
-                        <span>Discount ({selectedOrder.discount_percent}%)</span>
+                        <span className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          Discount ({selectedOrder.discount_percent}%)
+                        </span>
                         <span>-₹{selectedOrder.discount_amount}</span>
+                      </div>
+                    )}
+                    {selectedOrder.subscription?.bulk_discount_amount > 0 && !selectedOrder.discount_amount && (
+                      <div className="flex justify-between text-green-600">
+                        <span className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          Subscription Discount ({selectedOrder.subscription.bulk_discount_percent}%)
+                        </span>
+                        <span>-₹{selectedOrder.subscription.bulk_discount_amount}</span>
                       </div>
                     )}
                     {selectedOrder.coupon_discount > 0 && (
                       <div className="flex justify-between text-green-600">
-                        <span>Coupon ({selectedOrder.coupon_code})</span>
+                        <span className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          Coupon ({selectedOrder.coupon_code})
+                        </span>
                         <span>-₹{selectedOrder.coupon_discount}</span>
                       </div>
                     )}
-                    <div className="flex justify-between font-bold pt-2 border-t mt-2">
-                      <span>Total</span>
-                      <span>₹{selectedOrder.total?.toLocaleString()}</span>
+                    <div className="flex justify-between font-bold pt-2 border-t mt-2 text-base">
+                      <span>Total Paid</span>
+                      <span className="text-primary">₹{selectedOrder.total?.toLocaleString()}</span>
                     </div>
+                    {(selectedOrder.discount_amount > 0 || selectedOrder.coupon_discount > 0 || selectedOrder.subscription?.bulk_discount_amount > 0) && (
+                      <div className="text-xs text-green-600 text-right">
+                        You saved ₹{((selectedOrder.discount_amount || 0) + (selectedOrder.coupon_discount || 0) + (selectedOrder.subscription?.bulk_discount_amount || 0)).toLocaleString()}
+                      </div>
+                    )}
                   </div>
                 </div>
 
