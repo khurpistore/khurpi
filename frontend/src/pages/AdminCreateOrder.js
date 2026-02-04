@@ -108,7 +108,6 @@ const AdminCreateOrder = () => {
         setIsNewCustomer(false);
         setCustomerName(foundCustomer.name || '');
         setCustomerEmail(foundCustomer.email || '');
-        setIsEditingCustomer(false);
         toast.success(`Found customer: ${foundCustomer.name}`);
         
         // Fetch customer addresses
