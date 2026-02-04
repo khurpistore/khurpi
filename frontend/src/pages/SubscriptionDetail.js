@@ -182,18 +182,6 @@ const SubscriptionDetail = () => {
                   📅 {subscription.delivery_days?.join(', ') || 'Not set'}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
-                {discountAmount > 0 && (
-                  <p className="text-sm text-muted-foreground line-through">
-                    ₹{originalAmount.toLocaleString()}
-                  </p>
-                )}
-                <p className="text-3xl font-bold text-primary">
-                  ₹{paidAmount.toLocaleString()}
-                </p>
-                <p className="text-xs text-muted-foreground">per month</p>
-              </div>
             </div>
           </div>
         </Card>
@@ -237,10 +225,6 @@ const SubscriptionDetail = () => {
                           <p className="text-sm text-muted-foreground">
                             {qty}gm × ₹{pricePerUnit}/100gm
                           </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-primary">₹{totalPrice.toFixed(0)}</p>
-                          <p className="text-xs text-muted-foreground">per delivery</p>
                         </div>
                       </div>
                     );
@@ -288,56 +272,6 @@ const SubscriptionDetail = () => {
 
           {/* Right Column */}
           <div className="space-y-6">
-            
-            {/* Monthly Cost */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-semibold">Monthly Cost</h3>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal ({totalDeliveriesPerMonth} deliveries)</span>
-                    <span>₹{originalAmount.toLocaleString()}</span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Delivery</span>
-                    <span className="text-green-600 font-medium">FREE</span>
-                  </div>
-
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span className="flex items-center gap-1">
-                        <Tag className="w-3 h-3" />
-                        Bulk Discount ({discountPercent}%)
-                      </span>
-                      <span>-₹{discountAmount.toLocaleString()}</span>
-                    </div>
-                  )}
-
-                  <div className="border-t pt-3">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total Paid</span>
-                      <span className="text-primary">₹{paidAmount.toLocaleString()}/mo</span>
-                    </div>
-                  </div>
-
-                  {discountAmount > 0 && (
-                    <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-700">
-                          You saved ₹{discountAmount.toLocaleString()}/month!
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Delivery Address */}
             {address && (

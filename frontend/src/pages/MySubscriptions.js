@@ -169,30 +169,7 @@ const MySubscriptions = () => {
                           : subscription.delivery_day || 'Not set'}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
-                      {discountAmount > 0 && (
-                        <p className="text-sm text-muted-foreground line-through">₹{originalAmount.toLocaleString()}</p>
-                      )}
-                      <p className="text-2xl font-bold text-primary">₹{paidAmount.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">per month</p>
-                    </div>
                   </div>
-
-                  {/* Savings Banner */}
-                  {discountAmount > 0 && (
-                    <div className="mb-4 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-700">
-                          You saved {discountPercent}% on orders above ₹4,000
-                        </span>
-                        <span className="ml-auto text-sm font-bold text-green-700">
-                          -₹{discountAmount.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Products in Subscription */}
                   {subscription.items && subscription.items.length > 0 && (
@@ -215,8 +192,7 @@ const MySubscriptions = () => {
                             />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium truncate">{item.product?.name}</p>
-                              <p className="text-xs text-muted-foreground">{quantity}gm × ₹{pricePerUnit}/100gm</p>
-                              <p className="text-xs text-primary font-medium">₹{totalPrice.toFixed(0)}</p>
+                              <p className="text-xs text-muted-foreground">{quantity}gm</p>
                             </div>
                           </div>
                           );
