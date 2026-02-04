@@ -14,7 +14,7 @@ const SubscriptionDetail = () => {
   const { subscriptionId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [subscription, setSubscription] = useState(null);
   const [items, setItems] = useState([]);
   const [address, setAddress] = useState(null);
