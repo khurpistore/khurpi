@@ -33,7 +33,7 @@ const SubscriptionDetail = () => {
 
   // Fetch deliveries from API when subscription is loaded
   useEffect(() => {
-    if (subscriptionId) {
+    if (subscriptionId && subscriptionId !== 'undefined') {
       fetchDeliveries();
     }
   }, [subscriptionId]);
