@@ -22,6 +22,9 @@ const SubscriptionDetail = () => {
   const [deliveriesFromAPI, setDeliveriesFromAPI] = useState([]);
 
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) return;
+    
     if (!user) {
       navigate('/login');
       return;
@@ -29,7 +32,7 @@ const SubscriptionDetail = () => {
     if (subscriptionId && subscriptionId !== 'undefined') {
       fetchSubscription();
     }
-  }, [user, subscriptionId]);
+  }, [user, authLoading, subscriptionId]);
 
   // Fetch deliveries from API when subscription is loaded
   useEffect(() => {
