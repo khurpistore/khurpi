@@ -68,22 +68,6 @@ const SubscriptionDetail = () => {
 
   const fetchSubscription = async () => {
     try {
-      // Check if subscription data was passed from MySubscriptions (for order-based subscriptions)
-      const passedData = location.state?.subscriptionData;
-      const source = location.state?.source;
-      
-      if (source === 'order' && passedData) {
-        // Use passed subscription data from order
-        setSubscription({
-          ...passedData,
-          status: passedData.status || 'active'
-        });
-        setItems(passedData.items || []);
-        setAddress(passedData.address);
-        setLoading(false);
-        return;
-      }
-      
       // Try to fetch from subscriptions collection first
       try {
         const subRes = await axios.get(`${API}/subscriptions/${subscriptionId}`);
@@ -112,7 +96,7 @@ const SubscriptionDetail = () => {
             total_price: order.subscription.total_price,
             bulk_discount_percent: order.subscription.bulk_discount_percent,
             bulk_discount_amount: order.subscription.bulk_discount_amount,
-            status: order.status === 'confirmed' ? 'active' : order.status,
+            status: order.subscription.status || (order.status === 'confirmed' ? 'active' : order.status),
             created_at: order.created_at,
             tray_count: order.subscription.items?.reduce((sum, item) => sum + (item.quantity || 100), 0) || 0
           });
