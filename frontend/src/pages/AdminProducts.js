@@ -520,7 +520,7 @@ const AdminProducts = () => {
                   {/* Weight (gm) */}
                   <div className="col-span-1">
                     <Select
-                      value={String(getFieldValue(product, 'weight') || 100)}
+                      value={String(getFieldValue(product, 'weight') ?? 100)}
                       onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
                     >
                       <SelectTrigger className="h-7 text-xs">
