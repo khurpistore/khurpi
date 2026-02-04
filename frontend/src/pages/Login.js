@@ -50,6 +50,12 @@ const Login = () => {
     setLoading(true);
     try {
       const userData = await login(phone, password);
+      
+      // Sync cart from server after login
+      if (userData && userData.id) {
+        await syncOnLogin(userData.id);
+      }
+      
       trackLogin();
       toast.success(`Welcome back, ${userData.name}!`);
       const from = location.state?.from?.pathname || '/products';
