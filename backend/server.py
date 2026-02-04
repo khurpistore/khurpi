@@ -3581,6 +3581,131 @@ async def admin_delete_subscription(subscription_id: str):
         raise HTTPException(status_code=404, detail="Subscription not found")
     return {"success": True}
 
+@api_router.get("/admin/subscriptions/{subscription_id}/deliveries")
+async def get_subscription_deliveries(subscription_id: str):
+    """Get all deliveries for a subscription (from both deliveries collection and generated schedule)"""
+    # Get existing deliveries from database
+    existing_deliveries = await db.deliveries.find(
+        {"subscription_id": subscription_id}, 
+        {"_id": 0}
+    ).sort("delivery_date", 1).to_list(100)
+    
+    # Get subscription info to generate future deliveries
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    
+    if not subscription:
+        # Check if it's an order-based subscription
+        order = await db.orders.find_one({"id": subscription_id, "subscription": {"$exists": True}}, {"_id": 0})
+        if order:
+            subscription = {
+                "id": order["id"],
+                "frequency": order["subscription"].get("frequency"),
+                "delivery_days": order["subscription"].get("delivery_days"),
+                "start_date": order["subscription"].get("start_date"),
+                "next_delivery_date": order["subscription"].get("next_delivery_date"),
+                "status": order["subscription"].get("status", "active")
+            }
+    
+    if not subscription:
+        return existing_deliveries
+    
+    # Generate future delivery dates based on frequency
+    delivery_days = subscription.get("delivery_days", [])
+    start_date_str = subscription.get("start_date") or subscription.get("next_delivery_date")
+    
+    if not start_date_str or not delivery_days:
+        return existing_deliveries
+    
+    # Parse start date
+    try:
+        start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00')).date() if 'T' in start_date_str else datetime.strptime(start_date_str, "%Y-%m-%d").date()
+    except:
+        return existing_deliveries
+    
+    # Map day names to weekday numbers
+    day_map = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    selected_days = [day_map.get(d) for d in delivery_days if d in day_map]
+    
+    if not selected_days:
+        return existing_deliveries
+    
+    # Generate next 12 delivery dates
+    today = datetime.now(timezone.utc).date()
+    current_date = max(start_date, today)
+    generated_dates = []
+    
+    while len(generated_dates) < 12:
+        if current_date.weekday() in selected_days and current_date.weekday() != 6:  # Skip Sundays
+            date_str = current_date.isoformat()
+            # Check if this date already has a delivery record
+            existing = next((d for d in existing_deliveries if d.get("delivery_date") == date_str), None)
+            if existing:
+                generated_dates.append(existing)
+            else:
+                # Generate a placeholder delivery
+                status = "scheduled"
+                if subscription.get("status") == "paused":
+                    status = "paused"
+                elif subscription.get("status") in ["cancelled", "expired"]:
+                    status = "cancelled"
+                elif current_date < today:
+                    status = "delivered"
+                    
+                generated_dates.append({
+                    "id": f"gen-{subscription_id}-{date_str}",
+                    "subscription_id": subscription_id,
+                    "delivery_date": date_str,
+                    "delivery_time": None,
+                    "status": status,
+                    "notes": None,
+                    "is_generated": True
+                })
+        current_date += timedelta(days=1)
+    
+    return generated_dates
+
+@api_router.post("/admin/subscriptions/{subscription_id}/deliveries")
+async def create_subscription_delivery(subscription_id: str, delivery_data: dict):
+    """Create or update a delivery for a subscription"""
+    delivery_date = delivery_data.get("delivery_date")
+    if not delivery_date:
+        raise HTTPException(status_code=400, detail="delivery_date is required")
+    
+    # Check if delivery already exists
+    existing = await db.deliveries.find_one({
+        "subscription_id": subscription_id,
+        "delivery_date": delivery_date
+    }, {"_id": 0})
+    
+    if existing:
+        # Update existing delivery
+        update_data = {
+            "delivery_time": delivery_data.get("delivery_time"),
+            "status": delivery_data.get("status", existing.get("status", "scheduled")),
+            "notes": delivery_data.get("notes")
+        }
+        await db.deliveries.update_one(
+            {"id": existing["id"]},
+            {"$set": {k: v for k, v in update_data.items() if v is not None}}
+        )
+        delivery = await db.deliveries.find_one({"id": existing["id"]}, {"_id": 0})
+        return delivery
+    else:
+        # Create new delivery
+        delivery_id = str(uuid.uuid4())
+        new_delivery = {
+            "id": delivery_id,
+            "subscription_id": subscription_id,
+            "delivery_date": delivery_date,
+            "delivery_time": delivery_data.get("delivery_time"),
+            "status": delivery_data.get("status", "scheduled"),
+            "notes": delivery_data.get("notes"),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.deliveries.insert_one(new_delivery)
+        del new_delivery["_id"] if "_id" in new_delivery else None
+        return new_delivery
+
 @api_router.put("/admin/deliveries/{delivery_id}")
 async def admin_update_delivery(delivery_id: str, delivery_data: DeliveryUpdate):
     update_data = {k: v for k, v in delivery_data.model_dump().items() if v is not None}
