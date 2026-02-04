@@ -2488,15 +2488,97 @@ async def get_subscription_items(subscription_id: str):
 @api_router.get("/deliveries")
 async def get_deliveries(subscription_id: Optional[str] = None, user_id: Optional[str] = None):
     if subscription_id:
-        deliveries = await db.deliveries.find({"subscription_id": subscription_id}, {"_id": 0}).to_list(100)
+        deliveries = await db.deliveries.find({"subscription_id": subscription_id}, {"_id": 0}).sort("delivery_date", 1).to_list(100)
     elif user_id:
+        # Get subscriptions from both collections
         subscriptions = await db.subscriptions.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+        orders_with_subs = await db.orders.find({"user_id": user_id, "subscription": {"$exists": True}}, {"_id": 0}).to_list(100)
+        
         sub_ids = [s["id"] for s in subscriptions]
-        deliveries = await db.deliveries.find({"subscription_id": {"$in": sub_ids}}, {"_id": 0}).to_list(100)
+        sub_ids.extend([o["id"] for o in orders_with_subs])
+        
+        deliveries = await db.deliveries.find({"subscription_id": {"$in": sub_ids}}, {"_id": 0}).sort("delivery_date", 1).to_list(100)
     else:
-        deliveries = await db.deliveries.find({}, {"_id": 0}).to_list(100)
+        deliveries = await db.deliveries.find({}, {"_id": 0}).sort("delivery_date", 1).to_list(100)
     
     return deliveries
+
+@api_router.get("/subscriptions/{subscription_id}/deliveries")
+async def get_user_subscription_deliveries(subscription_id: str):
+    """Get deliveries for a subscription (user-facing endpoint)"""
+    # Get existing deliveries from database
+    existing_deliveries = await db.deliveries.find(
+        {"subscription_id": subscription_id}, 
+        {"_id": 0}
+    ).sort("delivery_date", 1).to_list(100)
+    
+    # Get subscription info
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    
+    if not subscription:
+        # Check if it's an order-based subscription
+        order = await db.orders.find_one({"id": subscription_id, "subscription": {"$exists": True}}, {"_id": 0})
+        if order:
+            subscription = {
+                "id": order["id"],
+                "frequency": order["subscription"].get("frequency"),
+                "delivery_days": order["subscription"].get("delivery_days"),
+                "start_date": order["subscription"].get("start_date"),
+                "next_delivery_date": order["subscription"].get("next_delivery_date"),
+                "status": order["subscription"].get("status", "active")
+            }
+    
+    if not subscription:
+        return existing_deliveries
+    
+    # Generate future delivery dates
+    delivery_days = subscription.get("delivery_days", [])
+    start_date_str = subscription.get("start_date") or subscription.get("next_delivery_date")
+    
+    if not start_date_str or not delivery_days:
+        return existing_deliveries
+    
+    try:
+        start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00')).date() if 'T' in start_date_str else datetime.strptime(start_date_str, "%Y-%m-%d").date()
+    except:
+        return existing_deliveries
+    
+    day_map = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    selected_days = [day_map.get(d) for d in delivery_days if d in day_map]
+    
+    if not selected_days:
+        return existing_deliveries
+    
+    today = datetime.now(timezone.utc).date()
+    current_date = max(start_date, today - timedelta(days=30))  # Include 30 days of history
+    generated_dates = []
+    
+    while len(generated_dates) < 16:
+        if current_date.weekday() in selected_days and current_date.weekday() != 6:
+            date_str = current_date.isoformat()
+            existing = next((d for d in existing_deliveries if d.get("delivery_date") == date_str), None)
+            if existing:
+                generated_dates.append(existing)
+            else:
+                status = "scheduled"
+                if subscription.get("status") == "paused":
+                    status = "paused"
+                elif subscription.get("status") in ["cancelled", "expired"]:
+                    status = "cancelled"
+                elif current_date < today:
+                    status = "delivered"
+                    
+                generated_dates.append({
+                    "id": f"gen-{subscription_id}-{date_str}",
+                    "subscription_id": subscription_id,
+                    "delivery_date": date_str,
+                    "delivery_time": None,
+                    "status": status,
+                    "notes": None
+                })
+        current_date += timedelta(days=1)
+    
+    return sorted(generated_dates, key=lambda x: x.get("delivery_date", ""))
 
 @api_router.get("/payments")
 async def get_payments(user_id: Optional[str] = None, subscription_id: Optional[str] = None):
