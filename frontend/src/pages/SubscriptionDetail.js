@@ -198,8 +198,6 @@ const SubscriptionDetail = () => {
                 <div className="space-y-3">
                   {items.map((item, idx) => {
                     const qty = item.quantity || 100;
-                    const pricePerUnit = item.price || item.product?.price || 0;
-                    const totalPrice = (qty / 100) * pricePerUnit;
                     return (
                       <div
                         key={idx}
@@ -219,7 +217,7 @@ const SubscriptionDetail = () => {
                         <div className="flex-1">
                           <h4 className="font-medium">{item.product?.name || 'Product'}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {qty}gm × ₹{pricePerUnit}/100gm
+                            {qty}gm
                           </p>
                         </div>
                       </div>
