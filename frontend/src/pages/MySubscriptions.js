@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Package, Clock, Truck, Sprout, MapPin, Tag } from 'lucide-react';
+import { Calendar, Package, Clock, Truck, Sprout, MapPin, Tag, Repeat } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -42,8 +42,45 @@ const MySubscriptions = () => {
 
   const fetchSubscriptions = async () => {
     try {
-      const response = await axios.get(`${API}/subscriptions?user_id=${user.id}`);
-      setSubscriptions(response.data);
+      // Fetch from both subscriptions collection and orders with subscriptions
+      const [subsResponse, ordersResponse] = await Promise.all([
+        axios.get(`${API}/subscriptions?user_id=${user.id}`),
+        axios.get(`${API}/orders?user_id=${user.id}`)
+      ]);
+      
+      // Get standalone subscriptions
+      const standaloneSubscriptions = subsResponse.data.map(sub => ({
+        ...sub,
+        source: 'subscription'
+      }));
+      
+      // Get subscriptions from orders (order_type = 'subscription' or 'mixed')
+      const orderSubscriptions = ordersResponse.data
+        .filter(order => order.subscription && (order.order_type === 'subscription' || order.order_type === 'mixed'))
+        .map(order => ({
+          id: order.id,
+          order_id: order.id,
+          frequency: order.subscription.frequency,
+          delivery_days: order.subscription.delivery_days,
+          start_date: order.subscription.start_date,
+          next_delivery_date: order.subscription.next_delivery_date,
+          items: order.subscription.items,
+          subtotal: order.subscription.subtotal,
+          total_price: order.subscription.total_price,
+          bulk_discount_percent: order.subscription.bulk_discount_percent,
+          bulk_discount_amount: order.subscription.bulk_discount_amount,
+          status: order.status === 'confirmed' ? 'active' : order.status,
+          address: order.address || order.delivery_address,
+          created_at: order.created_at,
+          tray_count: order.subscription.items?.reduce((sum, item) => sum + (item.quantity || 100), 0) || 0,
+          source: 'order'
+        }));
+      
+      // Combine and sort by created_at
+      const allSubscriptions = [...standaloneSubscriptions, ...orderSubscriptions]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      setSubscriptions(allSubscriptions);
     } catch (error) {
       toast.error('Failed to load subscriptions');
     } finally {
@@ -55,7 +92,8 @@ const MySubscriptions = () => {
     const colors = {
       active: 'bg-green-100 text-green-800',
       paused: 'bg-yellow-100 text-yellow-800',
-      cancelled: 'bg-red-100 text-red-800'
+      cancelled: 'bg-red-100 text-red-800',
+      confirmed: 'bg-green-100 text-green-800'
     };
     return <Badge className={colors[status] || 'bg-gray-100 text-gray-800'}>{status}</Badge>;
   };
