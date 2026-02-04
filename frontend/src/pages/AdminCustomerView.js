@@ -548,51 +548,145 @@ const AdminCustomerView = () => {
           </TabsContent>
 
           {/* ==================== CART TAB ==================== */}
-          {/* Cart is stored in localStorage on customer's device, so we show pending orders and info */}
+          {/* Shows synced cart data from server */}
           <TabsContent value="cart">
             <div className="bg-gradient-to-b from-green-50 to-white rounded-xl p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <ShoppingCart className="w-6 h-6 text-primary" />
-                <h2 className="text-xl sm:text-2xl font-bold text-primary">Cart View</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-primary">Current Cart</h2>
+                {customerCart?.updated_at && (
+                  <Badge variant="outline" className="ml-2">
+                    Last updated: {formatDate(customerCart.updated_at)}
+                  </Badge>
+                )}
               </div>
 
-              {/* Info about cart storage */}
-              <Card className="mb-4 border-blue-200 bg-blue-50/50">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-blue-800">Cart Data is Device-Specific</p>
-                      <p className="text-sm text-blue-700 mt-1">
-                        The shopping cart is stored locally on the customer's browser/device. 
-                        It cannot be viewed from the admin panel as it's not synced to the server.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Synced Cart Info */}
+              {customerCart && (customerCart.items?.length > 0 || customerCart.subscription) ? (
+                <>
+                  {/* One-time Items in Cart */}
+                  {customerCart.items?.length > 0 && (
+                    <Card className="mb-4">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ShoppingBag className="w-5 h-5 text-primary" />
+                          <h3 className="font-semibold">One-time Items ({customerCart.items.length})</h3>
+                        </div>
+                        <div className="space-y-2">
+                          {customerCart.items.map((item, idx) => {
+                            const qty = item.quantity || item.product?.selectedQty || 100;
+                            const price = item.product?.price || 0;
+                            const total = (qty / 100) * price;
+                            return (
+                              <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                                {item.product?.image ? (
+                                  <img src={item.product.image} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                                ) : (
+                                  <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                    <Package className="w-6 h-6 text-gray-400" />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">{item.product?.name || 'Unknown Product'}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {qty}gm × ₹{price}/100gm
+                                  </p>
+                                </div>
+                                <p className="font-bold text-primary">₹{total.toFixed(0)}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-3 pt-3 border-t flex justify-between items-center">
+                          <span className="font-medium">Cart Subtotal</span>
+                          <span className="text-lg font-bold text-primary">
+                            ₹{customerCart.items.reduce((sum, item) => {
+                              const qty = item.quantity || item.product?.selectedQty || 100;
+                              const price = item.product?.price || 0;
+                              return sum + (qty / 100) * price;
+                            }, 0).toFixed(0)}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-              {/* Active Subscription in Cart (if any pending subscription orders) */}
+                  {/* Subscription in Cart */}
+                  {customerCart.subscription && (
+                    <Card className="mb-4 border-blue-200 bg-blue-50/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Repeat className="w-5 h-5 text-blue-600" />
+                          <h3 className="font-semibold text-blue-800">Pending Subscription</h3>
+                          <Badge className="bg-blue-100 text-blue-800">In Cart</Badge>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 mb-3">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">{getPlanDisplayName(customerCart.subscription.frequency)}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {customerCart.subscription.tray_count || 0}gm total
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            📅 Delivery Days: {customerCart.subscription.delivery_days?.join(', ') || 'Not selected'}
+                          </p>
+                        </div>
+                        {customerCart.subscription.items?.length > 0 && (
+                          <div className="space-y-2">
+                            {customerCart.subscription.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center gap-3 p-2 bg-white rounded-lg">
+                                {item.product?.image ? (
+                                  <img src={item.product.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">{item.product?.name || item.name || 'Product'}</p>
+                                  <p className="text-xs text-muted-foreground">{item.quantity || 100}gm</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              ) : (
+                <Card className="mb-4 border-gray-200">
+                  <CardContent className="p-8 text-center">
+                    <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+                    <h3 className="font-semibold text-muted-foreground mb-2">Cart is Empty</h3>
+                    <p className="text-sm text-muted-foreground">
+                      This customer's cart is currently empty or not synced to the server.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pending Orders Section */}
               {(() => {
-                const pendingSubOrders = orders.filter(o => 
-                  o.subscription && (o.status === 'pending' || o.payment_status === 'pending')
+                const pendingOrders = orders.filter(o => 
+                  o.status === 'pending' || o.payment_status === 'pending'
                 );
                 
-                if (pendingSubOrders.length > 0) {
+                if (pendingOrders.length > 0) {
                   return (
                     <div className="mb-4">
                       <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">
-                        <Repeat className="w-4 h-4" />
-                        Pending Subscription Orders
+                        <AlertCircle className="w-4 h-4 text-yellow-600" />
+                        Pending Orders ({pendingOrders.length})
                       </h3>
                       <div className="space-y-2">
-                        {pendingSubOrders.map(order => (
+                        {pendingOrders.slice(0, 5).map(order => (
                           <Card key={order.id} className="border-yellow-200 bg-yellow-50/50">
                             <CardContent className="p-3">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <div className="flex -space-x-2">
-                                    {order.subscription?.items?.slice(0, 3).map((item, idx) => (
+                                    {(order.subscription?.items || order.one_time_items || order.items)?.slice(0, 3).map((item, idx) => (
                                       item.product?.image ? (
                                         <img key={idx} src={item.product.image} alt="" className="w-10 h-10 rounded-lg object-cover border-2 border-white" />
                                       ) : (
@@ -603,14 +697,16 @@ const AdminCustomerView = () => {
                                     ))}
                                   </div>
                                   <div>
-                                    <p className="font-medium text-sm">{getPlanDisplayName(order.subscription?.frequency)}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {order.subscription?.items?.length} items • {order.subscription?.tray_count || 0}gm
+                                    <p className="font-medium text-sm">
+                                      {order.subscription ? getPlanDisplayName(order.subscription?.frequency) : `${(order.one_time_items || order.items)?.length} items`}
                                     </p>
+                                    <p className="text-xs text-muted-foreground">#{order.id?.slice(0, 8)}</p>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <Badge className="bg-yellow-100 text-yellow-800">Payment Pending</Badge>
+                                  <Badge className="bg-yellow-100 text-yellow-800">
+                                    {order.payment_status === 'pending' ? 'Payment Pending' : 'Pending'}
+                                  </Badge>
                                   <p className="text-lg font-bold text-primary mt-1">₹{order.total?.toLocaleString()}</p>
                                 </div>
                               </div>
@@ -618,6 +714,11 @@ const AdminCustomerView = () => {
                           </Card>
                         ))}
                       </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
                     </div>
                   );
                 }
