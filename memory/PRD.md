@@ -262,7 +262,8 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 February 4, 2026
 
 ## Change Log
-- **Feb 4, 2026:** Completed "View as Customer" admin feature - Allows admin to search by phone number and view a read-only customer account (orders, subscriptions, addresses, referrals)
+- **Feb 4, 2026:** Implemented offline order tracking (Phone/WhatsApp/Walk-in orders). Admin can create orders for customers, track order source, filter by source, and add order notes.
+- **Feb 4, 2026:** Completed "View as Customer" admin feature with detail pages - Allows admin to search by phone number and view a read-only customer account (orders, subscriptions, addresses, referrals)
 - **Feb 2, 2026:** Implemented Order Discount Tiers - automatic discounts based on order value (₹1,500+ → 10%, ₹2,500+ → 15%, ₹4,000+ → 25%). Added admin management page.
 - **Feb 2, 2026:** Added delivery address display to subscription cards on both My Orders and My Subscriptions pages
 - **Feb 2, 2026:** Enhanced My Orders page - Subscription cards now show product info (image, name, weight) same as MySubscriptions page
