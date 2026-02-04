@@ -43,6 +43,7 @@ import AdminPages from '@/pages/AdminPages';
 import AdminOrders from '@/pages/AdminOrders';
 import AdminAnalytics from '@/pages/AdminAnalytics';
 import AdminDiscountTiers from '@/pages/AdminDiscountTiers';
+import AdminCustomerView from '@/pages/AdminCustomerView';
 import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
 
