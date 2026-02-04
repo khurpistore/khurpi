@@ -87,8 +87,12 @@ const AdminCoupons = () => {
       discount_value: parseFloat(formData.discount_value) || 0,
       min_order_amount: parseFloat(formData.min_order_amount) || 0,
       max_discount: parseFloat(formData.max_discount) || null,
-      usage_limit: parseInt(formData.usage_limit) || null
+      usage_limit: parseInt(formData.usage_limit) || null,
+      per_user_limit: parseInt(formData.per_user_limit) || 1,
+      valid_from: formData.unlimited_validity ? null : formData.valid_from || null,
+      valid_until: formData.unlimited_validity ? null : formData.valid_until || null
     };
+    delete payload.unlimited_validity;
 
     try {
       if (editingCoupon) {
