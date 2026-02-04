@@ -493,8 +493,13 @@ const AdminCoupons = () => {
                           )}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
-                          {coupon.times_used || 0}
-                          {coupon.usage_limit && `/${coupon.usage_limit}`}
+                          <div className="text-sm">
+                            <span>{coupon.times_used || 0}</span>
+                            {coupon.usage_limit && <span className="text-muted-foreground">/{coupon.usage_limit}</span>}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {coupon.per_user_limit || 1}x per user
+                          </span>
                         </TableCell>
                         <TableCell>
                           <Badge 
