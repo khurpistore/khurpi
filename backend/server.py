@@ -3724,7 +3724,6 @@ async def get_subscription_deliveries(subscription_id: str):
             "daily": 24
         }
         total_deliveries_per_month = deliveries_per_month_map.get(frequency, 4)
-    total_deliveries_per_month = deliveries_per_month_map.get(frequency, 4)
     
     # Generate delivery dates based on frequency
     delivery_days = subscription.get("delivery_days", [])
