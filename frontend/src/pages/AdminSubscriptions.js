@@ -139,8 +139,8 @@ const AdminSubscriptions = () => {
               <p className="text-xl font-bold text-red-600">{stats.cancelled}</p>
             </div>
             <div className="bg-white rounded-lg p-3 border">
-              <p className="text-xs text-muted-foreground">Monthly Rev.</p>
-              <p className="text-xl font-bold text-primary">₹{stats.monthlyRevenue.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground">Expired</p>
+              <p className="text-xl font-bold text-gray-600">{stats.expired}</p>
             </div>
           </div>
 
