@@ -124,7 +124,7 @@ const OrderDetail = () => {
               <div>
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <Badge className={getStatusColor(order.status)}>
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    {order.status?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                   </Badge>
                   {getOrderTypeBadge(order.order_type)}
                 </div>
