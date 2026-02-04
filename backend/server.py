@@ -4037,6 +4037,225 @@ async def update_order_status(order_id: str, status_data: OrderStatusUpdate):
     order = await db.orders.find_one({"id": order_id}, {"_id": 0})
     return order
 
+# ============ ADMIN CREATE ORDER (Phone/WhatsApp Orders) ============
+
+class AdminOrderItemCreate(BaseModel):
+    product_id: str
+    quantity: int = 100  # grams
+
+class AdminOrderCreate(BaseModel):
+    # Customer info - either existing or new
+    customer_phone: str
+    customer_name: Optional[str] = None  # Required if new customer
+    customer_email: Optional[str] = None
+    # Address - either existing address_id or new address data
+    address_id: Optional[str] = None
+    new_address: Optional[dict] = None  # For creating new address
+    # Order items
+    items: List[AdminOrderItemCreate]
+    # Order details
+    order_source: str = "phone"  # "phone", "whatsapp", "walk_in"
+    order_notes: Optional[str] = None
+    # Payment
+    payment_status: str = "pending"  # "pending", "paid"
+    # Discounts
+    apply_auto_discount: bool = True
+    coupon_code: Optional[str] = None
+
+@api_router.post("/admin/orders/create")
+async def admin_create_order(order_data: AdminOrderCreate):
+    """Create order on behalf of customer (for phone/WhatsApp orders)"""
+    import uuid
+    
+    # Step 1: Find or create customer
+    user = await db.users.find_one({"phone": order_data.customer_phone}, {"_id": 0})
+    
+    if not user:
+        # Create new customer
+        if not order_data.customer_name:
+            raise HTTPException(status_code=400, detail="Customer name required for new customers")
+        
+        user_id = str(uuid.uuid4())
+        user = {
+            "id": user_id,
+            "phone": order_data.customer_phone,
+            "name": order_data.customer_name,
+            "email": order_data.customer_email,
+            "role": "user",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(user)
+    
+    user_id = user["id"]
+    
+    # Step 2: Get or create address
+    address = None
+    address_id = None
+    
+    if order_data.address_id:
+        address = await db.addresses.find_one({"id": order_data.address_id}, {"_id": 0})
+        if not address:
+            raise HTTPException(status_code=404, detail="Address not found")
+        address_id = order_data.address_id
+    elif order_data.new_address:
+        # Create new address for customer
+        address_id = str(uuid.uuid4())
+        address = {
+            "id": address_id,
+            "user_id": user_id,
+            "name": order_data.new_address.get("name", order_data.customer_name),
+            "phone": order_data.new_address.get("phone", order_data.customer_phone),
+            "address_line": order_data.new_address.get("address_line", ""),
+            "address_line_1": order_data.new_address.get("address_line_1", ""),
+            "address_line_2": order_data.new_address.get("address_line_2", ""),
+            "area": order_data.new_address.get("area", ""),
+            "city": order_data.new_address.get("city", "NOIDA"),
+            "state": order_data.new_address.get("state", "Uttar Pradesh"),
+            "pincode": order_data.new_address.get("pincode", ""),
+            "latitude": order_data.new_address.get("latitude"),
+            "longitude": order_data.new_address.get("longitude"),
+            "is_default": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        # Set all other addresses as non-default
+        await db.addresses.update_many({"user_id": user_id}, {"$set": {"is_default": False}})
+        await db.addresses.insert_one(address)
+    else:
+        # Try to get default address
+        address = await db.addresses.find_one({"user_id": user_id, "is_default": True}, {"_id": 0})
+        if not address:
+            address = await db.addresses.find_one({"user_id": user_id}, {"_id": 0})
+        if not address:
+            raise HTTPException(status_code=400, detail="No address provided and customer has no saved addresses")
+        address_id = address["id"]
+    
+    # Step 3: Build order items with product details
+    order_items = []
+    subtotal = 0
+    products_cache = {}
+    
+    for item in order_data.items:
+        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
+        
+        products_cache[item.product_id] = product
+        price_per_100g = product.get("price", 0)
+        item_total = (item.quantity / 100) * price_per_100g
+        
+        order_items.append({
+            "product_id": item.product_id,
+            "product": {
+                "id": product["id"],
+                "name": product["name"],
+                "price": product["price"],
+                "image": product.get("image")
+            },
+            "quantity": item.quantity,
+            "price": price_per_100g,
+            "total": item_total
+        })
+        subtotal += item_total
+    
+    # Step 4: Calculate discounts
+    discount_percent = 0
+    discount_amount = 0
+    discount_type = None
+    discount_min_order_value = None
+    
+    if order_data.apply_auto_discount:
+        # Get automatic discount tiers
+        discount_tiers = await db.discount_tiers.find({"is_active": True}, {"_id": 0}).to_list(100)
+        discount_tiers.sort(key=lambda x: x.get("min_order_value", 0), reverse=True)
+        
+        for tier in discount_tiers:
+            if subtotal >= tier.get("min_order_value", 0):
+                discount_percent = tier.get("discount_percent", 0)
+                discount_amount = (subtotal * discount_percent) / 100
+                discount_type = "bulk_discount"
+                discount_min_order_value = tier.get("min_order_value")
+                break
+    
+    # Apply coupon if provided
+    coupon_discount = 0
+    coupon_code = None
+    if order_data.coupon_code:
+        coupon = await db.coupons.find_one({"code": order_data.coupon_code.upper(), "is_active": True}, {"_id": 0})
+        if coupon:
+            if coupon.get("discount_type") == "percentage":
+                coupon_discount = (subtotal * coupon.get("discount_value", 0)) / 100
+                if coupon.get("max_discount"):
+                    coupon_discount = min(coupon_discount, coupon.get("max_discount"))
+            else:
+                coupon_discount = coupon.get("discount_value", 0)
+            coupon_code = order_data.coupon_code.upper()
+    
+    # Calculate total
+    total = subtotal - discount_amount - coupon_discount
+    if total < 0:
+        total = 0
+    
+    # Step 5: Calculate delivery date
+    estimated_delivery = calculate_estimated_delivery_date(
+        items=[{"product_id": item["product_id"]} for item in order_items],
+        products_cache=products_cache
+    ) if order_items else None
+    
+    # Step 6: Create order
+    order_status = "confirmed" if order_data.payment_status == "paid" else "pending"
+    
+    order_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "address_id": address_id,
+        "delivery_address": {
+            "name": address.get("name"),
+            "address_line": address.get("address_line"),
+            "city": address.get("city"),
+            "state": address.get("state"),
+            "pincode": address.get("pincode"),
+            "phone": address.get("phone"),
+            "latitude": address.get("latitude"),
+            "longitude": address.get("longitude"),
+        },
+        "one_time_items": order_items,
+        "items": order_items,  # Legacy field
+        "subtotal": subtotal,
+        "delivery_fee": 0,  # Free delivery
+        "discount_type": discount_type,
+        "discount_percent": discount_percent,
+        "discount_amount": discount_amount,
+        "discount_min_order_value": discount_min_order_value,
+        "coupon_code": coupon_code,
+        "coupon_discount": coupon_discount,
+        "total": total,
+        "status": order_status,
+        "order_type": "one_time",
+        "order_source": order_data.order_source,
+        "order_notes": order_data.order_notes,
+        "payment_status": order_data.payment_status,
+        "estimated_delivery_date": estimated_delivery,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.orders.insert_one(order_doc)
+    
+    # Update product stock
+    for item in order_items:
+        await db.products.update_one(
+            {"id": item["product_id"]},
+            {"$inc": {"weight": -item["quantity"]}}
+        )
+    
+    # Add user info to response
+    order_doc["user"] = {
+        "id": user["id"],
+        "name": user.get("name"),
+        "phone": user.get("phone")
+    }
+    
+    return order_doc
+
 @api_router.put("/admin/payments/{payment_id}")
 async def admin_update_payment(payment_id: str, payment_data: PaymentUpdate):
     update_data = {k: v for k, v in payment_data.model_dump().items() if v is not None}
