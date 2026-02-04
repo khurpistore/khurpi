@@ -263,34 +263,68 @@ const AdminCoupons = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Valid From</Label>
+                    <Label>Total Usage Limit</Label>
                     <Input
-                      type="date"
-                      value={formData.valid_from}
-                      onChange={(e) => setFormData(prev => ({ ...prev, valid_from: e.target.value }))}
+                      type="number"
+                      value={formData.usage_limit}
+                      onChange={(e) => setFormData(prev => ({ ...prev, usage_limit: e.target.value }))}
+                      placeholder="Unlimited"
                       className="mt-1"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">Total times this coupon can be used</p>
                   </div>
                   <div>
-                    <Label>Valid Until</Label>
+                    <Label>Per User Limit</Label>
                     <Input
-                      type="date"
-                      value={formData.valid_until}
-                      onChange={(e) => setFormData(prev => ({ ...prev, valid_until: e.target.value }))}
+                      type="number"
+                      value={formData.per_user_limit}
+                      onChange={(e) => setFormData(prev => ({ ...prev, per_user_limit: e.target.value }))}
+                      placeholder="1"
                       className="mt-1"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">Times each user can use</p>
                   </div>
                 </div>
 
-                <div>
-                  <Label>Usage Limit</Label>
-                  <Input
-                    type="number"
-                    value={formData.usage_limit}
-                    onChange={(e) => setFormData(prev => ({ ...prev, usage_limit: e.target.value }))}
-                    placeholder="Unlimited"
-                    className="mt-1"
-                  />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="unlimited_validity"
+                      checked={formData.unlimited_validity}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        unlimited_validity: e.target.checked,
+                        valid_from: e.target.checked ? '' : prev.valid_from,
+                        valid_until: e.target.checked ? '' : prev.valid_until
+                      }))}
+                      className="rounded"
+                    />
+                    <Label htmlFor="unlimited_validity" className="cursor-pointer">Unlimited Validity (No Expiry)</Label>
+                  </div>
+                  
+                  {!formData.unlimited_validity && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Valid From</Label>
+                        <Input
+                          type="date"
+                          value={formData.valid_from}
+                          onChange={(e) => setFormData(prev => ({ ...prev, valid_from: e.target.value }))}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Valid Until</Label>
+                        <Input
+                          type="date"
+                          value={formData.valid_until}
+                          onChange={(e) => setFormData(prev => ({ ...prev, valid_until: e.target.value }))}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
