@@ -350,17 +350,6 @@ const AdminSubscriptions = () => {
                     ))}
                   </div>
                 </div>
-                          Discount ({selectedSubscription.bulk_discount_percent}%)
-                        </span>
-                        <span>-₹{selectedSubscription.bulk_discount_amount}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold pt-2 border-t mt-2 text-base">
-                      <span>Monthly Total</span>
-                      <span className="text-primary">₹{(selectedSubscription.total_price || selectedSubscription.monthly_total || 0).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Delivery Address */}
                 {selectedSubscription.address && (
