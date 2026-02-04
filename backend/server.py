@@ -2946,15 +2946,38 @@ async def get_order(order_id: str):
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    # Enrich with product details
-    enriched_items = []
-    for item in order.get("items", []):
-        product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
-        enriched_items.append({
-            **item,
-            "product": product
-        })
-    order["items"] = enriched_items
+    # Enrich one_time_items with product details
+    if order.get("one_time_items"):
+        enriched_items = []
+        for item in order.get("one_time_items", []):
+            product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+            enriched_items.append({
+                **item,
+                "product": product
+            })
+        order["one_time_items"] = enriched_items
+    
+    # Enrich subscription items with product details
+    if order.get("subscription") and order["subscription"].get("items"):
+        enriched_sub_items = []
+        for item in order["subscription"]["items"]:
+            product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+            enriched_sub_items.append({
+                **item,
+                "product": product
+            })
+        order["subscription"]["items"] = enriched_sub_items
+    
+    # Enrich legacy items field with product details
+    if order.get("items"):
+        enriched_items = []
+        for item in order.get("items", []):
+            product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+            enriched_items.append({
+                **item,
+                "product": product
+            })
+        order["items"] = enriched_items
     
     # Use stored delivery_address (snapshot) if available, otherwise fetch current address
     if order.get("delivery_address"):
