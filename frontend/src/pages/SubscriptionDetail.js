@@ -1,98 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Calendar, Package, Clock, MapPin, AlertTriangle, ArrowLeft, CreditCard, Tag, Truck, Sparkles, ShoppingBag } from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { ArrowLeft, Package, MapPin, Calendar, CreditCard, Clock, Tag, Repeat, Truck } from 'lucide-react';
 import { format } from 'date-fns';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const SubscriptionDetail = () => {
-  const [subscription, setSubscription] = useState(null);
-  const [items, setItems] = useState([]);
-  const [deliveries, setDeliveries] = useState([]);
-  const [address, setAddress] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { subscriptionId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { id } = useParams();
-  
-  // Check if user came from Orders page
-  const cameFromOrders = location.state?.from === 'orders';
+  const [subscription, setSubscription] = useState(null);
+  const [items, setItems] = useState([]);
+  const [address, setAddress] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
-    fetchSubscriptionDetails();
-  }, [user, navigate, id]);
+    fetchSubscription();
+  }, [user, subscriptionId]);
 
-  const fetchSubscriptionDetails = async () => {
+  const fetchSubscription = async () => {
     try {
-      const [subRes, itemsRes, deliveriesRes] = await Promise.all([
-        axios.get(`${API}/subscriptions/${id}`),
-        axios.get(`${API}/subscriptions/${id}/items`),
-        axios.get(`${API}/deliveries?subscription_id=${id}`)
-      ]);
-      setSubscription(subRes.data);
-      setItems(itemsRes.data);
-      setDeliveries(deliveriesRes.data);
+      // Check if subscription data was passed from MySubscriptions (for order-based subscriptions)
+      const passedData = location.state?.subscriptionData;
+      const source = location.state?.source;
       
-      // Fetch address if address_id exists
-      if (subRes.data.address_id) {
-        try {
-          const addressRes = await axios.get(`${API}/addresses/${subRes.data.address_id}`);
-          setAddress(addressRes.data);
-        } catch (err) {
-          console.log('Address not found');
+      if (source === 'order' && passedData) {
+        // Use passed subscription data from order
+        setSubscription({
+          ...passedData,
+          status: passedData.status || 'active'
+        });
+        setItems(passedData.items || []);
+        setAddress(passedData.address);
+        setLoading(false);
+        return;
+      }
+      
+      // Try to fetch from subscriptions collection first
+      try {
+        const subRes = await axios.get(`${API}/subscriptions/${subscriptionId}`);
+        setSubscription(subRes.data);
+        setItems(subRes.data.items || []);
+        
+        // Fetch address if address_id exists
+        if (subRes.data.address_id) {
+          const addrRes = await axios.get(`${API}/addresses/${subRes.data.address_id}`);
+          setAddress(addrRes.data);
+        } else if (subRes.data.address) {
+          setAddress(subRes.data.address);
+        }
+      } catch (subError) {
+        // If not found in subscriptions, try to fetch from orders
+        const orderRes = await axios.get(`${API}/orders/${subscriptionId}`);
+        if (orderRes.data && orderRes.data.subscription) {
+          const order = orderRes.data;
+          setSubscription({
+            id: order.id,
+            frequency: order.subscription.frequency,
+            delivery_days: order.subscription.delivery_days,
+            start_date: order.subscription.start_date,
+            next_delivery_date: order.subscription.next_delivery_date,
+            subtotal: order.subscription.subtotal,
+            total_price: order.subscription.total_price,
+            bulk_discount_percent: order.subscription.bulk_discount_percent,
+            bulk_discount_amount: order.subscription.bulk_discount_amount,
+            status: order.status === 'confirmed' ? 'active' : order.status,
+            created_at: order.created_at,
+            tray_count: order.subscription.items?.reduce((sum, item) => sum + (item.quantity || 100), 0) || 0
+          });
+          setItems(order.subscription.items || []);
+          setAddress(order.address || order.delivery_address);
         }
       }
     } catch (error) {
-      toast.error('Failed to load subscription details');
-      navigate('/subscriptions');
+      console.error('Failed to fetch subscription:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSkipDelivery = async () => {
-    try {
-      await axios.post(`${API}/subscriptions/${id}/skip`);
-      toast.success('Next delivery skipped successfully');
-      fetchSubscriptionDetails();
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to skip delivery');
-    }
-  };
-
-  const handleStatusChange = async (newStatus) => {
-    try {
-      await axios.put(`${API}/subscriptions/${id}`, { status: newStatus });
-      toast.success(`Subscription ${newStatus}`);
-      fetchSubscriptionDetails();
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update subscription');
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    const colors = {
-      active: 'bg-green-100 text-green-800',
-      paused: 'bg-yellow-100 text-yellow-800',
-      cancelled: 'bg-red-100 text-red-800',
-      scheduled: 'bg-blue-100 text-blue-800',
-      skipped: 'bg-gray-100 text-gray-800',
-      delivered: 'bg-green-100 text-green-800'
-    };
-    return <Badge className={colors[status] || 'bg-gray-100 text-gray-800'}>{status}</Badge>;
   };
 
   // Format plan name for display
@@ -109,371 +103,291 @@ const SubscriptionDetail = () => {
     return planNames[frequency] || frequency;
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'paused': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'confirmed': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
-        <p className="text-muted-foreground">Loading...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (!subscription) return null;
+  if (!subscription) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-green-50 to-white">
+        <Package className="w-16 h-16 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold mb-2">Subscription Not Found</h2>
+        <Button onClick={() => navigate('/subscriptions')} className="rounded-full">
+          Back to Subscriptions
+        </Button>
+      </div>
+    );
+  }
 
-  // Simple: Use stored values directly from DB
-  // subtotal = original monthly amount (before discount)
-  // total_price = final monthly amount paid (after discount)
-  // bulk_discount_percent = discount percentage applied
-  // bulk_discount_amount = discount amount in rupees
+  // Calculate values
   const originalAmount = subscription.subtotal || 0;
   const paidAmount = subscription.total_price || 0;
   const discountPercent = subscription.bulk_discount_percent || 0;
   const discountAmount = subscription.bulk_discount_amount || 0;
-  
-  // Delivery info
   const deliveriesPerWeek = subscription.delivery_days?.length || 1;
   const totalDeliveriesPerMonth = deliveriesPerWeek * 4;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      {/* Simple Back Header - Dynamic based on navigation source */}
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-green-100 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(cameFromOrders ? '/orders' : '/subscriptions')}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate('/subscriptions')}
             className="rounded-full"
-            data-testid="back-button"
           >
-            {cameFromOrders ? (
-              <>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <ShoppingBag className="w-4 h-4 mr-1" />
-                Back to Orders
-              </>
-            ) : (
-              <>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Subscriptions
-              </>
-            )}
+            <ArrowLeft className="w-5 h-5" />
           </Button>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Title Section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary">
-              Subscription
-            </h2>
-            {getStatusBadge(subscription.status)}
+          <div>
+            <h1 className="text-2xl font-bold text-primary">Subscription Details</h1>
+            <p className="text-sm text-muted-foreground">#{subscription.id?.slice(0, 8)}</p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            ID: {subscription.id.slice(0, 8)} • Created {format(new Date(subscription.created_at), 'PP')}
-          </p>
         </div>
 
-        <div className="space-y-6">
-          {/* Subscription Info */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Subscription Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Plan (Monthly)</p>
-                    <p className="font-medium">{getPlanDisplayName(subscription.frequency)}</p>
-                  </div>
+        {/* Subscription Status Card */}
+        <Card className="mb-6 overflow-hidden">
+          <div className="p-6 bg-gradient-to-r from-primary/10 to-primary/5">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <Repeat className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-bold text-primary">
+                    {getPlanDisplayName(subscription.frequency)}
+                  </h2>
+                  <Badge className={getStatusColor(subscription.status)}>
+                    {subscription.status}
+                  </Badge>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Delivery Days</p>
-                    <p className="font-medium">
-                      {subscription.delivery_days && subscription.delivery_days.length > 0 
-                        ? subscription.delivery_days.join(', ')
-                        : subscription.delivery_day || 'Not set'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Package className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Quantity per Delivery</p>
-                    <p className="font-medium">{subscription.tray_count}gm</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Start Date</p>
-                    <p className="font-medium">{format(new Date(subscription.start_date), 'PP')}</p>
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  {subscription.tray_count || items.reduce((sum, i) => sum + (i.quantity || 100), 0)}gm • {totalDeliveriesPerMonth} deliveries/month
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  📅 {subscription.delivery_days?.join(', ') || 'Not set'}
+                </p>
               </div>
-              
-              {/* Important Dates Section */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Important Dates</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground">Created On</p>
-                    <p className="font-medium text-sm">{format(new Date(subscription.created_at), 'PP')}</p>
-                  </div>
-                  <div className="bg-green-50 rounded-lg p-3">
-                    <p className="text-xs text-green-700">Next Delivery</p>
-                    <p className="font-medium text-sm text-green-800">
-                      {subscription.next_delivery_date 
-                        ? format(new Date(subscription.next_delivery_date), 'PP')
-                        : 'Not scheduled'}
-                    </p>
-                  </div>
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <p className="text-xs text-blue-700">Renewal Date</p>
-                    <p className="font-medium text-sm text-blue-800">
-                      {subscription.renewal_date 
-                        ? format(new Date(subscription.renewal_date), 'PP')
-                        : format(new Date(new Date(subscription.start_date).setMonth(new Date(subscription.start_date).getMonth() + 1)), 'PP')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-            </CardContent>
-          </Card>
-
-          {/* Delivery Address - Like Checkout */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-primary" />
-                <CardTitle className="text-lg">Delivery Address</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {address ? (
-                <div className="p-4 rounded-lg border border-primary/20 bg-teal-50">
-                  <div className="flex items-center gap-2 mb-2">
-                    {address.receiver_name && (
-                      <span className="font-semibold text-primary">{address.receiver_name}</span>
-                    )}
-                    {address.name && (
-                      <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">{address.name}</span>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {[
-                      address.address_line || address.address_line_1,
-                      address.address_line_2,
-                      address.landmark,
-                      address.area,
-                      address.city
-                    ].filter(Boolean).join(', ')}
-                    {address.pincode && ` - ${address.pincode}`}
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
+                {discountAmount > 0 && (
+                  <p className="text-sm text-muted-foreground line-through">
+                    ₹{originalAmount.toLocaleString()}
                   </p>
-                  {address.phone && (
-                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                      📞 +91 {address.phone}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-6 bg-gray-50 rounded-lg">
-                  <MapPin className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-muted-foreground">No delivery address set</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Products */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Products ({items.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3" data-testid="subscription-items">
-                {items.map((item) => {
-                  const qty = item.selected_qty || item.selectedQty || item.quantity || 100;
-                  const pricePerUnit = item.product?.price || 0;
-                  const totalPrice = (qty / 100) * pricePerUnit;
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                      data-testid={`subscription-item-${item.product_id}`}
-                    >
-                      <img
-                        src={item.product?.image}
-                        alt={item.product?.name}
-                        className="w-14 h-14 rounded-lg object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{item.product?.name}</h4>
-                        <p className="text-xs text-muted-foreground">{qty}gm × ₹{pricePerUnit}/100gm</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-primary">₹{totalPrice.toFixed(0)}</p>
-                        <p className="text-xs text-muted-foreground">per delivery</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                )}
+                <p className="text-3xl font-bold text-primary">
+                  ₹{paidAmount.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground">per month</p>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Monthly Cost Summary - Simple Design */}
-          <Card className="border-2 border-primary/20 overflow-hidden">
-            <div className="bg-primary/5 px-4 py-3 border-b border-primary/10">
-              <h3 className="font-semibold text-primary flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Monthly Cost
-              </h3>
             </div>
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                {/* Subtotal */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal ({totalDeliveriesPerMonth} deliveries/month)</span>
-                  <span>₹{originalAmount.toLocaleString()}</span>
-                </div>
+          </div>
+        </Card>
 
-                {/* Delivery */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span className="text-green-600 font-medium">FREE</span>
-                </div>
-
-                {/* Bulk Discount */}
-                {discountAmount > 0 && (
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="flex items-center gap-1">
-                      <Tag className="w-3 h-3" />
-                      Bulk Discount ({discountPercent}% off)
-                    </span>
-                    <span>-₹{discountAmount.toLocaleString()}</span>
-                  </div>
-                )}
-
-                {/* Total */}
-                <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                  <div>
-                    <p className="font-semibold text-lg">Total Paid</p>
-                  </div>
-                  <p className="text-2xl font-bold text-primary">
-                    ₹{paidAmount.toLocaleString()}
-                    <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                  </p>
-                </div>
-
-                {/* Savings Banner */}
-                {discountAmount > 0 && (
-                  <div className="p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-700">
-                        You saved {discountPercent}% on orders above ₹4,000
-                      </span>
-                      <span className="ml-auto text-sm font-bold text-green-700">
-                        -₹{discountAmount.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Cancel Subscription */}
-          {subscription.status !== 'cancelled' && (
-            <Card className="border-red-100">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-sm mb-1">Cancel Subscription</h3>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Once cancelled, your subscription will be permanently stopped. You will continue to receive deliveries until the end of your current billing cycle.
-                    </p>
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">
-                      <p className="text-xs text-amber-800 flex items-center gap-1">
-                        <AlertTriangle className="w-3 h-3" />
-                        <span className="font-medium">No refunds will be issued for the remaining period.</span>
-                      </p>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          data-testid="cancel-subscription-detail-button"
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 rounded-full"
-                        >
-                          Cancel Subscription
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            <p className="mb-3">This action cannot be undone. Your subscription will be permanently cancelled.</p>
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                              <p className="text-sm text-amber-800 font-medium">
-                                Please note: No refunds will be issued for any unused portion of your subscription.
-                              </p>
-                            </div>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleStatusChange('cancelled')}
-                            className="bg-destructive text-destructive-foreground"
-                          >
-                            Yes, Cancel
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Delivery History */}
-          {deliveries.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Products */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Delivery History</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Products ({items.length})
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2" data-testid="delivery-history">
-                  {deliveries.sort((a, b) => new Date(b.delivery_date) - new Date(a.delivery_date)).map((delivery) => (
-                    <div
-                      key={delivery.id}
-                      data-testid={`delivery-${delivery.id}`}
-                      className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium text-sm">{format(new Date(delivery.delivery_date), 'PP')}</p>
-                        <p className="text-xs text-muted-foreground">#{delivery.id.slice(0, 8)}</p>
+                <div className="space-y-3">
+                  {items.map((item, idx) => {
+                    const qty = item.quantity || 100;
+                    const pricePerUnit = item.price || item.product?.price || 0;
+                    const totalPrice = (qty / 100) * pricePerUnit;
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+                      >
+                        {item.product?.image ? (
+                          <img
+                            src={item.product.image}
+                            alt={item.product?.name}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center">
+                            <Package className="w-8 h-8 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h4 className="font-medium">{item.product?.name || 'Product'}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {qty}gm × ₹{pricePerUnit}/100gm
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">₹{totalPrice.toFixed(0)}</p>
+                          <p className="text-xs text-muted-foreground">per delivery</p>
+                        </div>
                       </div>
-                      {getStatusBadge(delivery.status)}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
-          )}
+
+            {/* Delivery Schedule */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Delivery Schedule
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-green-50 rounded-lg p-4 text-center">
+                    <Clock className="w-6 h-6 mx-auto text-green-600 mb-2" />
+                    <p className="text-sm text-green-700">Next Delivery</p>
+                    <p className="text-lg font-bold text-green-800">
+                      {subscription.next_delivery_date 
+                        ? format(new Date(subscription.next_delivery_date), 'MMM d, yyyy')
+                        : '-'}
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-4 text-center">
+                    <Repeat className="w-6 h-6 mx-auto text-blue-600 mb-2" />
+                    <p className="text-sm text-blue-700">Billing Cycle</p>
+                    <p className="text-lg font-bold text-blue-800">Monthly</p>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium">Delivery Days:</span> {subscription.delivery_days?.join(', ') || 'Not set'}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    <span className="font-medium">Started:</span> {subscription.start_date ? format(new Date(subscription.start_date), 'MMMM d, yyyy') : '-'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            
+            {/* Monthly Cost */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Monthly Cost</h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal ({totalDeliveriesPerMonth} deliveries)</span>
+                    <span>₹{originalAmount.toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Delivery</span>
+                    <span className="text-green-600 font-medium">FREE</span>
+                  </div>
+
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        Bulk Discount ({discountPercent}%)
+                      </span>
+                      <span>-₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Total Paid</span>
+                      <span className="text-primary">₹{paidAmount.toLocaleString()}/mo</span>
+                    </div>
+                  </div>
+
+                  {discountAmount > 0 && (
+                    <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-700">
+                          You saved ₹{discountAmount.toLocaleString()}/month!
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Delivery Address */}
+            {address && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Delivery Address</h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    {address.receiver_name && (
+                      <p className="font-semibold text-primary">{address.receiver_name}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      {address.address_line}
+                    </p>
+                    {address.city && (
+                      <p className="text-sm text-muted-foreground">
+                        {address.city}{address.pincode && ` - ${address.pincode}`}
+                      </p>
+                    )}
+                    {address.phone && (
+                      <p className="text-sm text-muted-foreground">
+                        📞 +91 {address.phone}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Actions */}
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                className="w-full rounded-full"
+                onClick={() => navigate('/subscriptions')}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Subscriptions
+              </Button>
+              <Button 
+                className="w-full rounded-full"
+                onClick={() => navigate('/products')}
+              >
+                Add More Products
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
