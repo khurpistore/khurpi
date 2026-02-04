@@ -110,7 +110,7 @@ const Header = () => {
           <span className="text-white/40">|</span>
           <span className="flex items-center gap-2">
             <span>First Order?</span>
-            <span className="font-bold">20% OFF</span>
+            <span className="font-bold">{welcomeCouponDiscount}% OFF</span>
             <span className="bg-white text-green-700 px-2.5 py-0.5 rounded font-bold text-xs tracking-wider">KHURPIWELCOME20</span>
           </span>
           {maxDiscount > 0 && (
