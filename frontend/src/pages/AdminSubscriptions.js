@@ -99,12 +99,10 @@ const AdminSubscriptions = () => {
 
   const stats = {
     total: subscriptions.length,
-    active: subscriptions.filter(s => s.status === 'active' || s.status === 'confirmed').length,
+    active: subscriptions.filter(s => s.status === 'active').length,
     paused: subscriptions.filter(s => s.status === 'paused').length,
     cancelled: subscriptions.filter(s => s.status === 'cancelled').length,
-    monthlyRevenue: subscriptions
-      .filter(s => s.status === 'active' || s.status === 'confirmed')
-      .reduce((sum, s) => sum + (s.total_price || s.monthly_total || 0), 0)
+    expired: subscriptions.filter(s => s.status === 'expired').length
   };
 
   if (loading) {
