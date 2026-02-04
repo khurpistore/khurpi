@@ -449,6 +449,8 @@ class Order(BaseModel):
     total: float
     status: str = "pending"
     order_type: str = "one_time"  # "one_time", "subscription", "mixed"
+    order_source: str = "online"  # "online", "phone", "whatsapp", "walk_in"
+    order_notes: Optional[str] = None  # Admin notes for offline orders
     payment_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"
