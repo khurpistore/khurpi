@@ -325,82 +325,66 @@ const AdminCreateOrder = () => {
 
               {/* Existing Customer Found */}
               {customer && !isNewCustomer && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-4">
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
                         <User className="w-6 h-6 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-green-600">Existing Customer</p>
+                        <p className="text-sm text-green-600 font-medium">Existing Customer Found</p>
                         <p className="text-sm text-green-700">{customer.phone}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setIsEditingCustomer(!isEditingCustomer)}
-                        className="text-green-700 hover:text-green-800 hover:bg-green-100"
-                      >
-                        {isEditingCustomer ? 'Done' : 'Edit'}
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Editable Name & Email */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-green-700">Customer Name *</Label>
-                      <Input
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        placeholder="Enter name"
-                        className="mt-1 bg-white"
-                        disabled={!isEditingCustomer}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-green-700">Email (Optional)</Label>
-                      <Input
-                        value={customerEmail}
-                        onChange={(e) => setCustomerEmail(e.target.value)}
-                        placeholder="Enter email"
-                        className="mt-1 bg-white"
-                        type="email"
-                        disabled={!isEditingCustomer}
-                      />
-                    </div>
+                    <CheckCircle className="w-5 h-5 text-green-600" />
                   </div>
                 </div>
               )}
 
-              {/* New Customer Form */}
+              {/* New Customer Alert */}
               {isNewCustomer && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="text-sm font-medium">New Customer</span>
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-blue-600 font-medium">New Customer</p>
+                      <p className="text-sm text-blue-700">{customerPhone}</p>
+                    </div>
+                    <AlertCircle className="w-5 h-5 text-blue-600 ml-auto" />
+                  </div>
+                </div>
+              )}
+
+              {/* Customer Details Box - Always Editable */}
+              {(customer || isNewCustomer) && (
+                <div className="p-4 bg-white border-2 border-primary/30 rounded-lg space-y-4">
+                  <div className="flex items-center gap-2 text-primary">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Customer Details</span>
+                    <Badge variant="outline" className="ml-auto text-xs">Editable</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Customer Name *</Label>
+                      <Label>Customer Name <span className="text-red-500">*</span></Label>
                       <Input
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
-                        placeholder="Enter name"
+                        placeholder="Enter customer name"
                         className="mt-1"
+                        data-testid="customer-name-input"
                       />
                     </div>
                     <div>
-                      <Label>Email (Optional)</Label>
+                      <Label>Email <span className="text-muted-foreground text-xs">(Optional)</span></Label>
                       <Input
                         value={customerEmail}
                         onChange={(e) => setCustomerEmail(e.target.value)}
-                        placeholder="Enter email"
+                        placeholder="Enter email address"
                         className="mt-1"
                         type="email"
+                        data-testid="customer-email-input"
                       />
                     </div>
                   </div>
