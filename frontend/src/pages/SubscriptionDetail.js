@@ -101,6 +101,7 @@ const SubscriptionDetail = () => {
       }
     } catch (error) {
       console.error('Failed to fetch subscription:', error);
+      // Don't redirect - just show the "not found" UI
     } finally {
       setLoading(false);
     }
