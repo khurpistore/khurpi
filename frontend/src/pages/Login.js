@@ -17,6 +17,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   
   const { login, user } = useAuth();
+  const { syncOnLogin } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const { trackPageView, trackLogin } = useAnalytics();
