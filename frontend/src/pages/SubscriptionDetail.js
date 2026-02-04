@@ -113,6 +113,85 @@ const SubscriptionDetail = () => {
     }
   };
 
+  // Generate delivery dates for the next 4 weeks
+  const generateDeliveryDates = () => {
+    if (!subscription.delivery_days || subscription.delivery_days.length === 0) return [];
+    
+    const dayMap = {
+      'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+      'Thursday': 4, 'Friday': 5, 'Saturday': 6
+    };
+    
+    const deliveryDayNumbers = subscription.delivery_days.map(day => dayMap[day]).filter(d => d !== undefined);
+    const dates = [];
+    const today = startOfDay(new Date());
+    const startDate = subscription.start_date ? startOfDay(new Date(subscription.start_date)) : today;
+    
+    // Generate dates for next 8 weeks (to show past and upcoming)
+    for (let week = -2; week < 6; week++) {
+      for (const dayNum of deliveryDayNumbers) {
+        const weekStart = addDays(startDate, week * 7);
+        const daysUntilDelivery = (dayNum - weekStart.getDay() + 7) % 7;
+        const deliveryDate = addDays(weekStart, daysUntilDelivery);
+        
+        // Only include dates after subscription start
+        if (isAfter(deliveryDate, addDays(startDate, -1)) || isSameDay(deliveryDate, startDate)) {
+          let status = 'scheduled';
+          if (isBefore(deliveryDate, today)) {
+            status = 'delivered';
+          } else if (isSameDay(deliveryDate, today)) {
+            status = 'out_for_delivery';
+          }
+          
+          // Check if subscription is cancelled/paused
+          if (subscription.status === 'cancelled' || subscription.status === 'expired') {
+            if (!isBefore(deliveryDate, today)) {
+              status = 'cancelled';
+            }
+          } else if (subscription.status === 'paused') {
+            if (!isBefore(deliveryDate, today)) {
+              status = 'paused';
+            }
+          }
+          
+          dates.push({
+            date: deliveryDate,
+            status: status
+          });
+        }
+      }
+    }
+    
+    // Sort by date and remove duplicates
+    const uniqueDates = dates
+      .sort((a, b) => a.date - b.date)
+      .filter((item, index, self) => 
+        index === self.findIndex(t => isSameDay(t.date, item.date))
+      );
+    
+    return uniqueDates.slice(0, 12); // Return max 12 dates
+  };
+
+  const getDeliveryStatusBadge = (status) => {
+    const statusConfig = {
+      delivered: { color: 'bg-green-100 text-green-800', label: 'Delivered', icon: CheckCircle2 },
+      out_for_delivery: { color: 'bg-orange-100 text-orange-800', label: 'Out for Delivery', icon: Truck },
+      scheduled: { color: 'bg-blue-100 text-blue-800', label: 'Scheduled', icon: Circle },
+      paused: { color: 'bg-yellow-100 text-yellow-800', label: 'Paused', icon: Circle },
+      cancelled: { color: 'bg-red-100 text-red-800', label: 'Cancelled', icon: Circle }
+    };
+    const config = statusConfig[status] || statusConfig.scheduled;
+    const Icon = config.icon;
+    return (
+      <div className="flex items-center gap-1.5">
+        <Icon className={`w-3.5 h-3.5 ${status === 'delivered' ? 'text-green-600' : status === 'out_for_delivery' ? 'text-orange-600' : 'text-gray-400'}`} />
+        <Badge className={`${config.color} text-xs`}>{config.label}</Badge>
+      </div>
+    );
+  };
+
+  const deliveryDates = generateDeliveryDates();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
