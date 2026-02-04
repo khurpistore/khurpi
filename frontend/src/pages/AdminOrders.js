@@ -120,14 +120,16 @@ const AdminOrders = () => {
       order.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.user?.phone?.includes(searchQuery);
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSource = sourceFilter === 'all' || (order.order_source || 'online') === sourceFilter;
+    return matchesSearch && matchesStatus && matchesSource;
   });
 
   const stats = {
     total: orders.length,
     pending: orders.filter(o => o.status === 'pending' || o.status === 'confirmed').length,
     delivered: orders.filter(o => o.status === 'delivered').length,
-    revenue: orders.reduce((sum, o) => sum + (o.total || 0), 0)
+    revenue: orders.reduce((sum, o) => sum + (o.total || 0), 0),
+    offline: orders.filter(o => o.order_source && o.order_source !== 'online').length
   };
 
   if (loading) {
