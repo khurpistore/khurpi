@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package, MapPin, Repeat } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
