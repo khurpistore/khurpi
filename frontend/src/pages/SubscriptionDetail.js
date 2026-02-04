@@ -19,6 +19,7 @@ const SubscriptionDetail = () => {
   const [items, setItems] = useState([]);
   const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deliveriesFromAPI, setDeliveriesFromAPI] = useState([]);
 
   useEffect(() => {
     if (!user) {
@@ -27,6 +28,22 @@ const SubscriptionDetail = () => {
     }
     fetchSubscription();
   }, [user, subscriptionId]);
+
+  // Fetch deliveries from API when subscription is loaded
+  useEffect(() => {
+    if (subscriptionId) {
+      fetchDeliveries();
+    }
+  }, [subscriptionId]);
+
+  const fetchDeliveries = async () => {
+    try {
+      const response = await axios.get(`${API}/subscriptions/${subscriptionId}/deliveries`);
+      setDeliveriesFromAPI(response.data);
+    } catch (error) {
+      console.error('Failed to fetch deliveries:', error);
+    }
+  };
 
   const fetchSubscription = async () => {
     try {
