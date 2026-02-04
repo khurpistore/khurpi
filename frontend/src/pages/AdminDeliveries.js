@@ -294,11 +294,21 @@ const AdminDeliveries = () => {
                             )}
                             <div>
                               <span className="font-medium">{product.name}</span>
-                              <span className="text-muted-foreground ml-1">× {product.quantity}</span>
+                              <span className="text-muted-foreground ml-1">
+                                {product.weight ? `${product.weight}g` : `× ${product.quantity}`}
+                              </span>
                             </div>
                           </div>
                         ))}
                       </div>
+                      {/* Total Weight */}
+                      {delivery.products?.some(p => p.weight) && (
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          Total: <span className="font-medium text-primary">
+                            {delivery.products.reduce((sum, p) => sum + (p.weight || 0), 0)}g
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
