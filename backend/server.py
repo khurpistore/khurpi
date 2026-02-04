@@ -2525,21 +2525,34 @@ async def get_admin_dashboard():
 
 @api_router.get("/admin/subscriptions")
 async def get_all_subscriptions_admin():
-    # Sort by created_at descending to show recent subscriptions first
+    # Get subscriptions from both collections: standalone subscriptions and orders with subscriptions
     subscriptions = await db.subscriptions.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
+    # Also get subscriptions from orders (order_type = 'subscription' or 'mixed')
+    orders_with_subs = await db.orders.find(
+        {"subscription": {"$exists": True, "$ne": None}},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    
     result = []
+    
+    # Process standalone subscriptions
     for sub in subscriptions:
         user = await db.users.find_one({"id": sub["user_id"]}, {"_id": 0})
         items = await db.subscription_items.find({"subscription_id": sub["id"]}, {"_id": 0}).to_list(100)
         
-        # Calculate proper monthly total
-        # Get product prices and calculate per-delivery total
+        # Enrich items with product details
+        enriched_items = []
         per_delivery_total = 0
         for item in items:
             product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
             if product:
                 per_delivery_total += product["price"] * item["quantity"]
+                enriched_items.append({
+                    **item,
+                    "product": product,
+                    "price": product["price"]
+                })
         
         # Determine deliveries per week based on frequency
         frequency = sub.get("frequency", "once_week")
@@ -2555,23 +2568,73 @@ async def get_all_subscriptions_admin():
             deliveries_per_week = 4
             discount_percent = 50
         
-        # Monthly calculation: per_delivery × deliveries_per_week × 4 weeks
+        # Monthly calculation
         monthly_subtotal = per_delivery_total * deliveries_per_week * 4
         discount_amount = (monthly_subtotal * discount_percent) / 100
-        delivery_fee = sub.get("delivery_fee", 0) * deliveries_per_week * 4  # Monthly delivery fee
+        delivery_fee = sub.get("delivery_fee", 0) * deliveries_per_week * 4
         monthly_total = monthly_subtotal - discount_amount + delivery_fee
+        
+        # Get address
+        address = await db.addresses.find_one({"id": sub.get("address_id")}, {"_id": 0}) if sub.get("address_id") else None
         
         result.append({
             **sub,
             "user": user,
-            "items_count": len(items),
+            "items": enriched_items,
+            "items_count": len(enriched_items),
             "per_delivery_total": per_delivery_total,
             "monthly_subtotal": monthly_subtotal,
             "discount_percent": discount_percent,
             "discount_amount": discount_amount,
             "monthly_delivery_fee": delivery_fee,
-            "monthly_total": round(monthly_total, 2)
+            "monthly_total": round(monthly_total, 2),
+            "address": address,
+            "source": "subscription"
         })
+    
+    # Process subscriptions from orders
+    for order in orders_with_subs:
+        user = await db.users.find_one({"id": order["user_id"]}, {"_id": 0})
+        sub = order.get("subscription", {})
+        
+        # Enrich subscription items with product details
+        enriched_items = []
+        for item in sub.get("items", []):
+            product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
+            enriched_items.append({
+                **item,
+                "product": product
+            })
+        
+        address = order.get("delivery_address") or order.get("address")
+        if not address and order.get("address_id"):
+            address = await db.addresses.find_one({"id": order["address_id"]}, {"_id": 0})
+        
+        result.append({
+            "id": order["id"],
+            "user_id": order["user_id"],
+            "user": user,
+            "frequency": sub.get("frequency"),
+            "delivery_days": sub.get("delivery_days"),
+            "delivery_day": sub.get("delivery_days", [None])[0] if sub.get("delivery_days") else None,
+            "start_date": sub.get("start_date"),
+            "next_delivery_date": sub.get("next_delivery_date"),
+            "items": enriched_items,
+            "items_count": len(enriched_items),
+            "subtotal": sub.get("subtotal", 0),
+            "total_price": sub.get("total_price", 0),
+            "monthly_total": sub.get("total_price", 0),
+            "bulk_discount_percent": sub.get("bulk_discount_percent", 0),
+            "bulk_discount_amount": sub.get("bulk_discount_amount", 0),
+            "status": order.get("status", "active"),
+            "address": address,
+            "created_at": order.get("created_at"),
+            "tray_count": sum(item.get("quantity", 100) for item in sub.get("items", [])),
+            "source": "order"
+        })
+    
+    # Sort all by created_at descending
+    result.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     
     return result
 
