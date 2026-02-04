@@ -236,7 +236,9 @@ const Checkout = () => {
     };
 
     try {
-      const orderType = hasOnlySubscription ? 'subscription' : hasBoth ? 'mixed' : 'single_order';
+      const hasOnlySubscription = pendingSubscription && cartItems.length === 0;
+      const hasBoth = pendingSubscription && cartItems.length > 0;
+      const orderType = hasOnlySubscription ? 'subscription' : hasBoth ? 'mixed' : 'one_time';
       const description = hasOnlySubscription ? `Subscription - ${pendingSubscription.plan?.name}` : hasBoth ? 'Order + Subscription' : 'Order Payment';
 
       const orderResponse = await axios.post(`${API}/payments/create-order`, {
@@ -259,13 +261,14 @@ const Checkout = () => {
             razorpay_signature: mockSignature
           });
           
-          await createOrderFromCart(mockPaymentId, order_id);
-          await createSubscriptionFromPending(mockPaymentId, `sub_${order_id}`);
+          // Create unified order
+          await createUnifiedOrder(mockPaymentId, order_id);
+          
           setOrderPlaced(true);
           clearCart();
           clearSubscription();
           toast.success(hasOnlySubscription ? 'Subscription Created! (Test Mode)' : hasBoth ? 'Order & Subscription Created! (Test Mode)' : 'Order Placed! (Test Mode)');
-          navigate(hasOnlySubscription ? '/subscriptions' : '/orders');
+          navigate('/orders');
         } catch (error) {
           console.error('Order creation error:', error);
           const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
@@ -289,13 +292,15 @@ const Checkout = () => {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
             });
-            await createOrderFromCart(response.razorpay_payment_id, response.razorpay_order_id);
-            await createSubscriptionFromPending(response.razorpay_payment_id, `sub_${response.razorpay_order_id}`);
+            
+            // Create unified order
+            await createUnifiedOrder(response.razorpay_payment_id, response.razorpay_order_id);
+            
             setOrderPlaced(true);
             clearCart();
             clearSubscription();
             toast.success(hasOnlySubscription ? 'Subscription Created!' : hasBoth ? 'Order & Subscription Created!' : 'Order Placed!');
-            navigate(hasOnlySubscription ? '/subscriptions' : '/orders');
+            navigate('/orders');
           } catch (error) {
             toast.error('Order creation failed. Please contact support.');
           }
