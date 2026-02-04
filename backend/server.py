@@ -4157,6 +4157,18 @@ async def admin_create_order(order_data: AdminOrderCreate):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(user)
+    else:
+        user_id = user["id"]
+        # Update existing customer's name/email if provided
+        update_fields = {}
+        if order_data.customer_name and order_data.customer_name != user.get("name"):
+            update_fields["name"] = order_data.customer_name
+        if order_data.customer_email and order_data.customer_email != user.get("email"):
+            update_fields["email"] = order_data.customer_email
+        
+        if update_fields:
+            await db.users.update_one({"id": user_id}, {"$set": update_fields})
+            user = {**user, **update_fields}
     
     user_id = user["id"]
     
