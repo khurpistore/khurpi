@@ -319,12 +319,29 @@ const AdminProducts = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
+    // Only redirect if loading is complete and user is definitely not admin
+    // This prevents premature redirects during state updates
+    if (loading) return;
+    
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
       navigate('/admin/login');
       return;
     }
+    
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      if (parsedUser.role !== 'admin') {
+        navigate('/admin/login');
+        return;
+      }
+    } catch (e) {
+      navigate('/admin/login');
+      return;
+    }
+    
     fetchProducts();
-  }, [user, navigate]);
+  }, [navigate]); // Removed 'user' dependency to prevent re-renders causing logout
 
   const fetchProducts = async () => {
     try {
