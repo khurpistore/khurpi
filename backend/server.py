@@ -3785,7 +3785,7 @@ async def create_subscription_delivery(subscription_id: str, delivery_data: dict
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.deliveries.insert_one(new_delivery)
-        del new_delivery["_id"] if "_id" in new_delivery else None
+        new_delivery.pop("_id", None)
         return new_delivery
 
 @api_router.put("/admin/deliveries/{delivery_id}")
