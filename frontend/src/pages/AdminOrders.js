@@ -88,6 +88,22 @@ const AdminOrders = () => {
     return <Badge className={`${colors[orderType] || colors.one_time} text-xs`}>{labels[orderType] || 'One-time'}</Badge>;
   };
 
+  const getOrderSourceBadge = (source) => {
+    const config = {
+      online: { icon: Globe, color: 'bg-gray-100 text-gray-700', label: 'Online' },
+      phone: { icon: Phone, color: 'bg-blue-100 text-blue-700', label: 'Phone' },
+      whatsapp: { icon: MessageCircle, color: 'bg-green-100 text-green-700', label: 'WhatsApp' },
+      walk_in: { icon: Store, color: 'bg-orange-100 text-orange-700', label: 'Walk-in' }
+    };
+    const { icon: Icon, color, label } = config[source] || config.online;
+    return (
+      <Badge className={`${color} text-xs flex items-center gap-1`}>
+        <Icon className="w-3 h-3" />
+        {label}
+      </Badge>
+    );
+  };
+
   const getPlanDisplayName = (frequency) => {
     const planNames = {
       'once_week': 'Fresh Start',
