@@ -148,7 +148,7 @@ const AdminOrders = () => {
         {/* Left: Orders List */}
         <div className="flex-1">
           {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-5 gap-3 mb-4">
             <div className="bg-white rounded-lg p-3 border">
               <p className="text-xs text-muted-foreground">Total</p>
               <p className="text-xl font-bold">{stats.total}</p>
@@ -160,6 +160,10 @@ const AdminOrders = () => {
             <div className="bg-white rounded-lg p-3 border">
               <p className="text-xs text-muted-foreground">Delivered</p>
               <p className="text-xl font-bold text-green-600">{stats.delivered}</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border">
+              <p className="text-xs text-muted-foreground">Offline</p>
+              <p className="text-xl font-bold text-blue-600">{stats.offline}</p>
             </div>
             <div className="bg-white rounded-lg p-3 border">
               <p className="text-xs text-muted-foreground">Revenue</p>
@@ -193,6 +197,25 @@ const AdminOrders = () => {
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger className="w-36 h-9" data-testid="source-filter">
+                <SelectValue placeholder="All Sources" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="online">🌐 Online</SelectItem>
+                <SelectItem value="phone">📞 Phone</SelectItem>
+                <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
+                <SelectItem value="walk_in">🏪 Walk-in</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button 
+              onClick={() => navigate('/admin/create-order')} 
+              className="h-9 bg-green-600 hover:bg-green-700"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Create Order
+            </Button>
           </div>
 
           {/* Orders List */}
