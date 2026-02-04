@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+  { id: 'create-order', label: 'Create Order', icon: PlusCircle, path: '/admin/create-order', highlight: true },
   { id: 'orders', label: 'Orders', icon: ShoppingBag, path: '/admin/orders' },
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
   { id: 'customer-view', label: 'Customer View', icon: UserSearch, path: '/admin/customer-view' },
