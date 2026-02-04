@@ -290,19 +290,17 @@ const MySubscriptions = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        if (subscription.source === 'order') {
-                          navigate(`/order/${subscription.order_id}`, { state: { showSubscription: true } });
-                        } else {
-                          navigate(`/subscription/${subscription.id}`);
-                        }
+                        navigate(`/subscription/${subscription.id}`, { 
+                          state: { 
+                            source: subscription.source,
+                            subscriptionData: subscription.source === 'order' ? subscription : null
+                          } 
+                        });
                       }}
                       className="rounded-full"
                     >
                       View Details
                     </Button>
-                    {subscription.source === 'order' && (
-                      <Badge variant="outline" className="text-xs">From Order</Badge>
-                    )}
                   </div>
                 </CardContent>
               </Card>
