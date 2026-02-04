@@ -3541,11 +3541,34 @@ async def get_all_orders_admin():
                 "product": product
             })
         
+        # Enrich one_time_items with product details
+        enriched_one_time = []
+        for item in order.get("one_time_items", []):
+            product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
+            enriched_one_time.append({
+                **item,
+                "product": product
+            })
+        
+        # Enrich subscription items with product details
+        subscription = order.get("subscription")
+        if subscription and subscription.get("items"):
+            enriched_sub_items = []
+            for item in subscription.get("items", []):
+                product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
+                enriched_sub_items.append({
+                    **item,
+                    "product": product
+                })
+            subscription = {**subscription, "items": enriched_sub_items}
+        
         result.append({
             **order,
             "user": user,
             "address": address,
-            "items": enriched_items
+            "items": enriched_items,
+            "one_time_items": enriched_one_time,
+            "subscription": subscription
         })
     
     return result
