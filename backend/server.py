@@ -2766,7 +2766,8 @@ async def get_today_deliveries():
                     product_details.append({
                         "name": product["name"],
                         "quantity": item["quantity"],
-                        "price": product["price"]
+                        "price": product["price"],
+                        "image": product.get("image", "")
                     })
                     total_items += item["quantity"]
             
