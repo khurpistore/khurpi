@@ -90,14 +90,20 @@ const Header = () => {
             <Truck className="w-4 h-4" />
             <span className="font-medium">FREE Delivery</span>
           </span>
-          <span className="hidden sm:inline text-white/40">|</span>
+          <span className="text-white/40">|</span>
           <span className="flex items-center gap-2">
-            <span className="hidden sm:inline">🎉</span>
             <span>First Order?</span>
-            <span className="font-bold">Get 20% OFF</span>
-            <span className="hidden sm:inline">→</span>
-            <code className="bg-white/20 px-2 py-0.5 rounded text-xs font-bold tracking-wide">KHURPIWELCOME20</code>
+            <span className="font-bold">20% OFF</span>
+            <span className="bg-white text-green-700 px-2.5 py-0.5 rounded font-bold text-xs tracking-wider">KHURPIWELCOME20</span>
           </span>
+          {maxDiscount > 0 && (
+            <>
+              <span className="hidden sm:inline text-white/40">|</span>
+              <span className="hidden sm:flex items-center gap-1.5">
+                Save up to <span className="font-bold">{maxDiscount}%</span> on large orders
+              </span>
+            </>
+          )}
         </div>
       </div>
       
