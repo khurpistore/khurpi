@@ -3974,13 +3974,21 @@ async def get_all_orders_admin():
                 })
             subscription = {**subscription, "items": enriched_sub_items}
         
+        # Calculate total_amount if not set
+        subtotal = order.get("subtotal", 0)
+        discount_amount = order.get("discount_amount", 0)
+        coupon_discount = order.get("coupon_discount", 0)
+        delivery_fee = order.get("delivery_fee", 0)
+        total_amount = order.get("total_amount") or (subtotal - discount_amount - coupon_discount + delivery_fee)
+        
         result.append({
             **order,
             "user": user,
             "address": address,
             "items": enriched_items,
             "one_time_items": enriched_one_time,
-            "subscription": subscription
+            "subscription": subscription,
+            "total_amount": total_amount
         })
     
     return result
