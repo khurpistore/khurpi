@@ -201,15 +201,10 @@ const AdminUsers = () => {
   const [newDeliveryBoy, setNewDeliveryBoy] = useState({ name: '', phone: '', password: '' });
   const [addingDeliveryBoy, setAddingDeliveryBoy] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/login');
-      return;
-    }
     fetchUsers();
-  }, [user, navigate]);
+  }, []);
 
   useEffect(() => {
     filterUsers();
