@@ -700,8 +700,9 @@ const AdminCreateOrder = () => {
                     <User className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">{isNewCustomer ? newCustomerName : customer?.name}</p>
+                    <p className="font-medium">{customerName}</p>
                     <p className="text-sm text-muted-foreground">{customerPhone}</p>
+                    {customerEmail && <p className="text-xs text-muted-foreground">{customerEmail}</p>}
                   </div>
                   <Badge className={`ml-auto ${
                     orderSource === 'phone' ? 'bg-blue-100 text-blue-700' :
