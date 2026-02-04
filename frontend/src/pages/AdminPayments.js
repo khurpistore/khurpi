@@ -215,65 +215,126 @@ const AdminPayments = () => {
         </Card>
       ) : (
         <div className="space-y-3 sm:space-y-4" data-testid="admin-payments-list">
-          {filteredPayments.map((payment) => (
-            <Card key={payment.id} data-testid={`admin-payment-card-${payment.id}`}>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                      <h3 className="text-base sm:text-lg font-semibold text-primary">
-                        {payment.user?.name || 'Unknown User'}
-                      </h3>
-                      {getStatusBadge(payment.status)}
+          {filteredPayments.map((payment) => {
+            const order = payment.order || {};
+            const hasDiscount = order.discount_amount > 0 || order.coupon_discount > 0;
+            const totalDiscount = (order.discount_amount || 0) + (order.coupon_discount || 0);
+            const orderType = order.order_type || (payment.subscription ? 'subscription' : 'one_time');
+            
+            return (
+              <Card 
+                key={payment.id} 
+                data-testid={`admin-payment-card-${payment.id}`}
+                className={`hover:shadow-md transition-shadow ${hasDiscount ? 'border-l-4 border-l-green-500' : ''}`}
+              >
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
+                    {/* Left: User & Payment Info */}
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <h3 className="text-base sm:text-lg font-semibold text-primary">
+                          {payment.user?.name || 'Unknown User'}
+                        </h3>
+                        {getStatusBadge(payment.status)}
+                        <Badge variant="outline" className={`text-xs ${orderType === 'subscription' ? 'border-blue-300 text-blue-700' : orderType === 'mixed' ? 'border-purple-300 text-purple-700' : 'border-gray-300 text-gray-700'}`}>
+                          {orderType === 'subscription' ? <><Repeat className="w-3 h-3 mr-1" /> Subscription</> : 
+                           orderType === 'mixed' ? <><ShoppingCart className="w-3 h-3 mr-1" /> Mixed</> : 
+                           <><ShoppingCart className="w-3 h-3 mr-1" /> One-time</>}
+                        </Badge>
+                      </div>
+                      
+                      {/* Payment Details Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <CreditCard className="w-3 h-3" /> Amount Paid
+                          </p>
+                          <p className="font-bold text-primary text-lg">₹{payment.amount}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Phone</p>
+                          <p className="font-medium text-sm">{payment.user?.phone || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="w-3 h-3" /> Date
+                          </p>
+                          <p className="font-medium text-sm">{formatDate(payment.payment_date || payment.created_at)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Payment ID</p>
+                          <p className="font-medium font-mono text-xs truncate">{payment.id.slice(0, 12)}...</p>
+                        </div>
+                      </div>
+                      
+                      {/* Order & Discount Info */}
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Subtotal:</span>
+                            <span className="font-medium ml-1">₹{order.subtotal || payment.amount}</span>
+                          </div>
+                          
+                          {hasDiscount && (
+                            <>
+                              {order.discount_amount > 0 && (
+                                <div className="flex items-center gap-1 text-green-700">
+                                  <Percent className="w-3 h-3" />
+                                  <span>Auto Discount: -₹{order.discount_amount}</span>
+                                  {order.discount_percent > 0 && (
+                                    <span className="text-xs">({order.discount_percent}%)</span>
+                                  )}
+                                </div>
+                              )}
+                              {order.coupon_code && (
+                                <div className="flex items-center gap-1 text-blue-700">
+                                  <Tag className="w-3 h-3" />
+                                  <span>{order.coupon_code}: -₹{order.coupon_discount}</span>
+                                </div>
+                              )}
+                              <div className="font-semibold text-green-600">
+                                Total Saved: ₹{totalDiscount}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Amount</p>
-                        <p className="font-bold text-primary text-base sm:text-lg">₹{payment.amount}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Payment ID</p>
-                        <p className="font-medium font-mono truncate">{payment.id.slice(0, 12)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Phone</p>
-                        <p className="font-medium">{payment.user?.phone || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Date</p>
-                        <p className="font-medium">{formatDate(payment.payment_date)}</p>
-                      </div>
+                    
+                    {/* Right: Actions */}
+                    <div className="flex lg:flex-col items-center lg:items-end gap-2">
+                      <Dialog open={dialogOpen && selectedPayment?.id === payment.id} onOpenChange={setDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            data-testid={`edit-payment-button-${payment.id}`}
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openDialog(payment)}
+                            className="rounded-full text-xs"
+                          >
+                            Edit Status
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+                          <DialogHeader>
+                            <DialogTitle className="heading-text">Update Payment Status</DialogTitle>
+                          </DialogHeader>
+                          {selectedPayment && (
+                            <PaymentDialog
+                              payment={selectedPayment}
+                              onClose={() => setDialogOpen(false)}
+                              onSuccess={fetchPayments}
+                            />
+                          )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
-                  <Dialog open={dialogOpen && selectedPayment?.id === payment.id} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        data-testid={`edit-payment-button-${payment.id}`}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openDialog(payment)}
-                        className="rounded-full text-xs sm:text-sm w-full sm:w-auto"
-                      >
-                        Edit Status
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-lg mx-4 sm:mx-auto">
-                      <DialogHeader>
-                        <DialogTitle className="heading-text">Update Payment Status</DialogTitle>
-                      </DialogHeader>
-                      {selectedPayment && (
-                        <PaymentDialog
-                          payment={selectedPayment}
-                          onClose={() => setDialogOpen(false)}
-                          onSuccess={fetchPayments}
-                        />
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </AdminLayout>
