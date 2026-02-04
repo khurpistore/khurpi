@@ -4240,6 +4240,9 @@ async def admin_create_order(order_data: AdminOrderCreate):
     
     await db.orders.insert_one(order_doc)
     
+    # Remove MongoDB _id before returning
+    order_doc.pop("_id", None)
+    
     # Update product stock
     for item in order_items:
         await db.products.update_one(
