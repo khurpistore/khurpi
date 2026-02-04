@@ -26,7 +26,9 @@ const SubscriptionDetail = () => {
       navigate('/login');
       return;
     }
-    fetchSubscription();
+    if (subscriptionId && subscriptionId !== 'undefined') {
+      fetchSubscription();
+    }
   }, [user, subscriptionId]);
 
   // Fetch deliveries from API when subscription is loaded
