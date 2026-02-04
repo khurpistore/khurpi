@@ -482,14 +482,18 @@ const AdminCoupons = () => {
                           {coupon.min_order_amount ? `₹${coupon.min_order_amount}` : '-'}
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-sm">
-                          {coupon.valid_from && coupon.valid_until ? (
-                            <span>
-                              {format(new Date(coupon.valid_from), 'dd/MM')} - {format(new Date(coupon.valid_until), 'dd/MM/yy')}
-                            </span>
-                          ) : coupon.valid_until ? (
-                            <span>Until {format(new Date(coupon.valid_until), 'dd/MM/yy')}</span>
+                          {coupon.valid_from || coupon.valid_until ? (
+                            coupon.valid_from && coupon.valid_until ? (
+                              <span>
+                                {format(new Date(coupon.valid_from), 'dd/MM')} - {format(new Date(coupon.valid_until), 'dd/MM/yy')}
+                              </span>
+                            ) : coupon.valid_until ? (
+                              <span>Until {format(new Date(coupon.valid_until), 'dd/MM/yy')}</span>
+                            ) : (
+                              <span>From {format(new Date(coupon.valid_from), 'dd/MM/yy')}</span>
+                            )
                           ) : (
-                            'No expiry'
+                            <Badge variant="outline" className="text-xs">Unlimited</Badge>
                           )}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
