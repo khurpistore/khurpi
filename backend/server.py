@@ -2776,18 +2776,51 @@ async def create_order(order_data: OrderCreate):
     # Determine order status based on payment
     order_status = "confirmed" if order_data.payment_status == "paid" else "pending"
     
+    # Get all items for delivery date calculation
+    all_items = []
+    
+    # Handle one_time_items
+    one_time_items_data = None
+    if order_data.one_time_items:
+        one_time_items_data = [item.model_dump() for item in order_data.one_time_items]
+        all_items.extend(one_time_items_data)
+    
+    # Handle legacy items field
+    if order_data.items and not order_data.one_time_items:
+        one_time_items_data = [item.model_dump() for item in order_data.items]
+        all_items.extend(one_time_items_data)
+    
+    # Handle subscription items
+    subscription_data = None
+    if order_data.subscription:
+        subscription_data = order_data.subscription
+        if subscription_data.get("items"):
+            all_items.extend(subscription_data["items"])
+    
     # Fetch product details for delivery date calculation
     products_cache = {}
-    for item in order_data.items:
-        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
-        if product:
-            products_cache[item.product_id] = product
+    for item in all_items:
+        product_id = item.get("product_id")
+        if product_id:
+            product = await db.products.find_one({"id": product_id}, {"_id": 0})
+            if product:
+                products_cache[product_id] = product
     
     # Calculate estimated delivery date based on product stock status
     estimated_delivery = calculate_estimated_delivery_date(
-        items=[item.model_dump() for item in order_data.items],
+        items=all_items,
         products_cache=products_cache
-    )
+    ) if all_items else None
+    
+    # Determine order type
+    has_one_time = bool(one_time_items_data)
+    has_subscription = bool(subscription_data)
+    if has_one_time and has_subscription:
+        order_type = "mixed"
+    elif has_subscription:
+        order_type = "subscription"
+    else:
+        order_type = "one_time"
     
     # Create order with address snapshot
     order_doc = {
@@ -2805,7 +2838,12 @@ async def create_order(order_data: OrderCreate):
             "longitude": address.get("longitude"),
             "receiver_name": address.get("receiver_name")
         },
-        "items": [item.model_dump() for item in order_data.items],
+        # One-time items
+        "one_time_items": one_time_items_data,
+        # Subscription data
+        "subscription": subscription_data,
+        # Legacy items field for backward compatibility
+        "items": one_time_items_data,
         "subtotal": order_data.subtotal,
         "delivery_fee": delivery_fee,
         "delivery_distance": delivery_distance,
@@ -2819,7 +2857,7 @@ async def create_order(order_data: OrderCreate):
         "coupon_discount": order_data.coupon_discount or 0,
         "total": order_data.total,
         "status": order_status,
-        "order_type": order_data.order_type,
+        "order_type": order_type,
         "payment_id": order_data.payment_id,
         "razorpay_order_id": order_data.razorpay_order_id,
         "payment_status": order_data.payment_status,
