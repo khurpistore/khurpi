@@ -7,7 +7,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://khurpi-microgreens-1.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://leafy-subs.preview.emergentagent.com').rstrip('/')
 
 # Test user credentials from the request
 TEST_USER_ID = "3fc5cc8b-1126-4385-bbc5-656c44990553"

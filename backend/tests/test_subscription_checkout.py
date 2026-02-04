@@ -15,7 +15,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://khurpi-microgreens-1.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://leafy-subs.preview.emergentagent.com').rstrip('/')
 API = f"{BASE_URL}/api"
 
 # Test credentials
