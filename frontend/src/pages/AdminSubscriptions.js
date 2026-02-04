@@ -78,14 +78,28 @@ const AdminSubscriptions = () => {
     }
   };
 
+  const [deliveryInfo, setDeliveryInfo] = useState({ total: 0, frequency: null });
+
   const fetchDeliveries = async (subscriptionId) => {
     setLoadingDeliveries(true);
     try {
       const response = await axios.get(`${API}/admin/subscriptions/${subscriptionId}/deliveries`);
-      setDeliveries(response.data);
+      // Handle new response format with deliveries array and metadata
+      if (response.data.deliveries) {
+        setDeliveries(response.data.deliveries);
+        setDeliveryInfo({
+          total: response.data.total_deliveries_per_month,
+          frequency: response.data.frequency
+        });
+      } else {
+        // Fallback for old format
+        setDeliveries(response.data);
+        setDeliveryInfo({ total: response.data.length, frequency: null });
+      }
     } catch (error) {
       console.error('Failed to fetch deliveries:', error);
       setDeliveries([]);
+      setDeliveryInfo({ total: 0, frequency: null });
     } finally {
       setLoadingDeliveries(false);
     }
