@@ -53,9 +53,12 @@ const SubscriptionDetail = () => {
   // Fetch deliveries from API when subscriptionId is available
   useEffect(() => {
     const fetchDeliveriesData = async () => {
+      const subId = subscriptionId || subscription?.id;
+      if (!subId || subId === 'undefined') return;
+      
       try {
-        console.log('Fetching deliveries for:', subscriptionId);
-        const response = await axios.get(`${API}/subscriptions/${subscriptionId}/deliveries`);
+        console.log('Fetching deliveries for:', subId);
+        const response = await axios.get(`${API}/subscriptions/${subId}/deliveries`);
         console.log('Deliveries fetched:', response.data.length);
         setDeliveriesFromAPI(response.data);
       } catch (error) {
@@ -63,10 +66,11 @@ const SubscriptionDetail = () => {
       }
     };
     
-    if (subscriptionId && subscriptionId !== 'undefined') {
+    // Fetch when we have subscriptionId from URL or subscription data
+    if (subscriptionId || subscription?.id) {
       fetchDeliveriesData();
     }
-  }, [subscriptionId]);
+  }, [subscriptionId, subscription?.id]);
 
   const fetchSubscription = async () => {
     try {
