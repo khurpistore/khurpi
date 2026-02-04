@@ -3664,7 +3664,7 @@ async def delete_coupon(coupon_id: str):
     return {"success": True}
 
 @api_router.post("/coupons/validate")
-async def validate_coupon(code: str, order_amount: float):
+async def validate_coupon(code: str, order_amount: float, user_id: Optional[str] = None):
     coupon = await db.coupons.find_one({"code": code.upper(), "is_active": True}, {"_id": 0})
     
     if not coupon:
@@ -3680,6 +3680,16 @@ async def validate_coupon(code: str, order_amount: float):
     # Check usage limit
     if coupon.get("usage_limit") and coupon.get("times_used", 0) >= coupon["usage_limit"]:
         raise HTTPException(status_code=400, detail="Coupon usage limit reached")
+    
+    # Check per-user limit
+    if user_id:
+        per_user_limit = coupon.get("per_user_limit", 1)
+        user_usage_count = await db.orders.count_documents({
+            "user_id": user_id,
+            "coupon_code": code.upper()
+        })
+        if user_usage_count >= per_user_limit:
+            raise HTTPException(status_code=400, detail=f"You've already used this coupon {per_user_limit} time(s)")
     
     # Check minimum order
     if order_amount < coupon.get("min_order_amount", 0):
