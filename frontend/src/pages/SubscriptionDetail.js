@@ -215,6 +215,7 @@ const SubscriptionDetail = () => {
   // Calculate values
   const deliveriesPerWeek = subscription.delivery_days?.length || 1;
   const totalDeliveriesPerMonth = deliveriesPerWeek * 4;
+  const deliveryDates = generateDeliveryDates();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
