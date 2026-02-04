@@ -85,19 +85,19 @@ const Header = () => {
     <>
       {/* Promo Banner */}
       <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-2 px-4 text-center text-sm">
-        <div className="flex items-center justify-center gap-4 flex-wrap">
+        <div className="flex items-center justify-center gap-3 sm:gap-6 flex-wrap">
           <span className="flex items-center gap-1.5">
             <Truck className="w-4 h-4" />
-            <span className="font-medium">FREE Delivery</span> on all orders
+            <span className="font-medium">FREE Delivery</span>
           </span>
-          {maxDiscount > 0 && (
-            <>
-              <span className="hidden sm:inline text-white/60">|</span>
-              <span className="flex items-center gap-1.5">
-                Save up to <span className="font-bold">{maxDiscount}%</span> on large orders
-              </span>
-            </>
-          )}
+          <span className="hidden sm:inline text-white/40">|</span>
+          <span className="flex items-center gap-2">
+            <span className="hidden sm:inline">🎉</span>
+            <span>First Order?</span>
+            <span className="font-bold">Get 20% OFF</span>
+            <span className="hidden sm:inline">→</span>
+            <code className="bg-white/20 px-2 py-0.5 rounded text-xs font-bold tracking-wide">KHURPIWELCOME20</code>
+          </span>
         </div>
       </div>
       
