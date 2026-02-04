@@ -3664,6 +3664,78 @@ async def set_default_address(user_id: str, address_id: str):
     
     return {"success": True}
 
+# ============ USER CART SYNC ============
+
+class CartItem(BaseModel):
+    product_id: str
+    product: Optional[dict] = None  # Product details
+    quantity: int = 100  # grams
+
+class CartSubscription(BaseModel):
+    frequency: str
+    delivery_days: List[str]
+    items: List[dict]
+    address_id: Optional[str] = None
+    tray_count: Optional[int] = None
+
+class CartData(BaseModel):
+    items: List[CartItem] = []
+    subscription: Optional[CartSubscription] = None
+    updated_at: Optional[str] = None
+
+@api_router.get("/users/{user_id}/cart")
+async def get_user_cart(user_id: str):
+    """Get user's synced cart"""
+    cart = await db.carts.find_one({"user_id": user_id}, {"_id": 0})
+    if not cart:
+        return {"user_id": user_id, "items": [], "subscription": None, "updated_at": None}
+    return cart
+
+@api_router.put("/users/{user_id}/cart")
+async def save_user_cart(user_id: str, cart_data: CartData):
+    """Save/update user's cart"""
+    cart_doc = {
+        "user_id": user_id,
+        "items": [item.model_dump() for item in cart_data.items],
+        "subscription": cart_data.subscription.model_dump() if cart_data.subscription else None,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Upsert - create if doesn't exist, update if exists
+    await db.carts.update_one(
+        {"user_id": user_id},
+        {"$set": cart_doc},
+        upsert=True
+    )
+    
+    # Remove _id before returning
+    cart_doc.pop("_id", None)
+    return cart_doc
+
+@api_router.delete("/users/{user_id}/cart")
+async def clear_user_cart(user_id: str):
+    """Clear user's cart after successful checkout"""
+    await db.carts.delete_one({"user_id": user_id})
+    return {"success": True}
+
+@api_router.get("/admin/users/{user_id}/cart")
+async def admin_get_user_cart(user_id: str):
+    """Admin endpoint to view user's cart"""
+    cart = await db.carts.find_one({"user_id": user_id}, {"_id": 0})
+    if not cart:
+        return {"user_id": user_id, "items": [], "subscription": None, "updated_at": None}
+    
+    # Enrich items with product details if not present
+    enriched_items = []
+    for item in cart.get("items", []):
+        if not item.get("product") and item.get("product_id"):
+            product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+            item["product"] = product
+        enriched_items.append(item)
+    
+    cart["items"] = enriched_items
+    return cart
+
 @api_router.get("/admin/users")
 async def get_all_users():
     users = await db.users.find({}, {"_id": 0}).to_list(1000)
