@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Search, CreditCard, Tag, Percent, ShoppingCart, Repeat, User, Calendar, ChevronRight } from 'lucide-react';
 import { format, isValid, parseISO } from 'date-fns';
