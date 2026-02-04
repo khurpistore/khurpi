@@ -239,14 +239,19 @@ const AdminSubscriptions = () => {
                           </div>
                         </div>
 
-                        {/* Price & Next Delivery */}
+                        {/* Next Delivery */}
                         <div className="text-right flex-shrink-0">
-                          <p className="text-lg font-bold text-primary">₹{(subscription.total_price || subscription.monthly_total || 0).toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">per month</p>
-                          {subscription.next_delivery_date && subscription.status !== 'cancelled' && (
-                            <p className="text-xs text-green-600 font-medium">
-                              Next: {format(new Date(subscription.next_delivery_date), 'MMM d')}
-                            </p>
+                          {subscription.next_delivery_date && subscription.status !== 'cancelled' && subscription.status !== 'expired' ? (
+                            <>
+                              <p className="text-xs text-muted-foreground">Next Delivery</p>
+                              <p className="text-sm font-semibold text-green-700">
+                                {format(new Date(subscription.next_delivery_date), 'MMM d')}
+                              </p>
+                            </>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-600 text-xs capitalize">
+                              {subscription.status?.replace(/_/g, ' ')}
+                            </Badge>
                           )}
                         </div>
 
