@@ -368,6 +368,8 @@ class AdminResetPasswordRequest(BaseModel):
 class DeliveryUpdate(BaseModel):
     status: Optional[str] = None
     delivery_date: Optional[str] = None
+    delivery_time: Optional[str] = None
+    notes: Optional[str] = None
 
 class PaymentUpdate(BaseModel):
     status: Optional[str] = None
@@ -381,7 +383,9 @@ class Delivery(BaseModel):
     id: str
     subscription_id: str
     delivery_date: str
+    delivery_time: Optional[str] = None
     status: str = "scheduled"
+    notes: Optional[str] = None
     created_at: str
 
 class Payment(BaseModel):
