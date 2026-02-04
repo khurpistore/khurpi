@@ -3708,6 +3708,9 @@ async def get_subscription_deliveries(subscription_id: str):
     if not subscription:
         return {"deliveries": existing_deliveries, "total_deliveries_per_month": 0, "frequency": None}
     
+    # Get frequency from subscription
+    frequency = subscription.get("frequency", "once_week")
+    
     # Calculate deliveries per month based on actual delivery days (more accurate than frequency)
     delivery_days = subscription.get("delivery_days", [])
     # Filter out Sunday from delivery days
@@ -3716,7 +3719,6 @@ async def get_subscription_deliveries(subscription_id: str):
     
     # Fallback to frequency-based calculation if no delivery days specified
     if total_deliveries_per_month == 0:
-        frequency = subscription.get("frequency", "once_week")
         deliveries_per_month_map = {
             "once_week": 4,
             "twice_week": 8,
