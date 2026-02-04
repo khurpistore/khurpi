@@ -5,18 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Package, Search, MapPin, Calendar, CreditCard, Loader2, Phone, ChevronRight, Tag, Repeat, User, Truck } from 'lucide-react';
+import { Package, Search, MapPin, Calendar, CreditCard, Loader2, Phone, ChevronRight, Tag, Repeat, User, Truck, MessageCircle, Store, Globe, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const AdminOrders = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(null);
 
