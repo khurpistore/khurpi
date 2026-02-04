@@ -431,6 +431,131 @@ const AdminSubscriptions = () => {
                   </div>
                 )}
 
+                {/* Delivery History & Schedule */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-primary" />
+                      <span className="font-semibold text-sm">Delivery Schedule</span>
+                    </div>
+                  </div>
+                  
+                  {loadingDeliveries ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    </div>
+                  ) : deliveries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No deliveries scheduled</p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {deliveries.map((delivery) => (
+                        <div 
+                          key={delivery.id} 
+                          className={`bg-gray-50 rounded-lg p-2.5 border ${editingDelivery?.id === delivery.id ? 'border-primary ring-1 ring-primary' : 'border-transparent'}`}
+                        >
+                          {editingDelivery?.id === delivery.id ? (
+                            // Edit mode
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">
+                                  {format(new Date(delivery.delivery_date), 'EEE, MMM d, yyyy')}
+                                </span>
+                                <div className="flex gap-1">
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => setEditingDelivery(null)}
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    className="h-7 px-2"
+                                    onClick={saveDelivery}
+                                    disabled={savingDelivery}
+                                  >
+                                    {savingDelivery ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="text-xs text-muted-foreground">Time</label>
+                                  <Input
+                                    type="time"
+                                    value={editingDelivery.delivery_time || ''}
+                                    onChange={(e) => setEditingDelivery({...editingDelivery, delivery_time: e.target.value})}
+                                    className="h-8 text-xs"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-muted-foreground">Status</label>
+                                  <Select 
+                                    value={editingDelivery.status} 
+                                    onValueChange={(v) => setEditingDelivery({...editingDelivery, status: v})}
+                                  >
+                                    <SelectTrigger className="h-8 text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="scheduled">Scheduled</SelectItem>
+                                      <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                                      <SelectItem value="delivered">Delivered</SelectItem>
+                                      <SelectItem value="paused">Paused</SelectItem>
+                                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-xs text-muted-foreground">Notes</label>
+                                <Input
+                                  value={editingDelivery.notes || ''}
+                                  onChange={(e) => setEditingDelivery({...editingDelivery, notes: e.target.value})}
+                                  placeholder="Add notes..."
+                                  className="h-8 text-xs"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            // View mode
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium">
+                                    {format(new Date(delivery.delivery_date), 'EEE, MMM d')}
+                                  </span>
+                                  {getDeliveryStatusBadge(delivery.status)}
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                  {delivery.delivery_time && (
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      {delivery.delivery_time}
+                                    </span>
+                                  )}
+                                  {delivery.notes && (
+                                    <span className="truncate max-w-[150px]">{delivery.notes}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() => setEditingDelivery({...delivery})}
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Status Update */}
                 <div>
                   <p className="font-semibold text-sm mb-2">Update Status</p>
