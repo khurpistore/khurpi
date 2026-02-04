@@ -118,11 +118,21 @@ Khurpi is a full-stack subscription web application for selling premium microgre
   - `bulk_discount_amount`: Actual discount amount in ₹
   - `bulk_discount_min_order_value`: Minimum order value threshold
   - `coupon_code` & `coupon_discount`: Coupon details (separate from bulk discount)
-- **My Subscriptions Page**: Shows clean payment breakdown:
-  - Original price (strikethrough)
-  - Final paid amount per month
-  - Savings banner ("You saved 20% on orders above ₹4,000")
+- **My Subscriptions Page**: Clean display of subscription details without price information
+- **Subscription Detail Page**: Shows subscription info, products, delivery schedule, and address (no pricing)
 - **Order Detail Page**: Shows complete payment breakdown with savings banner
+
+### 9. Unified Order System
+- **Single Order ID**: One-time purchases and subscriptions can be placed in a single order
+- **Order Types**:
+  - `one_time`: Contains only one-time purchase items
+  - `subscription`: Contains only subscription
+  - `mixed`: Contains both one-time items and a subscription
+- **Order Structure**:
+  - `one_time_items`: Array of one-time purchase products
+  - `subscription`: Nested subscription object with plan details and items
+- **My Orders Page**: Displays all order types in a unified chronological list
+- **My Subscriptions Page**: Aggregates subscriptions from both standalone collection and orders
 
 ### 9. Subscription Checkout
 - Order summary with all price breakdowns
