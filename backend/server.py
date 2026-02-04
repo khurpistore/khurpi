@@ -2809,6 +2809,7 @@ async def get_today_deliveries():
                 "delivery_address": delivery_address,
                 "products": product_details,
                 "total_items": total_items,
+                "total_weight": total_weight,
                 "monthly_total": subscription.get("total_price", 0)
             })
         else:
