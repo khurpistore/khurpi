@@ -39,6 +39,7 @@ const AdminCustomerView = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [referralData, setReferralData] = useState(null);
+  const [customerCart, setCustomerCart] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('orders');
   
@@ -65,6 +66,7 @@ const AdminCustomerView = () => {
         setSubscriptions([]);
         setAddresses([]);
         setReferralData(null);
+        setCustomerCart(null);
         setLoading(false);
         return;
       }
@@ -85,6 +87,14 @@ const AdminCustomerView = () => {
       // Fetch customer's addresses
       const addressesRes = await axios.get(`${API}/users/${foundCustomer.id}/addresses`);
       setAddresses(addressesRes.data || []);
+
+      // Fetch customer's synced cart
+      try {
+        const cartRes = await axios.get(`${API}/admin/users/${foundCustomer.id}/cart`);
+        setCustomerCart(cartRes.data);
+      } catch (e) {
+        setCustomerCart(null);
+      }
 
       // Fetch referral data
       try {
