@@ -3713,7 +3713,7 @@ async def validate_coupon(code: str, order_amount: float, user_id: Optional[str]
 
 # Unified discount code validation - checks both coupons and referral codes
 @api_router.post("/discount/validate")
-async def validate_discount_code(code: str, order_amount: float):
+async def validate_discount_code(code: str, order_amount: float, user_id: Optional[str] = None):
     code_upper = code.upper().strip()
     
     # First check if it's a coupon
@@ -3728,6 +3728,17 @@ async def validate_discount_code(code: str, order_amount: float):
             raise HTTPException(status_code=400, detail="Code has expired")
         if coupon.get("usage_limit") and coupon.get("times_used", 0) >= coupon["usage_limit"]:
             raise HTTPException(status_code=400, detail="Code usage limit reached")
+        
+        # Check per-user limit
+        if user_id:
+            per_user_limit = coupon.get("per_user_limit", 1)
+            user_usage_count = await db.orders.count_documents({
+                "user_id": user_id,
+                "coupon_code": code_upper
+            })
+            if user_usage_count >= per_user_limit:
+                raise HTTPException(status_code=400, detail=f"You've already used this coupon {per_user_limit} time(s)")
+        
         if order_amount < coupon.get("min_order_amount", 0):
             raise HTTPException(status_code=400, detail=f"Minimum order amount is ₹{coupon['min_order_amount']}")
         
