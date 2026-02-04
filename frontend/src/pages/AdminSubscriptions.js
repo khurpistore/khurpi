@@ -252,7 +252,7 @@ const AdminSubscriptions = () => {
                   <Card 
                     key={subscription.id}
                     className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'ring-2 ring-primary shadow-md' : ''}`}
-                    onClick={() => setSelectedSubscription(subscription)}
+                    onClick={() => handleSelectSubscription(subscription)}
                   >
                     <CardContent className="p-3">
                       <div className="flex items-center gap-3">
