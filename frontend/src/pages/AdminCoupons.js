@@ -112,6 +112,7 @@ const AdminCoupons = () => {
 
   const handleEdit = (coupon) => {
     setEditingCoupon(coupon);
+    const hasValidity = coupon.valid_from || coupon.valid_until;
     setFormData({
       code: coupon.code,
       discount_type: coupon.discount_type,
@@ -119,8 +120,10 @@ const AdminCoupons = () => {
       min_order_amount: coupon.min_order_amount?.toString() || '',
       max_discount: coupon.max_discount?.toString() || '',
       usage_limit: coupon.usage_limit?.toString() || '',
+      per_user_limit: coupon.per_user_limit?.toString() || '1',
       valid_from: coupon.valid_from?.split('T')[0] || '',
       valid_until: coupon.valid_until?.split('T')[0] || '',
+      unlimited_validity: !hasValidity,
       is_active: coupon.is_active,
       description: coupon.description || ''
     });
