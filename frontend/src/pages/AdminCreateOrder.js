@@ -29,8 +29,9 @@ const AdminCreateOrder = () => {
   const [customerPhone, setCustomerPhone] = useState('');
   const [customer, setCustomer] = useState(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
-  const [newCustomerName, setNewCustomerName] = useState('');
-  const [newCustomerEmail, setNewCustomerEmail] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   
   // Address state
   const [addresses, setAddresses] = useState([]);
