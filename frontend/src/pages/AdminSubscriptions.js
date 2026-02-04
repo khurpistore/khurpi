@@ -37,15 +37,10 @@ const AdminSubscriptions = () => {
   const [editingDelivery, setEditingDelivery] = useState(null);
   const [savingDelivery, setSavingDelivery] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/login');
-      return;
-    }
     fetchSubscriptions();
-  }, [user, navigate]);
+  }, []);
 
   const fetchSubscriptions = async () => {
     try {
