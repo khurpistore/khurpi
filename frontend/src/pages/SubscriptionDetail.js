@@ -115,7 +115,7 @@ const SubscriptionDetail = () => {
 
   // Generate delivery dates for the next 4 weeks
   const generateDeliveryDates = () => {
-    if (!subscription.delivery_days || subscription.delivery_days.length === 0) return [];
+    if (!subscription || !subscription.delivery_days || subscription.delivery_days.length === 0) return [];
     
     const dayMap = {
       'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
@@ -123,6 +123,8 @@ const SubscriptionDetail = () => {
     };
     
     const deliveryDayNumbers = subscription.delivery_days.map(day => dayMap[day]).filter(d => d !== undefined);
+    if (deliveryDayNumbers.length === 0) return [];
+    
     const dates = [];
     const today = startOfDay(new Date());
     const startDate = subscription.start_date ? startOfDay(new Date(subscription.start_date)) : today;
