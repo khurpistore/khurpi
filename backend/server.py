@@ -2563,7 +2563,8 @@ async def get_user_subscription_deliveries(subscription_id: str):
     current_date = max(start_date, today - timedelta(days=30))  # Include 30 days of history
     generated_dates = []
     
-    while len(generated_dates) < 16:
+    # Generate exactly the number of deliveries for the month
+    while len(generated_dates) < total_deliveries:
         if current_date.weekday() in selected_days and current_date.weekday() != 6:
             date_str = current_date.isoformat()
             existing = next((d for d in existing_deliveries if d.get("delivery_date") == date_str), None)
