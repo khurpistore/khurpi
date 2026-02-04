@@ -496,7 +496,7 @@ const AdminProducts = () => {
         </Dialog>
       </div>
 
-      {loading ? (
+      {productsLoading ? (
         <p className="text-muted-foreground">Loading products...</p>
       ) : (
         <Card>
