@@ -52,10 +52,10 @@ const SubscriptionDetail = () => {
 
   // Fetch deliveries from API when subscription is loaded
   useEffect(() => {
-    if (subscriptionId && subscriptionId !== 'undefined') {
+    if (subscription && subscriptionId && subscriptionId !== 'undefined') {
       fetchDeliveries();
     }
-  }, [subscriptionId]);
+  }, [subscription, subscriptionId]);
 
   const fetchDeliveries = async () => {
     try {
