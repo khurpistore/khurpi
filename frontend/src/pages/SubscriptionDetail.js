@@ -341,6 +341,48 @@ const SubscriptionDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* All Delivery Dates */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Truck className="w-5 h-5" />
+                  Delivery History & Schedule
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {deliveryDates.length > 0 ? (
+                    deliveryDates.map((delivery, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`flex items-center justify-between p-3 rounded-lg ${
+                          delivery.status === 'out_for_delivery' 
+                            ? 'bg-orange-50 border border-orange-200' 
+                            : delivery.status === 'delivered' 
+                              ? 'bg-gray-50' 
+                              : 'bg-blue-50/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-center min-w-[50px]">
+                            <p className="text-lg font-bold text-primary">{format(delivery.date, 'd')}</p>
+                            <p className="text-xs text-muted-foreground">{format(delivery.date, 'MMM')}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{format(delivery.date, 'EEEE')}</p>
+                            <p className="text-xs text-muted-foreground">{format(delivery.date, 'yyyy')}</p>
+                          </div>
+                        </div>
+                        {getDeliveryStatusBadge(delivery.status)}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No delivery dates scheduled</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column */}
