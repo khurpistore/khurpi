@@ -176,16 +176,9 @@ const Orders = () => {
                             </p>
                             <div className="flex justify-between items-center mt-1">
                               <span className="text-sm text-muted-foreground">Monthly Total</span>
-                              <div className="text-right">
-                                {order.subscription.bulk_discount_amount > 0 && (
-                                  <span className="text-sm text-muted-foreground line-through mr-2">
-                                    ₹{order.subscription.subtotal?.toLocaleString()}
-                                  </span>
-                                )}
-                                <span className="text-sm font-bold text-primary">
-                                  ₹{order.subscription.total_price?.toLocaleString()}/mo
-                                </span>
-                              </div>
+                              <span className="text-sm font-bold text-primary">
+                                ₹{order.subscription.subtotal?.toLocaleString()}/mo
+                              </span>
                             </div>
                           </div>
 
