@@ -3583,6 +3583,7 @@ class CouponCreate(BaseModel):
     min_order_amount: float = 0
     max_discount: Optional[float] = None
     usage_limit: Optional[int] = None
+    per_user_limit: int = 1
     valid_from: Optional[str] = None
     valid_until: Optional[str] = None
     is_active: bool = True
@@ -3595,6 +3596,7 @@ class CouponUpdate(BaseModel):
     min_order_amount: Optional[float] = None
     max_discount: Optional[float] = None
     usage_limit: Optional[int] = None
+    per_user_limit: Optional[int] = None
     valid_from: Optional[str] = None
     valid_until: Optional[str] = None
     is_active: Optional[bool] = None
