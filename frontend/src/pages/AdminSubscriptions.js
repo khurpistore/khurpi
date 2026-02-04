@@ -78,6 +78,63 @@ const AdminSubscriptions = () => {
     }
   };
 
+  const fetchDeliveries = async (subscriptionId) => {
+    setLoadingDeliveries(true);
+    try {
+      const response = await axios.get(`${API}/admin/subscriptions/${subscriptionId}/deliveries`);
+      setDeliveries(response.data);
+    } catch (error) {
+      console.error('Failed to fetch deliveries:', error);
+      setDeliveries([]);
+    } finally {
+      setLoadingDeliveries(false);
+    }
+  };
+
+  const handleSelectSubscription = (subscription) => {
+    setSelectedSubscription(subscription);
+    setEditingDelivery(null);
+    fetchDeliveries(subscription.id);
+  };
+
+  const saveDelivery = async () => {
+    if (!editingDelivery) return;
+    setSavingDelivery(true);
+    try {
+      await axios.post(`${API}/admin/subscriptions/${selectedSubscription.id}/deliveries`, {
+        delivery_date: editingDelivery.delivery_date,
+        delivery_time: editingDelivery.delivery_time,
+        status: editingDelivery.status,
+        notes: editingDelivery.notes
+      });
+      toast.success('Delivery updated');
+      fetchDeliveries(selectedSubscription.id);
+      setEditingDelivery(null);
+    } catch (error) {
+      toast.error('Failed to update delivery');
+    } finally {
+      setSavingDelivery(false);
+    }
+  };
+
+  const getDeliveryStatusBadge = (status) => {
+    const statusConfig = {
+      delivered: { color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
+      out_for_delivery: { color: 'bg-orange-100 text-orange-800', icon: Truck },
+      scheduled: { color: 'bg-blue-100 text-blue-800', icon: Circle },
+      paused: { color: 'bg-yellow-100 text-yellow-800', icon: Circle },
+      cancelled: { color: 'bg-red-100 text-red-800', icon: X }
+    };
+    const config = statusConfig[status] || statusConfig.scheduled;
+    const Icon = config.icon;
+    return (
+      <Badge className={`${config.color} text-xs capitalize`}>
+        <Icon className="w-3 h-3 mr-1" />
+        {status?.replace(/_/g, ' ')}
+      </Badge>
+    );
+  };
+
   const getStatusBadge = (status) => {
     const colors = {
       active: 'bg-green-100 text-green-800',
