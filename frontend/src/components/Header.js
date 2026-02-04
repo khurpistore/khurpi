@@ -62,6 +62,23 @@ const Header = () => {
     fetchDiscountTiers();
   }, []);
 
+  // Fetch welcome coupon discount
+  const [welcomeCouponDiscount, setWelcomeCouponDiscount] = useState(20);
+  useEffect(() => {
+    const fetchWelcomeCoupon = async () => {
+      try {
+        const res = await axios.get(`${BACKEND_URL}/api/admin/coupons`);
+        const welcomeCoupon = res.data?.find(c => c.code === 'KHURPIWELCOME20' && c.is_active);
+        if (welcomeCoupon) {
+          setWelcomeCouponDiscount(welcomeCoupon.discount_value);
+        }
+      } catch (error) {
+        console.log('Could not fetch welcome coupon');
+      }
+    };
+    fetchWelcomeCoupon();
+  }, []);
+
   // Don't show header on admin pages
   if (location.pathname.startsWith('/admin')) {
     return null;
