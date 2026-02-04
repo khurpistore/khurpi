@@ -3918,7 +3918,15 @@ async def get_all_payments_admin():
         if payment.get("subscription_id"):
             subscription = await db.subscriptions.find_one({"id": payment["subscription_id"]}, {"_id": 0})
         if payment.get("order_id"):
-            order = await db.orders.find_one({"id": payment["order_id"]}, {"_id": 0})
+            order_doc = await db.orders.find_one({"id": payment["order_id"]}, {"_id": 0})
+            if order_doc:
+                # Calculate total_amount if not set
+                subtotal = order_doc.get("subtotal", 0)
+                discount_amount = order_doc.get("discount_amount", 0)
+                coupon_discount = order_doc.get("coupon_discount", 0)
+                delivery_fee = order_doc.get("delivery_fee", 0)
+                total_amount = order_doc.get("total_amount") or (subtotal - discount_amount - coupon_discount + delivery_fee)
+                order = {**order_doc, "total_amount": total_amount}
         
         result.append({
             **payment,
