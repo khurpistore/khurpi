@@ -277,8 +277,8 @@ const SubscriptionDetail = () => {
                   </div>
 
                   <div className="space-y-2">
-                    {address.receiver_name && (
-                      <p className="font-semibold text-primary">{address.receiver_name}</p>
+                    {(address.receiver_name || address.name) && (
+                      <p className="font-semibold text-primary">{address.receiver_name || address.name}</p>
                     )}
                     <p className="text-sm text-muted-foreground">
                       {address.address_line}
