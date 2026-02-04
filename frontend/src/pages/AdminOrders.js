@@ -205,23 +205,31 @@ const AdminOrders = () => {
                       <div className="flex items-center gap-3">
                         {/* Product Images */}
                         <div className="flex -space-x-2 flex-shrink-0">
-                          {allItems.slice(0, 2).map((item, idx) => (
-                            item.product?.image ? (
-                              <img 
-                                key={idx}
-                                src={item.product.image} 
-                                alt=""
-                                className="w-10 h-10 rounded-lg object-cover border-2 border-white shadow-sm"
-                              />
-                            ) : (
-                              <div key={idx} className="w-10 h-10 rounded-lg bg-gray-100 border-2 border-white flex items-center justify-center">
-                                <Package className="w-4 h-4 text-gray-400" />
-                              </div>
-                            )
-                          ))}
-                          {allItems.length > 2 && (
-                            <div className="w-10 h-10 rounded-lg bg-gray-100 border-2 border-white flex items-center justify-center text-xs font-medium">
-                              +{allItems.length - 2}
+                          {allItems.length > 0 ? (
+                            <>
+                              {allItems.slice(0, 3).map((item, idx) => (
+                                item.product?.image ? (
+                                  <img 
+                                    key={idx}
+                                    src={item.product.image} 
+                                    alt=""
+                                    className="w-11 h-11 rounded-lg object-cover border-2 border-white shadow-sm"
+                                  />
+                                ) : (
+                                  <div key={idx} className="w-11 h-11 rounded-lg bg-gray-100 border-2 border-white flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                )
+                              ))}
+                              {allItems.length > 3 && (
+                                <div className="w-11 h-11 rounded-lg bg-gray-200 border-2 border-white flex items-center justify-center text-xs font-medium">
+                                  +{allItems.length - 3}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <Package className="w-5 h-5 text-primary" />
                             </div>
                           )}
                         </div>
