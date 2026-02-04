@@ -94,7 +94,7 @@ const Header = () => {
             <>
               <span className="hidden sm:inline text-white/60">|</span>
               <span className="flex items-center gap-1.5">
-                Up to <span className="font-bold">{maxDiscount}% OFF</span> on bulk orders
+                Save up to <span className="font-bold">{maxDiscount}%</span> on large orders
               </span>
             </>
           )}
