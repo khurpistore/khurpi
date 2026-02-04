@@ -374,11 +374,9 @@ const SubscriptionDetail = () => {
                 <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
                   <Truck className="w-5 h-5" />
                   <span>Delivery History & Schedule</span>
-                  {deliveriesFromAPI.length > 0 && (
-                    <Badge className="bg-blue-100 text-blue-800 text-xs">
-                      {deliveriesFromAPI.length} this month
-                    </Badge>
-                  )}
+                  <Badge className="bg-blue-100 text-blue-800 text-xs" data-testid="delivery-count-badge">
+                    {deliveriesFromAPI.length > 0 ? deliveriesFromAPI.length : deliveryDates.length} this month
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
