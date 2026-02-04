@@ -30,8 +30,10 @@ const AdminCoupons = () => {
     min_order_amount: '',
     max_discount: '',
     usage_limit: '',
+    per_user_limit: '1',
     valid_from: '',
     valid_until: '',
+    unlimited_validity: true,
     is_active: true,
     description: ''
   });
