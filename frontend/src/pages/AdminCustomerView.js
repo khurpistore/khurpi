@@ -537,6 +537,338 @@ const AdminCustomerView = () => {
             </div>
           </TabsContent>
 
+          {/* ==================== CART TAB ==================== */}
+          {/* Cart is stored in localStorage on customer's device, so we show pending orders and info */}
+          <TabsContent value="cart">
+            <div className="bg-gradient-to-b from-green-50 to-white rounded-xl p-4 sm:p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <ShoppingCart className="w-6 h-6 text-primary" />
+                <h2 className="text-xl sm:text-2xl font-bold text-primary">Cart View</h2>
+              </div>
+
+              {/* Info about cart storage */}
+              <Card className="mb-4 border-blue-200 bg-blue-50/50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-blue-800">Cart Data is Device-Specific</p>
+                      <p className="text-sm text-blue-700 mt-1">
+                        The shopping cart is stored locally on the customer's browser/device. 
+                        It cannot be viewed from the admin panel as it's not synced to the server.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Active Subscription in Cart (if any pending subscription orders) */}
+              {(() => {
+                const pendingSubOrders = orders.filter(o => 
+                  o.subscription && (o.status === 'pending' || o.payment_status === 'pending')
+                );
+                
+                if (pendingSubOrders.length > 0) {
+                  return (
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                        <Repeat className="w-4 h-4" />
+                        Pending Subscription Orders
+                      </h3>
+                      <div className="space-y-2">
+                        {pendingSubOrders.map(order => (
+                          <Card key={order.id} className="border-yellow-200 bg-yellow-50/50">
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex -space-x-2">
+                                    {order.subscription?.items?.slice(0, 3).map((item, idx) => (
+                                      item.product?.image ? (
+                                        <img key={idx} src={item.product.image} alt="" className="w-10 h-10 rounded-lg object-cover border-2 border-white" />
+                                      ) : (
+                                        <div key={idx} className="w-10 h-10 rounded-lg bg-gray-100 border-2 border-white flex items-center justify-center">
+                                          <Package className="w-5 h-5 text-gray-400" />
+                                        </div>
+                                      )
+                                    ))}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm">{getPlanDisplayName(order.subscription?.frequency)}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {order.subscription?.items?.length} items • {order.subscription?.tray_count || 0}gm
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <Badge className="bg-yellow-100 text-yellow-800">Payment Pending</Badge>
+                                  <p className="text-lg font-bold text-primary mt-1">₹{order.total?.toLocaleString()}</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* Recent One-time Pending Orders */}
+              {(() => {
+                const pendingOneTime = orders.filter(o => 
+                  !o.subscription && (o.status === 'pending' || o.payment_status === 'pending')
+                );
+                
+                if (pendingOneTime.length > 0) {
+                  return (
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                        <ShoppingBag className="w-4 h-4" />
+                        Pending One-time Orders
+                      </h3>
+                      <div className="space-y-2">
+                        {pendingOneTime.map(order => (
+                          <Card key={order.id} className="border-orange-200 bg-orange-50/50">
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex -space-x-2">
+                                    {(order.one_time_items || order.items)?.slice(0, 3).map((item, idx) => (
+                                      item.product?.image ? (
+                                        <img key={idx} src={item.product.image} alt="" className="w-10 h-10 rounded-lg object-cover border-2 border-white" />
+                                      ) : (
+                                        <div key={idx} className="w-10 h-10 rounded-lg bg-gray-100 border-2 border-white flex items-center justify-center">
+                                          <Package className="w-5 h-5 text-gray-400" />
+                                        </div>
+                                      )
+                                    ))}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm">{(order.one_time_items || order.items)?.length} items</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Order #{order.id?.slice(0, 8)}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <Badge className="bg-orange-100 text-orange-800">Pending</Badge>
+                                  <p className="text-lg font-bold text-primary mt-1">₹{order.total?.toLocaleString()}</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* Customer's Cart Summary Stats */}
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-primary mb-4">Purchase Behavior</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-primary">{orders.length}</p>
+                      <p className="text-xs text-muted-foreground">Total Orders</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-green-600">
+                        ₹{orders.reduce((sum, o) => sum + (o.total || 0), 0).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Total Spent</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-blue-600">{subscriptions.length}</p>
+                      <p className="text-xs text-muted-foreground">Subscriptions</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-purple-600">
+                        ₹{Math.round(orders.reduce((sum, o) => sum + (o.total || 0), 0) / Math.max(orders.length, 1)).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Avg Order Value</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* ==================== CHECKOUT TAB ==================== */}
+          <TabsContent value="checkout">
+            <div className="bg-gradient-to-b from-green-50 to-white rounded-xl p-4 sm:p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Receipt className="w-6 h-6 text-primary" />
+                <h2 className="text-xl sm:text-2xl font-bold text-primary">Checkout History</h2>
+              </div>
+
+              {/* Payment Methods Used */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* Payment Summary */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CreditCard className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold">Payment Summary</h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Successful Payments</span>
+                        <Badge className="bg-green-100 text-green-800">
+                          {orders.filter(o => o.payment_status === 'paid').length}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Pending Payments</span>
+                        <Badge className="bg-yellow-100 text-yellow-800">
+                          {orders.filter(o => o.payment_status === 'pending').length}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Failed/Cancelled</span>
+                        <Badge className="bg-red-100 text-red-800">
+                          {orders.filter(o => o.status === 'cancelled').length}
+                        </Badge>
+                      </div>
+                      <div className="border-t pt-3">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Total Paid</span>
+                          <span className="text-lg font-bold text-green-600">
+                            ₹{orders.filter(o => o.payment_status === 'paid').reduce((sum, o) => sum + (o.total || 0), 0).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Discount Usage */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Tag className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold">Discounts & Coupons</h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Orders with Discount</span>
+                        <Badge className="bg-purple-100 text-purple-800">
+                          {orders.filter(o => o.discount_amount > 0 || o.coupon_discount > 0).length}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Total Auto Discount</span>
+                        <span className="font-medium text-green-600">
+                          -₹{orders.reduce((sum, o) => sum + (o.discount_amount || 0), 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Total Coupon Savings</span>
+                        <span className="font-medium text-green-600">
+                          -₹{orders.reduce((sum, o) => sum + (o.coupon_discount || 0), 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="border-t pt-3">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Total Saved</span>
+                          <span className="text-lg font-bold text-green-600">
+                            ₹{orders.reduce((sum, o) => sum + (o.discount_amount || 0) + (o.coupon_discount || 0), 0).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Coupons Used */}
+              {(() => {
+                const ordersWithCoupons = orders.filter(o => o.coupon_code);
+                const uniqueCoupons = [...new Set(ordersWithCoupons.map(o => o.coupon_code))];
+                
+                if (uniqueCoupons.length > 0) {
+                  return (
+                    <Card className="mb-4">
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-primary mb-3">Coupons Used</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueCoupons.map(code => {
+                            const usageCount = ordersWithCoupons.filter(o => o.coupon_code === code).length;
+                            const totalSaved = ordersWithCoupons.filter(o => o.coupon_code === code).reduce((sum, o) => sum + (o.coupon_discount || 0), 0);
+                            return (
+                              <div key={code} className="bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                <span className="font-mono font-bold text-green-700">{code}</span>
+                                <span className="text-xs text-green-600 ml-2">
+                                  Used {usageCount}x • Saved ₹{totalSaved.toLocaleString()}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* Recent Checkouts Timeline */}
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-primary mb-4">Recent Checkout Activity</h3>
+                  {orders.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Receipt className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                      <p>No checkout history available</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {orders.slice(0, 10).map((order, idx) => (
+                        <div key={order.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                          <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                            order.payment_status === 'paid' ? 'bg-green-500' :
+                            order.status === 'cancelled' ? 'bg-red-500' : 'bg-yellow-500'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">#{order.id?.slice(0, 8)}</span>
+                              <Badge className={`text-xs ${
+                                order.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
+                                order.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {order.payment_status === 'paid' ? 'Paid' : order.status === 'cancelled' ? 'Cancelled' : 'Pending'}
+                              </Badge>
+                              {order.order_source && order.order_source !== 'online' && (
+                                <Badge className="bg-blue-100 text-blue-800 text-xs">
+                                  {order.order_source}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(order.created_at)}
+                              {order.coupon_code && <span className="ml-2">• Coupon: {order.coupon_code}</span>}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-primary">₹{order.total?.toLocaleString()}</p>
+                            {(order.discount_amount || 0) + (order.coupon_discount || 0) > 0 && (
+                              <p className="text-xs text-green-600">
+                                -₹{((order.discount_amount || 0) + (order.coupon_discount || 0)).toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           {/* ==================== ADDRESSES TAB ==================== */}
           <TabsContent value="addresses">
             <div className="bg-gradient-to-b from-green-50 to-white rounded-xl p-4 sm:p-6">
