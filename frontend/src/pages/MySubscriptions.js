@@ -199,12 +199,23 @@ const MySubscriptions = () => {
                     {/* Next Delivery & Action */}
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <div className="text-right hidden sm:block">
-                        <p className="text-xs text-muted-foreground">Next Delivery</p>
-                        <p className="text-sm font-semibold text-green-700">
-                          {subscription.next_delivery_date 
-                            ? format(new Date(subscription.next_delivery_date), 'MMM d')
-                            : '-'}
-                        </p>
+                        {subscription.status === 'expired' || subscription.status === 'cancelled' ? (
+                          <>
+                            <p className="text-xs text-muted-foreground">Status</p>
+                            <p className="text-sm font-medium text-gray-500 capitalize">
+                              {subscription.status}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-xs text-muted-foreground">Next Delivery</p>
+                            <p className="text-sm font-semibold text-green-700">
+                              {subscription.next_delivery_date 
+                                ? format(new Date(subscription.next_delivery_date), 'MMM d')
+                                : '-'}
+                            </p>
+                          </>
+                        )}
                       </div>
                       <Button
                         data-testid={`view-details-button-${subscription.id}`}
