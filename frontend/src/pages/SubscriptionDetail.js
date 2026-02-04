@@ -370,7 +370,50 @@ const SubscriptionDetail = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                  {deliveryDates.length > 0 ? (
+                  {deliveriesFromAPI.length > 0 ? (
+                    deliveriesFromAPI.map((delivery, idx) => {
+                      const deliveryDate = new Date(delivery.delivery_date);
+                      return (
+                        <div 
+                          key={idx} 
+                          className={`flex items-center justify-between p-3 rounded-lg ${
+                            delivery.status === 'out_for_delivery' 
+                              ? 'bg-orange-50 border border-orange-200' 
+                              : delivery.status === 'delivered' 
+                                ? 'bg-gray-50' 
+                                : delivery.status === 'paused'
+                                  ? 'bg-yellow-50/50'
+                                  : delivery.status === 'cancelled'
+                                    ? 'bg-red-50/50'
+                                    : 'bg-blue-50/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="text-center min-w-[50px]">
+                              <p className="text-lg font-bold text-primary">{format(deliveryDate, 'd')}</p>
+                              <p className="text-xs text-muted-foreground">{format(deliveryDate, 'MMM')}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{format(deliveryDate, 'EEEE')}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs text-muted-foreground">{format(deliveryDate, 'yyyy')}</p>
+                                {delivery.delivery_time && (
+                                  <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {delivery.delivery_time}
+                                  </span>
+                                )}
+                              </div>
+                              {delivery.notes && (
+                                <p className="text-xs text-muted-foreground italic mt-0.5">{delivery.notes}</p>
+                              )}
+                            </div>
+                          </div>
+                          {getDeliveryStatusBadge(delivery.status)}
+                        </div>
+                      );
+                    })
+                  ) : deliveryDates.length > 0 ? (
                     deliveryDates.map((delivery, idx) => (
                       <div 
                         key={idx} 
