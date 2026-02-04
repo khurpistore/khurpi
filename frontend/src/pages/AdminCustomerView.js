@@ -719,63 +719,6 @@ const AdminCustomerView = () => {
                 }
                 return null;
               })()}
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-
-              {/* Recent One-time Pending Orders */}
-              {(() => {
-                const pendingOneTime = orders.filter(o => 
-                  !o.subscription && (o.status === 'pending' || o.payment_status === 'pending')
-                );
-                
-                if (pendingOneTime.length > 0) {
-                  return (
-                    <div className="mb-4">
-                      <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">
-                        <ShoppingBag className="w-4 h-4" />
-                        Pending One-time Orders
-                      </h3>
-                      <div className="space-y-2">
-                        {pendingOneTime.map(order => (
-                          <Card key={order.id} className="border-orange-200 bg-orange-50/50">
-                            <CardContent className="p-3">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="flex -space-x-2">
-                                    {(order.one_time_items || order.items)?.slice(0, 3).map((item, idx) => (
-                                      item.product?.image ? (
-                                        <img key={idx} src={item.product.image} alt="" className="w-10 h-10 rounded-lg object-cover border-2 border-white" />
-                                      ) : (
-                                        <div key={idx} className="w-10 h-10 rounded-lg bg-gray-100 border-2 border-white flex items-center justify-center">
-                                          <Package className="w-5 h-5 text-gray-400" />
-                                        </div>
-                                      )
-                                    ))}
-                                  </div>
-                                  <div>
-                                    <p className="font-medium text-sm">{(order.one_time_items || order.items)?.length} items</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      Order #{order.id?.slice(0, 8)}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <Badge className="bg-orange-100 text-orange-800">Pending</Badge>
-                                  <p className="text-lg font-bold text-primary mt-1">₹{order.total?.toLocaleString()}</p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
 
               {/* Customer's Cart Summary Stats */}
               <Card>
