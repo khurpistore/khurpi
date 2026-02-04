@@ -2836,16 +2836,21 @@ async def get_today_deliveries():
                 # Get products from subscription items
                 product_details = []
                 total_items = 0
+                total_weight = 0
                 for item in sub_data.get("items", []):
                     product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
                     if product:
+                        # Weight is typically the quantity in grams for microgreens
+                        item_weight = item.get("weight") or item.get("quantity", 100)
                         product_details.append({
                             "name": product["name"],
                             "quantity": item.get("quantity", 100),
+                            "weight": item_weight,
                             "price": product["price"],
                             "image": product.get("image", "")
                         })
                         total_items += item.get("quantity", 100)
+                        total_weight += item_weight
                 
                 result.append({
                     **delivery,
@@ -2858,6 +2863,7 @@ async def get_today_deliveries():
                     "user": user,
                     "delivery_address": delivery_address,
                     "products": product_details,
+                    "total_weight": total_weight,
                     "total_items": total_items,
                     "monthly_total": sub_data.get("total_price", 0)
                 })
