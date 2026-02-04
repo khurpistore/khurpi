@@ -279,7 +279,7 @@ const AdminOrders = () => {
         {/* Right: Order Details Panel */}
         <div className="w-96 flex-shrink-0">
           {selectedOrder ? (
-            <Card className="sticky top-4">
+            <Card className="sticky top-4 max-h-[calc(100vh-120px)] overflow-y-auto">
               <CardContent className="p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
