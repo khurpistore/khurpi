@@ -10,7 +10,8 @@ import { toast } from 'sonner';
 import { 
   Search, User, Phone, Mail, Calendar, MapPin, ShoppingBag, 
   Repeat, Gift, Package, ChevronRight, Loader2, Tag, Home, Building2,
-  Copy, CreditCard, ArrowLeft, Clock, Truck, CheckCircle, CheckCircle2, Circle, X
+  Copy, CreditCard, ArrowLeft, Clock, Truck, CheckCircle, CheckCircle2, Circle, X,
+  ShoppingCart, Receipt, AlertCircle, Info
 } from 'lucide-react';
 import { format, addDays, isBefore, isAfter, startOfDay, isSameDay } from 'date-fns';
 import AdminLayout from '@/components/AdminLayout';
