@@ -132,141 +132,98 @@ const MySubscriptions = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6" data-testid="subscriptions-list">
+          <div className="space-y-3" data-testid="subscriptions-list">
             {[...subscriptions].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map((subscription) => {
               // Delivery info
               const deliveriesPerWeek = subscription.delivery_days?.length || 1;
               const totalDeliveriesPerMonth = deliveriesPerWeek * 4;
+              // Product images (max 3)
+              const productImages = subscription.items?.slice(0, 3).map(item => item.product?.image).filter(Boolean) || [];
+              const productNames = subscription.items?.map(item => item.product?.name).filter(Boolean) || [];
               
               return (
-              <Card key={subscription.id} data-testid={`subscription-card-${subscription.id}`} className="overflow-hidden">
-                <CardContent className="p-4 sm:p-6">
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-lg font-semibold text-primary">
+              <Card 
+                key={subscription.id} 
+                data-testid={`subscription-card-${subscription.id}`} 
+                className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => {
+                  navigate(`/subscription/${subscription.id}`, { 
+                    state: { 
+                      source: subscription.source,
+                      subscriptionData: subscription.source === 'order' ? subscription : null
+                    } 
+                  });
+                }}
+              >
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-3">
+                    {/* Product Images Stack */}
+                    <div className="flex -space-x-2 flex-shrink-0">
+                      {productImages.length > 0 ? (
+                        productImages.map((img, idx) => (
+                          <img 
+                            key={idx}
+                            src={img} 
+                            alt="Product" 
+                            className="w-10 h-10 rounded-lg object-cover border-2 border-white shadow-sm" 
+                          />
+                        ))
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                          <Package className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
+                      {subscription.items?.length > 3 && (
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 border-2 border-white flex items-center justify-center text-xs font-medium text-gray-600">
+                          +{subscription.items.length - 3}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Main Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="text-sm font-semibold text-primary truncate">
                           {getPlanDisplayName(subscription.frequency)}
                         </h3>
                         {getStatusBadge(subscription.status)}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {subscription.tray_count}gm • {totalDeliveriesPerMonth} deliveries/month
+                      <p className="text-xs text-muted-foreground truncate">
+                        {productNames.join(', ') || 'No products'} • {subscription.tray_count}gm
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        📅 {subscription.delivery_days && subscription.delivery_days.length > 0 
-                          ? subscription.delivery_days.join(', ')
-                          : subscription.delivery_day || 'Not set'}
+                      <p className="text-xs text-muted-foreground">
+                        📅 {subscription.delivery_days?.join(', ') || 'Not set'}
                       </p>
                     </div>
-                  </div>
 
-                  {/* Products in Subscription */}
-                  {subscription.items && subscription.items.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Products</p>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {subscription.items.map((item) => {
-                          const pricePerUnit = item.product?.price || 0;
-                          const quantity = item.quantity || 100;
-                          const totalPrice = (quantity / 100) * pricePerUnit;
-                          return (
-                          <div 
-                            key={item.id} 
-                            className="flex items-center gap-2 p-2 rounded-lg bg-gray-50"
-                          >
-                            <img 
-                              src={item.product?.image} 
-                              alt={item.product?.name} 
-                              className="w-10 h-10 rounded object-cover" 
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium truncate">{item.product?.name}</p>
-                              <p className="text-xs text-muted-foreground">{quantity}gm</p>
-                            </div>
-                          </div>
-                          );
-                        })}
+                    {/* Next Delivery & Action */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="text-right hidden sm:block">
+                        <p className="text-xs text-muted-foreground">Next Delivery</p>
+                        <p className="text-sm font-semibold text-green-700">
+                          {subscription.next_delivery_date 
+                            ? format(new Date(subscription.next_delivery_date), 'MMM d')
+                            : '-'}
+                        </p>
                       </div>
+                      <Button
+                        data-testid={`view-details-button-${subscription.id}`}
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full text-primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/subscription/${subscription.id}`, { 
+                            state: { 
+                              source: subscription.source,
+                              subscriptionData: subscription.source === 'order' ? subscription : null
+                            } 
+                          });
+                        }}
+                      >
+                        →
+                      </Button>
                     </div>
-                  )}
-
-                  {/* Delivery Address */}
-                  {subscription.address && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Delivery Address</p>
-                            {subscription.address.name && (
-                              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                                {subscription.address.name}
-                              </span>
-                            )}
-                          </div>
-                          {subscription.address.receiver_name && (
-                            <p className="text-sm font-semibold text-primary">{subscription.address.receiver_name}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {[
-                              subscription.address.address_line || subscription.address.address_line_1,
-                              subscription.address.landmark,
-                              subscription.address.area,
-                              subscription.address.city
-                            ].filter(Boolean).join(', ')}
-                            {subscription.address.pincode && ` - ${subscription.address.pincode}`}
-                          </p>
-                          {subscription.address.phone && (
-                            <p className="text-xs text-muted-foreground mt-1">📞 +91 {subscription.address.phone}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Important Dates */}
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    <div className="bg-gray-50 rounded-lg p-2 text-center">
-                      <p className="text-xs text-muted-foreground">Created</p>
-                      <p className="text-xs font-medium">{format(new Date(subscription.created_at), 'MMM d, yyyy')}</p>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-2 text-center">
-                      <p className="text-xs text-green-700">Next Delivery</p>
-                      <p className="text-xs font-medium text-green-800">
-                        {subscription.next_delivery_date 
-                          ? format(new Date(subscription.next_delivery_date), 'MMM d')
-                          : '-'}
-                      </p>
-                    </div>
-                    <div className="bg-blue-50 rounded-lg p-2 text-center">
-                      <p className="text-xs text-blue-700">Renews On</p>
-                      <p className="text-xs font-medium text-blue-800">
-                        {subscription.renewal_date 
-                          ? format(new Date(subscription.renewal_date), 'MMM d')
-                          : format(new Date(new Date(subscription.start_date).setMonth(new Date(subscription.start_date).getMonth() + 1)), 'MMM d')}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      data-testid={`view-details-button-${subscription.id}`}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        navigate(`/subscription/${subscription.id}`, { 
-                          state: { 
-                            source: subscription.source,
-                            subscriptionData: subscription.source === 'order' ? subscription : null
-                          } 
-                        });
-                      }}
-                      className="rounded-full"
-                    >
-                      View Details
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
