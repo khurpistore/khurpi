@@ -181,8 +181,8 @@ const AdminCreateOrder = () => {
     try {
       const orderData = {
         customer_phone: customerPhone,
-        customer_name: isNewCustomer ? newCustomerName : undefined,
-        customer_email: isNewCustomer ? newCustomerEmail : undefined,
+        customer_name: customerName || undefined,
+        customer_email: customerEmail || undefined,
         address_id: selectedAddressId || undefined,
         new_address: showNewAddressForm ? {
           ...newAddress,
