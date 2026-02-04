@@ -2021,6 +2021,17 @@ async def get_payment_config():
 async def get_products(active_only: bool = True):
     query = {"active": True} if active_only else {}
     products = await db.products.find(query, {"_id": 0}).to_list(100)
+    
+    # Auto-sync: Update stock_status to out_of_stock for products with weight=0
+    for product in products:
+        if product.get("weight", 0) <= 0 and product.get("stock_status") != "out_of_stock":
+            await db.products.update_one(
+                {"id": product["id"]},
+                {"$set": {"stock_status": "out_of_stock", "weight": 0}}
+            )
+            product["stock_status"] = "out_of_stock"
+            product["weight"] = 0
+    
     return products
 
 @api_router.post("/products/check-availability")
