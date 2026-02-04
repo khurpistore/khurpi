@@ -2770,16 +2770,21 @@ async def get_today_deliveries():
             
             product_details = []
             total_items = 0
+            total_weight = 0
             for item in items:
                 product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
                 if product:
+                    # Weight is typically the quantity in grams for microgreens
+                    item_weight = item.get("weight") or item.get("quantity", 100)
                     product_details.append({
                         "name": product["name"],
                         "quantity": item["quantity"],
+                        "weight": item_weight,
                         "price": product["price"],
                         "image": product.get("image", "")
                     })
                     total_items += item["quantity"]
+                    total_weight += item_weight
             
             # Format address for display
             delivery_address = "No address"
