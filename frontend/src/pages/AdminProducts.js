@@ -529,7 +529,7 @@ const AdminProducts = () => {
                       <SelectContent className="max-h-60">
                         {WEIGHT_OPTIONS.map((w) => (
                           <SelectItem key={w} value={String(w)}>
-                            {w}
+                            {w === 0 ? '0 (Out)' : w}
                           </SelectItem>
                         ))}
                       </SelectContent>
