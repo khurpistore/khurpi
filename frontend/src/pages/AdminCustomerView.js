@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { 
   Search, User, Phone, Mail, Calendar, MapPin, ShoppingBag, 
   Repeat, Gift, Package, ChevronRight, Loader2, Tag, Home, Building2,
-  Copy, CreditCard
+  Copy, CreditCard, ArrowLeft, Clock, Truck, CheckCircle, CheckCircle2, Circle, X
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, addDays, isBefore, isAfter, startOfDay, isSameDay } from 'date-fns';
 import AdminLayout from '@/components/AdminLayout';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -39,6 +40,11 @@ const AdminCustomerView = () => {
   const [referralData, setReferralData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('orders');
+  
+  // Detail view state
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedSubscription, setSelectedSubscription] = useState(null);
+  const [subscriptionDeliveries, setSubscriptionDeliveries] = useState([]);
 
   const searchCustomer = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
@@ -104,6 +110,8 @@ const AdminCustomerView = () => {
       case 'cancelled': return 'bg-red-100 text-red-800';
       case 'paused': return 'bg-yellow-100 text-yellow-800';
       case 'expired': return 'bg-gray-100 text-gray-800';
+      case 'out_for_delivery': return 'bg-orange-100 text-orange-800';
+      case 'preparing': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -128,6 +136,86 @@ const AdminCustomerView = () => {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard');
+  };
+
+  // Fetch deliveries for a subscription
+  const fetchSubscriptionDeliveries = async (subId) => {
+    try {
+      const response = await axios.get(`${API}/subscriptions/${subId}/deliveries`);
+      setSubscriptionDeliveries(response.data);
+    } catch (error) {
+      console.error('Failed to fetch deliveries:', error);
+      setSubscriptionDeliveries([]);
+    }
+  };
+
+  // Open subscription detail
+  const openSubscriptionDetail = async (sub) => {
+    setSelectedSubscription(sub);
+    await fetchSubscriptionDeliveries(sub.id);
+  };
+
+  // Generate delivery dates for subscription
+  const generateDeliveryDates = (subscription) => {
+    if (!subscription || !subscription.delivery_days || subscription.delivery_days.length === 0) return [];
+    
+    const dayMap = {
+      'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+      'Thursday': 4, 'Friday': 5, 'Saturday': 6
+    };
+    
+    const deliveryDayNumbers = subscription.delivery_days.map(day => dayMap[day]).filter(d => d !== undefined);
+    if (deliveryDayNumbers.length === 0) return [];
+    
+    const dates = [];
+    const today = startOfDay(new Date());
+    const startDate = subscription.start_date ? startOfDay(new Date(subscription.start_date)) : today;
+    
+    for (let week = -2; week < 6; week++) {
+      for (const dayNum of deliveryDayNumbers) {
+        const weekStart = addDays(startDate, week * 7);
+        const daysUntilDelivery = (dayNum - weekStart.getDay() + 7) % 7;
+        const deliveryDate = addDays(weekStart, daysUntilDelivery);
+        
+        if (isAfter(deliveryDate, addDays(startDate, -1)) || isSameDay(deliveryDate, startDate)) {
+          let status = 'scheduled';
+          if (isBefore(deliveryDate, today)) {
+            status = 'delivered';
+          } else if (isSameDay(deliveryDate, today)) {
+            status = 'out_for_delivery';
+          }
+          
+          dates.push({ date: deliveryDate, status });
+        }
+      }
+    }
+    
+    const uniqueDates = dates
+      .sort((a, b) => a.date - b.date)
+      .filter((item, index, self) => 
+        index === self.findIndex(t => isSameDay(t.date, item.date))
+      );
+    
+    const deliveriesPerMonth = deliveryDayNumbers.length * 4;
+    return uniqueDates.slice(0, deliveriesPerMonth);
+  };
+
+  const getDeliveryStatusBadge = (status) => {
+    const statusConfig = {
+      delivered: { color: 'bg-green-100 text-green-800', label: 'Delivered', icon: CheckCircle2 },
+      out_for_delivery: { color: 'bg-orange-100 text-orange-800', label: 'Out for Delivery', icon: Truck },
+      scheduled: { color: 'bg-blue-100 text-blue-800', label: 'Scheduled', icon: Circle },
+      paused: { color: 'bg-yellow-100 text-yellow-800', label: 'Paused', icon: Circle },
+      cancelled: { color: 'bg-red-100 text-red-800', label: 'Cancelled', icon: Circle }
+    };
+    const config = statusConfig[status] || statusConfig.scheduled;
+    const Icon = config.icon;
+    return (
+      <div className="flex items-center gap-1.5">
+        <Icon className={`w-3.5 h-3.5 ${status === 'delivered' ? 'text-green-600' : status === 'out_for_delivery' ? 'text-orange-600' : 'text-gray-400'}`} />
+        <Badge className={`${config.color} text-xs`}>{config.label}</Badge>
+      </div>
+    );
   };
 
   return (
@@ -215,7 +303,6 @@ const AdminCustomerView = () => {
           </TabsList>
 
           {/* ==================== ORDERS TAB ==================== */}
-          {/* Styled exactly like customer's Orders.js page */}
           <TabsContent value="orders">
             <div className="bg-gradient-to-b from-green-50 to-white rounded-xl p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
@@ -249,7 +336,8 @@ const AdminCustomerView = () => {
                       <Card 
                         key={order.id}
                         data-testid={`order-${order.id}`}
-                        className="hover:shadow-md transition-shadow"
+                        className="hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => setSelectedOrder(order)}
                       >
                         <CardContent className="p-3 sm:p-4">
                           <div className="flex items-center gap-3">
@@ -344,7 +432,6 @@ const AdminCustomerView = () => {
           </TabsContent>
 
           {/* ==================== SUBSCRIPTIONS TAB ==================== */}
-          {/* Styled exactly like customer's MySubscriptions.js page */}
           <TabsContent value="subscriptions">
             <div className="bg-gradient-to-b from-green-50 to-white rounded-xl p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
@@ -371,7 +458,8 @@ const AdminCustomerView = () => {
                       <Card 
                         key={subscription.id} 
                         data-testid={`subscription-card-${subscription.id}`} 
-                        className="overflow-hidden hover:shadow-md transition-shadow"
+                        className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => openSubscriptionDetail(subscription)}
                       >
                         <CardContent className="p-3 sm:p-4">
                           <div className="flex items-center gap-3">
@@ -441,7 +529,6 @@ const AdminCustomerView = () => {
           </TabsContent>
 
           {/* ==================== ADDRESSES TAB ==================== */}
-          {/* Styled exactly like customer's Addresses.js page */}
           <TabsContent value="addresses">
             <div className="bg-gradient-to-b from-green-50 to-white rounded-xl p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
@@ -590,52 +677,6 @@ const AdminCustomerView = () => {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Referred By */}
-                {referralData?.referred_by && (
-                  <Card className="md:col-span-2">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-3">Referred By</h3>
-                      <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                        <User className="w-8 h-8 text-primary" />
-                        <div>
-                          <p className="font-medium">{referralData.referred_by.name || 'Unknown'}</p>
-                          <p className="text-sm text-muted-foreground">{referralData.referred_by.phone}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Recent Referrals */}
-                {referralData?.referrals && referralData.referrals.length > 0 && (
-                  <Card className="md:col-span-2">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-3">Recent Referrals</h3>
-                      <div className="space-y-3">
-                        {referralData.referrals.map((ref, idx) => (
-                          <div key={idx} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                            <div className="flex items-center gap-3">
-                              <User className="w-6 h-6 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">{ref.name || 'User'}</p>
-                                <p className="text-sm text-muted-foreground">{ref.phone}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <Badge className={getStatusColor(ref.status || 'pending')}>
-                                {ref.status || 'pending'}
-                              </Badge>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {formatDate(ref.created_at)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
               </div>
             </div>
           </TabsContent>
@@ -656,6 +697,498 @@ const AdminCustomerView = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* ==================== ORDER DETAIL DIALOG ==================== */}
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedOrder && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-primary" />
+                  Order Details - #{selectedOrder.id.slice(0, 8)}
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="bg-gradient-to-b from-green-50 to-white rounded-xl">
+                {/* Order Status Card */}
+                <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg mb-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <Badge className={getStatusColor(selectedOrder.status)}>
+                          {selectedOrder.status?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                        </Badge>
+                        <Badge className={getOrderTypeLabel(selectedOrder.order_type).color}>
+                          {getOrderTypeLabel(selectedOrder.order_type).label}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        {format(new Date(selectedOrder.created_at), 'MMMM d, yyyy • hh:mm a')}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {((selectedOrder.discount_amount || 0) + (selectedOrder.coupon_discount || 0)) > 0 && (
+                        <p className="text-sm text-muted-foreground line-through">
+                          ₹{selectedOrder.subtotal?.toLocaleString()}
+                        </p>
+                      )}
+                      <p className="text-3xl font-bold text-primary">
+                        ₹{selectedOrder.total?.toLocaleString()}
+                      </p>
+                      {((selectedOrder.discount_amount || 0) + (selectedOrder.coupon_discount || 0)) > 0 && (
+                        <Badge className="bg-green-100 text-green-800 mt-1">
+                          <Tag className="w-3 h-3 mr-1" />
+                          Saved ₹{((selectedOrder.discount_amount || 0) + (selectedOrder.coupon_discount || 0)).toLocaleString()}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  {/* Left Column - Items */}
+                  <div className="lg:col-span-2 space-y-4">
+                    {/* Subscription Items */}
+                    {selectedOrder.subscription && (
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Repeat className="w-5 h-5 text-primary" />
+                            <h3 className="font-semibold text-primary">Subscription Items</h3>
+                            <Badge variant="outline">{getPlanDisplayName(selectedOrder.subscription.frequency)}</Badge>
+                          </div>
+
+                          <div className="p-3 bg-primary/5 rounded-lg mb-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <p className="text-xs text-muted-foreground uppercase mb-1">Delivery Days</p>
+                                <p className="text-sm font-medium">
+                                  📅 {selectedOrder.subscription.delivery_days?.join(', ') || 'Not set'}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground uppercase mb-1">Monthly Total</p>
+                                <p className="text-sm font-bold text-primary">
+                                  ₹{selectedOrder.subscription.subtotal?.toLocaleString()}/mo
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {selectedOrder.subscription.items?.map((item, idx) => {
+                              const pricePerUnit = item.price || item.product?.price || 0;
+                              const quantity = item.quantity || 100;
+                              const totalPrice = (quantity / 100) * pricePerUnit;
+                              return (
+                                <div key={idx} className="flex items-center gap-3 p-2 bg-blue-50 rounded-lg">
+                                  <img 
+                                    src={item.product?.image} 
+                                    alt={item.product?.name}
+                                    className="w-12 h-12 rounded-lg object-cover"
+                                  />
+                                  <div className="flex-1">
+                                    <p className="font-medium text-sm">{item.product?.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {quantity}gm × ₹{pricePerUnit}/100gm
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-bold text-primary text-sm">₹{totalPrice.toFixed(0)}</p>
+                                    <p className="text-xs text-muted-foreground">per delivery</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* One-time Items */}
+                    {(selectedOrder.one_time_items?.length > 0 || selectedOrder.items?.length > 0) && (
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                            <h3 className="font-semibold">One-time Items</h3>
+                          </div>
+
+                          <div className="space-y-2">
+                            {(selectedOrder.one_time_items || selectedOrder.items || []).map((item, idx) => {
+                              const pricePerUnit = item.price || item.product?.price || 0;
+                              const quantity = item.quantity || 100;
+                              const totalPrice = (quantity / 100) * pricePerUnit;
+                              return (
+                                <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                                  {item.product?.image ? (
+                                    <img 
+                                      src={item.product.image} 
+                                      alt={item.product?.name}
+                                      className="w-12 h-12 rounded-lg object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                      <Package className="w-6 h-6 text-gray-400" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1">
+                                    <p className="font-medium text-sm">{item.product?.name || 'Product'}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {quantity}gm × ₹{pricePerUnit}/100gm
+                                    </p>
+                                  </div>
+                                  <p className="font-bold text-primary text-sm">₹{totalPrice.toFixed(0)}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {selectedOrder.estimated_delivery_date && (
+                            <div className="mt-3 bg-green-50 rounded-lg p-2 flex items-center justify-center gap-2">
+                              <Truck className="w-4 h-4 text-green-600" />
+                              <span className="text-sm text-green-700">Expected:</span>
+                              <span className="text-sm font-bold text-green-800">
+                                {format(new Date(selectedOrder.estimated_delivery_date), 'MMMM d, yyyy')}
+                              </span>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+
+                  {/* Right Column - Summary */}
+                  <div className="space-y-4">
+                    {/* Payment Summary */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CreditCard className="w-5 h-5 text-primary" />
+                          <h3 className="font-semibold">Payment Summary</h3>
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Subtotal</span>
+                            <span>₹{selectedOrder.subtotal?.toLocaleString()}</span>
+                          </div>
+                          
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Delivery</span>
+                            <span className="text-green-600 font-medium">FREE</span>
+                          </div>
+
+                          {selectedOrder.discount_amount > 0 && (
+                            <div className="flex justify-between text-green-600">
+                              <span>Discount ({selectedOrder.discount_percent}%)</span>
+                              <span>-₹{selectedOrder.discount_amount?.toLocaleString()}</span>
+                            </div>
+                          )}
+
+                          {selectedOrder.coupon_discount > 0 && (
+                            <div className="flex justify-between text-green-600">
+                              <span>Coupon ({selectedOrder.coupon_code})</span>
+                              <span>-₹{selectedOrder.coupon_discount?.toLocaleString()}</span>
+                            </div>
+                          )}
+
+                          <div className="border-t pt-2 mt-2">
+                            <div className="flex justify-between font-bold">
+                              <span>Total Paid</span>
+                              <span className="text-primary">₹{selectedOrder.total?.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Delivery Address */}
+                    {(selectedOrder.address || selectedOrder.delivery_address) && (
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <MapPin className="w-5 h-5 text-primary" />
+                            <h3 className="font-semibold">Delivery Address</h3>
+                          </div>
+
+                          <div className="space-y-1 text-sm">
+                            {((selectedOrder.address || selectedOrder.delivery_address)?.receiver_name || (selectedOrder.address || selectedOrder.delivery_address)?.name) && (
+                              <p className="font-semibold text-primary">
+                                {(selectedOrder.address || selectedOrder.delivery_address)?.receiver_name || (selectedOrder.address || selectedOrder.delivery_address)?.name}
+                              </p>
+                            )}
+                            <p className="text-muted-foreground">
+                              {(selectedOrder.address || selectedOrder.delivery_address)?.address_line}
+                            </p>
+                            {(selectedOrder.address || selectedOrder.delivery_address)?.phone && (
+                              <p className="text-muted-foreground">
+                                📞 +91 {(selectedOrder.address || selectedOrder.delivery_address)?.phone}
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Payment Status */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <h3 className="font-semibold">Payment Status</h3>
+                        </div>
+
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Status</span>
+                          <Badge className={selectedOrder.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                            {selectedOrder.payment_status === 'paid' ? 'Paid' : 'Pending'}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ==================== SUBSCRIPTION DETAIL DIALOG ==================== */}
+      <Dialog open={!!selectedSubscription} onOpenChange={() => { setSelectedSubscription(null); setSubscriptionDeliveries([]); }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedSubscription && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Repeat className="w-5 h-5 text-primary" />
+                  Subscription Details - #{selectedSubscription.id?.slice(0, 8)}
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="bg-gradient-to-b from-green-50 to-white rounded-xl">
+                {/* Subscription Status Card */}
+                <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg mb-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <Repeat className="w-5 h-5 text-primary" />
+                        <h2 className="text-xl font-bold text-primary">
+                          {getPlanDisplayName(selectedSubscription.frequency)}
+                        </h2>
+                        <Badge className={getStatusColor(selectedSubscription.status)}>
+                          {selectedSubscription.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedSubscription.tray_count || selectedSubscription.items?.reduce((sum, i) => sum + (i.quantity || 100), 0)}gm • {(selectedSubscription.delivery_days?.length || 1) * 4} deliveries/month
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        📅 {selectedSubscription.delivery_days?.join(', ') || 'Not set'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  {/* Left Column */}
+                  <div className="lg:col-span-2 space-y-4">
+                    {/* Products */}
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Package className="w-5 h-5" />
+                          Products ({selectedSubscription.items?.length || 0})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {selectedSubscription.items?.map((item, idx) => {
+                            const qty = item.quantity || 100;
+                            return (
+                              <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                                {item.product?.image ? (
+                                  <img
+                                    src={item.product.image}
+                                    alt={item.product?.name}
+                                    className="w-12 h-12 rounded-lg object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                    <Package className="w-6 h-6 text-gray-400" />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-sm">{item.product?.name || 'Product'}</h4>
+                                  <p className="text-xs text-muted-foreground">{qty}gm</p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Delivery Schedule */}
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Calendar className="w-5 h-5" />
+                          Delivery Schedule
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-green-50 rounded-lg p-3 text-center">
+                            <Clock className="w-5 h-5 mx-auto text-green-600 mb-1" />
+                            <p className="text-xs text-green-700">Next Delivery</p>
+                            <p className="text-sm font-bold text-green-800">
+                              {selectedSubscription.next_delivery_date 
+                                ? format(new Date(selectedSubscription.next_delivery_date), 'MMM d, yyyy')
+                                : '-'}
+                            </p>
+                          </div>
+                          <div className="bg-blue-50 rounded-lg p-3 text-center">
+                            <Repeat className="w-5 h-5 mx-auto text-blue-600 mb-1" />
+                            <p className="text-xs text-blue-700">Billing Cycle</p>
+                            <p className="text-sm font-bold text-blue-800">Monthly</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 p-2 bg-gray-50 rounded-lg text-xs">
+                          <p className="text-muted-foreground">
+                            <span className="font-medium">Delivery Days:</span> {selectedSubscription.delivery_days?.join(', ') || 'Not set'}
+                          </p>
+                          <p className="text-muted-foreground mt-1">
+                            <span className="font-medium">Started:</span> {selectedSubscription.start_date ? format(new Date(selectedSubscription.start_date), 'MMMM d, yyyy') : '-'}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Delivery History */}
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                          <Truck className="w-5 h-5" />
+                          <span>Delivery History & Schedule</span>
+                          <Badge className="bg-blue-100 text-blue-800 text-xs">
+                            {subscriptionDeliveries.length > 0 ? subscriptionDeliveries.length : (selectedSubscription.delivery_days?.length || 1) * 4} this month
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                          {subscriptionDeliveries.length > 0 ? (
+                            subscriptionDeliveries.map((delivery, idx) => {
+                              const deliveryDate = new Date(delivery.delivery_date);
+                              return (
+                                <div 
+                                  key={idx} 
+                                  className={`flex items-center justify-between p-2 rounded-lg ${
+                                    delivery.status === 'out_for_delivery' 
+                                      ? 'bg-orange-50 border border-orange-200' 
+                                      : delivery.status === 'delivered' 
+                                        ? 'bg-gray-50' 
+                                        : 'bg-blue-50/50'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div className="text-center min-w-[40px]">
+                                      <p className="text-base font-bold text-primary">{format(deliveryDate, 'd')}</p>
+                                      <p className="text-xs text-muted-foreground">{format(deliveryDate, 'MMM')}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium">{format(deliveryDate, 'EEEE')}</p>
+                                      <div className="flex items-center gap-2">
+                                        <p className="text-xs text-muted-foreground">{format(deliveryDate, 'yyyy')}</p>
+                                        {delivery.delivery_time && (
+                                          <span className="text-xs bg-primary/10 text-primary px-1 py-0.5 rounded flex items-center gap-0.5">
+                                            <Clock className="w-3 h-3" />
+                                            {delivery.delivery_time}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {getDeliveryStatusBadge(delivery.status)}
+                                </div>
+                              );
+                            })
+                          ) : (
+                            generateDeliveryDates(selectedSubscription).map((delivery, idx) => (
+                              <div 
+                                key={idx} 
+                                className={`flex items-center justify-between p-2 rounded-lg ${
+                                  delivery.status === 'out_for_delivery' 
+                                    ? 'bg-orange-50 border border-orange-200' 
+                                    : delivery.status === 'delivered' 
+                                      ? 'bg-gray-50' 
+                                      : 'bg-blue-50/50'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="text-center min-w-[40px]">
+                                    <p className="text-base font-bold text-primary">{format(delivery.date, 'd')}</p>
+                                    <p className="text-xs text-muted-foreground">{format(delivery.date, 'MMM')}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium">{format(delivery.date, 'EEEE')}</p>
+                                    <p className="text-xs text-muted-foreground">{format(delivery.date, 'yyyy')}</p>
+                                  </div>
+                                </div>
+                                {getDeliveryStatusBadge(delivery.status)}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-4">
+                    {/* Delivery Address */}
+                    {selectedSubscription.address && (
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <MapPin className="w-5 h-5 text-primary" />
+                            <h3 className="font-semibold">Delivery Address</h3>
+                          </div>
+
+                          <div className="space-y-1 text-sm">
+                            {(selectedSubscription.address?.receiver_name || selectedSubscription.address?.name) && (
+                              <p className="font-semibold text-primary">
+                                {selectedSubscription.address?.receiver_name || selectedSubscription.address?.name}
+                              </p>
+                            )}
+                            <p className="text-muted-foreground">
+                              {selectedSubscription.address?.address_line}
+                            </p>
+                            {selectedSubscription.address?.city && (
+                              <p className="text-muted-foreground">
+                                {selectedSubscription.address?.city}{selectedSubscription.address?.pincode && ` - ${selectedSubscription.address?.pincode}`}
+                              </p>
+                            )}
+                            {selectedSubscription.address?.phone && (
+                              <p className="text-muted-foreground">
+                                📞 +91 {selectedSubscription.address?.phone}
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
