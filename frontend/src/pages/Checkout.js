@@ -572,7 +572,7 @@ const Checkout = () => {
                   <div className="flex justify-between text-green-600">
                     <span className="flex items-center gap-1">
                       <Tag className="w-3 h-3" />
-                      Bulk Discount ({orderDiscount.tier.discount_percent}% off)
+                      Discount ({orderDiscount.tier.discount_percent}% off)
                     </span>
                     <span>-₹{orderDiscountAmount.toFixed(0)}</span>
                   </div>

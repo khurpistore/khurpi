@@ -327,10 +327,10 @@ const OrderDetail = () => {
                     <span className="text-green-600 font-medium">FREE</span>
                   </div>
 
-                  {/* Bulk Discount */}
+                  {/* Order Discount */}
                   {order.discount_amount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
-                      <span>Bulk Discount ({order.discount_percent}%)</span>
+                      <span>Discount ({order.discount_percent}%)</span>
                       <span>-₹{order.discount_amount?.toLocaleString()}</span>
                     </div>
                   )}
