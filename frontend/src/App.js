@@ -115,6 +115,7 @@ function App() {
               <Route path="/admin/referrals" element={<ProtectedRoute requireAdmin><AdminReferrals /></ProtectedRoute>} />
               <Route path="/admin/pages" element={<ProtectedRoute requireAdmin><AdminPages /></ProtectedRoute>} />
               <Route path="/admin/analytics" element={<ProtectedRoute requireAdmin><AdminAnalytics /></ProtectedRoute>} />
+              <Route path="/admin/customer-view" element={<ProtectedRoute requireAdmin><AdminCustomerView /></ProtectedRoute>} />
               
               {/* Delivery Boy Routes - No header/footer */}
               <Route path="/delivery/login" element={<DeliveryBoyLogin />} />
