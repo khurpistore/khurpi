@@ -22,27 +22,13 @@ const Orders = () => {
       navigate('/login');
       return;
     }
-    fetchAllOrders();
+    fetchOrders();
   }, [user, navigate]);
 
-  const fetchAllOrders = async () => {
+  const fetchOrders = async () => {
     try {
-      const [ordersRes, subscriptionsRes] = await Promise.all([
-        axios.get(`${API}/orders?user_id=${user.id}`),
-        axios.get(`${API}/subscriptions?user_id=${user.id}`)
-      ]);
-      
-      // Combine orders and subscriptions into unified orders
-      // Group by created_at date (same day = same order)
-      const allItems = [
-        ...ordersRes.data.map(o => ({ ...o, itemType: 'one_time' })),
-        ...subscriptionsRes.data.map(s => ({ ...s, itemType: 'subscription' }))
-      ];
-      
-      // Sort by date descending
-      allItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      
-      setOrders(allItems);
+      const response = await axios.get(`${API}/orders?user_id=${user.id}`);
+      setOrders(response.data);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
     } finally {
@@ -73,6 +59,17 @@ const Orders = () => {
       'daily': 'Daily Plan'
     };
     return planNames[frequency] || frequency;
+  };
+
+  const getOrderTypeBadge = (orderType) => {
+    switch (orderType) {
+      case 'mixed':
+        return <Badge className="bg-purple-100 text-purple-800">Mixed Order</Badge>;
+      case 'subscription':
+        return <Badge className="bg-blue-100 text-blue-800">Subscription</Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">One-time</Badge>;
+    }
   };
 
   if (loading) {
@@ -113,21 +110,13 @@ const Orders = () => {
         ) : (
           <div className="space-y-4">
             {orders.map((order) => {
-              const isSubscription = order.itemType === 'subscription';
-              
-              // Calculate totals and discounts
-              const originalAmount = isSubscription ? order.subtotal : order.subtotal;
-              const paidAmount = isSubscription ? order.total_price : order.total;
-              const discountAmount = isSubscription 
-                ? (order.bulk_discount_amount || 0)
-                : ((order.discount_amount || 0) + (order.coupon_discount || 0));
-              const discountPercent = isSubscription 
-                ? order.bulk_discount_percent 
-                : order.discount_percent;
+              const hasOneTimeItems = order.one_time_items?.length > 0 || order.items?.length > 0;
+              const hasSubscription = order.subscription;
+              const discountAmount = (order.discount_amount || 0) + (order.coupon_discount || 0);
               
               return (
                 <Card 
-                  key={`${order.itemType}-${order.id}`}
+                  key={order.id}
                   data-testid={`order-${order.id}`}
                   className="overflow-hidden hover:shadow-md transition-shadow"
                 >
@@ -140,6 +129,7 @@ const Orders = () => {
                             <Badge className={getStatusColor(order.status)}>
                               {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                             </Badge>
+                            {getOrderTypeBadge(order.order_type)}
                             <span className="text-sm text-muted-foreground">
                               Order #{order.id.slice(0, 8)}
                             </span>
@@ -152,15 +142,12 @@ const Orders = () => {
                         <div className="text-right">
                           {discountAmount > 0 && (
                             <p className="text-sm text-muted-foreground line-through">
-                              ₹{originalAmount?.toLocaleString()}
+                              ₹{order.subtotal?.toLocaleString()}
                             </p>
                           )}
                           <p className="text-2xl font-bold text-primary">
-                            ₹{paidAmount?.toLocaleString()}
+                            ₹{order.total?.toLocaleString()}
                           </p>
-                          {isSubscription && (
-                            <p className="text-xs text-muted-foreground">per month</p>
-                          )}
                           {discountAmount > 0 && (
                             <Badge className="bg-green-100 text-green-800 mt-1">
                               Saved ₹{discountAmount.toLocaleString()}
@@ -172,36 +159,47 @@ const Orders = () => {
 
                     {/* Order Body */}
                     <div className="p-4 sm:p-6">
+                      
                       {/* Subscription Section */}
-                      {isSubscription && (
+                      {hasSubscription && (
                         <div className="mb-4">
                           <div className="flex items-center gap-2 mb-3">
                             <Repeat className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-semibold text-primary">Subscription</span>
-                            <Badge variant="outline" className="text-xs">{getPlanDisplayName(order.frequency)}</Badge>
+                            <span className="text-sm font-semibold text-primary">Subscription Items</span>
+                            <Badge variant="outline" className="text-xs">{getPlanDisplayName(order.subscription.frequency)}</Badge>
                           </div>
                           
                           {/* Subscription Info */}
                           <div className="p-3 bg-primary/5 rounded-lg mb-3">
-                            <p className="text-sm font-medium text-primary">
-                              {order.tray_count}gm • {(order.delivery_days?.length || 1) * 4} deliveries/month
-                            </p>
                             <p className="text-sm text-muted-foreground">
-                              📅 {order.delivery_days?.join(', ') || order.delivery_day || 'Not set'}
+                              📅 {order.subscription.delivery_days?.join(', ') || 'Not set'}
                             </p>
+                            <div className="flex justify-between items-center mt-1">
+                              <span className="text-sm text-muted-foreground">Monthly Total</span>
+                              <div className="text-right">
+                                {order.subscription.bulk_discount_amount > 0 && (
+                                  <span className="text-sm text-muted-foreground line-through mr-2">
+                                    ₹{order.subscription.subtotal?.toLocaleString()}
+                                  </span>
+                                )}
+                                <span className="text-sm font-bold text-primary">
+                                  ₹{order.subscription.total_price?.toLocaleString()}/mo
+                                </span>
+                              </div>
+                            </div>
                           </div>
 
                           {/* Subscription Products */}
-                          {order.items && order.items.length > 0 && (
+                          {order.subscription.items?.length > 0 && (
                             <div className="space-y-2">
-                              {order.items.map((item, idx) => {
-                                const pricePerUnit = item.product?.price || 0;
+                              {order.subscription.items.map((item, idx) => {
+                                const pricePerUnit = item.price || item.product?.price || 0;
                                 const quantity = item.quantity || 100;
                                 const totalPrice = (quantity / 100) * pricePerUnit;
                                 return (
                                   <div 
                                     key={idx}
-                                    className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg"
+                                    className="flex items-center gap-3 p-2 bg-blue-50 rounded-lg"
                                   >
                                     <img 
                                       src={item.product?.image} 
@@ -229,78 +227,77 @@ const Orders = () => {
                             <div className="bg-green-50 rounded-lg p-2 text-center">
                               <p className="text-xs text-green-700">Next Delivery</p>
                               <p className="text-sm font-medium text-green-800">
-                                {order.next_delivery_date 
-                                  ? format(new Date(order.next_delivery_date), 'MMM d')
+                                {order.subscription.next_delivery_date 
+                                  ? format(new Date(order.subscription.next_delivery_date), 'MMM d')
                                   : '-'}
                               </p>
                             </div>
                             <div className="bg-blue-50 rounded-lg p-2 text-center">
-                              <p className="text-xs text-blue-700">Renews On</p>
-                              <p className="text-sm font-medium text-blue-800">
-                                {order.renewal_date 
-                                  ? format(new Date(order.renewal_date), 'MMM d')
-                                  : format(new Date(new Date(order.start_date).setMonth(new Date(order.start_date).getMonth() + 1)), 'MMM d')}
-                              </p>
+                              <p className="text-xs text-blue-700">Recurring</p>
+                              <p className="text-sm font-medium text-blue-800">Monthly</p>
                             </div>
                           </div>
                         </div>
                       )}
 
+                      {/* Divider if both types exist */}
+                      {hasSubscription && hasOneTimeItems && (
+                        <div className="border-t border-dashed my-4"></div>
+                      )}
+
                       {/* One-time Products Section */}
-                      {!isSubscription && (
+                      {hasOneTimeItems && (
                         <div className="mb-4">
                           <div className="flex items-center gap-2 mb-3">
                             <ShoppingBag className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm font-semibold">One-time Purchase</span>
+                            <span className="text-sm font-semibold">One-time Items</span>
                           </div>
 
                           {/* One-time Products */}
-                          {order.items && order.items.length > 0 && (
-                            <div className="space-y-2">
-                              {order.items.map((item, idx) => {
-                                const pricePerUnit = item.price || item.product?.price || 0;
-                                const quantity = item.quantity || 100;
-                                const totalPrice = (quantity / 100) * pricePerUnit;
-                                const isGrowing = item.product?.stock_status === 'growing';
-                                return (
-                                  <div 
-                                    key={idx}
-                                    className={`flex items-center gap-3 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
-                                  >
-                                    {item.product?.image ? (
-                                      <img 
-                                        src={item.product.image} 
-                                        alt={item.product?.name}
-                                        className="w-12 h-12 rounded-lg object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
-                                        <Package className="w-6 h-6 text-gray-400" />
-                                      </div>
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">{item.product?.name || 'Product'}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {quantity}gm × ₹{pricePerUnit}/100gm
-                                      </p>
+                          <div className="space-y-2">
+                            {(order.one_time_items || order.items || []).map((item, idx) => {
+                              const pricePerUnit = item.price || item.product?.price || 0;
+                              const quantity = item.quantity || 100;
+                              const totalPrice = (quantity / 100) * pricePerUnit;
+                              const isGrowing = item.product?.stock_status === 'growing';
+                              return (
+                                <div 
+                                  key={idx}
+                                  className={`flex items-center gap-3 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}
+                                >
+                                  {item.product?.image ? (
+                                    <img 
+                                      src={item.product.image} 
+                                      alt={item.product?.name}
+                                      className="w-12 h-12 rounded-lg object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                      <Package className="w-6 h-6 text-gray-400" />
                                     </div>
-                                    <p className="text-sm font-semibold text-primary">₹{totalPrice.toFixed(0)}</p>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{item.product?.name || 'Product'}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {quantity}gm × ₹{pricePerUnit}/100gm
+                                    </p>
                                   </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                                  <p className="text-sm font-semibold text-primary">₹{totalPrice.toFixed(0)}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
 
                           {/* One-time Delivery Date */}
-                          <div className="mt-3 bg-green-50 rounded-lg p-2 flex items-center justify-center gap-2">
-                            <Clock className="w-4 h-4 text-green-600" />
-                            <span className="text-sm text-green-700">Delivery:</span>
-                            <span className="text-sm font-medium text-green-800">
-                              {order.estimated_delivery_date 
-                                ? format(new Date(order.estimated_delivery_date), 'MMM d, yyyy')
-                                : '-'}
-                            </span>
-                          </div>
+                          {order.estimated_delivery_date && (
+                            <div className="mt-3 bg-green-50 rounded-lg p-2 flex items-center justify-center gap-2">
+                              <Clock className="w-4 h-4 text-green-600" />
+                              <span className="text-sm text-green-700">Delivery:</span>
+                              <span className="text-sm font-medium text-green-800">
+                                {format(new Date(order.estimated_delivery_date), 'MMM d, yyyy')}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -310,10 +307,9 @@ const Orders = () => {
                           <div className="flex items-center gap-2">
                             <Tag className="w-4 h-4 text-green-600" />
                             <span className="text-sm font-medium text-green-700">
-                              {isSubscription 
-                                ? `You saved ${discountPercent}% on orders above ₹4,000`
-                                : `${discountPercent > 0 ? `${discountPercent}% bulk discount` : ''}${discountPercent > 0 && order.coupon_code ? ' + ' : ''}${order.coupon_code ? `Coupon: ${order.coupon_code}` : ''}`
-                              }
+                              {order.discount_percent > 0 && `${order.discount_percent}% bulk discount`}
+                              {order.discount_percent > 0 && order.coupon_code && ' + '}
+                              {order.coupon_code && `Coupon: ${order.coupon_code}`}
                             </span>
                             <span className="ml-auto text-sm font-bold text-green-700">
                               -₹{discountAmount.toLocaleString()}
@@ -351,10 +347,7 @@ const Orders = () => {
                       <Button
                         variant="outline"
                         className="w-full rounded-full"
-                        onClick={() => navigate(
-                          isSubscription ? `/subscription/${order.id}` : `/order/${order.id}`,
-                          isSubscription ? { state: { from: 'orders' } } : {}
-                        )}
+                        onClick={() => navigate(`/order/${order.id}`)}
                       >
                         View Details
                         <ChevronRight className="w-4 h-4 ml-1" />
