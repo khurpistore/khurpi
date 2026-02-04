@@ -3624,6 +3624,7 @@ async def create_coupon(coupon_data: CouponCreate):
         "min_order_amount": coupon_data.min_order_amount,
         "max_discount": coupon_data.max_discount,
         "usage_limit": coupon_data.usage_limit,
+        "per_user_limit": coupon_data.per_user_limit,
         "times_used": 0,
         "valid_from": coupon_data.valid_from,
         "valid_until": coupon_data.valid_until,
