@@ -160,24 +160,62 @@ const Checkout = () => {
 
     setLoading(true);
     
-    const createOrderFromCart = async (paymentId, razorpayOrderId) => {
-      if (cartItems.length === 0) return;
-      
+    // Create unified order with both one-time items and subscription
+    const createUnifiedOrder = async (paymentId, razorpayOrderId) => {
       // Get the default address if selectedAddressId is not set
       const addressId = selectedAddressId || addresses.find(a => a.is_default)?.id || addresses[0]?.id;
       if (!addressId) {
         throw new Error('No delivery address selected');
       }
       
-      const orderData = {
-        user_id: user.id,
-        address_id: addressId,
-        items: cartItems.map(item => ({ 
+      // Prepare one-time items
+      let oneTimeItems = null;
+      if (cartItems.length > 0) {
+        oneTimeItems = cartItems.map(item => ({ 
           product_id: item.product.id, 
           quantity: item.product.selectedQty || 100, 
           price: item.product.price 
-        })),
-        subtotal: cartSubtotal,
+        }));
+      }
+      
+      // Prepare subscription data
+      let subscriptionData = null;
+      if (pendingSubscription) {
+        const subscriptionSubtotal = pendingSubscription.monthlyTotal || 0;
+        const bulkDiscountOnSubscription = orderDiscount ? (subscriptionSubtotal * orderDiscount.tier.discount_percent) / 100 : 0;
+        const actualMonthlyPaid = subscriptionSubtotal - bulkDiscountOnSubscription;
+        
+        subscriptionData = {
+          frequency: pendingSubscription.plan.frequency,
+          delivery_days: pendingSubscription.deliveryDays,
+          start_date: pendingSubscription.startDate,
+          items: pendingSubscription.products.map(p => ({ 
+            product_id: p.product_id || p.id, 
+            quantity: p.selectedQty || 100,
+            price: p.price || 0
+          })),
+          subtotal: subscriptionSubtotal,
+          total_price: actualMonthlyPaid,
+          bulk_discount_percent: orderDiscount?.tier?.discount_percent || 0,
+          bulk_discount_amount: bulkDiscountOnSubscription,
+          next_delivery_date: pendingSubscription.startDate
+        };
+      }
+      
+      // Determine order type
+      let orderType = 'one_time';
+      if (oneTimeItems && subscriptionData) {
+        orderType = 'mixed';
+      } else if (subscriptionData) {
+        orderType = 'subscription';
+      }
+      
+      const orderData = {
+        user_id: user.id,
+        address_id: addressId,
+        one_time_items: oneTimeItems,
+        subscription: subscriptionData,
+        subtotal: grandTotal + orderDiscountAmount + couponDiscount, // Original total before discounts
         delivery_fee: 0,
         // Automatic order-value based discount
         discount_type: orderDiscount ? 'bulk_discount' : null,
@@ -188,66 +226,16 @@ const Checkout = () => {
         coupon_code: appliedCoupon?.code || null,
         coupon_discount: couponDiscount,
         total: grandTotal,
-        order_type: 'one_time',
+        order_type: orderType,
         payment_id: paymentId,
         razorpay_order_id: razorpayOrderId,
         payment_status: 'paid'
       };
+      
       await axios.post(`${API}/orders`, orderData);
     };
 
-    const createSubscriptionFromPending = async (paymentId, razorpaySubId) => {
-      if (!pendingSubscription) return;
-      
-      // Get the default address if selectedAddressId is not set
-      const addressId = selectedAddressId || addresses.find(a => a.is_default)?.id || addresses[0]?.id;
-      if (!addressId) {
-        throw new Error('No delivery address selected');
-      }
-      
-      const items = pendingSubscription.products.map(p => ({ 
-        product_id: p.product_id || p.id, 
-        quantity: p.selectedQty || 100 
-      }));
-      
-      // Calculate the actual monthly total after bulk discount
-      const subscriptionSubtotal = pendingSubscription.monthlyTotal || 0;
-      const bulkDiscountOnSubscription = orderDiscount ? (subscriptionSubtotal * orderDiscount.tier.discount_percent) / 100 : 0;
-      const actualMonthlyPaid = subscriptionSubtotal - bulkDiscountOnSubscription;
-      
-      const subscriptionData = {
-        frequency: pendingSubscription.plan.frequency,
-        delivery_days: pendingSubscription.deliveryDays,
-        delivery_day: pendingSubscription.deliveryDays[0],
-        deliveries_per_week: pendingSubscription.deliveriesPerWeek,
-        start_date: pendingSubscription.startDate,
-        tray_count: pendingSubscription.products.reduce((sum, p) => sum + (p.selectedQty || 100), 0),
-        items: items,
-        // Save the actual paid amount (after bulk discount)
-        total_price: actualMonthlyPaid,
-        subtotal: subscriptionSubtotal,
-        delivery_fee: 0,
-        monthly_delivery_fee: 0,
-        // Plan discount (e.g., 10% for twice_week plan)
-        plan_discount: pendingSubscription.plan.discount,
-        discount_amount: pendingSubscription.discount,
-        // Bulk discount (order-value based)
-        bulk_discount_percent: orderDiscount?.tier?.discount_percent || 0,
-        bulk_discount_amount: bulkDiscountOnSubscription,
-        bulk_discount_min_order_value: orderDiscount?.tier?.min_order_value || null,
-        plan_id: pendingSubscription.plan.id,
-        address_id: addressId,
-        payment_method: 'online',
-        payment_status: 'paid',
-        razorpay_payment_id: paymentId,
-        razorpay_subscription_id: razorpaySubId
-      };
-      await axios.post(`${API}/subscriptions?user_id=${user.id}`, subscriptionData);
-    };
-
     try {
-      const hasOnlySubscription = pendingSubscription && cartItems.length === 0;
-      const hasBoth = pendingSubscription && cartItems.length > 0;
       const orderType = hasOnlySubscription ? 'subscription' : hasBoth ? 'mixed' : 'single_order';
       const description = hasOnlySubscription ? `Subscription - ${pendingSubscription.plan?.name}` : hasBoth ? 'Order + Subscription' : 'Order Payment';
 
