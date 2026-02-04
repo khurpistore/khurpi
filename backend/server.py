@@ -403,13 +403,34 @@ class OrderItem(BaseModel):
     quantity: int
     price: float
 
+class SubscriptionItemInOrder(BaseModel):
+    product_id: str
+    quantity: int
+    price: float
+
+class SubscriptionInOrder(BaseModel):
+    frequency: str
+    delivery_days: List[str]
+    start_date: str
+    items: List[SubscriptionItemInOrder]
+    subtotal: float  # Monthly subtotal before discount
+    total_price: float  # Monthly paid amount after discount
+    bulk_discount_percent: float = 0
+    bulk_discount_amount: float = 0
+    next_delivery_date: Optional[str] = None
+
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     user_id: str
     address_id: str
     delivery_address: Optional[dict] = None  # Snapshot of address at order time
-    items: List[OrderItem]
+    # One-time items
+    one_time_items: Optional[List[OrderItem]] = None
+    # Subscription in this order
+    subscription: Optional[SubscriptionInOrder] = None
+    # Legacy field for backward compatibility
+    items: Optional[List[OrderItem]] = None
     subtotal: float
     delivery_fee: float = 0
     delivery_distance: Optional[float] = None
@@ -423,7 +444,7 @@ class Order(BaseModel):
     coupon_discount: float = 0
     total: float
     status: str = "pending"
-    order_type: str = "one_time"
+    order_type: str = "one_time"  # "one_time", "subscription", "mixed"
     payment_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"
@@ -433,7 +454,12 @@ class Order(BaseModel):
 class OrderCreate(BaseModel):
     user_id: str
     address_id: str
-    items: List[OrderItem]
+    # One-time items
+    one_time_items: Optional[List[OrderItem]] = None
+    # Subscription data
+    subscription: Optional[dict] = None
+    # Legacy field
+    items: Optional[List[OrderItem]] = None
     subtotal: float
     delivery_fee: float = 0
     # Automatic order-value based discount
@@ -445,7 +471,7 @@ class OrderCreate(BaseModel):
     coupon_code: Optional[str] = None
     coupon_discount: float = 0
     total: float
-    order_type: str = "one_time"
+    order_type: str = "one_time"  # "one_time", "subscription", "mixed"
     payment_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"
