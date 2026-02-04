@@ -339,13 +339,22 @@ const AdminProducts = () => {
   };
 
   const handleFieldChange = (productId, field, value) => {
-    setEditedProducts(prev => ({
-      ...prev,
-      [productId]: {
+    setEditedProducts(prev => {
+      const updates = {
         ...prev[productId],
         [field]: value
+      };
+      
+      // Auto-update stock_status when weight is set to 0
+      if (field === 'weight' && parseInt(value) === 0) {
+        updates.stock_status = 'out_of_stock';
       }
-    }));
+      
+      return {
+        ...prev,
+        [productId]: updates
+      };
+    });
   };
 
   const handleSaveProduct = async (product) => {
