@@ -184,7 +184,7 @@ const AdminPayments = () => {
 
       {/* Stats Summary */}
       <div className="mb-6 p-3 sm:p-4 bg-white rounded-lg border border-border">
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4 text-center">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-4 text-center">
           <div>
             <p className="text-lg sm:text-2xl font-bold text-primary">{payments.length}</p>
             <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
@@ -198,12 +198,16 @@ const AdminPayments = () => {
             <p className="text-xs sm:text-sm text-muted-foreground">Failed</p>
           </div>
           <div className="hidden sm:block">
-            <p className="text-lg sm:text-2xl font-bold text-yellow-600">{payments.filter(p => p.status === 'pending').length}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
-          </div>
-          <div className="col-span-3 sm:col-span-1 pt-2 sm:pt-0 border-t sm:border-t-0">
-            <p className="text-lg sm:text-2xl font-bold text-primary">₹{totalRevenue}</p>
+            <p className="text-lg sm:text-2xl font-bold text-primary">₹{totalRevenue.toLocaleString()}</p>
             <p className="text-xs sm:text-sm text-muted-foreground">Revenue</p>
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-lg sm:text-2xl font-bold text-green-600">₹{totalDiscounts.toLocaleString()}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Discounts Given</p>
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-lg sm:text-2xl font-bold text-blue-600">{couponUsageCount}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Coupon Uses</p>
           </div>
         </div>
       </div>
