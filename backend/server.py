@@ -2874,10 +2874,18 @@ async def create_order(order_data: OrderCreate):
             quantity = item.get("quantity", 0)  # quantity is in grams
             if product_id and quantity > 0:
                 # Decrement the weight (available stock) by the ordered quantity
-                await db.products.update_one(
+                result = await db.products.find_one_and_update(
                     {"id": product_id},
-                    {"$inc": {"weight": -quantity}}
+                    {"$inc": {"weight": -quantity}},
+                    return_document=True,
+                    projection={"_id": 0, "weight": 1}
                 )
+                # If weight is now 0 or less, update stock_status to out_of_stock
+                if result and result.get("weight", 0) <= 0:
+                    await db.products.update_one(
+                        {"id": product_id},
+                        {"$set": {"weight": 0, "stock_status": "out_of_stock"}}
+                    )
     
     # Update coupon usage if used
     if order_data.coupon_code:
