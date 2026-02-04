@@ -71,15 +71,10 @@ const AdminDeliveries = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/login');
-      return;
-    }
     fetchDeliveries();
-  }, [user, navigate]);
+  }, []);
 
   const fetchDeliveries = async () => {
     try {
