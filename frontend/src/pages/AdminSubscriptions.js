@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Search, Package, MapPin, Calendar, Phone, ChevronRight, Repeat, User, Loader2, Clock, CheckCircle2, Circle, Truck, Edit2, X, Save } from 'lucide-react';
 import { format } from 'date-fns';
