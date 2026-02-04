@@ -32,6 +32,10 @@ const AdminSubscriptions = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [deliveries, setDeliveries] = useState([]);
+  const [loadingDeliveries, setLoadingDeliveries] = useState(false);
+  const [editingDelivery, setEditingDelivery] = useState(null);
+  const [savingDelivery, setSavingDelivery] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
