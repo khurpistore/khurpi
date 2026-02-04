@@ -325,16 +325,53 @@ const AdminCreateOrder = () => {
 
               {/* Existing Customer Found */}
               {customer && !isNewCustomer && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                      <User className="w-6 h-6 text-green-600" />
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <User className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-green-600">Existing Customer</p>
+                        <p className="text-sm text-green-700">{customer.phone}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setIsEditingCustomer(!isEditingCustomer)}
+                        className="text-green-700 hover:text-green-800 hover:bg-green-100"
+                      >
+                        {isEditingCustomer ? 'Done' : 'Edit'}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Editable Name & Email */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-green-700">Customer Name *</Label>
+                      <Input
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Enter name"
+                        className="mt-1 bg-white"
+                        disabled={!isEditingCustomer}
+                      />
                     </div>
                     <div>
-                      <p className="font-semibold text-green-800">{customer.name}</p>
-                      <p className="text-sm text-green-600">{customer.phone}</p>
+                      <Label className="text-green-700">Email (Optional)</Label>
+                      <Input
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        placeholder="Enter email"
+                        className="mt-1 bg-white"
+                        type="email"
+                        disabled={!isEditingCustomer}
+                      />
                     </div>
-                    <CheckCircle className="w-5 h-5 text-green-600 ml-auto" />
                   </div>
                 </div>
               )}
@@ -350,8 +387,8 @@ const AdminCreateOrder = () => {
                     <div>
                       <Label>Customer Name *</Label>
                       <Input
-                        value={newCustomerName}
-                        onChange={(e) => setNewCustomerName(e.target.value)}
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
                         placeholder="Enter name"
                         className="mt-1"
                       />
@@ -359,8 +396,8 @@ const AdminCreateOrder = () => {
                     <div>
                       <Label>Email (Optional)</Label>
                       <Input
-                        value={newCustomerEmail}
-                        onChange={(e) => setNewCustomerEmail(e.target.value)}
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
                         placeholder="Enter email"
                         className="mt-1"
                         type="email"
