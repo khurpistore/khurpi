@@ -107,6 +107,9 @@ const AdminCreateOrder = () => {
       if (foundCustomer) {
         setCustomer(foundCustomer);
         setIsNewCustomer(false);
+        setCustomerName(foundCustomer.name || '');
+        setCustomerEmail(foundCustomer.email || '');
+        setIsEditingCustomer(false);
         toast.success(`Found customer: ${foundCustomer.name}`);
         
         // Fetch customer addresses
@@ -119,6 +122,8 @@ const AdminCreateOrder = () => {
       } else {
         setCustomer(null);
         setIsNewCustomer(true);
+        setCustomerName('');
+        setCustomerEmail('');
         setAddresses([]);
         toast.info('Customer not found. You can create a new customer.');
       }
