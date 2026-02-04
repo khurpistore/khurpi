@@ -354,13 +354,20 @@ const AdminProducts = () => {
 
     setSaving(prev => ({ ...prev, [product.id]: true }));
     try {
-      const stockStatus = changes.stock_status !== undefined ? changes.stock_status : product.stock_status;
+      const weight = changes.weight !== undefined ? parseInt(changes.weight) : (product.weight || 100);
+      // Auto-update stock status to out_of_stock if weight is 0
+      let stockStatus = changes.stock_status !== undefined ? changes.stock_status : product.stock_status;
+      if (weight === 0) {
+        stockStatus = 'out_of_stock';
+      }
+      
       const updateData = {
         ...product,
         ...changes,
         price: changes.price !== undefined ? parseFloat(changes.price) : product.price,
         growth_days: changes.growth_days !== undefined ? parseInt(changes.growth_days) : product.growth_days,
-        weight: changes.weight !== undefined ? parseInt(changes.weight) : (product.weight || 100),
+        weight: weight,
+        stock_status: stockStatus,
         ready_in_days: stockStatus === 'growing' 
           ? (changes.ready_in_days !== undefined ? parseInt(changes.ready_in_days) : product.ready_in_days) 
           : null,
