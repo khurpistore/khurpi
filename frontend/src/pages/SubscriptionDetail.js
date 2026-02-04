@@ -22,17 +22,33 @@ const SubscriptionDetail = () => {
   const [deliveriesFromAPI, setDeliveriesFromAPI] = useState([]);
 
   useEffect(() => {
-    // Wait for auth to finish loading
+    // If we have passed data from navigation state, use it immediately
+    const passedData = location.state?.subscriptionData;
+    const source = location.state?.source;
+    
+    if (source === 'order' && passedData) {
+      setSubscription({
+        ...passedData,
+        status: passedData.status || 'active'
+      });
+      setItems(passedData.items || []);
+      setAddress(passedData.address);
+      setLoading(false);
+      return;
+    }
+    
+    // Wait for auth to finish loading before fetching from API
     if (authLoading) return;
     
     if (!user) {
       navigate('/login');
       return;
     }
+    
     if (subscriptionId && subscriptionId !== 'undefined') {
       fetchSubscription();
     }
-  }, [user, authLoading, subscriptionId]);
+  }, [user, authLoading, subscriptionId, location.state]);
 
   // Fetch deliveries from API when subscription is loaded
   useEffect(() => {
