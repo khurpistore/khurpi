@@ -276,12 +276,26 @@ const AdminDeliveries = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <Package className="w-4 h-4 text-primary" />
                         <p className="text-sm font-medium">Products ({delivery.total_items} items)</p>
+                        {delivery.delivery_time && (
+                          <Badge variant="outline" className="ml-auto text-xs">
+                            🕐 {delivery.delivery_time}
+                          </Badge>
+                        )}
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {delivery.products?.map((product, idx) => (
-                          <div key={idx} className="text-sm bg-white rounded px-2 py-1 border">
-                            <span className="font-medium">{product.name}</span>
-                            <span className="text-muted-foreground"> × {product.quantity}</span>
+                          <div key={idx} className="flex items-center gap-2 text-sm bg-white rounded-lg px-3 py-2 border">
+                            {product.image && (
+                              <img 
+                                src={product.image} 
+                                alt={product.name} 
+                                className="w-8 h-8 rounded object-cover"
+                              />
+                            )}
+                            <div>
+                              <span className="font-medium">{product.name}</span>
+                              <span className="text-muted-foreground ml-1">× {product.quantity}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
