@@ -331,50 +331,92 @@ const AdminOrders = () => {
                   </div>
                 )}
 
-                {/* Order Items */}
-                <div className="mb-4">
-                  <p className="font-semibold text-sm mb-2 flex items-center gap-2">
-                    <Package className="w-4 h-4 text-primary" />
-                    Items
-                  </p>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                {/* Subscription Details */}
+                {selectedOrder.subscription && (
+                  <div className="bg-blue-50 rounded-lg p-3 mb-4 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Repeat className="w-4 h-4 text-blue-600" />
+                      <span className="font-semibold text-sm text-blue-800">Subscription</span>
+                      <Badge className="bg-blue-100 text-blue-800 text-xs ml-auto">
+                        {getPlanDisplayName(selectedOrder.subscription.frequency)}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                      <div>
+                        <p className="text-xs text-blue-600">Delivery Days</p>
+                        <p className="font-medium">{selectedOrder.subscription.delivery_days?.join(', ') || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-blue-600">Start Date</p>
+                        <p className="font-medium">{selectedOrder.subscription.start_date ? format(new Date(selectedOrder.subscription.start_date), 'MMM d, yyyy') : '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-blue-600">Next Delivery</p>
+                        <p className="font-medium text-green-700">{selectedOrder.subscription.next_delivery_date ? format(new Date(selectedOrder.subscription.next_delivery_date), 'MMM d') : '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-blue-600">Monthly Total</p>
+                        <p className="font-medium">₹{selectedOrder.subscription.total_price?.toLocaleString() || '-'}</p>
+                      </div>
+                    </div>
                     {/* Subscription Items */}
-                    {selectedOrder.subscription?.items?.map((item, idx) => (
-                      <div key={`sub-${idx}`} className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg">
-                        {item.product?.image ? (
-                          <img src={item.product.image} alt="" className="w-10 h-10 rounded object-cover" />
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                            <Package className="w-4 h-4 text-gray-400" />
+                    <p className="text-xs text-blue-600 mb-1">Items ({selectedOrder.subscription.items?.length || 0})</p>
+                    <div className="space-y-1.5">
+                      {selectedOrder.subscription.items?.map((item, idx) => (
+                        <div key={`sub-${idx}`} className="flex items-center gap-2 bg-white p-2 rounded-lg">
+                          {item.product?.image ? (
+                            <img src={item.product.image} alt="" className="w-9 h-9 rounded object-cover" />
+                          ) : (
+                            <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center">
+                              <Package className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{item.product?.name || `Product ${idx + 1}`}</p>
+                            <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price}/100gm</p>
                           </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.product?.name}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Repeat className="w-3 h-3" /> {item.quantity}gm
-                          </p>
+                          <p className="text-sm font-medium">₹{((item.quantity / 100) * item.price).toFixed(0)}</p>
                         </div>
+                      ))}
+                    </div>
+                    {selectedOrder.subscription.bulk_discount_amount > 0 && (
+                      <div className="mt-2 pt-2 border-t border-blue-200 flex justify-between text-sm">
+                        <span className="text-green-600 flex items-center gap-1">
+                          <Tag className="w-3 h-3" /> Discount ({selectedOrder.subscription.bulk_discount_percent}%)
+                        </span>
+                        <span className="text-green-600 font-medium">-₹{selectedOrder.subscription.bulk_discount_amount}</span>
                       </div>
-                    ))}
-                    {/* One-time Items */}
-                    {(selectedOrder.one_time_items || selectedOrder.items)?.map((item, idx) => (
-                      <div key={`item-${idx}`} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                        {item.product?.image ? (
-                          <img src={item.product.image} alt="" className="w-10 h-10 rounded object-cover" />
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                            <Package className="w-4 h-4 text-gray-400" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.product?.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price}/100gm</p>
-                        </div>
-                        <p className="text-sm font-medium">₹{((item.quantity / 100) * item.price).toFixed(0)}</p>
-                      </div>
-                    ))}
+                    )}
                   </div>
-                </div>
+                )}
+
+                {/* One-time Items */}
+                {(selectedOrder.one_time_items?.length > 0 || selectedOrder.items?.length > 0) && (
+                  <div className="mb-4">
+                    <p className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Package className="w-4 h-4 text-primary" />
+                      One-time Items
+                    </p>
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      {(selectedOrder.one_time_items || selectedOrder.items)?.map((item, idx) => (
+                        <div key={`item-${idx}`} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                          {item.product?.image ? (
+                            <img src={item.product.image} alt="" className="w-9 h-9 rounded object-cover" />
+                          ) : (
+                            <div className="w-9 h-9 rounded bg-gray-200 flex items-center justify-center">
+                              <Package className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{item.product?.name}</p>
+                            <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price}/100gm</p>
+                          </div>
+                          <p className="text-sm font-medium">₹{((item.quantity / 100) * item.price).toFixed(0)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Payment Summary */}
                 <div className="bg-gray-50 rounded-lg p-3 mb-4">
