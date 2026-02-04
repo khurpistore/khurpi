@@ -13,15 +13,10 @@ const AdminInventory = () => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/login');
-      return;
-    }
     fetchInventory();
-  }, [user, navigate]);
+  }, []);
 
   const fetchInventory = async () => {
     try {
