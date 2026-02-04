@@ -2626,7 +2626,7 @@ async def get_all_subscriptions_admin():
             "monthly_total": sub.get("total_price", 0),
             "bulk_discount_percent": sub.get("bulk_discount_percent", 0),
             "bulk_discount_amount": sub.get("bulk_discount_amount", 0),
-            "status": order.get("status", "active"),
+            "status": sub.get("status", "active"),
             "address": address,
             "created_at": order.get("created_at"),
             "tray_count": sum(item.get("quantity", 100) for item in sub.get("items", [])),
