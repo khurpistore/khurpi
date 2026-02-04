@@ -284,22 +284,30 @@ const AdminCustomerView = () => {
       {/* Tabs for different sections */}
       {customer && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="orders" className="gap-2">
+          <TabsList className="grid w-full grid-cols-6 mb-6">
+            <TabsTrigger value="orders" className="gap-1 text-xs sm:text-sm">
               <ShoppingBag className="w-4 h-4 hidden sm:block" />
               Orders ({orders.length})
             </TabsTrigger>
-            <TabsTrigger value="subscriptions" className="gap-2">
+            <TabsTrigger value="subscriptions" className="gap-1 text-xs sm:text-sm">
               <Repeat className="w-4 h-4 hidden sm:block" />
-              Subscriptions ({subscriptions.length})
+              Subs ({subscriptions.length})
             </TabsTrigger>
-            <TabsTrigger value="addresses" className="gap-2">
+            <TabsTrigger value="cart" className="gap-1 text-xs sm:text-sm">
+              <ShoppingCart className="w-4 h-4 hidden sm:block" />
+              Cart
+            </TabsTrigger>
+            <TabsTrigger value="checkout" className="gap-1 text-xs sm:text-sm">
+              <Receipt className="w-4 h-4 hidden sm:block" />
+              Checkout
+            </TabsTrigger>
+            <TabsTrigger value="addresses" className="gap-1 text-xs sm:text-sm">
               <MapPin className="w-4 h-4 hidden sm:block" />
               Addresses ({addresses.length})
             </TabsTrigger>
-            <TabsTrigger value="referrals" className="gap-2">
+            <TabsTrigger value="referrals" className="gap-1 text-xs sm:text-sm">
               <Gift className="w-4 h-4 hidden sm:block" />
-              Refer & Earn
+              Referrals
             </TabsTrigger>
           </TabsList>
 
