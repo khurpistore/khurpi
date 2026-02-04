@@ -134,10 +134,6 @@ const SubscriptionDetail = () => {
   }
 
   // Calculate values
-  const originalAmount = subscription.subtotal || 0;
-  const paidAmount = subscription.total_price || 0;
-  const discountPercent = subscription.bulk_discount_percent || 0;
-  const discountAmount = subscription.bulk_discount_amount || 0;
   const deliveriesPerWeek = subscription.delivery_days?.length || 1;
   const totalDeliveriesPerMonth = deliveriesPerWeek * 4;
 
