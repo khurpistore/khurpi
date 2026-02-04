@@ -588,15 +588,7 @@ const Checkout = () => {
                       <Tag className="w-3 h-3" />
                       {appliedCoupon.code} ({appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}% off` : `₹${appliedCoupon.discount_value} off`})
                     </span>
-                    <div className="flex items-center gap-2">
-                      <span>-₹{couponDiscount.toFixed(0)}</span>
-                      <button 
-                        onClick={() => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); }}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <span>-₹{couponDiscount.toFixed(0)}</span>
                   </div>
                 )}
               </div>
