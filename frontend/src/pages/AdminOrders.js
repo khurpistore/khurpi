@@ -283,6 +283,7 @@ const AdminOrders = () => {
                           <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                             {getStatusBadge(order.status)}
                             {getOrderTypeBadge(order.order_type)}
+                            {order.order_source && order.order_source !== 'online' && getOrderSourceBadge(order.order_source)}
                             {order.payment_status === 'paid' && (
                               <Badge className="bg-green-100 text-green-800 text-xs">Paid</Badge>
                             )}
