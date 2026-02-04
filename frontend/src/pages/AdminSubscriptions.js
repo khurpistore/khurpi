@@ -451,6 +451,11 @@ const AdminSubscriptions = () => {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-primary" />
                       <span className="font-semibold text-sm">Delivery Schedule</span>
+                      {deliveryInfo.total > 0 && (
+                        <Badge className="bg-blue-100 text-blue-800 text-xs">
+                          {deliveries.length}/{deliveryInfo.total} this month
+                        </Badge>
+                      )}
                     </div>
                   </div>
                   
