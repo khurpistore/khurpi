@@ -23,6 +23,7 @@ const API = `${BACKEND_URL}/api`;
 
 // Weight options: 100-1000 (step 100), 1500-5000 (step 500)
 const WEIGHT_OPTIONS = [
+  0,  // Out of stock
   ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
   ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
 ];
