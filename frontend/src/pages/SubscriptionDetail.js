@@ -196,7 +196,9 @@ const SubscriptionDetail = () => {
         index === self.findIndex(t => isSameDay(t.date, item.date))
       );
     
-    return uniqueDates.slice(0, 12); // Return max 12 dates
+    // Calculate correct number of deliveries per month based on delivery days
+    const deliveriesPerMonth = deliveryDayNumbers.length * 4;
+    return uniqueDates.slice(0, deliveriesPerMonth);
   };
 
   const getDeliveryStatusBadge = (status) => {
