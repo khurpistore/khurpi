@@ -310,19 +310,19 @@ const getStockStatusBadge = (product) => {
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editedProducts, setEditedProducts] = useState({});
   const [saving, setSaving] = useState({});
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    // Only redirect if loading is complete and user is definitely not admin
-    // This prevents premature redirects during state updates
-    if (loading) return;
+    // Wait for auth to be resolved before checking
+    if (authLoading) return;
     
+    // Check localStorage directly to avoid race conditions with user state
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
       navigate('/admin/login');
@@ -341,7 +341,7 @@ const AdminProducts = () => {
     }
     
     fetchProducts();
-  }, [navigate]); // Removed 'user' dependency to prevent re-renders causing logout
+  }, [authLoading, navigate]); // Only depends on authLoading, not user
 
   const fetchProducts = async () => {
     try {
