@@ -147,8 +147,8 @@ const Orders = () => {
                       {/* Order Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                          <Badge className={`${getStatusColor(order.status)} text-xs px-1.5 py-0`}>
-                            {order.status}
+                          <Badge className={`${getStatusColor(order.status)} text-xs px-1.5 py-0 capitalize`}>
+                            {order.status?.replace(/_/g, ' ')}
                           </Badge>
                           <Badge className={`${orderTypeInfo.color} text-xs px-1.5 py-0`}>
                             {orderTypeInfo.label}
