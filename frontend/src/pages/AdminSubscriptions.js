@@ -344,25 +344,12 @@ const AdminSubscriptions = () => {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{item.product?.name || `Product ${idx + 1}`}</p>
-                          <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price}/100gm</p>
+                          <p className="text-xs text-muted-foreground">{item.quantity}gm</p>
                         </div>
-                        <p className="text-sm font-medium">₹{((item.quantity / 100) * item.price).toFixed(0)}</p>
                       </div>
                     ))}
                   </div>
                 </div>
-
-                {/* Payment Summary */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                  <div className="space-y-1.5 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span>₹{(selectedSubscription.subtotal || selectedSubscription.per_delivery_total * 4 || 0).toLocaleString()}</span>
-                    </div>
-                    {selectedSubscription.bulk_discount_amount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
                           Discount ({selectedSubscription.bulk_discount_percent}%)
                         </span>
                         <span>-₹{selectedSubscription.bulk_discount_amount}</span>
