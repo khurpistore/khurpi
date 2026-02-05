@@ -417,10 +417,10 @@ const AdminOrders = () => {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{item.product?.name || `Product ${idx + 1}`}</p>
-                            <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price}/100gm</p>
+                            <p className="text-sm font-medium truncate">{item.product?.name || item.product_name_at_order || `Product ${idx + 1}`}</p>
+                            <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price_at_order || item.price}/100gm</p>
                           </div>
-                          <p className="text-sm font-medium">₹{((item.quantity / 100) * item.price).toFixed(0)}</p>
+                          <p className="text-sm font-medium">₹{((item.quantity / 100) * (item.price_at_order || item.price)).toFixed(0)}</p>
                         </div>
                       ))}
                     </div>
