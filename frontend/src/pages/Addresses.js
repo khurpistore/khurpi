@@ -8,31 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, Plus, Edit2, Trash2, Star, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2, Phone, Truck, AlertTriangle } from 'lucide-react';
+import { MapPin, Plus, Edit2, Trash2, CheckCircle, ArrowLeft, Home, Building2, Navigation, Search, Loader2, Phone, Locate, X } from 'lucide-react';
 import { toast } from 'sonner';
 import SimpleMapPicker from '@/components/SimpleMapPicker';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-
-// Shop coordinates (ACE City, Noida Extension)
-const SHOP_LOCATION = {
-  lat: 28.5672,
-  lng: 77.4538
-};
-const MAX_DELIVERY_DISTANCE_KM = 40;
-
-// Calculate distance between two coordinates using Haversine formula
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
 
 const Addresses = () => {
   const { user, addresses, addAddress, updateAddressById, deleteAddress, setDefaultAddress, fetchAddresses } = useAuth();
@@ -47,8 +27,8 @@ const Addresses = () => {
     address_line_2: '',
     landmark: '',
     area: '',
-    city: 'NOIDA',
-    state: 'Uttar Pradesh',
+    city: '',
+    state: '',
     pincode: '',
     latitude: null,
     longitude: null,
@@ -60,38 +40,13 @@ const Addresses = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchedLocation, setSearchedLocation] = useState(null);
-  const [deliveryFees, setDeliveryFees] = useState({});
-  const [deliveryEligible, setDeliveryEligible] = useState(true);
-  const [distanceFromShop, setDistanceFromShop] = useState(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   
   // Check if coming from checkout or subscription flow
   const params = new URLSearchParams(location.search);
   const returnTo = params.get('returnTo');
   const fromCheckout = localStorage.getItem('checkoutReturn') === 'true' || location.state?.from === 'checkout';
-
-  // Calculate delivery fees for all addresses
-  useEffect(() => {
-    const calculateFees = async () => {
-      const fees = {};
-      for (const address of addresses) {
-        if (address.latitude && address.longitude) {
-          try {
-            const response = await axios.post(
-              `${API}/settings/calculate-delivery-fee?lat=${address.latitude}&lon=${address.longitude}`
-            );
-            fees[address.id] = response.data;
-          } catch (error) {
-            fees[address.id] = { fee: 0, label: 'Unable to calculate' };
-          }
-        }
-      }
-      setDeliveryFees(fees);
-    };
-    
-    if (addresses.length > 0) {
-      calculateFees();
-    }
-  }, [addresses]);
 
   // Handle return navigation
   const handleBack = () => {
@@ -121,8 +76,8 @@ const Addresses = () => {
       address_line_2: '',
       landmark: '',
       area: '',
-      city: 'NOIDA',
-      state: 'Uttar Pradesh',
+      city: '',
+      state: '',
       pincode: '',
       latitude: null,
       longitude: null,
@@ -133,43 +88,142 @@ const Addresses = () => {
     setSearchQuery('');
     setSearchResults([]);
     setSearchedLocation(null);
-    setDeliveryEligible(true);
-    setDistanceFromShop(null);
+    setShowSearchResults(false);
   };
 
   const handleLocationSelect = (location) => {
-    const distance = calculateDistance(
-      SHOP_LOCATION.lat, SHOP_LOCATION.lng,
-      location.lat, location.lng
-    );
-    
-    setDistanceFromShop(distance);
-    setDeliveryEligible(distance <= MAX_DELIVERY_DISTANCE_KM);
-    
     setFormData(prev => ({
       ...prev,
       latitude: location.lat,
       longitude: location.lng
     }));
+    
+    // Reverse geocode to get address
+    reverseGeocode(location.lat, location.lng);
   };
 
-  // Debounced search for addresses
+  // Reverse geocode coordinates to address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
+      );
+      const data = await response.json();
+      
+      if (data && data.address) {
+        const addr = data.address;
+        setFormData(prev => ({
+          ...prev,
+          address_line_1: [addr.house_number, addr.road].filter(Boolean).join(' ') || addr.neighbourhood || '',
+          area: addr.suburb || addr.neighbourhood || addr.village || '',
+          city: addr.city || addr.town || addr.county || addr.state_district || '',
+          state: addr.state || '',
+          pincode: addr.postcode || ''
+        }));
+      }
+    } catch (error) {
+      console.error('Reverse geocoding failed:', error);
+    }
+  };
+
+  // Get user's current location
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation not supported by your browser');
+      return;
+    }
+
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        setFormData(prev => ({
+          ...prev,
+          latitude,
+          longitude
+        }));
+        
+        setSearchedLocation({ lat: latitude, lng: longitude });
+        
+        // Reverse geocode
+        await reverseGeocode(latitude, longitude);
+        
+        setGettingLocation(false);
+        toast.success('Location detected!');
+      },
+      (error) => {
+        setGettingLocation(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('Please allow location access in your browser');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('Location information unavailable');
+            break;
+          case error.TIMEOUT:
+            toast.error('Location request timed out');
+            break;
+          default:
+            toast.error('Unable to get your location');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // Improved address search with better query handling
   const searchAddress = useCallback(async (query) => {
-    if (query.length < 3) {
+    if (query.length < 2) {
       setSearchResults([]);
       return;
     }
 
     setSearchLoading(true);
     try {
-      // Using OpenStreetMap Nominatim API for address search
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`
+      // Clean up the query - remove extra spaces, special chars
+      let cleanQuery = query.trim().replace(/\s+/g, ' ');
+      
+      // Add India to search if not present
+      if (!cleanQuery.toLowerCase().includes('india')) {
+        cleanQuery = `${cleanQuery}, India`;
+      }
+
+      // Try primary search
+      let response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanQuery)}&limit=8&addressdetails=1`
       );
-      const data = await response.json();
+      let data = await response.json();
+
+      // If no results, try with partial matching
+      if (data.length === 0 && query.length >= 3) {
+        // Try searching with just key parts
+        const keywords = query.split(/[\s,]+/).filter(w => w.length > 2);
+        if (keywords.length > 0) {
+          const simpleQuery = keywords.slice(0, 3).join(' ') + ', India';
+          response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(simpleQuery)}&limit=8&addressdetails=1`
+          );
+          data = await response.json();
+        }
+      }
+
+      // If still no results, try postal code search
+      if (data.length === 0) {
+        const pincodeMatch = query.match(/\d{6}/);
+        if (pincodeMatch) {
+          response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&postalcode=${pincodeMatch[0]}&country=India&limit=5`
+          );
+          data = await response.json();
+        }
+      }
+
       setSearchResults(data);
+      setShowSearchResults(true);
     } catch (error) {
       console.error('Address search failed:', error);
+      toast.error('Search failed. Please try again.');
     } finally {
       setSearchLoading(false);
     }
@@ -177,101 +231,61 @@ const Addresses = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery) {
+      if (searchQuery && searchQuery.length >= 2) {
         searchAddress(searchQuery);
+      } else {
+        setSearchResults([]);
       }
-    }, 500);
+    }, 400);
     return () => clearTimeout(timer);
   }, [searchQuery, searchAddress]);
 
   const handleSearchSelect = (result) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
-    
-    // Calculate distance from shop
-    const distance = calculateDistance(SHOP_LOCATION.lat, SHOP_LOCATION.lng, lat, lng);
-    setDistanceFromShop(distance);
-    setDeliveryEligible(distance <= MAX_DELIVERY_DISTANCE_KM);
+    const addr = result.address || {};
     
     // Parse address components
-    const displayName = result.display_name || '';
-    const parts = displayName.split(',').map(p => p.trim());
-    
-    // Try to extract city and pincode
-    let city = '';
-    let pincode = '';
-    let area = '';
+    let city = addr.city || addr.town || addr.county || addr.state_district || '';
+    let state = addr.state || '';
+    let pincode = addr.postcode || '';
+    let area = addr.suburb || addr.neighbourhood || addr.village || '';
     let address_line_1 = '';
     let address_line_2 = '';
     
-    // Look for Noida or other city names and extract details
-    parts.forEach((part, index) => {
-      const lowerPart = part.toLowerCase();
-      
-      // City detection
-      if (lowerPart.includes('noida')) city = 'NOIDA';
-      else if (lowerPart.includes('delhi')) city = 'Delhi';
-      else if (lowerPart.includes('gurgaon') || lowerPart.includes('gurugram')) city = 'Gurugram';
-      else if (lowerPart.includes('ghaziabad')) city = 'Ghaziabad';
-      else if (lowerPart.includes('greater noida')) city = 'Greater Noida';
-      
-      // Check for pincode (6 digits)
-      const pincodeMatch = part.match(/\d{6}/);
-      if (pincodeMatch) pincode = pincodeMatch[0];
-      
-      // Check for sector/area
-      if (lowerPart.includes('sector') || lowerPart.includes('block') || lowerPart.includes('phase')) {
-        area = part;
-      }
-    });
-
-    // Build address lines from parts
-    // First part is usually the specific location/building
-    if (parts.length > 0) {
-      address_line_1 = parts[0];
+    // Build address line from parts
+    const displayParts = result.display_name.split(',').map(p => p.trim());
+    if (displayParts.length > 0) {
+      address_line_1 = displayParts[0];
     }
-    
-    // Second and third parts are usually street/area details
-    if (parts.length > 1) {
-      const middleParts = parts.slice(1, Math.min(4, parts.length - 3)).filter(p => {
+    if (displayParts.length > 1) {
+      // Filter out city, state, country, pincode from middle parts
+      const middleParts = displayParts.slice(1, -3).filter(p => {
         const lower = p.toLowerCase();
         return !lower.includes('india') && 
-               !lower.includes('uttar pradesh') && 
                !lower.match(/^\d{6}$/) &&
-               !lower.includes('district');
+               lower !== city.toLowerCase() &&
+               lower !== state.toLowerCase();
       });
-      address_line_2 = middleParts.join(', ');
-    }
-
-    // If no area found from sector detection, use a middle part
-    if (!area && parts.length > 2) {
-      area = parts[1] || '';
-    }
-
-    // If no city found, try to find from parts
-    if (!city && parts.length > 3) {
-      city = parts[parts.length - 3] || '';
+      address_line_2 = middleParts.slice(0, 2).join(', ');
     }
 
     setFormData(prev => ({
       ...prev,
-      address_line_1: address_line_1,
-      address_line_2: address_line_2,
-      area: area,
-      city: city,
-      pincode: pincode,
+      address_line_1,
+      address_line_2,
+      area: area || address_line_2.split(',')[0] || '',
+      city,
+      state,
+      pincode,
       latitude: lat,
       longitude: lng
     }));
 
-    // Show selected address in search box
-    setSearchQuery(displayName);
-    
-    // Set searched location to update map marker
+    setSearchQuery(result.display_name);
     setSearchedLocation({ lat, lng });
-
-    // Clear dropdown results
     setSearchResults([]);
+    setShowSearchResults(false);
   };
 
   const buildAddressLine = () => {
@@ -290,46 +304,35 @@ const Addresses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate map location is set
-    if (!formData.latitude || !formData.longitude) {
-      toast.error('Location Required', {
-        description: 'Please pin your delivery location on the map or search for an address.'
-      });
-      return;
-    }
-
-    // Check delivery eligibility
-    if (!deliveryEligible) {
-      toast.error('Delivery Not Available', {
-        description: `We currently deliver within ${MAX_DELIVERY_DISTANCE_KM}km of our store. Your location is ${distanceFromShop?.toFixed(1)}km away.`
-      });
-      return;
-    }
-
     // Validate receiver name
     if (!formData.name || formData.name.trim().length < 2) {
-      toast.error('Receiver Name Required', {
-        description: 'Please enter the receiver\'s name.'
-      });
+      toast.error('Please enter receiver\'s name');
       return;
     }
 
     // Validate phone number
     if (!formData.phone || formData.phone.length !== 10) {
-      toast.error('Phone Number Required', {
-        description: 'Please enter a valid 10-digit phone number.'
-      });
+      toast.error('Please enter a valid 10-digit phone number');
+      return;
+    }
+
+    // Validate address
+    if (!formData.address_line_1) {
+      toast.error('Please enter house/flat number or building name');
+      return;
+    }
+
+    if (!formData.city) {
+      toast.error('Please enter city name');
+      return;
+    }
+
+    if (!formData.pincode || formData.pincode.length !== 6) {
+      toast.error('Please enter a valid 6-digit PIN code');
       return;
     }
     
     const fullAddress = buildAddressLine();
-
-    if (!formData.pincode || formData.pincode.length !== 6) {
-      toast.error('Invalid PIN Code', {
-        description: 'Please enter a valid 6-digit PIN code.'
-      });
-      return;
-    }
 
     setLoading(true);
     try {
@@ -352,21 +355,15 @@ const Addresses = () => {
 
       if (editingAddress) {
         await updateAddressById(editingAddress.id, addressData);
-        toast.success('Address Updated', {
-          description: `${formData.name || 'Address'} has been saved.`
-        });
+        toast.success('Address updated successfully!');
       } else {
         await addAddress(addressData);
-        toast.success('Address Added', {
-          description: 'Your address has been saved successfully.'
-        });
+        toast.success('Address added successfully!');
       }
       setIsAddDialogOpen(false);
       resetForm();
     } catch (error) {
-      toast.error('Failed to Save', {
-        description: error.response?.data?.detail || 'Please try again.'
-      });
+      toast.error(error.response?.data?.detail || 'Failed to save address');
     } finally {
       setLoading(false);
     }
@@ -382,8 +379,8 @@ const Addresses = () => {
     let address_line_2 = address.address_line_2 || '';
     let landmark = address.landmark || '';
     let area = address.area || '';
-    let city = address.city || 'NOIDA';
-    let state = address.state || 'Uttar Pradesh';
+    let city = address.city || '';
+    let state = address.state || '';
     let pincode = address.pincode || '';
     let address_type = address.address_type || 'home';
     
@@ -394,25 +391,28 @@ const Addresses = () => {
       if (parts.length >= 2) address_line_2 = parts.slice(1, -2).join(', ');
       const pincodeMatch = address.address_line.match(/\d{6}/);
       if (pincodeMatch) pincode = pincodeMatch[0];
-      const areaMatch = address.address_line.match(/Sector\s*\d+/i);
-      if (areaMatch) area = areaMatch[0];
     }
     
     setFormData({
-      name: name,
-      phone: phone,
-      address_line_1: address_line_1,
-      address_line_2: address_line_2,
-      landmark: landmark,
-      area: area,
-      city: city,
-      state: state,
-      pincode: pincode,
+      name,
+      phone,
+      address_line_1,
+      address_line_2,
+      landmark,
+      area,
+      city,
+      state,
+      pincode,
       latitude: address.latitude || null,
       longitude: address.longitude || null,
-      address_type: address_type,
+      address_type,
       is_default: address.is_default || false
     });
+    
+    // Set map location if available
+    if (address.latitude && address.longitude) {
+      setSearchedLocation({ lat: address.latitude, lng: address.longitude });
+    }
     
     setIsAddDialogOpen(true);
   };
@@ -422,26 +422,18 @@ const Addresses = () => {
     
     try {
       await deleteAddress(addressId);
-      toast.success('Address Deleted', {
-        description: 'The address has been removed.'
-      });
+      toast.success('Address deleted');
     } catch (error) {
-      toast.error('Delete Failed', {
-        description: 'Could not delete address. Please try again.'
-      });
+      toast.error('Failed to delete address');
     }
   };
 
   const handleSetDefault = async (addressId) => {
     try {
       await setDefaultAddress(addressId);
-      toast.success('Default Address Set', {
-        description: 'This address will be used for deliveries.'
-      });
+      toast.success('Default address updated');
     } catch (error) {
-      toast.error('Update Failed', {
-        description: 'Could not set default address.'
-      });
+      toast.error('Failed to update default address');
     }
   };
 
@@ -450,9 +442,9 @@ const Addresses = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Banner - Only show when from checkout */}
+        {/* Back Banner */}
         {(returnTo === 'subscription' || fromCheckout) && (
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4">
             <Button 
               onClick={handleBack}
               variant="outline"
@@ -475,7 +467,7 @@ const Addresses = () => {
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="rounded-full">
+              <Button className="rounded-full" data-testid="add-address-btn">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Address
               </Button>
@@ -487,60 +479,108 @@ const Addresses = () => {
                   {editingAddress ? 'Edit Address' : 'Add New Address'}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-                {/* Address Search */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-2">
-                    <Search className="w-4 h-4" />
-                    Search Address
+              <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                
+                {/* Step 1: Find Location */}
+                <div className="bg-blue-50 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</div>
+                      <span className="font-medium text-blue-900">Find Your Location</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={getCurrentLocation}
+                      disabled={gettingLocation}
+                      className="text-xs h-8 border-blue-300 text-blue-700 hover:bg-blue-100"
+                    >
+                      {gettingLocation ? (
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      ) : (
+                        <Locate className="w-3 h-3 mr-1" />
+                      )}
+                      Use My Location
+                    </Button>
                   </div>
+                  
+                  {/* Search Box */}
                   <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <Input
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Type to search for your address..."
-                      className="bg-white pr-10"
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setShowSearchResults(true);
+                      }}
+                      onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                      placeholder="Search: building name, area, city, pincode..."
+                      className="pl-9 pr-9 bg-white"
                       data-testid="address-search-input"
                     />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSearchResults([]);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                     {searchLoading && (
-                      <Loader2 className="w-4 h-4 absolute right-3 top-3 animate-spin text-muted-foreground" />
+                      <Loader2 className="w-4 h-4 absolute right-9 top-1/2 -translate-y-1/2 animate-spin text-blue-500" />
                     )}
                   </div>
-                  {searchResults.length > 0 && (
-                    <div className="mt-2 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  
+                  {/* Search Results */}
+                  {showSearchResults && searchResults.length > 0 && (
+                    <div className="bg-white border rounded-lg shadow-lg max-h-52 overflow-y-auto">
                       {searchResults.map((result, index) => (
                         <div
                           key={index}
-                          className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                          className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0 transition-colors"
                           onClick={() => handleSearchSelect(result)}
                         >
-                          <p className="text-sm">{result.display_name}</p>
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-gray-700 leading-snug">{result.display_name}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   )}
-                  <p className="text-xs text-blue-600 mt-2">
-                    Search for your address or pin it on the map below
+                  
+                  {/* No results message */}
+                  {showSearchResults && searchQuery.length >= 3 && !searchLoading && searchResults.length === 0 && (
+                    <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded-lg">
+                      No results found. Try a different search or pin location on map below.
+                    </p>
+                  )}
+                  
+                  <p className="text-xs text-blue-600">
+                    Tip: Search with area name, landmark, or pincode for better results
                   </p>
                 </div>
 
-                {/* Map Location */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Navigation className="w-4 h-4" />
-                      Pin Location *
+                {/* Map */}
+                <div className="bg-gray-50 p-4 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Navigation className="w-4 h-4 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-700">Pin on Map</span>
                     </div>
-                    {formData.latitude && formData.longitude ? (
-                      <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
+                    {formData.latitude && formData.longitude && (
+                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                        <CheckCircle className="w-3 h-3 mr-1" />
                         Location Set
-                      </span>
-                    ) : (
-                      <span className="text-xs text-red-500">Required</span>
+                      </Badge>
                     )}
                   </div>
-                  <div className="h-52 rounded-lg overflow-hidden border border-gray-200">
+                  <div className="h-48 rounded-lg overflow-hidden border border-gray-200">
                     <SimpleMapPicker
                       key={editingAddress?.id || 'new'}
                       onLocationSelect={handleLocationSelect}
@@ -551,51 +591,14 @@ const Addresses = () => {
                       externalLocation={searchedLocation}
                     />
                   </div>
-                  {!formData.latitude && !formData.longitude && (
-                    <p className="text-xs text-red-500 mt-2">Click on the map to pin your delivery location</p>
-                  )}
-                  
-                  {/* Delivery Eligibility Warning */}
-                  {formData.latitude && formData.longitude && !deliveryEligible && (
-                    <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                          <AlertTriangle className="w-5 h-5 text-red-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-red-800">Delivery Not Available</h4>
-                          <p className="text-sm text-red-700 mt-1">
-                            Sorry, we currently deliver only within <span className="font-bold">{MAX_DELIVERY_DISTANCE_KM}km</span> of our store in Noida Extension.
-                          </p>
-                          <p className="text-sm text-red-600 mt-1">
-                            Your selected location is <span className="font-bold">{distanceFromShop?.toFixed(1)}km</span> away.
-                          </p>
-                          <p className="text-xs text-red-500 mt-2">
-                            💡 Please select a different address within our delivery zone.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Delivery Distance Info (when eligible) */}
-                  {formData.latitude && formData.longitude && deliveryEligible && distanceFromShop && (
-                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Truck className="w-4 h-4 text-green-600" />
-                        <span className="text-sm text-green-700">
-                          ✓ Delivery available! Your location is <span className="font-semibold">{distanceFromShop.toFixed(1)}km</span> from our store.
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                  <p className="text-xs text-gray-500">Click on map to adjust pin location</p>
                 </div>
 
-                {/* Address Type Selection */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <MapPin className="w-4 h-4" />
-                    Address Type *
+                {/* Step 2: Address Type */}
+                <div className="bg-gray-50 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">2</div>
+                    <span className="font-medium">Address Type</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {[
@@ -610,7 +613,7 @@ const Addresses = () => {
                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
                           formData.address_type === value
                             ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-gray-200 hover:border-gray-300'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
                         }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -620,35 +623,33 @@ const Addresses = () => {
                   </div>
                 </div>
 
-                {/* Receiver Details */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <Home className="w-4 h-4" />
-                    Receiver Details *
+                {/* Step 3: Receiver Details */}
+                <div className="bg-gray-50 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">3</div>
+                    <span className="font-medium">Receiver Details</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Receiver Name *</Label>
+                      <Label className="text-xs text-gray-600">Name *</Label>
                       <Input
                         value={formData.name}
                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="e.g., John Doe"
-                        required
+                        placeholder="Receiver's name"
                         className="mt-1 bg-white"
                         data-testid="address-name-input"
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Phone Number *</Label>
+                      <Label className="text-xs text-gray-600">Phone *</Label>
                       <div className="flex mt-1">
-                        <div className="flex items-center px-2 bg-gray-100 border border-r-0 rounded-l-lg text-xs text-muted-foreground">
+                        <span className="flex items-center px-2 bg-gray-100 border border-r-0 rounded-l-md text-xs text-gray-500">
                           +91
-                        </div>
+                        </span>
                         <Input
                           value={formData.phone}
                           onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
                           placeholder="10-digit number"
-                          required
                           maxLength={10}
                           className="bg-white rounded-l-none"
                           data-testid="address-phone-input"
@@ -658,42 +659,41 @@ const Addresses = () => {
                   </div>
                 </div>
 
-                {/* Address Details */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <Building2 className="w-4 h-4" />
-                    Address Details
+                {/* Step 4: Address Details */}
+                <div className="bg-gray-50 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">4</div>
+                    <span className="font-medium">Address Details</span>
                   </div>
                   
                   <div>
-                    <Label className="text-xs text-muted-foreground">House/Flat No., Building Name *</Label>
+                    <Label className="text-xs text-gray-600">House/Flat No., Building *</Label>
                     <Input
                       value={formData.address_line_1}
                       onChange={(e) => setFormData(prev => ({ ...prev, address_line_1: e.target.value }))}
                       placeholder="e.g., B-42, Sunrise Apartments"
-                      required
                       className="mt-1 bg-white"
                       data-testid="address-line1-input"
                     />
                   </div>
 
                   <div>
-                    <Label className="text-xs text-muted-foreground">Street / Road</Label>
+                    <Label className="text-xs text-gray-600">Street / Road</Label>
                     <Input
                       value={formData.address_line_2}
                       onChange={(e) => setFormData(prev => ({ ...prev, address_line_2: e.target.value }))}
-                      placeholder="e.g., Main Road, Block A"
+                      placeholder="e.g., Main Road"
                       className="mt-1 bg-white"
                       data-testid="address-line2-input"
                     />
                   </div>
 
                   <div>
-                    <Label className="text-xs text-muted-foreground">Landmark (for easy delivery)</Label>
+                    <Label className="text-xs text-gray-600">Landmark</Label>
                     <Input
                       value={formData.landmark}
                       onChange={(e) => setFormData(prev => ({ ...prev, landmark: e.target.value }))}
-                      placeholder="e.g., Near City Mall, Opposite Metro Station"
+                      placeholder="e.g., Near City Mall"
                       className="mt-1 bg-white"
                       data-testid="address-landmark-input"
                     />
@@ -701,23 +701,21 @@ const Addresses = () => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Area / Sector *</Label>
+                      <Label className="text-xs text-gray-600">Area / Sector</Label>
                       <Input
                         value={formData.area}
                         onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
                         placeholder="e.g., Sector 62"
-                        required
                         className="mt-1 bg-white"
                         data-testid="address-area-input"
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">City *</Label>
+                      <Label className="text-xs text-gray-600">City *</Label>
                       <Input
                         value={formData.city}
                         onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                        placeholder="e.g., Noida"
-                        required
+                        placeholder="e.g., Delhi"
                         className="mt-1 bg-white"
                         data-testid="address-city-input"
                       />
@@ -726,23 +724,21 @@ const Addresses = () => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">State *</Label>
+                      <Label className="text-xs text-gray-600">State</Label>
                       <Input
                         value={formData.state}
                         onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                        placeholder="e.g., Uttar Pradesh"
-                        required
+                        placeholder="e.g., Delhi"
                         className="mt-1 bg-white"
                         data-testid="address-state-input"
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">PIN Code *</Label>
+                      <Label className="text-xs text-gray-600">PIN Code *</Label>
                       <Input
                         value={formData.pincode}
                         onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
-                        placeholder="e.g., 201301"
-                        required
+                        placeholder="e.g., 110001"
                         maxLength={6}
                         className="mt-1 bg-white"
                         data-testid="address-pincode-input"
@@ -753,10 +749,10 @@ const Addresses = () => {
 
                 {/* Default Address Toggle */}
                 <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                     formData.is_default 
                       ? 'border-primary bg-primary/5' 
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
                   }`}
                   onClick={() => setFormData(prev => ({ ...prev, is_default: !prev.is_default }))}
                 >
@@ -768,7 +764,7 @@ const Addresses = () => {
                     </div>
                     <div>
                       <p className="font-medium text-sm">Set as default address</p>
-                      <p className="text-xs text-muted-foreground">This will be your primary delivery address</p>
+                      <p className="text-xs text-muted-foreground">Primary delivery address</p>
                     </div>
                   </div>
                 </div>
@@ -793,7 +789,12 @@ const Addresses = () => {
                     className="flex-1 rounded-full"
                     data-testid="save-address-btn"
                   >
-                    {loading ? 'Saving...' : editingAddress ? 'Update Address' : 'Save Address'}
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : editingAddress ? 'Update Address' : 'Save Address'}
                   </Button>
                 </div>
               </form>
@@ -819,16 +820,13 @@ const Addresses = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[...addresses]
               .sort((a, b) => {
-                // Default address first, then sort by updated_at or created_at (most recent first)
                 if (a.is_default && !b.is_default) return -1;
                 if (!a.is_default && b.is_default) return 1;
-                // Sort by updated_at or created_at descending (most recent first)
                 const dateA = new Date(a.updated_at || a.created_at || 0);
                 const dateB = new Date(b.updated_at || b.created_at || 0);
                 return dateB - dateA;
               })
               .map((address) => {
-                // Get address type icon
                 const AddressTypeIcon = address.address_type === 'office' ? Building2 : address.address_type === 'other' ? MapPin : Home;
                 const addressTypeLabel = address.address_type === 'office' ? 'Office' : address.address_type === 'other' ? 'Other' : 'Home';
                 
@@ -842,7 +840,6 @@ const Addresses = () => {
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          {/* Address Type & Default Badge */}
                           <div className="flex items-center gap-2 mb-2">
                             <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                               address.is_default ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
@@ -859,10 +856,8 @@ const Addresses = () => {
                             </div>
                           </div>
                           
-                          {/* Receiver Name */}
                           <p className="font-semibold text-sm mb-0.5">{address.name || 'Receiver'}</p>
                           
-                          {/* Phone */}
                           {address.phone && (
                             <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                               <Phone className="w-3 h-3" />
@@ -870,10 +865,8 @@ const Addresses = () => {
                             </p>
                           )}
                           
-                          {/* Address */}
                           <p className="text-xs text-gray-600 line-clamp-2">{address.address_line}</p>
                           
-                          {/* Landmark if available */}
                           {address.landmark && (
                             <p className="text-xs text-muted-foreground mt-0.5 italic">
                               Near: {address.landmark}
