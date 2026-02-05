@@ -4169,6 +4169,38 @@ async def get_all_orders_admin():
         logging.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Failed to fetch orders: {str(e)}")
 
+
+@api_router.get("/admin/orders/debug")
+async def debug_orders():
+    """Debug endpoint to check orders data"""
+    try:
+        orders_count = await db.orders.count_documents({})
+        users_count = await db.users.count_documents({})
+        products_count = await db.products.count_documents({})
+        
+        # Get first order to check structure
+        sample_order = await db.orders.find_one({}, {"_id": 0})
+        
+        return {
+            "status": "ok",
+            "orders_count": orders_count,
+            "users_count": users_count,
+            "products_count": products_count,
+            "sample_order_keys": list(sample_order.keys()) if sample_order else [],
+            "sample_order_id": sample_order.get("id") if sample_order else None,
+            "has_items": bool(sample_order.get("items")) if sample_order else False,
+            "has_one_time_items": bool(sample_order.get("one_time_items")) if sample_order else False,
+            "has_subscription": bool(sample_order.get("subscription")) if sample_order else False
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
 class OrderStatusUpdate(BaseModel):
     status: str
 
