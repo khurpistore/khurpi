@@ -25,7 +25,7 @@ const Footer = () => {
               />
             </div>
             <p className="text-sm text-white/80">
-              Fresh, organic microgreens delivered to your doorstep in NOIDA. 
+              Fresh, organic microgreens delivered to your doorstep. 
               Subscribe for regular deliveries and enjoy nature's superfoods.
             </p>
           </div>
@@ -80,7 +80,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-lg mb-4">Delivery</h4>
             <ul className="space-y-2 text-sm text-white/80">
-              <li>Currently serving NOIDA only</li>
+              <li>Pan India Delivery</li>
               <li>Delivery: Mon - Sat</li>
               <li>Fresh harvest guaranteed</li>
               <li>Free delivery on subscriptions</li>
