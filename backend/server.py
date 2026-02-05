@@ -1338,8 +1338,8 @@ Welcome to Khurpi Microgreens. By using our website and services, you agree to t
 ## 2. Delivery Policy
 
 ### Delivery Area
-- We currently deliver only in **Noida** and nearby areas
-- Delivery fees vary based on distance from our store
+- We deliver **Pan India**
+- Delivery fees may vary based on location
 - Subscription orders include **FREE delivery**
 
 ### Delivery Schedule
@@ -1395,13 +1395,9 @@ At Khurpi Microgreens, we are committed to delivering fresh, healthy microgreens
 ## Delivery Areas
 
 ### Currently Serving
-- **Noida** (All Sectors)
-- **Greater Noida** (Selected Areas)
-- **Noida Extension**
-
-### Coming Soon
-- Ghaziabad
-- Delhi NCR
+- **Pan India Delivery**
+- All major cities and towns
+- Remote areas may have extended delivery times
 
 ## Delivery Charges
 
