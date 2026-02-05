@@ -4274,6 +4274,8 @@ async def admin_create_order(order_data: AdminOrderCreate):
             },
             "quantity": item.quantity,
             "price": price_per_100g,
+            "price_at_order": price_per_100g,  # Store price at order time
+            "product_name_at_order": product["name"],
             "total": item_total
         })
         subtotal += item_total
