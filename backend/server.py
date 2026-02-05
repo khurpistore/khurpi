@@ -2153,14 +2153,6 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
         if not selected_address and addresses:
             selected_address = addresses[0]
     
-    # Check NOIDA validation
-    address_to_check = selected_address.get("address_line", "") if selected_address else user.get("address", "")
-    if "NOIDA" not in address_to_check.upper():
-        raise HTTPException(
-            status_code=400, 
-            detail="Sorry, we currently deliver only in NOIDA area. Please update your address."
-        )
-    
     # Subscriptions get FREE delivery - only calculate for reference/display
     delivery_fee = 0  # FREE for all subscriptions
     delivery_distance = 0
