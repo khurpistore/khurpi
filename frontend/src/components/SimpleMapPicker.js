@@ -11,8 +11,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// NOIDA center coordinates
-const NOIDA_CENTER = [28.5355, 77.3910];
+// Default center - India center (Delhi)
+const DEFAULT_CENTER = [28.6139, 77.2090];
 
 function LocationMarker({ position, setPosition, onLocationSelect }) {
   useMapEvents({
@@ -57,8 +57,8 @@ const SimpleMapPicker = ({ onLocationSelect, initialLocation, externalLocation }
 
   return (
     <MapContainer
-      center={position || NOIDA_CENTER}
-      zoom={13}
+      center={position || DEFAULT_CENTER}
+      zoom={position ? 15 : 5}
       style={{ height: '100%', width: '100%' }}
       scrollWheelZoom={true}
     >
