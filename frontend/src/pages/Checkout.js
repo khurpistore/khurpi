@@ -307,19 +307,35 @@ const Checkout = () => {
             toast.success(hasOnlySubscription ? 'Subscription Created!' : hasBoth ? 'Order & Subscription Created!' : 'Order Placed!');
             navigate('/orders');
           } catch (error) {
-            toast.error('Order creation failed. Please contact support.');
+            console.error('Payment verification/order creation error:', error);
+            const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+            toast.error(`Order creation failed: ${errorMsg}. Please contact support.`);
           }
         },
-        prefill: { name: user.name, contact: user.phone },
+        prefill: { name: user.name, contact: user.phone, email: user.email || '' },
         theme: { color: '#0d9488' },
         modal: { ondismiss: () => { setLoading(false); toast.info('Payment cancelled'); } }
       };
 
+      // Check if Razorpay script is loaded
+      if (!window.Razorpay) {
+        toast.error('Payment gateway not loaded. Please refresh the page.');
+        setLoading(false);
+        return;
+      }
+
       const razorpay = new window.Razorpay(options);
+      razorpay.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error);
+        toast.error(`Payment failed: ${response.error.description || 'Please try again'}`);
+        setLoading(false);
+      });
       razorpay.open();
       setLoading(false);
     } catch (error) {
-      toast.error('Failed to initiate payment');
+      console.error('Payment initiation error:', error);
+      const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+      toast.error(`Failed to initiate payment: ${errorMsg}`);
       setLoading(false);
     }
   };
