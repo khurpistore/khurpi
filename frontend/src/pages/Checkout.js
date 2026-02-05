@@ -395,12 +395,7 @@ const Checkout = () => {
                 </>
               )}
 
-              {!isNoidaAddress && selectedAddressId && (
-                <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600" />
-                  <p className="text-xs text-amber-700">We currently deliver only in Noida</p>
-                </div>
-              )}
+
             </CardContent>
           </Card>
 
