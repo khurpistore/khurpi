@@ -3031,32 +3031,69 @@ async def create_order(order_data: OrderCreate):
     # Get all items for delivery date calculation
     all_items = []
     
-    # Handle one_time_items
+    # Fetch all product details first (for price snapshot and delivery calculation)
+    products_cache = {}
+    
+    # Collect all product IDs
+    all_product_ids = set()
+    if order_data.one_time_items:
+        for item in order_data.one_time_items:
+            all_product_ids.add(item.product_id)
+    if order_data.items and not order_data.one_time_items:
+        for item in order_data.items:
+            all_product_ids.add(item.product_id)
+    if order_data.subscription and order_data.subscription.get("items"):
+        for item in order_data.subscription["items"]:
+            if item.get("product_id"):
+                all_product_ids.add(item["product_id"])
+    
+    # Fetch all products
+    for product_id in all_product_ids:
+        product = await db.products.find_one({"id": product_id}, {"_id": 0})
+        if product:
+            products_cache[product_id] = product
+    
+    # Handle one_time_items - store price_at_order for each item
     one_time_items_data = None
     if order_data.one_time_items:
-        one_time_items_data = [item.model_dump() for item in order_data.one_time_items]
+        one_time_items_data = []
+        for item in order_data.one_time_items:
+            item_dict = item.model_dump()
+            product = products_cache.get(item.product_id)
+            if product:
+                # Store the price at the time of order
+                item_dict["price_at_order"] = product.get("price", 0)
+                item_dict["product_name_at_order"] = product.get("name", "")
+            one_time_items_data.append(item_dict)
         all_items.extend(one_time_items_data)
     
     # Handle legacy items field
     if order_data.items and not order_data.one_time_items:
-        one_time_items_data = [item.model_dump() for item in order_data.items]
+        one_time_items_data = []
+        for item in order_data.items:
+            item_dict = item.model_dump()
+            product = products_cache.get(item.product_id)
+            if product:
+                item_dict["price_at_order"] = product.get("price", 0)
+                item_dict["product_name_at_order"] = product.get("name", "")
+            one_time_items_data.append(item_dict)
         all_items.extend(one_time_items_data)
     
-    # Handle subscription items
+    # Handle subscription items - also store price_at_order
     subscription_data = None
     if order_data.subscription:
-        subscription_data = order_data.subscription
+        subscription_data = order_data.subscription.copy() if isinstance(order_data.subscription, dict) else order_data.subscription
         if subscription_data.get("items"):
-            all_items.extend(subscription_data["items"])
-    
-    # Fetch product details for delivery date calculation
-    products_cache = {}
-    for item in all_items:
-        product_id = item.get("product_id")
-        if product_id:
-            product = await db.products.find_one({"id": product_id}, {"_id": 0})
-            if product:
-                products_cache[product_id] = product
+            updated_sub_items = []
+            for item in subscription_data["items"]:
+                item_copy = item.copy() if isinstance(item, dict) else item
+                product = products_cache.get(item.get("product_id"))
+                if product:
+                    item_copy["price_at_order"] = product.get("price", 0)
+                    item_copy["product_name_at_order"] = product.get("name", "")
+                updated_sub_items.append(item_copy)
+            subscription_data["items"] = updated_sub_items
+            all_items.extend(updated_sub_items)
     
     # Calculate estimated delivery date based on product stock status
     estimated_delivery = calculate_estimated_delivery_date(
