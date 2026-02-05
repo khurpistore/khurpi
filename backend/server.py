@@ -1960,7 +1960,8 @@ async def create_razorpay_order(data: PaymentOrderRequest):
             "order_id": order["id"],
             "amount": order["amount"],
             "currency": order["currency"],
-            "key_id": razorpay_key_id
+            "key_id": razorpay_key_id,
+            "test_mode": False
         }
     except Exception as e:
         logging.error(f"Razorpay order creation failed: {e}")
