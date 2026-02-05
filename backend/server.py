@@ -172,8 +172,8 @@ class Address(BaseModel):
     address_line_2: Optional[str] = None
     landmark: Optional[str] = None
     area: Optional[str] = None
-    city: Optional[str] = "NOIDA"
-    state: Optional[str] = "Uttar Pradesh"
+    city: Optional[str] = None
+    state: Optional[str] = None
     pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
@@ -190,8 +190,8 @@ class AddressCreate(BaseModel):
     address_line_2: Optional[str] = None
     landmark: Optional[str] = None
     area: Optional[str] = None
-    city: Optional[str] = "NOIDA"
-    state: Optional[str] = "Uttar Pradesh"
+    city: Optional[str] = None
+    state: Optional[str] = None
     pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
@@ -206,7 +206,7 @@ class AddressUpdate(BaseModel):
     address_line_2: Optional[str] = None
     landmark: Optional[str] = None
     area: Optional[str] = None
-    city: Optional[str] = "NOIDA"
+    city: Optional[str] = None
     state: Optional[str] = None
     pincode: Optional[str] = None
     latitude: Optional[float] = None
