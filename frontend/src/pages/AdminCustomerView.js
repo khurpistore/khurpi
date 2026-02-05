@@ -1213,7 +1213,7 @@ const AdminCustomerView = () => {
 
                           <div className="space-y-2">
                             {(selectedOrder.one_time_items || selectedOrder.items || []).map((item, idx) => {
-                              const pricePerUnit = item.price || item.product?.price || 0;
+                              const pricePerUnit = item.price_at_order || item.price || item.product?.price || 0;
                               const quantity = item.quantity || 100;
                               const totalPrice = (quantity / 100) * pricePerUnit;
                               return (
@@ -1221,7 +1221,7 @@ const AdminCustomerView = () => {
                                   {item.product?.image ? (
                                     <img 
                                       src={item.product.image} 
-                                      alt={item.product?.name}
+                                      alt={item.product?.name || item.product_name_at_order}
                                       className="w-12 h-12 rounded-lg object-cover"
                                     />
                                   ) : (
@@ -1230,7 +1230,7 @@ const AdminCustomerView = () => {
                                     </div>
                                   )}
                                   <div className="flex-1">
-                                    <p className="font-medium text-sm">{item.product?.name || 'Product'}</p>
+                                    <p className="font-medium text-sm">{item.product?.name || item.product_name_at_order || 'Product'}</p>
                                     <p className="text-xs text-muted-foreground">
                                       {quantity}gm × ₹{pricePerUnit}/100gm
                                     </p>
