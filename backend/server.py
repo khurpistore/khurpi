@@ -4064,66 +4064,88 @@ async def get_all_payments_admin():
 @api_router.get("/admin/orders")
 async def get_all_orders_admin():
     """Get all orders for admin panel"""
-    orders = await db.orders.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    
-    result = []
-    for order in orders:
-        user = await db.users.find_one({"id": order.get("user_id")}, {"_id": 0}) if order.get("user_id") else None
+    try:
+        orders = await db.orders.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
         
-        # Use stored delivery_address (snapshot) if available, otherwise fetch current address
-        if order.get("delivery_address"):
-            address = order["delivery_address"]
-        else:
-            address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0}) if order.get("address_id") else None
+        # Batch fetch all users and products for better performance
+        user_ids = list(set(o.get("user_id") for o in orders if o.get("user_id")))
+        product_ids = set()
         
-        # Enrich items with product details
-        enriched_items = []
-        for item in order.get("items", []):
-            product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
-            enriched_items.append({
-                **item,
-                "product": product
+        for order in orders:
+            for item in order.get("items", []):
+                if item.get("product_id"):
+                    product_ids.add(item.get("product_id"))
+            for item in order.get("one_time_items", []):
+                if item.get("product_id"):
+                    product_ids.add(item.get("product_id"))
+            if order.get("subscription") and order.get("subscription", {}).get("items"):
+                for item in order["subscription"]["items"]:
+                    if item.get("product_id"):
+                        product_ids.add(item.get("product_id"))
+        
+        # Batch fetch users
+        users_map = {}
+        if user_ids:
+            users = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0}).to_list(len(user_ids))
+            users_map = {u["id"]: u for u in users}
+        
+        # Batch fetch products
+        products_map = {}
+        if product_ids:
+            products = await db.products.find({"id": {"$in": list(product_ids)}}, {"_id": 0}).to_list(len(product_ids))
+            products_map = {p["id"]: p for p in products}
+        
+        result = []
+        for order in orders:
+            user = users_map.get(order.get("user_id"))
+            
+            # Use stored delivery_address (snapshot) if available
+            address = order.get("delivery_address")
+            if not address and order.get("address_id"):
+                address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
+            
+            # Enrich items with product details
+            enriched_items = []
+            for item in order.get("items", []):
+                product = products_map.get(item.get("product_id"))
+                enriched_items.append({**item, "product": product})
+            
+            # Enrich one_time_items with product details
+            enriched_one_time = []
+            for item in order.get("one_time_items", []):
+                product = products_map.get(item.get("product_id"))
+                enriched_one_time.append({**item, "product": product})
+            
+            # Enrich subscription items with product details
+            subscription = order.get("subscription")
+            if subscription and subscription.get("items"):
+                enriched_sub_items = []
+                for item in subscription.get("items", []):
+                    product = products_map.get(item.get("product_id"))
+                    enriched_sub_items.append({**item, "product": product})
+                subscription = {**subscription, "items": enriched_sub_items}
+            
+            # Calculate total_amount if not set
+            subtotal = order.get("subtotal", 0)
+            discount_amount = order.get("discount_amount", 0)
+            coupon_discount = order.get("coupon_discount", 0)
+            delivery_fee = order.get("delivery_fee", 0)
+            total_amount = order.get("total_amount") or (subtotal - discount_amount - coupon_discount + delivery_fee)
+            
+            result.append({
+                **order,
+                "user": user,
+                "address": address,
+                "items": enriched_items,
+                "one_time_items": enriched_one_time,
+                "subscription": subscription,
+                "total_amount": total_amount
             })
         
-        # Enrich one_time_items with product details
-        enriched_one_time = []
-        for item in order.get("one_time_items", []):
-            product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
-            enriched_one_time.append({
-                **item,
-                "product": product
-            })
-        
-        # Enrich subscription items with product details
-        subscription = order.get("subscription")
-        if subscription and subscription.get("items"):
-            enriched_sub_items = []
-            for item in subscription.get("items", []):
-                product = await db.products.find_one({"id": item.get("product_id")}, {"_id": 0})
-                enriched_sub_items.append({
-                    **item,
-                    "product": product
-                })
-            subscription = {**subscription, "items": enriched_sub_items}
-        
-        # Calculate total_amount if not set
-        subtotal = order.get("subtotal", 0)
-        discount_amount = order.get("discount_amount", 0)
-        coupon_discount = order.get("coupon_discount", 0)
-        delivery_fee = order.get("delivery_fee", 0)
-        total_amount = order.get("total_amount") or (subtotal - discount_amount - coupon_discount + delivery_fee)
-        
-        result.append({
-            **order,
-            "user": user,
-            "address": address,
-            "items": enriched_items,
-            "one_time_items": enriched_one_time,
-            "subscription": subscription,
-            "total_amount": total_amount
-        })
-    
-    return result
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching admin orders: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch orders: {str(e)}")
 
 class OrderStatusUpdate(BaseModel):
     status: str
