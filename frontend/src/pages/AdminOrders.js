@@ -29,12 +29,18 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get(`${API}/admin/orders`);
+      console.log('Fetching orders from:', `${API}/admin/orders`);
+      const response = await axios.get(`${API}/admin/orders`, {
+        timeout: 30000 // 30 second timeout
+      });
+      console.log('Orders response:', response.data?.length, 'orders');
       // Sort by created_at descending (recent first)
       const sorted = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setOrders(sorted);
     } catch (error) {
-      toast.error('Failed to fetch orders');
+      console.error('Orders fetch error:', error);
+      const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+      toast.error(`Failed to fetch orders: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
