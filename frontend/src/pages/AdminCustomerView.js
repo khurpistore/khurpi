@@ -1174,18 +1174,18 @@ const AdminCustomerView = () => {
 
                           <div className="space-y-2">
                             {selectedOrder.subscription.items?.map((item, idx) => {
-                              const pricePerUnit = item.price || item.product?.price || 0;
+                              const pricePerUnit = item.price_at_order || item.price || item.product?.price || 0;
                               const quantity = item.quantity || 100;
                               const totalPrice = (quantity / 100) * pricePerUnit;
                               return (
                                 <div key={idx} className="flex items-center gap-3 p-2 bg-blue-50 rounded-lg">
                                   <img 
                                     src={item.product?.image} 
-                                    alt={item.product?.name}
+                                    alt={item.product?.name || item.product_name_at_order}
                                     className="w-12 h-12 rounded-lg object-cover"
                                   />
                                   <div className="flex-1">
-                                    <p className="font-medium text-sm">{item.product?.name}</p>
+                                    <p className="font-medium text-sm">{item.product?.name || item.product_name_at_order}</p>
                                     <p className="text-xs text-muted-foreground">
                                       {quantity}gm × ₹{pricePerUnit}/100gm
                                     </p>
