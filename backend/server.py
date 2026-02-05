@@ -3575,10 +3575,6 @@ async def get_address(address_id: str):
 async def add_user_address(user_id: str, address_data: AddressCreate):
     import uuid
     
-    # Validate NOIDA
-    if "NOIDA" not in address_data.address_line.upper():
-        raise HTTPException(status_code=400, detail="We currently deliver only in NOIDA area")
-    
     # If this is the first address or marked as default, update other addresses
     if address_data.is_default:
         await db.addresses.update_many(
