@@ -23,7 +23,6 @@ const Checkout = () => {
   const { trackPageView, trackCheckoutStarted } = useAnalytics();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isNoidaAddress, setIsNoidaAddress] = useState(true);
   const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -50,10 +49,8 @@ const Checkout = () => {
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
       setSelectedAddressId(defaultAddr.id);
-      checkNoidaDelivery(defaultAddr);
     } else if (addresses.length > 0) {
       setSelectedAddressId(addresses[0].id);
-      checkNoidaDelivery(addresses[0]);
     }
   }, [user, cartItems, addresses, navigate]);
 
@@ -118,17 +115,8 @@ const Checkout = () => {
     }
   };
 
-  const checkNoidaDelivery = (address) => {
-    if (address?.address_line) {
-      const isNoida = address.address_line.toLowerCase().includes('noida') || address.city?.toLowerCase() === 'noida';
-      setIsNoidaAddress(isNoida);
-    }
-  };
-
   const handleAddressSelect = (addressId) => {
     setSelectedAddressId(addressId);
-    const selectedAddr = addresses.find(a => a.id === addressId);
-    checkNoidaDelivery(selectedAddr);
   };
 
   const handleApplyCoupon = async () => {
@@ -156,10 +144,6 @@ const Checkout = () => {
   const handlePayment = async () => {
     if (!selectedAddressId) {
       toast.error('Please select a delivery address');
-      return;
-    }
-    if (!isNoidaAddress) {
-      toast.error('We currently deliver only in Noida');
       return;
     }
 
