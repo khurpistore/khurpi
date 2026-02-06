@@ -23,9 +23,18 @@ import razorpay
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Environment Mode
+ENV = os.environ.get('ENV', 'development')
+IS_PRODUCTION = ENV == 'production'
+
 # MongoDB Configuration from .env
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-db_name = os.environ.get('DB_NAME', 'khurpi_prod')
+db_name = os.environ.get('DB_NAME', 'khurpi_test')
+
+# Log environment info on startup
+logging.info(f"Environment: {ENV}")
+logging.info(f"Database: {db_name}")
+logging.info(f"Production Mode: {IS_PRODUCTION}")
 
 client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
@@ -33,7 +42,7 @@ db = client[db_name]
 # Razorpay client initialization
 razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID', '')
 razorpay_key_secret = os.environ.get('RAZORPAY_KEY_SECRET', '')
-razorpay_test_mode = os.environ.get('RAZORPAY_TEST_MODE', 'false').lower() == 'true'
+razorpay_test_mode = os.environ.get('RAZORPAY_TEST_MODE', 'true').lower() == 'true'
 admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
 admin_password = os.environ.get('ADMIN_PASSWORD', 'admin')
 
@@ -42,6 +51,7 @@ razorpay_client = None
 if razorpay_key_id and razorpay_key_secret:
     try:
         razorpay_client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
+        logging.info(f"Razorpay initialized - Test Mode: {razorpay_test_mode}")
     except Exception as e:
         logging.warning(f"Razorpay client initialization failed: {e}")
 
