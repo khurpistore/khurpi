@@ -102,6 +102,13 @@ const Header = () => {
   return (
     <>
       {/* Promo Banner */}
+      {/* Development Environment Indicator */}
+      {IS_DEV && (
+        <div className="bg-amber-500 text-white py-1 px-4 text-center text-xs font-medium">
+          DEV MODE - Test Database - Razorpay Bypassed
+        </div>
+      )}
+      
       <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-2 px-4 text-center text-sm">
         <div className="flex items-center justify-center gap-3 sm:gap-6 flex-wrap">
           <span className="flex items-center gap-1.5">
