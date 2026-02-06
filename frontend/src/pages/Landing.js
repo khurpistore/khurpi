@@ -111,23 +111,23 @@ const Landing = () => {
       </section>
 
       {/* Microgreens Benefits Section */}
-      <section className="py-12 sm:py-20 bg-green-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-4 heading-text">
+      <section className="py-8 sm:py-20 bg-green-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="text-center mb-6 sm:mb-10">
+            <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2 sm:mb-4 heading-text">
               Why Microgreens?
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Packed with nutrients, microgreens are baby vegetables harvested just after the first leaves develop. Here's why they're a superfood.
+            <p className="text-xs sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Packed with nutrients, microgreens are baby vegetables harvested just after the first leaves develop.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">🥗</span>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+            <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 sm:mb-4">
+                <span className="text-lg sm:text-2xl">🥗</span>
               </div>
-              <h4 className="text-lg font-semibold text-primary mb-2">40x More Nutrients</h4>
+              <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">40x More Nutrients</h4>
               <p className="text-muted-foreground text-sm">
                 Microgreens contain up to 40 times more vitamins and antioxidants compared to their mature counterparts.
               </p>
