@@ -480,124 +480,126 @@ const AdminProducts = () => {
       {productsLoading ? (
         <p className="text-muted-foreground">Loading products...</p>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            {/* Header */}
-            <div className="grid grid-cols-12 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
-              <div className="col-span-3">Product</div>
-              <div className="col-span-1">Price (₹/100gm)</div>
-              <div className="col-span-1">Growth Days</div>
-              <div className="col-span-1">Avl Qty(gm)</div>
-              <div className="col-span-2">Stock Status</div>
-              <div className="col-span-1">Avl Date</div>
-              <div className="col-span-1 text-center">Active</div>
-              <div className="col-span-2 text-center">Actions</div>
-            </div>
-            
-            {/* Product Rows */}
-            <div className="divide-y" data-testid="admin-products-list">
-              {products.map((product) => (
-                <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-12 gap-2 p-3 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
-                  {/* Product Info */}
-                  <div className="col-span-3 flex items-center gap-2">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-10 h-10 object-cover rounded flex-shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{product.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{product.benefit?.slice(0, 30)}...</p>
+        <>
+          {/* Desktop Table View */}
+          <Card className="hidden lg:block">
+            <CardContent className="p-0">
+              {/* Header */}
+              <div className="grid grid-cols-12 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
+                <div className="col-span-3">Product</div>
+                <div className="col-span-1">Price (₹/100gm)</div>
+                <div className="col-span-1">Growth Days</div>
+                <div className="col-span-1">Avl Qty(gm)</div>
+                <div className="col-span-2">Stock Status</div>
+                <div className="col-span-1">Avl Date</div>
+                <div className="col-span-1 text-center">Active</div>
+                <div className="col-span-2 text-center">Actions</div>
+              </div>
+              
+              {/* Product Rows */}
+              <div className="divide-y" data-testid="admin-products-list">
+                {products.map((product) => (
+                  <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-12 gap-2 p-3 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
+                    {/* Product Info */}
+                    <div className="col-span-3 flex items-center gap-2">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-10 h-10 object-cover rounded flex-shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{product.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{product.benefit?.slice(0, 30)}...</p>
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* Price */}
-                  <div className="col-span-1">
-                    <Input
-                      type="number"
-                      value={getFieldValue(product, 'price')}
-                      onChange={(e) => handleFieldChange(product.id, 'price', e.target.value)}
-                      className="h-7 text-xs text-center"
-                    />
-                  </div>
-                  
-                  {/* Growth Days */}
-                  <div className="col-span-1">
-                    <Input
-                      type="number"
-                      value={getFieldValue(product, 'growth_days')}
-                      onChange={(e) => handleFieldChange(product.id, 'growth_days', e.target.value)}
-                      className="h-7 text-xs text-center"
-                    />
-                  </div>
-                  
-                  {/* Weight (gm) */}
-                  <div className="col-span-1">
-                    <Select
-                      value={String(getFieldValue(product, 'weight') ?? 100)}
-                      onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
-                    >
-                      <SelectTrigger className="h-7 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {WEIGHT_OPTIONS.map((w) => (
-                          <SelectItem key={w} value={String(w)}>
-                            {w === 0 ? '0 (Out)' : w}
+                    
+                    {/* Price */}
+                    <div className="col-span-1">
+                      <Input
+                        type="number"
+                        value={getFieldValue(product, 'price')}
+                        onChange={(e) => handleFieldChange(product.id, 'price', e.target.value)}
+                        className="h-7 text-xs text-center"
+                      />
+                    </div>
+                    
+                    {/* Growth Days */}
+                    <div className="col-span-1">
+                      <Input
+                        type="number"
+                        value={getFieldValue(product, 'growth_days')}
+                        onChange={(e) => handleFieldChange(product.id, 'growth_days', e.target.value)}
+                        className="h-7 text-xs text-center"
+                      />
+                    </div>
+                    
+                    {/* Weight (gm) */}
+                    <div className="col-span-1">
+                      <Select
+                        value={String(getFieldValue(product, 'weight') ?? 100)}
+                        onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
+                      >
+                        <SelectTrigger className="h-7 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {WEIGHT_OPTIONS.map((w) => (
+                            <SelectItem key={w} value={String(w)}>
+                              {w === 0 ? '0 (Out)' : w}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Stock Status */}
+                    <div className="col-span-2">
+                      <Select
+                        value={getFieldValue(product, 'stock_status') || 'in_stock'}
+                        onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
+                      >
+                        <SelectTrigger className={`h-7 text-xs ${
+                          (getFieldValue(product, 'stock_status') || 'in_stock') === 'in_stock' 
+                            ? 'bg-green-100 text-green-700 border-green-300' 
+                            : (getFieldValue(product, 'stock_status') || 'in_stock') === 'growing'
+                            ? 'bg-amber-100 text-amber-700 border-amber-300'
+                            : 'bg-red-100 text-red-700 border-red-300'
+                        }`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="in_stock">
+                            <span className="text-green-700">In Stock</span>
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {/* Stock Status */}
-                  <div className="col-span-2">
-                    <Select
-                      value={getFieldValue(product, 'stock_status') || 'in_stock'}
-                      onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
-                    >
-                      <SelectTrigger className={`h-7 text-xs ${
-                        (getFieldValue(product, 'stock_status') || 'in_stock') === 'in_stock' 
-                          ? 'bg-green-100 text-green-700 border-green-300' 
-                          : (getFieldValue(product, 'stock_status') || 'in_stock') === 'growing'
-                          ? 'bg-amber-100 text-amber-700 border-amber-300'
-                          : 'bg-red-100 text-red-700 border-red-300'
-                      }`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="in_stock">
-                          <span className="text-green-700">In Stock</span>
-                        </SelectItem>
-                        <SelectItem value="growing">
-                          <span className="text-amber-700">Growing</span>
-                        </SelectItem>
-                        <SelectItem value="out_of_stock">
-                          <span className="text-red-700">Out of Stock</span>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {/* Availability Date - only for growing status */}
-                  <div className="col-span-1">
-                    {(getFieldValue(product, 'stock_status') || product.stock_status) === 'growing' ? (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className="h-7 w-full text-xs px-1">
-                            <CalendarIcon className="h-3 w-3 mr-1" />
-                            {(() => {
-                              const availDate = getFieldValue(product, 'availability_date') || product.availability_date;
-                              if (availDate) {
-                                return format(new Date(availDate), 'MMM d');
-                              }
-                              const readyDays = getFieldValue(product, 'ready_in_days') || product.ready_in_days;
-                              if (readyDays) {
-                                return format(addDays(new Date(), readyDays), 'MMM d');
-                              }
-                              return 'Set';
-                            })()}
-                          </Button>
+                          <SelectItem value="growing">
+                            <span className="text-amber-700">Growing</span>
+                          </SelectItem>
+                          <SelectItem value="out_of_stock">
+                            <span className="text-red-700">Out of Stock</span>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Availability Date - only for growing status */}
+                    <div className="col-span-1">
+                      {(getFieldValue(product, 'stock_status') || product.stock_status) === 'growing' ? (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="h-7 w-full text-xs px-1">
+                              <CalendarIcon className="h-3 w-3 mr-1" />
+                              {(() => {
+                                const availDate = getFieldValue(product, 'availability_date') || product.availability_date;
+                                if (availDate) {
+                                  return format(new Date(availDate), 'MMM d');
+                                }
+                                const readyDays = getFieldValue(product, 'ready_in_days') || product.ready_in_days;
+                                if (readyDays) {
+                                  return format(addDays(new Date(), readyDays), 'MMM d');
+                                }
+                                return 'Set';
+                              })()}
+                            </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
