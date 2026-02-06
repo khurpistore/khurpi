@@ -667,6 +667,126 @@ const AdminProducts = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-3" data-testid="admin-products-mobile">
+          {products.map((product) => (
+            <Card key={product.id} className={`${hasChanges(product.id) ? 'border-yellow-400 bg-yellow-50' : ''}`}>
+              <CardContent className="p-3">
+                <div className="flex gap-3">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-16 h-16 object-cover rounded flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="font-semibold text-sm truncate">{product.name}</h3>
+                        <p className="text-xs text-muted-foreground">₹{product.price}/100gm</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Switch
+                          checked={getFieldValue(product, 'active') !== false}
+                          onCheckedChange={(checked) => handleFieldChange(product.id, 'active', checked)}
+                          className="scale-75"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-2">
+                      {getStockStatusBadge(product)}
+                      <span className="text-xs text-muted-foreground">
+                        {getFieldValue(product, 'weight') || 0}gm
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Quick Edit Fields */}
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Price</Label>
+                    <Input
+                      type="number"
+                      value={getFieldValue(product, 'price')}
+                      onChange={(e) => handleFieldChange(product.id, 'price', e.target.value)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Stock (gm)</Label>
+                    <Select
+                      value={String(getFieldValue(product, 'weight') ?? 100)}
+                      onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        {WEIGHT_OPTIONS.map((w) => (
+                          <SelectItem key={w} value={String(w)}>
+                            {w === 0 ? '0' : w}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Status</Label>
+                    <Select
+                      value={getFieldValue(product, 'stock_status') || 'in_stock'}
+                      onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="in_stock">In Stock</SelectItem>
+                        <SelectItem value="growing">Growing</SelectItem>
+                        <SelectItem value="out_of_stock">Out</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                {/* Actions */}
+                <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openDialog(product)}
+                      className="h-8"
+                    >
+                      <Pencil className="w-3 h-3 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(product.id)}
+                      className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  {hasChanges(product.id) && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleSaveProduct(product)}
+                      disabled={saving[product.id]}
+                      className="h-8 bg-green-600 hover:bg-green-700"
+                    >
+                      {saving[product.id] ? 'Saving...' : 'Save'}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        </>
       )}
     </AdminLayout>
   );
