@@ -30,8 +30,10 @@ import {
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-// Only show DEV banner when REACT_APP_ENV is explicitly set to 'development'
-const IS_DEV = process.env.REACT_APP_ENV === 'development';
+// Only show DEV banner in local/preview environments, NEVER on production domain
+const IS_DEV = process.env.REACT_APP_ENV === 'development' && 
+               typeof window !== 'undefined' && 
+               !window.location.hostname.includes('khurpistore.in');
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
