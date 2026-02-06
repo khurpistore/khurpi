@@ -37,7 +37,7 @@ By accessing and using Khurpi's services, you agree to be bound by these Terms o
 ### 2. Products and Services
 
 - All microgreens are sold in 80 gram packs
-- Products are freshly harvested and delivered within the NOIDA area
+- Products are freshly harvested and delivered pan India
 - Subscription plans are billed monthly
 
 ### 3. Orders and Delivery
