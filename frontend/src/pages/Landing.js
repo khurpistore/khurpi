@@ -168,18 +168,18 @@ const Landing = () => {
                 <span className="text-lg sm:text-2xl">⚡</span>
               </div>
               <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">Natural Energy</h4>
-              <p className="text-muted-foreground text-sm">
-                Iron and B-vitamins in microgreens provide a natural energy boost without caffeine crashes.
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                Iron and B-vitamins provide natural energy without caffeine crashes.
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">✨</span>
+            <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 sm:mb-4">
+                <span className="text-lg sm:text-2xl">✨</span>
               </div>
-              <h4 className="text-lg font-semibold text-primary mb-2">Glowing Skin</h4>
-              <p className="text-muted-foreground text-sm">
-                Beta-carotene and Vitamin E promote healthy, glowing skin and slow down aging signs.
+              <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">Glowing Skin</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                Beta-carotene and Vitamin E promote healthy, glowing skin.
               </p>
             </div>
           </div>
@@ -187,23 +187,23 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-20 bg-gradient-to-r from-green-700 to-green-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 heading-text">
+      <section className="py-8 sm:py-20 bg-gradient-to-r from-green-700 to-green-600 text-white">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-6 heading-text">
             Ready to Start Your Healthy Journey?
           </h2>
-          <p className="text-base sm:text-lg mb-2 opacity-90">
-            Join hundreds of health-conscious customers enjoying fresh microgreens delivered to their door.
+          <p className="text-sm sm:text-lg mb-2 opacity-90">
+            Join hundreds of health-conscious customers enjoying fresh microgreens.
           </p>
-          <p className="text-xs sm:text-sm mb-6 sm:mb-8 opacity-75">
+          <p className="text-xs sm:text-sm mb-4 sm:mb-8 opacity-75">
             Pan India delivery available
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
             <Button
               data-testid="cta-subscribe-button"
               size="lg"
               onClick={() => navigate('/subscription/create')}
-              className="bg-white text-green-700 hover:bg-gray-100 rounded-full px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg font-semibold"
+              className="bg-white text-green-700 hover:bg-gray-100 rounded-full px-5 sm:px-8 py-4 sm:py-6 text-sm sm:text-lg font-semibold"
             >
               Start Subscription
             </Button>
