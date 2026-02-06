@@ -17,12 +17,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// NOIDA center coordinates
-const NOIDA_CENTER = [28.5355, 77.3910];
-const NOIDA_BOUNDS = [
-  [28.4, 77.2],  // Southwest
-  [28.7, 77.5]   // Northeast
-];
+// India center coordinates
+const INDIA_CENTER = [20.5937, 78.9629];
 
 function LocationMarker({ position, setPosition, onLocationSelect }) {
   const map = useMap();
@@ -30,13 +26,8 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
-      // Check if click is within NOIDA bounds
-      if (lat >= 28.4 && lat <= 28.7 && lng >= 77.2 && lng <= 77.5) {
-        setPosition([lat, lng]);
-        onLocationSelect && onLocationSelect(lat, lng);
-      } else {
-        alert('Please select a location within NOIDA area only');
-      }
+      setPosition([lat, lng]);
+      onLocationSelect && onLocationSelect(lat, lng);
     },
   });
 
@@ -48,263 +39,193 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
 
   return position ? (
     <Marker position={position}>
-      <Popup>
-        <div className="text-sm">
-          <strong>Selected Location</strong><br />
-          Lat: {position[0].toFixed(4)}<br />
-          Lng: {position[1].toFixed(4)}
-        </div>
-      </Popup>
+      <Popup>Delivery Location</Popup>
     </Marker>
   ) : null;
 }
 
-const LocationPicker = ({ 
-  initialData = null,
-  onSave, 
-  onCancel,
-  loading = false,
-  isEdit = false,
-  showSetDefault = false,
-  isDefault = false
-}) => {
-  const [position, setPosition] = useState(
-    initialData?.latitude && initialData?.longitude 
-      ? [initialData.latitude, initialData.longitude] 
-      : NOIDA_CENTER
-  );
-  const [formData, setFormData] = useState({
-    addressLine1: initialData?.address_line1 || '',
-    addressLine2: initialData?.address_line2 || '',
-    city: 'NOIDA',
-    pincode: initialData?.pincode || '',
-    landmark: initialData?.landmark || ''
+const LocationPicker = ({ onLocationSelect, onClose, initialAddress = null }) => {
+  const [position, setPosition] = useState(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
+  const [addressDetails, setAddressDetails] = useState({
+    addressLine: initialAddress?.address_line || '',
+    city: initialAddress?.city || '',
+    state: initialAddress?.state || '',
+    pincode: initialAddress?.pincode || '',
+    isDefault: false,
   });
-  const [setAsDefault, setSetAsDefault] = useState(isDefault);
-  const [locating, setLocating] = useState(false);
 
-  // Parse existing address if editing
   useEffect(() => {
-    if (initialData?.address_line && !initialData?.address_line1) {
-      // Try to parse the full address line
-      const parts = initialData.address_line.split(',').map(p => p.trim());
-      if (parts.length >= 2) {
-        setFormData(prev => ({
-          ...prev,
-          addressLine1: parts[0] || '',
-          addressLine2: parts.slice(1, -2).join(', ') || '',
-          pincode: parts[parts.length - 1]?.match(/\d{6}/)?.[0] || ''
-        }));
-      }
+    if (initialAddress?.latitude && initialAddress?.longitude) {
+      setPosition([initialAddress.latitude, initialAddress.longitude]);
     }
-  }, [initialData]);
+  }, [initialAddress]);
 
-  const handleLocationSelect = (lat, lng) => {
-    setPosition([lat, lng]);
-  };
-
-  const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
-      return;
-    }
-
-    setLocating(true);
+  const handleGetCurrentLocation = () => {
+    setGettingLocation(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        if (latitude >= 28.4 && latitude <= 28.7 && longitude >= 77.2 && longitude <= 77.5) {
-          setPosition([latitude, longitude]);
-        } else {
-          alert('Your current location is outside NOIDA. Please select a location within NOIDA.');
-        }
-        setLocating(false);
+        setPosition([latitude, longitude]);
+        setGettingLocation(false);
       },
       (error) => {
         console.error('Error getting location:', error);
-        alert('Unable to get your location. Please select on map.');
-        setLocating(false);
-      }
+        alert('Could not get your location. Please select manually on the map.');
+        setGettingLocation(false);
+      },
+      { enableHighAccuracy: true }
     );
   };
 
-  const handleSave = () => {
-    if (!formData.addressLine1.trim()) {
-      alert('Please enter Address Line 1');
+  const handleConfirm = () => {
+    if (!position) {
+      alert('Please select a location on the map');
       return;
     }
-    if (!formData.pincode.trim() || !/^\d{6}$/.test(formData.pincode)) {
-      alert('Please enter a valid 6-digit pincode');
+    if (!addressDetails.addressLine) {
+      alert('Please enter your address details');
+      return;
+    }
+    if (!addressDetails.city) {
+      alert('Please enter city name');
+      return;
+    }
+    if (!addressDetails.pincode) {
+      alert('Please enter PIN code');
       return;
     }
 
-    // Construct full address
-    const fullAddress = [
-      formData.addressLine1,
-      formData.addressLine2,
-      formData.landmark,
-      formData.city,
-      `UP ${formData.pincode}`
-    ].filter(Boolean).join(', ');
-
-    onSave({
-      address_line: fullAddress,
-      address_line1: formData.addressLine1,
-      address_line2: formData.addressLine2,
-      city: formData.city,
-      pincode: formData.pincode,
-      landmark: formData.landmark,
+    onLocationSelect({
       latitude: position[0],
       longitude: position[1],
-      is_default: setAsDefault
+      address_line: addressDetails.addressLine,
+      city: addressDetails.city,
+      state: addressDetails.state,
+      pincode: addressDetails.pincode,
+      is_default: addressDetails.isDefault,
     });
   };
 
+  const handleLocationSelect = (lat, lng) => {
+    // Reverse geocode to get address
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.address) {
+          setAddressDetails(prev => ({
+            ...prev,
+            addressLine: data.display_name?.split(',').slice(0, 3).join(', ') || '',
+            city: data.address.city || data.address.town || data.address.county || '',
+            state: data.address.state || '',
+            pincode: data.address.postcode || '',
+          }));
+        }
+      })
+      .catch(err => console.error('Geocoding error:', err));
+  };
+
   return (
-    <Card className="border-green-200 shadow-md">
-      <CardHeader className="pb-2 sm:pb-4">
-        <CardTitle className="text-base sm:text-lg text-primary flex items-center gap-2">
-          <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-          {isEdit ? 'Edit Address' : 'Add New Address'}
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-primary" />
+          Select Delivery Location
         </CardTitle>
-      </CardHeader>
-      <CardContent className="p-3 sm:p-6 pt-0">
-        <div className="space-y-4">
-          {/* Map */}
-          <div>
-            <Label className="text-sm mb-2 block">Select Location on Map</Label>
-            <p className="text-xs text-muted-foreground mb-2">
-              Click on the map to pin your delivery location in NOIDA
-            </p>
-            <div className="rounded-lg overflow-hidden border border-green-200" style={{ height: '200px' }}>
-              <MapContainer
-                center={position || NOIDA_CENTER}
-                zoom={13}
-                style={{ height: '100%', width: '100%' }}
-                maxBounds={NOIDA_BOUNDS}
-                maxBoundsViscosity={1.0}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <LocationMarker 
-                  position={position} 
-                  setPosition={setPosition} 
-                  onLocationSelect={handleLocationSelect}
-                />
-              </MapContainer>
-            </div>
-          </div>
-
-          {/* Current Location Button */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleUseCurrentLocation}
-            disabled={locating}
-            className="w-full sm:w-auto text-xs sm:text-sm"
-          >
-            <Navigation className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-            {locating ? 'Locating...' : 'Use My Current Location'}
+        {onClose && (
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
           </Button>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleGetCurrentLocation}
+            disabled={gettingLocation}
+            className="flex-1"
+          >
+            <Navigation className="w-4 h-4 mr-2" />
+            {gettingLocation ? 'Getting location...' : 'Use My Current Location'}
+          </Button>
+        </div>
 
-          {/* Address Fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <Label htmlFor="addressLine1" className="text-sm">Address Line 1 *</Label>
+        <div className="text-sm text-muted-foreground text-center">
+          Click on the map to pin your delivery location
+        </div>
+
+        <div className="h-64 rounded-lg overflow-hidden border">
+          <MapContainer
+            center={position || INDIA_CENTER}
+            zoom={position ? 14 : 5}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            />
+            <LocationMarker
+              position={position}
+              setPosition={setPosition}
+              onLocationSelect={handleLocationSelect}
+            />
+          </MapContainer>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <Label>Address *</Label>
+            <Input
+              value={addressDetails.addressLine}
+              onChange={(e) => setAddressDetails(prev => ({ ...prev, addressLine: e.target.value }))}
+              placeholder="House no, Building, Street, Area"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>City *</Label>
               <Input
-                id="addressLine1"
-                data-testid="address-line1-input"
-                placeholder="House/Flat No., Building Name"
-                value={formData.addressLine1}
-                onChange={(e) => setFormData({...formData, addressLine1: e.target.value})}
-                className="mt-1"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <Label htmlFor="addressLine2" className="text-sm">Address Line 2</Label>
-              <Input
-                id="addressLine2"
-                data-testid="address-line2-input"
-                placeholder="Street, Area, Sector"
-                value={formData.addressLine2}
-                onChange={(e) => setFormData({...formData, addressLine2: e.target.value})}
-                className="mt-1"
+                value={addressDetails.city}
+                onChange={(e) => setAddressDetails(prev => ({ ...prev, city: e.target.value }))}
+                placeholder="Enter city"
               />
             </div>
             <div>
-              <Label htmlFor="city" className="text-sm">City</Label>
+              <Label>State</Label>
               <Input
-                id="city"
-                value="NOIDA"
-                disabled
-                className="mt-1 bg-gray-100"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Currently serving NOIDA only</p>
-            </div>
-            <div>
-              <Label htmlFor="pincode" className="text-sm">Pincode *</Label>
-              <Input
-                id="pincode"
-                data-testid="pincode-input"
-                placeholder="201301"
-                maxLength={6}
-                value={formData.pincode}
-                onChange={(e) => setFormData({...formData, pincode: e.target.value.replace(/\D/g, '')})}
-                className="mt-1"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <Label htmlFor="landmark" className="text-sm">Landmark</Label>
-              <Input
-                id="landmark"
-                data-testid="landmark-input"
-                placeholder="Near School, Behind Mall, etc."
-                value={formData.landmark}
-                onChange={(e) => setFormData({...formData, landmark: e.target.value})}
-                className="mt-1"
+                value={addressDetails.state}
+                onChange={(e) => setAddressDetails(prev => ({ ...prev, state: e.target.value }))}
+                placeholder="Enter state"
               />
             </div>
           </div>
 
-          {/* Set as Default */}
-          {showSetDefault && (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="set-default"
-                checked={setAsDefault}
-                onCheckedChange={setSetAsDefault}
-              />
-              <Label htmlFor="set-default" className="text-sm cursor-pointer">
-                Set as default delivery address
-              </Label>
-            </div>
-          )}
+          <div>
+            <Label>PIN Code *</Label>
+            <Input
+              value={addressDetails.pincode}
+              onChange={(e) => setAddressDetails(prev => ({ ...prev, pincode: e.target.value }))}
+              placeholder="Enter PIN code"
+              maxLength={6}
+            />
+          </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
-            <Button
-              data-testid="save-address-button"
-              onClick={handleSave}
-              disabled={loading || !formData.addressLine1.trim() || !formData.pincode.trim()}
-              className="bg-primary hover:bg-primary/90 rounded-full flex-1 sm:flex-none text-sm"
-            >
-              {loading ? 'Saving...' : (isEdit ? 'Update Address' : 'Save Address')}
-            </Button>
-            {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="rounded-full flex-1 sm:flex-none text-sm"
-              >
-                Cancel
-              </Button>
-            )}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="default-address"
+              checked={addressDetails.isDefault}
+              onCheckedChange={(checked) => setAddressDetails(prev => ({ ...prev, isDefault: checked }))}
+            />
+            <Label htmlFor="default-address" className="text-sm">Set as default address</Label>
           </div>
         </div>
+
+        <Button onClick={handleConfirm} className="w-full">
+          Confirm Location
+        </Button>
       </CardContent>
     </Card>
   );
