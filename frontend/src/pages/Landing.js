@@ -128,46 +128,46 @@ const Landing = () => {
                 <span className="text-lg sm:text-2xl">🥗</span>
               </div>
               <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">40x More Nutrients</h4>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 Microgreens contain up to 40 times more vitamins and antioxidants compared to their mature counterparts.
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">💪</span>
+            <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 sm:mb-4">
+                <span className="text-lg sm:text-2xl">💪</span>
               </div>
-              <h4 className="text-lg font-semibold text-primary mb-2">Boosts Immunity</h4>
-              <p className="text-muted-foreground text-sm">
-                Rich in Vitamin C, E, and K, microgreens help strengthen your immune system and fight off diseases.
+              <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">Boosts Immunity</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                Rich in Vitamin C, E, and K, microgreens help strengthen your immune system.
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">❤️</span>
+            <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 sm:mb-4">
+                <span className="text-lg sm:text-2xl">❤️</span>
               </div>
-              <h4 className="text-lg font-semibold text-primary mb-2">Heart Health</h4>
-              <p className="text-muted-foreground text-sm">
-                Polyphenols in microgreens help reduce cholesterol and lower the risk of heart disease.
+              <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">Heart Health</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                Polyphenols help reduce cholesterol and lower heart disease risk.
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">🧠</span>
+            <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 sm:mb-4">
+                <span className="text-lg sm:text-2xl">🧠</span>
               </div>
-              <h4 className="text-lg font-semibold text-primary mb-2">Brain Function</h4>
-              <p className="text-muted-foreground text-sm">
-                High in antioxidants that protect brain cells and improve cognitive function and memory.
+              <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">Brain Function</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                High in antioxidants that protect brain cells and improve memory.
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">⚡</span>
+            <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 sm:mb-4">
+                <span className="text-lg sm:text-2xl">⚡</span>
               </div>
-              <h4 className="text-lg font-semibold text-primary mb-2">Natural Energy</h4>
+              <h4 className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2">Natural Energy</h4>
               <p className="text-muted-foreground text-sm">
                 Iron and B-vitamins in microgreens provide a natural energy boost without caffeine crashes.
               </p>
