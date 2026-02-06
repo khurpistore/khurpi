@@ -196,7 +196,7 @@ const Landing = () => {
             Join hundreds of health-conscious customers enjoying fresh microgreens delivered to their door.
           </p>
           <p className="text-xs sm:text-sm mb-6 sm:mb-8 opacity-75">
-            Currently delivering in NOIDA area only
+            Pan India delivery available
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Button
