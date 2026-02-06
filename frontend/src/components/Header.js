@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const IS_DEV = process.env.REACT_APP_ENV === 'development' || process.env.NODE_ENV === 'development';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
