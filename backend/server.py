@@ -71,6 +71,18 @@ async def health_check():
 async def api_health_check():
     return {"status": "healthy", "service": "khurpi-backend"}
 
+# Environment info endpoint (useful for debugging)
+@app.get("/api/env-info")
+async def get_env_info():
+    """Get current environment configuration (non-sensitive)"""
+    return {
+        "environment": ENV,
+        "is_production": IS_PRODUCTION,
+        "database": db_name,
+        "razorpay_test_mode": razorpay_test_mode,
+        "razorpay_configured": bool(razorpay_client)
+    }
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Shop Configuration - Default values (can be overridden from DB)
