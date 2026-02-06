@@ -3644,10 +3644,6 @@ async def update_user_address_by_id(user_id: str, address_id: str, address_data:
     if not update_data:
         raise HTTPException(status_code=400, detail="No data to update")
     
-    # Validate NOIDA if address_line is being updated
-    if "address_line" in update_data and "NOIDA" not in update_data["address_line"].upper():
-        raise HTTPException(status_code=400, detail="We currently deliver only in NOIDA area")
-    
     # If setting as default, unset others
     if update_data.get("is_default"):
         await db.addresses.update_many(
