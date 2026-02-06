@@ -145,8 +145,8 @@ const Products = () => {
     
     if (stockInfo.status === 'out_of_stock') {
       return (
-        <Badge className="bg-red-100 text-red-700 border-0">
-          <XCircle className="w-3 h-3 mr-1" />
+        <Badge className="bg-red-100 text-red-700 border-0 text-xs">
+          <XCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
           Out of Stock
         </Badge>
       );
@@ -154,17 +154,17 @@ const Products = () => {
     
     if (stockInfo.status === 'growing') {
       return (
-        <Badge className="bg-amber-100 text-amber-700 border-0">
-          <Sprout className="w-3 h-3 mr-1" />
-          Delivery by {format(deliveryDate, 'MMM d')}
+        <Badge className="bg-amber-100 text-amber-700 border-0 text-xs">
+          <Sprout className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+          <span className="hidden sm:inline">Delivery by </span>{format(deliveryDate, 'MMM d')}
         </Badge>
       );
     }
     
     return (
-      <Badge className="bg-green-100 text-green-700 border-0">
-        <Clock className="w-3 h-3 mr-1" />
-        Delivery by {deliveryText}
+      <Badge className="bg-green-100 text-green-700 border-0 text-xs">
+        <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+        <span className="hidden sm:inline">Delivery by </span>{deliveryText}
       </Badge>
     );
   };
