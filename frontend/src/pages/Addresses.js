@@ -288,6 +288,7 @@ const Addresses = () => {
     setSearchedLocation({ lat, lng });
     setSearchResults([]);
     setShowSearchResults(false);
+    setHasSelectedResult(true);  // Prevent re-searching
   };
 
   const buildAddressLine = () => {
