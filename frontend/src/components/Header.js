@@ -30,7 +30,8 @@ import {
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const IS_DEV = process.env.REACT_APP_ENV === 'development' || process.env.NODE_ENV === 'development';
+// Only show DEV banner when REACT_APP_ENV is explicitly set to 'development'
+const IS_DEV = process.env.REACT_APP_ENV === 'development';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
