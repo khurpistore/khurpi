@@ -90,6 +90,7 @@ const Addresses = () => {
     setSearchResults([]);
     setSearchedLocation(null);
     setShowSearchResults(false);
+    setHasSelectedResult(false);
   };
 
   const handleLocationSelect = (location) => {
