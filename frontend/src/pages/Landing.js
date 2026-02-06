@@ -26,27 +26,27 @@ const Landing = () => {
     <div>
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-green-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-28">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-20 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
             <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
-                <Sparkles className="w-4 h-4" />
+              <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
                 Fresh from Farm to Your Table
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary mb-4 sm:mb-6 heading-text leading-tight">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary mb-3 sm:mb-6 heading-text leading-tight">
                 Freshness Delivered to Your Doorstep
               </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-6 sm:mb-8 body-text">
+              <p className="text-sm sm:text-lg lg:text-xl text-muted-foreground mb-4 sm:mb-8 body-text">
                 Experience farm-fresh microgreens, carefully grown and harvested just for you. Packed with nutrients and delivered straight to your door on your schedule.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center lg:justify-start">
                 <Button
                   data-testid="subscribe-hero-button"
                   size="lg"
                   onClick={handleGetStarted}
-                  className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-full px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                  className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-full px-5 sm:px-8 py-4 sm:py-6 text-sm sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Subscribe & Save
                 </Button>
                 <Button
@@ -54,7 +54,7 @@ const Landing = () => {
                   size="lg"
                   variant="outline"
                   onClick={handleBrowseProducts}
-                  className="rounded-full px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg font-medium border-primary text-primary hover:bg-primary hover:text-white"
+                  className="rounded-full px-5 sm:px-8 py-4 sm:py-6 text-sm sm:text-lg font-medium border-primary text-primary hover:bg-primary hover:text-white"
                 >
                   Explore Products
                 </Button>
@@ -64,7 +64,7 @@ const Landing = () => {
               <img
                 src="https://images.unsplash.com/photo-1647613233056-fc9918256a8d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwxfHxtaWNyb2dyZWVucyUyMHRyYXklMjBmcmVzaHxlbnwwfHx8fDE3NjkxNzI1MjB8MA&ixlib=rb-4.1.0&q=85"
                 alt="Fresh Microgreens"
-                className="rounded-2xl shadow-2xl w-full"
+                className="rounded-xl sm:rounded-2xl shadow-2xl w-full"
               />
             </div>
           </div>
@@ -72,12 +72,12 @@ const Landing = () => {
       </section>
 
       {/* Why Choose Section */}
-      <section className="py-12 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-primary mb-8 sm:mb-16 heading-text">
+      <section className="py-8 sm:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold text-center text-primary mb-6 sm:mb-16 heading-text">
             Why Choose Khurpi?
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
             <div className="text-center p-4 sm:p-6">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-secondary" />
