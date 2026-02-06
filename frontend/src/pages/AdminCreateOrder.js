@@ -41,7 +41,7 @@ const AdminCreateOrder = () => {
     phone: '',
     address_line: '',
     area: '',
-    city: 'NOIDA',
+    city: '',
     pincode: ''
   });
   
