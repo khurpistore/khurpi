@@ -520,8 +520,9 @@ const Addresses = () => {
                       onChange={(e) => {
                         setSearchQuery(e.target.value);
                         setShowSearchResults(true);
+                        setHasSelectedResult(false);  // Reset when user types
                       }}
-                      onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                      onFocus={() => !hasSelectedResult && searchResults.length > 0 && setShowSearchResults(true)}
                       placeholder="Search: building name, area, city, pincode..."
                       className="pl-9 pr-9 bg-white"
                       data-testid="address-search-input"
