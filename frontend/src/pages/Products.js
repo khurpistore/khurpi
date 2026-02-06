@@ -176,9 +176,9 @@ const Products = () => {
       return (
         <Button
           disabled
-          className="w-full bg-gray-300 text-gray-500 rounded-full mt-2 cursor-not-allowed"
+          className="w-full bg-gray-300 text-gray-500 rounded-full mt-1 sm:mt-2 cursor-not-allowed h-8 sm:h-10 text-xs sm:text-sm"
         >
-          <XCircle className="w-4 h-4 mr-1" />
+          <XCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
           Unavailable
         </Button>
       );
@@ -189,9 +189,9 @@ const Products = () => {
       <Button
         data-testid={`add-to-cart-${product.id}`}
         onClick={(e) => handleAddToCart(e, product)}
-        className="w-full bg-primary hover:bg-primary/90 rounded-full mt-2"
+        className="w-full bg-primary hover:bg-primary/90 rounded-full mt-1 sm:mt-2 h-8 sm:h-10 text-xs sm:text-sm"
       >
-        <Plus className="w-4 h-4 mr-1" />
+        <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
         Add to Cart
       </Button>
     );
