@@ -233,6 +233,10 @@ const Addresses = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      // Don't search if user just selected a result
+      if (hasSelectedResult) {
+        return;
+      }
       if (searchQuery && searchQuery.length >= 2) {
         searchAddress(searchQuery);
       } else {
@@ -240,7 +244,7 @@ const Addresses = () => {
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [searchQuery, searchAddress]);
+  }, [searchQuery, searchAddress, hasSelectedResult]);
 
   const handleSearchSelect = (result) => {
     const lat = parseFloat(result.lat);
