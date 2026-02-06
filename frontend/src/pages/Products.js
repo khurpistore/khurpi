@@ -292,13 +292,23 @@ const Products = () => {
                       </div>
                     )}
                   </div>
-                  <CardContent className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-2xl font-semibold text-primary mb-1 sm:mb-2 heading-text">{product.name}</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 body-text line-clamp-2">{product.benefit}</p>
+                  <CardContent className="p-2.5 sm:p-6">
+                    <h3 className="text-sm sm:text-2xl font-semibold text-primary mb-0.5 sm:mb-2 heading-text line-clamp-1">{product.name}</h3>
+                    <p className="text-xs sm:text-base text-muted-foreground mb-2 sm:mb-4 body-text line-clamp-2 hidden sm:block">{product.benefit}</p>
                     
-                    {/* Quantity Selector */}
+                    {/* Price - Mobile shows compact */}
+                    <div className="sm:hidden mb-2">
+                      <span className="text-base font-bold text-primary">
+                        ₹{((product.price / 100) * (selectedQty[product.id] || 100)).toFixed(0)}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-1">
+                        / {selectedQty[product.id] || 100}gm
+                      </span>
+                    </div>
+                    
+                    {/* Quantity Selector - Desktop */}
                     {stockInfo.status !== 'out_of_stock' && (
-                      <div className="flex items-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="hidden sm:flex items-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
                         <span className="text-sm text-muted-foreground">Qty:</span>
                         <Select
                           value={String(selectedQty[product.id] || 100)}
@@ -322,7 +332,28 @@ const Products = () => {
                       </div>
                     )}
                     
-                    <div className="mb-3">
+                    {/* Quantity Selector - Mobile */}
+                    {stockInfo.status !== 'out_of_stock' && (
+                      <div className="flex sm:hidden items-center gap-1 mb-2" onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={String(selectedQty[product.id] || 100)}
+                          onValueChange={(value) => setSelectedQty(prev => ({ ...prev, [product.id]: parseInt(value) }))}
+                        >
+                          <SelectTrigger className="w-16 h-7 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getQtyOptions(product.weight || 5000).slice(0, 6).map((qty) => (
+                              <SelectItem key={qty} value={String(qty)}>
+                                {qty}gm
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    
+                    <div className="mb-2 sm:mb-3">
                       {renderStockBadge(product)}
                     </div>
 
