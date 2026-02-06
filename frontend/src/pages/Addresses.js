@@ -42,6 +42,7 @@ const Addresses = () => {
   const [searchedLocation, setSearchedLocation] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [hasSelectedResult, setHasSelectedResult] = useState(false);
   
   // Check if coming from checkout or subscription flow
   const params = new URLSearchParams(location.search);
