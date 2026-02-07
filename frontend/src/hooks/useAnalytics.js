@@ -299,46 +299,69 @@ const getPerformanceMetrics = () => {
 let locationCache = null;
 let locationPromise = null;
 
+// IP-based geolocation (no permission needed, works for anonymous users)
+const getLocationFromIP = async () => {
+  try {
+    // Use ip-api.com for free IP geolocation (no API key needed)
+    const response = await fetch('http://ip-api.com/json/?fields=status,country,countryCode,region,regionName,city,zip,lat,lon,isp,query');
+    const data = await response.json();
+    
+    if (data.status === 'success') {
+      return {
+        latitude: data.lat,
+        longitude: data.lon,
+        accuracy: 5000, // City-level accuracy (~5km)
+        city: data.city || 'Unknown',
+        state: data.regionName || 'Unknown',
+        country: data.country || 'Unknown',
+        country_code: data.countryCode || 'Unknown',
+        pincode: data.zip || 'Unknown',
+        isp: data.isp || 'Unknown',
+        ip: data.query,
+        location_method: 'ip'
+      };
+    }
+  } catch (error) {
+    console.log('IP geolocation failed, trying fallback...');
+  }
+  
+  // Fallback to ipinfo.io
+  try {
+    const response = await fetch('https://ipinfo.io/json');
+    const data = await response.json();
+    
+    const [lat, lon] = (data.loc || '0,0').split(',').map(Number);
+    return {
+      latitude: lat,
+      longitude: lon,
+      accuracy: 10000,
+      city: data.city || 'Unknown',
+      state: data.region || 'Unknown',
+      country: data.country || 'Unknown',
+      pincode: data.postal || 'Unknown',
+      ip: data.ip,
+      location_method: 'ip_fallback'
+    };
+  } catch {
+    return {
+      latitude: null,
+      longitude: null,
+      city: 'Unknown',
+      country: 'Unknown',
+      location_method: 'failed'
+    };
+  }
+};
+
 const getLocation = async () => {
   if (locationCache) return locationCache;
   if (locationPromise) return locationPromise;
   
-  locationPromise = new Promise((resolve) => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-          
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-            );
-            const data = await response.json();
-            locationCache = {
-              latitude,
-              longitude,
-              accuracy,
-              city: data.address?.city || data.address?.town || data.address?.village || 'Unknown',
-              state: data.address?.state || 'Unknown',
-              country: data.address?.country || 'Unknown',
-              pincode: data.address?.postcode || 'Unknown'
-            };
-          } catch {
-            locationCache = { latitude, longitude, accuracy, city: 'Unknown', country: 'Unknown' };
-          }
-          resolve(locationCache);
-        },
-        () => {
-          locationCache = { latitude: null, longitude: null, city: 'Unknown', country: 'Unknown' };
-          resolve(locationCache);
-        },
-        { timeout: 5000, enableHighAccuracy: false }
-      );
-    } else {
-      locationCache = { latitude: null, longitude: null, city: 'Unknown', country: 'Unknown' };
-      resolve(locationCache);
-    }
-  });
+  locationPromise = (async () => {
+    // Always use IP-based geolocation (no permission popup)
+    locationCache = await getLocationFromIP();
+    return locationCache;
+  })();
   
   return locationPromise;
 };
