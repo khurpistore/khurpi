@@ -866,7 +866,7 @@ async def get_location_funnel(days: int = 30):
     pipeline = [
         {"$match": {
             "created_at": {"$gte": start_date},
-            "city": {"$exists": True, "$ne": "Unknown", "$ne": None, "$ne": ""}
+            "city": {"$exists": True, "$nin": ["Unknown", None, ""]}
         }},
         {"$group": {
             "_id": {
