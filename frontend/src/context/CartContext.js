@@ -311,7 +311,8 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartCount = () => {
-    let count = cartItems.reduce((count, item) => count + item.quantity, 0);
+    // Count number of unique items in cart (not quantities)
+    let count = cartItems.length;
     // Add 1 if there's a pending subscription
     if (pendingSubscription) {
       count += 1;
