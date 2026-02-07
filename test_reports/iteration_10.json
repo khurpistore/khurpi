@@ -1,0 +1,86 @@
+{
+  "summary": "Location Map Analytics feature fully tested. Backend API /api/admin/analytics/location-funnel working correctly with all required fields. Frontend Location tab displays correctly with summary cards, OpenStreetMap integration, pin markers, location funnel table, and Top Cities sections.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Analytics Location Tab - Map",
+        "issues": ["Mapbox background image fails to load (ERR_BLOCKED_BY_ORB) - but OpenStreetMap iframe works correctly as primary map"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_location_analytics.py",
+    "/app/test_reports/pytest/location_analytics_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py: Location funnel aggregation pipeline (lines 860-921) correctly aggregates by city/state/country with anonymous tracking",
+    "useAnalytics.js: IP-based geolocation (lines 299-354) uses ip-api.com with fallback to ipinfo.io - no user permission needed",
+    "AdminAnalytics.js: Location tab (lines 394-765) has proper summary cards, OpenStreetMap embed, pin markers with tooltips, and funnel table",
+    "AdminAnalytics.js: Pin colors correctly coded - blue for page views, amber for cart adds, green for checkout started"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_location_analytics.py"
+  ],
+  "success_rate": {
+    "backend": "100% (15/15 tests passed)",
+    "frontend": "100% (all flows verified)"
+  },
+  "test_credentials": {
+    "admin_username": "admin",
+    "admin_password": "Khurpi2026Secure"
+  },
+  "seed_data_creation": "Analytics events seeded for Mumbai (4 events, 1 cart add), Delhi (4 events, 1 cart add, 1 checkout), Bangalore (1 event), Noida (1 event)",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Location Map Analytics feature complete. Backend tests in /app/backend/tests/test_location_analytics.py. Frontend at /admin/analytics with Location tab shows map, summary cards, and location funnel table. IP geolocation uses ip-api.com (free, no API key).",
+  "features_verified": {
+    "GET_ADMIN_ANALYTICS_LOCATION_FUNNEL": {
+      "status": "PASS",
+      "details": "Returns location-wise funnel data with city, state, country, lat/lng, page_views, product_views, add_to_cart, checkout_started, anonymous_visitors, anonymous_cart_adds"
+    },
+    "IP_BASED_GEOLOCATION_HOOK": {
+      "status": "PASS",
+      "details": "useAnalytics.js uses ip-api.com for geolocation without permission popup. Falls back to ipinfo.io. Caches location for performance."
+    },
+    "ANALYTICS_LOCATION_TAB": {
+      "status": "PASS",
+      "details": "Location tab displays correctly at /admin/analytics with proper tabs navigation"
+    },
+    "SUMMARY_CARDS": {
+      "status": "PASS",
+      "details": "4 cards displayed - Total Locations (7), Anonymous Visitors (9), Cart Adds No Login (3), Checkouts Started (1)"
+    },
+    "OPENSTREETMAP_INTEGRATION": {
+      "status": "PASS",
+      "details": "Map displays using OpenStreetMap embed iframe with zoom controls and Reset button"
+    },
+    "PIN_MARKERS": {
+      "status": "PASS",
+      "details": "Pin markers displayed on map overlay. Colors: blue (page views only), amber (cart adds), green (checkout started). Shows event count badge."
+    },
+    "LOCATION_FUNNEL_TABLE": {
+      "status": "PASS",
+      "details": "Table with columns: Location, Page Views, Product Views, Add to Cart, Checkout, Anonymous %, Conv. Rate. Shows data for Mumbai, Delhi, Bangalore, Noida"
+    },
+    "TOP_CITIES_SECTIONS": {
+      "status": "PASS",
+      "details": "Two sections: 'Top Cities - Anonymous Cart Adds' (Mumbai, Delhi, TestCity) and 'Top Converting Locations' (Delhi with 100% conv rate)"
+    },
+    "MAP_LEGEND": {
+      "status": "PASS",
+      "details": "Legend shows: Page Views Only (blue), Added to Cart (amber), Started Checkout (green)"
+    },
+    "ANONYMOUS_USER_TRACKING": {
+      "status": "PASS",
+      "details": "Anonymous visitors and cart adds tracked without login. anonymous_visitors and anonymous_cart_adds fields populated in API response"
+    }
+  },
+  "mocked_apis_note": "No mocked APIs - all operations use real backend endpoints. IP geolocation uses external services (ip-api.com, ipinfo.io)"
+}
