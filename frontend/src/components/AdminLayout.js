@@ -15,6 +15,7 @@ const menuItems = [
   { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
   { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
   { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
+  { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/admin/expenses' },
   { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' },
   { id: 'coupons', label: 'Discount Coupons', icon: Tag, path: '/admin/coupons' },
   { id: 'discount-tiers', label: 'Order Discounts', icon: Percent, path: '/admin/discount-tiers' },
