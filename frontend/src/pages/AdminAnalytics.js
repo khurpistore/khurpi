@@ -22,6 +22,7 @@ const API = `${BACKEND_URL}/api`;
 const AdminAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [locations, setLocations] = useState([]);
+  const [locationFunnel, setLocationFunnel] = useState([]);
   const [recentEvents, setRecentEvents] = useState([]);
   const [realtime, setRealtime] = useState(null);
   const [engagement, setEngagement] = useState(null);
@@ -32,6 +33,9 @@ const AdminAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('30');
   const [activeTab, setActiveTab] = useState('overview');
+  const [mapZoom, setMapZoom] = useState(5);
+  const [mapCenter, setMapCenter] = useState({ lat: 20.5937, lng: 78.9629 }); // India center
+  const mapRef = useRef(null);
 
   useEffect(() => {
     fetchAnalytics();
@@ -44,9 +48,10 @@ const AdminAnalytics = () => {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const [summaryRes, locationsRes, eventsRes, engagementRes, errorsRes, journeysRes, utmRes, trafficRes] = await Promise.all([
+      const [summaryRes, locationsRes, locationFunnelRes, eventsRes, engagementRes, errorsRes, journeysRes, utmRes, trafficRes] = await Promise.all([
         axios.get(`${API}/admin/analytics/summary?days=${period}`).catch(() => ({ data: {} })),
         axios.get(`${API}/admin/analytics/locations`).catch(() => ({ data: [] })),
+        axios.get(`${API}/admin/analytics/location-funnel?days=${period}`).catch(() => ({ data: [] })),
         axios.get(`${API}/admin/analytics/events?limit=50`).catch(() => ({ data: [] })),
         axios.get(`${API}/admin/analytics/engagement?days=${period}`).catch(() => ({ data: {} })),
         axios.get(`${API}/admin/analytics/errors?days=${period}`).catch(() => ({ data: [] })),
@@ -56,6 +61,7 @@ const AdminAnalytics = () => {
       ]);
       setAnalytics(summaryRes.data);
       setLocations(locationsRes.data);
+      setLocationFunnel(locationFunnelRes.data || []);
       setRecentEvents(eventsRes.data);
       setEngagement(engagementRes.data);
       setErrors(errorsRes.data);
