@@ -2258,7 +2258,7 @@ async def create_subscription(sub_data: SubscriptionCreate, user_id: str):
     for item in sub_data.items:
         product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
         if not product:
-            raise HTTPException(status_code=404, detail=f"Product not found")
+            raise HTTPException(status_code=404, detail="Product not found")
         
         stock_status = product.get("stock_status", "in_stock")
         available_weight = product.get("weight", 5000)  # Weight represents available stock in grams
