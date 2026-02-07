@@ -45,6 +45,7 @@ import AdminAnalytics from '@/pages/AdminAnalytics';
 import AdminDiscountTiers from '@/pages/AdminDiscountTiers';
 import AdminCustomerView from '@/pages/AdminCustomerView';
 import AdminCreateOrder from '@/pages/AdminCreateOrder';
+import AdminExpenses from '@/pages/AdminExpenses';
 import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
 
