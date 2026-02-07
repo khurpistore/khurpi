@@ -390,6 +390,380 @@ const AdminAnalytics = () => {
             </Card>
           </TabsContent>
 
+          {/* Location Map Tab */}
+          <TabsContent value="location-map" className="space-y-6">
+            {/* Location Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Globe className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total Locations</p>
+                      <p className="text-2xl font-bold">{locationFunnel.length || Object.keys(analytics?.cities || {}).length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Users className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Anonymous Visitors</p>
+                      <p className="text-2xl font-bold">{locationFunnel.reduce((acc, l) => acc + (l.anonymous_visitors || 0), 0)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 rounded-lg">
+                      <ShoppingCart className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Cart Adds (No Login)</p>
+                      <p className="text-2xl font-bold">{locationFunnel.reduce((acc, l) => acc + (l.anonymous_cart_adds || 0), 0)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <CreditCard className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Checkouts Started</p>
+                      <p className="text-2xl font-bold">{locationFunnel.reduce((acc, l) => acc + (l.checkout_started || 0), 0)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Interactive Map */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Map className="w-5 h-5" />
+                    User Locations Map
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setMapZoom(z => Math.min(z + 1, 18))}>
+                      <ZoomIn className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setMapZoom(z => Math.max(z - 1, 2))}>
+                      <ZoomOut className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => { setMapCenter({ lat: 20.5937, lng: 78.9629 }); setMapZoom(5); }}>
+                      <Navigation className="w-4 h-4 mr-1" />
+                      Reset
+                    </Button>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  ref={mapRef}
+                  className="relative w-full h-[500px] bg-slate-100 rounded-lg overflow-hidden border"
+                  style={{
+                    backgroundImage: `url('https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${mapCenter.lng},${mapCenter.lat},${mapZoom},0/1200x600@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  {/* OpenStreetMap Embed */}
+                  <iframe
+                    title="User Locations Map"
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    scrolling="no"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCenter.lng - 15},${mapCenter.lat - 10},${mapCenter.lng + 15},${mapCenter.lat + 10}&layer=mapnik&marker=${mapCenter.lat},${mapCenter.lng}`}
+                    style={{ border: 0 }}
+                  />
+                  
+                  {/* Pin Markers Overlay */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {locationFunnel.slice(0, 50).map((location, index) => {
+                      if (!location.latitude || !location.longitude) return null;
+                      
+                      // Calculate position on the map view
+                      const mapWidth = 1200;
+                      const mapHeight = 500;
+                      const latRange = 20; // degrees visible
+                      const lngRange = 30;
+                      
+                      const x = ((location.longitude - (mapCenter.lng - lngRange/2)) / lngRange) * 100;
+                      const y = ((mapCenter.lat + latRange/2 - location.latitude) / latRange) * 100;
+                      
+                      if (x < 0 || x > 100 || y < 0 || y > 100) return null;
+                      
+                      const size = Math.min(Math.max(location.total_events / 10, 8), 40);
+                      const hasCartAdd = location.anonymous_cart_adds > 0;
+                      const hasCheckout = location.checkout_started > 0;
+                      
+                      return (
+                        <div
+                          key={index}
+                          className="absolute transform -translate-x-1/2 -translate-y-full pointer-events-auto cursor-pointer group"
+                          style={{ left: `${x}%`, top: `${y}%` }}
+                          title={`${location.city}: ${location.total_events} events, ${location.anonymous_cart_adds || 0} cart adds`}
+                        >
+                          <div className={`
+                            relative flex items-center justify-center
+                            ${hasCheckout ? 'text-green-500' : hasCartAdd ? 'text-amber-500' : 'text-blue-500'}
+                          `}>
+                            <MapPin 
+                              className="drop-shadow-lg" 
+                              style={{ width: size, height: size }}
+                              fill={hasCheckout ? '#22c55e' : hasCartAdd ? '#f59e0b' : '#3b82f6'}
+                              strokeWidth={1.5}
+                            />
+                            {location.total_events > 5 && (
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                {location.total_events > 99 ? '99+' : location.total_events}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                            <div className="bg-white rounded-lg shadow-xl p-3 min-w-[200px] border">
+                              <p className="font-semibold text-sm">{location.city}, {location.state}</p>
+                              <div className="mt-2 space-y-1 text-xs">
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Page Views:</span>
+                                  <span className="font-medium">{location.page_views || 0}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Product Views:</span>
+                                  <span className="font-medium">{location.product_views || 0}</span>
+                                </div>
+                                <div className="flex justify-between text-amber-600">
+                                  <span>Cart Adds:</span>
+                                  <span className="font-medium">{location.anonymous_cart_adds || 0}</span>
+                                </div>
+                                <div className="flex justify-between text-green-600">
+                                  <span>Checkouts:</span>
+                                  <span className="font-medium">{location.checkout_started || 0}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Map Legend */}
+                <div className="flex flex-wrap gap-4 mt-4 justify-center text-sm">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-blue-500" fill="#3b82f6" />
+                    <span>Page Views Only</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-amber-500" fill="#f59e0b" />
+                    <span>Added to Cart</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-green-500" fill="#22c55e" />
+                    <span>Started Checkout</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Location Funnel Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Location-wise Funnel (Anonymous + Logged In)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b bg-gray-50">
+                        <th className="text-left p-3 font-medium">Location</th>
+                        <th className="text-right p-3 font-medium">
+                          <span className="flex items-center justify-end gap-1">
+                            <Eye className="w-4 h-4" /> Page Views
+                          </span>
+                        </th>
+                        <th className="text-right p-3 font-medium">
+                          <span className="flex items-center justify-end gap-1">
+                            <Package className="w-4 h-4" /> Product Views
+                          </span>
+                        </th>
+                        <th className="text-right p-3 font-medium">
+                          <span className="flex items-center justify-end gap-1">
+                            <ShoppingCart className="w-4 h-4" /> Add to Cart
+                          </span>
+                        </th>
+                        <th className="text-right p-3 font-medium">
+                          <span className="flex items-center justify-end gap-1">
+                            <CreditCard className="w-4 h-4" /> Checkout
+                          </span>
+                        </th>
+                        <th className="text-right p-3 font-medium">Anonymous %</th>
+                        <th className="text-right p-3 font-medium">Conv. Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {locationFunnel.length > 0 ? (
+                        locationFunnel.slice(0, 20).map((location, index) => {
+                          const convRate = location.page_views > 0 
+                            ? ((location.checkout_started / location.page_views) * 100).toFixed(1) 
+                            : '0.0';
+                          const anonPercent = location.total_events > 0
+                            ? (((location.anonymous_visitors || 0) / location.total_events) * 100).toFixed(0)
+                            : '0';
+                          
+                          return (
+                            <tr key={index} className="border-b hover:bg-gray-50">
+                              <td className="p-3">
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="w-4 h-4 text-gray-400" />
+                                  <div>
+                                    <p className="font-medium">{location.city}</p>
+                                    <p className="text-xs text-muted-foreground">{location.state}, {location.country}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-3 text-right font-medium">{location.page_views || 0}</td>
+                              <td className="p-3 text-right">{location.product_views || 0}</td>
+                              <td className="p-3 text-right">
+                                <span className="text-amber-600 font-medium">{location.anonymous_cart_adds || 0}</span>
+                              </td>
+                              <td className="p-3 text-right">
+                                <span className="text-green-600 font-medium">{location.checkout_started || 0}</span>
+                              </td>
+                              <td className="p-3 text-right">
+                                <Badge variant={parseInt(anonPercent) > 70 ? 'destructive' : 'secondary'}>
+                                  {anonPercent}%
+                                </Badge>
+                              </td>
+                              <td className="p-3 text-right">
+                                <Badge variant={parseFloat(convRate) > 2 ? 'default' : 'outline'}>
+                                  {convRate}%
+                                </Badge>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                            <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                            <p>No location data available yet</p>
+                            <p className="text-sm">Location data will appear as users browse the site</p>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Top Cities Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-amber-600">
+                    <ShoppingCart className="w-5 h-5" />
+                    Top Cities - Anonymous Cart Adds
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {locationFunnel
+                      .filter(l => (l.anonymous_cart_adds || 0) > 0)
+                      .sort((a, b) => (b.anonymous_cart_adds || 0) - (a.anonymous_cart_adds || 0))
+                      .slice(0, 10)
+                      .map((location, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center text-xs font-bold text-amber-800">
+                              {index + 1}
+                            </span>
+                            <div>
+                              <p className="font-medium">{location.city}</p>
+                              <p className="text-xs text-muted-foreground">{location.state}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-amber-700">{location.anonymous_cart_adds}</p>
+                            <p className="text-xs text-muted-foreground">cart adds</p>
+                          </div>
+                        </div>
+                      ))
+                    }
+                    {locationFunnel.filter(l => (l.anonymous_cart_adds || 0) > 0).length === 0 && (
+                      <p className="text-center text-muted-foreground py-4">No anonymous cart activity yet</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-600">
+                    <TrendingUp className="w-5 h-5" />
+                    Top Converting Locations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {locationFunnel
+                      .filter(l => (l.checkout_started || 0) > 0)
+                      .sort((a, b) => {
+                        const aRate = a.page_views > 0 ? (a.checkout_started / a.page_views) : 0;
+                        const bRate = b.page_views > 0 ? (b.checkout_started / b.page_views) : 0;
+                        return bRate - aRate;
+                      })
+                      .slice(0, 10)
+                      .map((location, index) => {
+                        const convRate = location.page_views > 0 
+                          ? ((location.checkout_started / location.page_views) * 100).toFixed(1)
+                          : '0.0';
+                        return (
+                          <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 bg-green-200 rounded-full flex items-center justify-center text-xs font-bold text-green-800">
+                                {index + 1}
+                              </span>
+                              <div>
+                                <p className="font-medium">{location.city}</p>
+                                <p className="text-xs text-muted-foreground">{location.page_views} views → {location.checkout_started} checkouts</p>
+                              </div>
+                            </div>
+                            <Badge className="bg-green-600">{convRate}%</Badge>
+                          </div>
+                        );
+                      })
+                    }
+                    {locationFunnel.filter(l => (l.checkout_started || 0) > 0).length === 0 && (
+                      <p className="text-center text-muted-foreground py-4">No checkout data yet</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           {/* Engagement Tab */}
           <TabsContent value="engagement" className="space-y-6">
             {engagement && (
