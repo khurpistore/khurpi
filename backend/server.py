@@ -5113,6 +5113,200 @@ async def seed_default_discount_tiers():
     
     return {"message": "Default discount tiers created", "count": len(default_tiers)}
 
+# ============ EXPENSE TRACKING ============
+
+# Default expense types
+DEFAULT_EXPENSE_TYPES = [
+    {"name": "seeds", "label": "Seeds"},
+    {"name": "lights", "label": "Lights/LED"},
+    {"name": "fans", "label": "Fans"},
+    {"name": "racks", "label": "Racks/Shelves"},
+    {"name": "trays", "label": "Trays"},
+    {"name": "cocopeat", "label": "Cocopeat/Growing Medium"},
+    {"name": "h2o2", "label": "H2O2/Sanitizer"},
+    {"name": "packaging", "label": "Packaging Materials"},
+    {"name": "stickers", "label": "Stickers/Labels"},
+    {"name": "pamphlet", "label": "Pamphlets/Flyers"},
+    {"name": "marketing", "label": "Marketing/Ads"},
+    {"name": "digital_app", "label": "Digital/App Services"},
+    {"name": "utilities", "label": "Utilities (Water/Power)"},
+    {"name": "rent", "label": "Rent"},
+    {"name": "salary", "label": "Salary/Wages"},
+    {"name": "transport", "label": "Transport/Delivery"},
+    {"name": "equipment", "label": "Equipment/Tools"},
+    {"name": "maintenance", "label": "Maintenance/Repairs"},
+    {"name": "other", "label": "Other"}
+]
+
+@api_router.get("/admin/expense-types")
+async def get_expense_types():
+    """Get all expense types"""
+    custom_types = await db.expense_types.find({}, {"_id": 0}).to_list(100)
+    # Merge default and custom types
+    all_types = DEFAULT_EXPENSE_TYPES.copy()
+    existing_names = {t["name"] for t in all_types}
+    for ct in custom_types:
+        if ct.get("name") not in existing_names:
+            all_types.append(ct)
+    return all_types
+
+@api_router.post("/admin/expense-types")
+async def create_expense_type(type_data: ExpenseTypeCreate):
+    """Create a new expense type"""
+    # Check if exists
+    existing = await db.expense_types.find_one({"name": type_data.name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Expense type already exists")
+    
+    type_doc = {
+        "id": str(uuid.uuid4()),
+        "name": type_data.name,
+        "label": type_data.label,
+        "description": type_data.description,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.expense_types.insert_one(type_doc)
+    type_doc.pop("_id", None)
+    return type_doc
+
+@api_router.get("/admin/expenses")
+async def get_all_expenses(
+    expense_type: Optional[str] = None,
+    paid_status: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    """Get all expenses with optional filters"""
+    query = {}
+    
+    if expense_type:
+        query["item_type"] = expense_type
+    if paid_status:
+        query["paid_status"] = paid_status
+    if start_date:
+        query["order_date"] = {"$gte": start_date}
+    if end_date:
+        if "order_date" in query:
+            query["order_date"]["$lte"] = end_date
+        else:
+            query["order_date"] = {"$lte": end_date}
+    
+    expenses = await db.expenses.find(query, {"_id": 0}).sort("order_date", -1).to_list(1000)
+    
+    # Calculate summary
+    total_amount = sum(e.get("total_price", 0) for e in expenses)
+    total_paid = sum(e.get("paid_amount", 0) for e in expenses)
+    pending_amount = total_amount - total_paid
+    
+    return {
+        "expenses": expenses,
+        "summary": {
+            "total_expenses": len(expenses),
+            "total_amount": round(total_amount, 2),
+            "total_paid": round(total_paid, 2),
+            "pending_amount": round(pending_amount, 2)
+        }
+    }
+
+@api_router.post("/admin/expenses")
+async def create_expense(expense_data: ExpenseCreate):
+    """Create a new expense entry"""
+    expense_doc = {
+        "id": str(uuid.uuid4()),
+        "item_type": expense_data.item_type,
+        "item_name": expense_data.item_name,
+        "description": expense_data.description,
+        "vendor_name": expense_data.vendor_name,
+        "vendor_location": expense_data.vendor_location,
+        "vendor_phone": expense_data.vendor_phone,
+        "quantity": expense_data.quantity,
+        "unit_price": expense_data.unit_price,
+        "total_price": expense_data.total_price,
+        "paid_status": expense_data.paid_status,
+        "paid_amount": expense_data.paid_amount or 0,
+        "payment_method": expense_data.payment_method,
+        "order_date": expense_data.order_date,
+        "delivery_date": expense_data.delivery_date,
+        "invoice_number": expense_data.invoice_number,
+        "notes": expense_data.notes,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.expenses.insert_one(expense_doc)
+    expense_doc.pop("_id", None)
+    return expense_doc
+
+@api_router.get("/admin/expenses/{expense_id}")
+async def get_expense(expense_id: str):
+    """Get a single expense by ID"""
+    expense = await db.expenses.find_one({"id": expense_id}, {"_id": 0})
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    return expense
+
+@api_router.put("/admin/expenses/{expense_id}")
+async def update_expense(expense_id: str, expense_data: ExpenseUpdate):
+    """Update an expense entry"""
+    update_data = {k: v for k, v in expense_data.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.expenses.update_one({"id": expense_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    
+    expense = await db.expenses.find_one({"id": expense_id}, {"_id": 0})
+    return expense
+
+@api_router.delete("/admin/expenses/{expense_id}")
+async def delete_expense(expense_id: str):
+    """Delete an expense entry"""
+    result = await db.expenses.delete_one({"id": expense_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    return {"success": True, "message": "Expense deleted"}
+
+@api_router.get("/admin/expenses/summary/monthly")
+async def get_monthly_expense_summary():
+    """Get monthly expense summary for the current year"""
+    current_year = datetime.now(timezone.utc).year
+    start_date = f"{current_year}-01-01"
+    
+    expenses = await db.expenses.find(
+        {"order_date": {"$gte": start_date}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    # Group by month
+    monthly_summary = {}
+    type_summary = {}
+    
+    for expense in expenses:
+        order_date = expense.get("order_date", "")[:7]  # YYYY-MM
+        if order_date:
+            if order_date not in monthly_summary:
+                monthly_summary[order_date] = {"total": 0, "paid": 0, "count": 0}
+            monthly_summary[order_date]["total"] += expense.get("total_price", 0)
+            monthly_summary[order_date]["paid"] += expense.get("paid_amount", 0)
+            monthly_summary[order_date]["count"] += 1
+        
+        # Group by type
+        item_type = expense.get("item_type", "other")
+        if item_type not in type_summary:
+            type_summary[item_type] = {"total": 0, "count": 0}
+        type_summary[item_type]["total"] += expense.get("total_price", 0)
+        type_summary[item_type]["count"] += 1
+    
+    return {
+        "monthly": dict(sorted(monthly_summary.items())),
+        "by_type": dict(sorted(type_summary.items(), key=lambda x: x[1]["total"], reverse=True)),
+        "year": current_year
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
