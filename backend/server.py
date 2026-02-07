@@ -857,6 +857,69 @@ async def get_user_journeys(limit: int = 50):
     
     return result
 
+@api_router.get("/admin/analytics/location-funnel")
+async def get_location_funnel(days: int = 30):
+    """Get location-wise funnel data including anonymous users"""
+    start_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    
+    # Aggregate events by location (city, state, country)
+    pipeline = [
+        {"$match": {
+            "created_at": {"$gte": start_date},
+            "city": {"$exists": True, "$ne": "Unknown", "$ne": None, "$ne": ""}
+        }},
+        {"$group": {
+            "_id": {
+                "city": "$city",
+                "state": "$state",
+                "country": "$country"
+            },
+            "latitude": {"$first": "$latitude"},
+            "longitude": {"$first": "$longitude"},
+            "total_events": {"$sum": 1},
+            "unique_visitors": {"$addToSet": "$visitor_id"},
+            "unique_sessions": {"$addToSet": "$session_id"},
+            "logged_in_users": {"$addToSet": {"$cond": [{"$ne": ["$user_id", None]}, "$user_id", "$$REMOVE"]}},
+            "page_views": {"$sum": {"$cond": [{"$eq": ["$event_type", "page_view"]}, 1, 0]}},
+            "product_views": {"$sum": {"$cond": [{"$eq": ["$event_type", "product_view"]}, 1, 0]}},
+            "add_to_cart": {"$sum": {"$cond": [{"$eq": ["$event_type", "add_to_cart"]}, 1, 0]}},
+            "checkout_started": {"$sum": {"$cond": [{"$eq": ["$event_type", "checkout_started"]}, 1, 0]}},
+            "purchases": {"$sum": {"$cond": [{"$eq": ["$event_type", "purchase"]}, 1, 0]}},
+            # Track anonymous events (no user_id)
+            "anonymous_page_views": {"$sum": {"$cond": [
+                {"$and": [{"$eq": ["$event_type", "page_view"]}, {"$eq": ["$user_id", None]}]}, 1, 0
+            ]}},
+            "anonymous_cart_adds": {"$sum": {"$cond": [
+                {"$and": [{"$eq": ["$event_type", "add_to_cart"]}, {"$eq": ["$user_id", None]}]}, 1, 0
+            ]}}
+        }},
+        {"$project": {
+            "_id": 0,
+            "city": "$_id.city",
+            "state": "$_id.state",
+            "country": "$_id.country",
+            "latitude": 1,
+            "longitude": 1,
+            "total_events": 1,
+            "unique_visitors": {"$size": "$unique_visitors"},
+            "unique_sessions": {"$size": "$unique_sessions"},
+            "logged_in_users": {"$size": "$logged_in_users"},
+            "anonymous_visitors": {"$subtract": [{"$size": "$unique_visitors"}, {"$size": "$logged_in_users"}]},
+            "page_views": 1,
+            "product_views": 1,
+            "add_to_cart": 1,
+            "checkout_started": 1,
+            "purchases": 1,
+            "anonymous_page_views": 1,
+            "anonymous_cart_adds": 1
+        }},
+        {"$sort": {"total_events": -1}},
+        {"$limit": 100}
+    ]
+    
+    locations = await db.analytics.aggregate(pipeline).to_list(100)
+    return locations
+
 @api_router.get("/admin/analytics/realtime")
 async def get_realtime_analytics():
     """Get real-time analytics (last 30 minutes)"""
