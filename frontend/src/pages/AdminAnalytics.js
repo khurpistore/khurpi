@@ -176,8 +176,12 @@ const AdminAnalytics = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+          <TabsList className="grid grid-cols-6 w-full max-w-3xl">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="location-map" className="flex items-center gap-1">
+              <Map className="w-3 h-3" />
+              Location
+            </TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
             <TabsTrigger value="journeys">Journeys</TabsTrigger>
             <TabsTrigger value="errors">Errors</TabsTrigger>
