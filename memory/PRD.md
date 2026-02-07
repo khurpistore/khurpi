@@ -47,6 +47,14 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - **Delivery Management:** Today's deliveries, status updates, CSV export, product images & weights
 - **Payment History:** View all payments with discount breakdowns
 - **Inventory Planning:** Stock requirements based on subscriptions
+- **Expense Tracker:** Track all business expenditures (added Dec 2025)
+  - Expense types: Seeds, Lights, Fans, Racks, Trays, Cocopeat, H2O2, Packaging, Marketing, Utilities, Rent, Salary, Transport, Equipment, etc.
+  - Fields: Item type, name, vendor details (name, location, phone), quantity, unit price, total price
+  - Payment tracking: Status (pending/partial/paid), amount paid, payment method
+  - Dates: Order date, delivery date, invoice number
+  - Summary cards: Total expenses, total amount, total paid, pending amount
+  - Filters: By expense type, payment status, date range
+  - Export to CSV functionality
 - **Settings Management:** Shop config, delivery pricing, subscription plans
 - **Page Content (CMS):** Edit Privacy Policy, Terms, Shipping Policy, Cancellation & Refund pages
 - **View as Customer:** Search by phone number to view read-only customer account (orders, subscriptions, addresses, referrals)
