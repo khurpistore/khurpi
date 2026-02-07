@@ -60,6 +60,22 @@ Khurpi is a full-stack subscription web application for selling premium microgre
 - **View as Customer:** Search by phone number to view read-only customer account (orders, subscriptions, addresses, referrals)
 - **Analytics Dashboard:** Comprehensive tracking and marketing analytics with:
   - Real-time stats (active sessions, users, events)
+  - Location Map Analytics (added Dec 2025):
+    - IP-based geolocation (no user permission needed)
+    - Interactive OpenStreetMap with pin markers
+    - Pin colors: Blue (page views), Amber (cart adds), Green (checkout started)
+    - Full funnel tracking by location: page views → product views → add to cart → checkout → purchase
+    - Anonymous user tracking (users who add to cart without login)
+    - Summary cards: Total Locations, Anonymous Visitors, Cart Adds (No Login), Checkouts Started
+    - Location funnel table with conversion rates
+    - Top Cities by cart adds and conversion rates
+  - Conversion funnel visualization
+  - Device/browser breakdown
+  - User journey tracking
+  - Error tracking
+  - UTM campaign tracking
+  - Traffic source analysis
+  - Real-time stats (active sessions, users, events)
   - Conversion funnel (Page Views → Product Views → Add to Cart → Checkout → Purchase)
   - Device breakdown (desktop, mobile, tablet)
   - Location tracking (city-wise visits)
