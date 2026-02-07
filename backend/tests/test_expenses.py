@@ -281,9 +281,12 @@ class TestCleanup:
         deleted_count = 0
         
         for expense in expenses:
-            if expense.get("item_name", "").startswith("TEST_") or \
-               expense.get("vendor_name", "").startswith("TEST_") or \
-               expense.get("invoice_number", "").startswith("TEST-"):
+            item_name = expense.get("item_name") or ""
+            vendor_name = expense.get("vendor_name") or ""
+            invoice_number = expense.get("invoice_number") or ""
+            if item_name.startswith("TEST_") or \
+               vendor_name.startswith("TEST_") or \
+               invoice_number.startswith("TEST-"):
                 delete_response = requests.delete(f"{BASE_URL}/api/admin/expenses/{expense['id']}")
                 if delete_response.status_code == 200:
                     deleted_count += 1
