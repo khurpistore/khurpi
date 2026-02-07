@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,7 +10,8 @@ import {
   Package, MousePointer, Search, UserPlus, LogIn, Loader2,
   AlertTriangle, Activity, Target, RefreshCw, Clock, ArrowRight,
   Percent, UserCheck, UserX, Zap, Share2, Facebook, Instagram, 
-  MessageCircle, Twitter, Linkedin, Youtube, ExternalLink
+  MessageCircle, Twitter, Linkedin, Youtube, ExternalLink, Map,
+  Navigation, CircleDot, ZoomIn, ZoomOut, Layers
 } from 'lucide-react';
 import axios from 'axios';
 import AdminLayout from '@/components/AdminLayout';
