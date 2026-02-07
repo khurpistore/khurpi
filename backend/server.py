@@ -866,16 +866,16 @@ async def get_location_funnel(days: int = 30):
     pipeline = [
         {"$match": {
             "created_at": {"$gte": start_date},
-            "city": {"$exists": True, "$nin": ["Unknown", None, ""]}
+            "location.city": {"$exists": True, "$nin": ["Unknown", None, ""]}
         }},
         {"$group": {
             "_id": {
-                "city": "$city",
-                "state": "$state",
-                "country": "$country"
+                "city": "$location.city",
+                "state": "$location.state",
+                "country": "$location.country"
             },
-            "latitude": {"$first": "$latitude"},
-            "longitude": {"$first": "$longitude"},
+            "latitude": {"$first": "$location.latitude"},
+            "longitude": {"$first": "$location.longitude"},
             "total_events": {"$sum": 1},
             "unique_visitors": {"$addToSet": "$visitor_id"},
             "unique_sessions": {"$addToSet": "$session_id"},
