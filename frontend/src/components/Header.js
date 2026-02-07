@@ -38,17 +38,39 @@ const IS_DEV = process.env.REACT_APP_ENV === 'development' &&
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [maxDiscount, setMaxDiscount] = useState(0);
-  const [notifications] = useState([
-    { id: 1, message: 'Your subscription delivery is scheduled for tomorrow', unread: true },
-    { id: 2, message: 'New microgreens added to our collection!', unread: true },
-  ]);
+  const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { getCartCount } = useCart();
+  const { getCartCount, pendingSubscription, cartItems } = useCart();
 
   const cartCount = getCartCount();
   const unreadCount = notifications.filter(n => n.unread).length;
+
+  // Generate notifications based on user state
+  useEffect(() => {
+    const newNotifications = [];
+    
+    // Notification for pending subscription in cart
+    if (pendingSubscription) {
+      newNotifications.push({
+        id: 'sub-pending',
+        message: 'You have a subscription waiting in your cart',
+        unread: true
+      });
+    }
+    
+    // Notification for items in cart
+    if (cartItems.length > 0) {
+      newNotifications.push({
+        id: 'cart-items',
+        message: `${cartItems.length} item${cartItems.length > 1 ? 's' : ''} in your cart`,
+        unread: false
+      });
+    }
+    
+    setNotifications(newNotifications);
+  }, [pendingSubscription, cartItems.length]);
 
   // Fetch max discount on mount
   useEffect(() => {
