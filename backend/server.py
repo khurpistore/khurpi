@@ -504,6 +504,49 @@ class OrderCreate(BaseModel):
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"
 
+
+# Expense/Expenditure Models
+class ExpenseCreate(BaseModel):
+    item_type: str  # seeds, lights, fans, racks, trays, cocopeat, h2o2, other, digital_app, stickers, pamphlet, marketing
+    item_name: str
+    description: Optional[str] = None
+    vendor_name: str
+    vendor_location: Optional[str] = None
+    vendor_phone: Optional[str] = None
+    quantity: Optional[int] = 1
+    unit_price: float
+    total_price: float
+    paid_status: str = "pending"  # pending, partial, paid
+    paid_amount: Optional[float] = 0
+    payment_method: Optional[str] = None  # cash, upi, bank_transfer, card
+    order_date: str
+    delivery_date: Optional[str] = None
+    invoice_number: Optional[str] = None
+    notes: Optional[str] = None
+
+class ExpenseUpdate(BaseModel):
+    item_type: Optional[str] = None
+    item_name: Optional[str] = None
+    description: Optional[str] = None
+    vendor_name: Optional[str] = None
+    vendor_location: Optional[str] = None
+    vendor_phone: Optional[str] = None
+    quantity: Optional[int] = None
+    unit_price: Optional[float] = None
+    total_price: Optional[float] = None
+    paid_status: Optional[str] = None
+    paid_amount: Optional[float] = None
+    payment_method: Optional[str] = None
+    order_date: Optional[str] = None
+    delivery_date: Optional[str] = None
+    invoice_number: Optional[str] = None
+    notes: Optional[str] = None
+
+class ExpenseTypeCreate(BaseModel):
+    name: str
+    label: str
+    description: Optional[str] = None
+
 # Analytics Models
 class AnalyticsEvent(BaseModel):
     event_type: str  # page_view, click, add_to_cart, checkout, purchase, etc.
