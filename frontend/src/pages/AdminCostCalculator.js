@@ -62,7 +62,7 @@ const AdminCostCalculator = () => {
         axios.get(`${API}/admin/cost-calculator/fixed-costs`),
         axios.get(`${API}/admin/cost-calculator/production-costs`),
         axios.get(`${API}/admin/cost-calculator/product-configs`),
-        axios.get(`${API}/admin/products`),
+        axios.get(`${API}/products`),
         axios.get(`${API}/admin/cost-calculator/categories`)
       ]);
       
