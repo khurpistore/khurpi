@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
