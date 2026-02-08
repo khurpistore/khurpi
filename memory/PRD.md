@@ -55,6 +55,25 @@ Khurpi is a full-stack subscription web application for selling premium microgre
   - Summary cards: Total expenses, total amount, total paid, pending amount
   - Filters: By expense type, payment status, date range
   - Export to CSV functionality
+- **Cost Calculator:** Calculate per-product microgreen costs (added Dec 2025)
+  - **One-Time Purchases (Depreciation):**
+    - Track equipment, racks, lights, trays, sensors with purchase cost
+    - Straight-line depreciation: (purchase_cost - salvage_value) / useful_life_months
+    - Shows: Total purchase cost, monthly depreciation, current book value, months remaining
+  - **Monthly Fixed Costs:**
+    - Categories: Rent, Electricity, Water, Internet, Insurance, Salary, Maintenance
+    - Tracks recurring monthly expenses
+  - **Production Costs:**
+    - Variable costs per unit: Seeds, Soil, Labor, Packaging, Consumables
+    - Configurable cost per tray/kg/hour/piece
+  - **Product Cost Configuration:**
+    - Per-product settings: Trays per batch, growth days, yield per tray
+    - Variable inputs: Seed cost, soil cost, labor hours, packaging cost
+  - **Cost Calculation:**
+    - Distributes monthly overhead across production trays
+    - Formula: overhead_per_tray = (depreciation + fixed_costs) / monthly_production_trays
+    - Shows: Cost per 100g, profit per unit, margin %, profitability status
+    - Summary: Products configured, profitable/unprofitable count, average margin
 - **Settings Management:** Shop config, delivery pricing, subscription plans
 - **Page Content (CMS):** Edit Privacy Policy, Terms, Shipping Policy, Cancellation & Refund pages
 - **View as Customer:** Search by phone number to view read-only customer account (orders, subscriptions, addresses, referrals)
