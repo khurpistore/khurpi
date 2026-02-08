@@ -399,7 +399,8 @@ class TestProductConfigs:
         """POST /api/admin/cost-calculator/product-configs creates a config"""
         # First get a product ID
         products_response = requests.get(f"{BASE_URL}/api/products")
-        products = products_response.json().get("products", products_response.json())
+        products_data = products_response.json()
+        products = products_data.get("products", products_data) if isinstance(products_data, dict) else products_data
         if not products:
             pytest.skip("No products available for testing")
         
