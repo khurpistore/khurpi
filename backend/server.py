@@ -547,6 +547,46 @@ class ExpenseTypeCreate(BaseModel):
     label: str
     description: Optional[str] = None
 
+# Cost Calculator Models
+class OneTimePurchase(BaseModel):
+    id: Optional[str] = None
+    name: str
+    category: str  # racks, lights, fans, trays, sensors, equipment, other
+    purchase_cost: float
+    purchase_date: str
+    useful_life_months: int = 36  # Default 3 years
+    salvage_value: float = 0
+    notes: Optional[str] = None
+
+class MonthlyFixedCost(BaseModel):
+    id: Optional[str] = None
+    name: str
+    category: str  # rent, electricity, water, internet, insurance, salary, other
+    monthly_amount: float
+    notes: Optional[str] = None
+
+class ProductionCostItem(BaseModel):
+    id: Optional[str] = None
+    name: str
+    category: str  # seeds, soil, labor, packaging, consumables, other
+    cost_per_unit: float
+    unit: str  # per_tray, per_kg, per_hour, per_piece
+    notes: Optional[str] = None
+
+class ProductCostConfig(BaseModel):
+    product_id: str
+    product_name: str
+    trays_per_batch: int = 1
+    growth_days: int = 7
+    yield_grams_per_tray: float = 100
+    seed_cost_per_tray: float = 0
+    soil_cost_per_tray: float = 0
+    labor_hours_per_batch: float = 0.5
+    labor_rate_per_hour: float = 100
+    packaging_cost_per_unit: float = 0
+    other_variable_costs: float = 0
+    notes: Optional[str] = None
+
 # Analytics Models
 class AnalyticsEvent(BaseModel):
     event_type: str  # page_view, click, add_to_cart, checkout, purchase, etc.
