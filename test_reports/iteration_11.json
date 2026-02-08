@@ -1,0 +1,111 @@
+{
+  "summary": "Cost Calculator feature fully tested. All 23 backend API tests passed (100%). Frontend UI loads correctly at /admin/cost-calculator with 5 tabs (Overview, One-Time, Fixed Costs, Production, Products). Cost calculation and depreciation formulas verified correct.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/admin/cost-calculator/product-configs",
+        "issue": "One orphaned product config with empty product_id exists in DB (shows in calculations with product_name='' and selling_price=0)"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Products tab in Cost Calculator",
+        "issue": "Clicking 'Products' tab sometimes navigates to /admin/products (Manage Products) instead of staying on Cost Calculator Products tab. Tab selector may be catching sidebar 'Products' link.",
+        "affected_selectors": ["button:has-text('Products')"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_cost_calculator.py",
+    "/app/test_reports/pytest/cost_calculator_results.xml"
+  ],
+  "action_items": [
+    "Clean up orphaned product config with empty product_id in cost_product_configs collection",
+    "Consider adding data-testid to tab buttons for more reliable automation"
+  ],
+  "critical_code_review_comments": [
+    "server.py: Depreciation calculation uses correct straight-line method: (purchase_cost - salvage_value) / useful_life_months",
+    "server.py: Cost calculation endpoint correctly distributes overhead across monthly_production_trays",
+    "AdminCostCalculator.js: All 5 tabs implemented with proper data fetching and CRUD operations",
+    "AdminLayout.js: Cost Calculator added to sidebar navigation at /admin/cost-calculator"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_cost_calculator.py"
+  ],
+  "success_rate": {
+    "backend": "100% (23/23 tests passed)",
+    "frontend": "95% (all tabs load, minor navigation issue)"
+  },
+  "test_credentials": {
+    "admin_username": "admin",
+    "admin_password": "Khurpi2026Secure"
+  },
+  "seed_data_creation": "Existing seed data used: 2 one-time purchases (4-Tier Growing Rack ₹5000, LED Grow Lights ₹8000), 2 fixed costs (Shop Rent ₹5000, Electricity ₹2000), 2 product configs (Sunflower Microgreens)",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Cost Calculator feature at /admin/cost-calculator. Backend tests in /app/backend/tests/test_cost_calculator.py cover all CRUD operations for one-time, fixed-costs, production-costs, and product-configs. Depreciation uses straight-line method. Cost calculation distributes overhead per tray based on monthly_production_trays parameter.",
+  "features_verified": {
+    "GET_CATEGORIES": {
+      "status": "PASS",
+      "details": "Returns one_time (9 categories), fixed (8 categories), production (7 categories)"
+    },
+    "ONE_TIME_CRUD": {
+      "status": "PASS",
+      "details": "Full CRUD with depreciation calculation - monthly_depreciation, accumulated_depreciation, current_value, months_remaining"
+    },
+    "FIXED_COSTS_CRUD": {
+      "status": "PASS",
+      "details": "Full CRUD with total_monthly summary"
+    },
+    "PRODUCTION_COSTS_CRUD": {
+      "status": "PASS",
+      "details": "Full CRUD for variable costs with cost_per_unit and unit"
+    },
+    "PRODUCT_CONFIGS_CRUD": {
+      "status": "PASS",
+      "details": "Create/Update uses upsert by product_id, Delete works correctly"
+    },
+    "CALCULATE_ENDPOINT": {
+      "status": "PASS",
+      "details": "Returns monthly_overhead (depreciation + fixed_costs), overhead_per_tray, product_costs array with cost breakdown and profitability"
+    },
+    "DEPRECIATION_FORMULA": {
+      "status": "PASS",
+      "details": "Straight-line: (purchase_cost - salvage_value) / useful_life_months. Example: (5000-0)/40 = ₹125/month for Rack"
+    },
+    "OVERHEAD_PER_TRAY": {
+      "status": "PASS",
+      "details": "Total overhead ₹7291.67 / 100 trays = ₹72.92/tray"
+    },
+    "UI_OVERVIEW_TAB": {
+      "status": "PASS",
+      "details": "Shows 4 summary cards, Monthly Production input, Product Cost Analysis table, summary statistics"
+    },
+    "UI_ONE_TIME_TAB": {
+      "status": "PASS",
+      "details": "Shows purchases table with depreciation, 3 summary cards (Total Cost, Monthly Dep, Current Value)"
+    },
+    "UI_FIXED_COSTS_TAB": {
+      "status": "PASS",
+      "details": "Shows fixed costs as cards with category badges, Total Monthly Fixed Costs header"
+    },
+    "UI_PRODUCTION_TAB": {
+      "status": "PASS",
+      "details": "Shows production cost items as cards with unit cost display"
+    },
+    "UI_PRODUCTS_TAB": {
+      "status": "PARTIAL",
+      "details": "Tab loads but occasional navigation conflict with sidebar Products link"
+    },
+    "SIDEBAR_NAV": {
+      "status": "PASS",
+      "details": "Cost Calculator item added to AdminLayout sidebar with Calculator icon"
+    }
+  },
+  "mocked_apis_note": "No mocked APIs - all operations use real backend endpoints with MongoDB collections: cost_one_time, cost_fixed, cost_production, cost_product_configs"
+}
