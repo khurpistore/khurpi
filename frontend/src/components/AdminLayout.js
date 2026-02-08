@@ -16,6 +16,7 @@ const menuItems = [
   { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
   { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
   { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/admin/expenses' },
+  { id: 'cost-calculator', label: 'Cost Calculator', icon: Calculator, path: '/admin/cost-calculator' },
   { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' },
   { id: 'coupons', label: 'Discount Coupons', icon: Tag, path: '/admin/coupons' },
   { id: 'discount-tiers', label: 'Order Discounts', icon: Percent, path: '/admin/discount-tiers' },
