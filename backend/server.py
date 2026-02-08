@@ -5410,6 +5410,384 @@ async def get_monthly_expense_summary():
         "year": current_year
     }
 
+# ============ COST CALCULATOR ============
+
+# Default categories for cost calculator
+ONE_TIME_CATEGORIES = [
+    {"name": "racks", "label": "Racks/Shelving"},
+    {"name": "lights", "label": "LED Grow Lights"},
+    {"name": "fans", "label": "Fans/Ventilation"},
+    {"name": "trays", "label": "Trays (Bulk)"},
+    {"name": "sensors", "label": "Sensors/Monitors"},
+    {"name": "irrigation", "label": "Irrigation System"},
+    {"name": "equipment", "label": "Other Equipment"},
+    {"name": "setup", "label": "Setup/Installation"},
+    {"name": "other", "label": "Other"}
+]
+
+FIXED_COST_CATEGORIES = [
+    {"name": "rent", "label": "Rent"},
+    {"name": "electricity", "label": "Electricity"},
+    {"name": "water", "label": "Water"},
+    {"name": "internet", "label": "Internet"},
+    {"name": "insurance", "label": "Insurance"},
+    {"name": "salary", "label": "Fixed Salary"},
+    {"name": "maintenance", "label": "Maintenance"},
+    {"name": "other", "label": "Other"}
+]
+
+PRODUCTION_COST_CATEGORIES = [
+    {"name": "seeds", "label": "Seeds", "default_unit": "per_tray"},
+    {"name": "soil", "label": "Soil/Cocopeat", "default_unit": "per_tray"},
+    {"name": "labor", "label": "Labor", "default_unit": "per_hour"},
+    {"name": "packaging", "label": "Packaging", "default_unit": "per_piece"},
+    {"name": "sanitizer", "label": "H2O2/Sanitizer", "default_unit": "per_tray"},
+    {"name": "consumables", "label": "Other Consumables", "default_unit": "per_tray"},
+    {"name": "other", "label": "Other", "default_unit": "per_tray"}
+]
+
+@api_router.get("/admin/cost-calculator/categories")
+async def get_cost_categories():
+    """Get all cost calculator categories"""
+    return {
+        "one_time": ONE_TIME_CATEGORIES,
+        "fixed": FIXED_COST_CATEGORIES,
+        "production": PRODUCTION_COST_CATEGORIES
+    }
+
+# One-Time Purchases CRUD
+@api_router.get("/admin/cost-calculator/one-time")
+async def get_one_time_purchases():
+    """Get all one-time purchases with depreciation"""
+    purchases = await db.cost_one_time.find({}, {"_id": 0}).to_list(100)
+    
+    # Calculate depreciation for each item
+    today = datetime.now(timezone.utc)
+    for p in purchases:
+        purchase_date = datetime.fromisoformat(p["purchase_date"].replace('Z', '+00:00')) if p.get("purchase_date") else today
+        months_elapsed = max(0, (today.year - purchase_date.year) * 12 + (today.month - purchase_date.month))
+        
+        useful_life = p.get("useful_life_months", 36)
+        purchase_cost = p.get("purchase_cost", 0)
+        salvage_value = p.get("salvage_value", 0)
+        
+        # Straight-line depreciation
+        depreciable_amount = purchase_cost - salvage_value
+        monthly_depreciation = depreciable_amount / useful_life if useful_life > 0 else 0
+        accumulated_depreciation = min(months_elapsed * monthly_depreciation, depreciable_amount)
+        current_value = purchase_cost - accumulated_depreciation
+        
+        p["monthly_depreciation"] = round(monthly_depreciation, 2)
+        p["accumulated_depreciation"] = round(accumulated_depreciation, 2)
+        p["current_value"] = round(max(current_value, salvage_value), 2)
+        p["months_remaining"] = max(0, useful_life - months_elapsed)
+    
+    # Calculate totals
+    total_purchase_cost = sum(p.get("purchase_cost", 0) for p in purchases)
+    total_monthly_depreciation = sum(p.get("monthly_depreciation", 0) for p in purchases)
+    total_current_value = sum(p.get("current_value", 0) for p in purchases)
+    
+    return {
+        "purchases": purchases,
+        "summary": {
+            "total_purchase_cost": round(total_purchase_cost, 2),
+            "total_monthly_depreciation": round(total_monthly_depreciation, 2),
+            "total_current_value": round(total_current_value, 2),
+            "count": len(purchases)
+        }
+    }
+
+@api_router.post("/admin/cost-calculator/one-time")
+async def create_one_time_purchase(purchase: OneTimePurchase):
+    """Create a one-time purchase entry"""
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": purchase.name,
+        "category": purchase.category,
+        "purchase_cost": purchase.purchase_cost,
+        "purchase_date": purchase.purchase_date,
+        "useful_life_months": purchase.useful_life_months,
+        "salvage_value": purchase.salvage_value,
+        "notes": purchase.notes,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.cost_one_time.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/admin/cost-calculator/one-time/{item_id}")
+async def update_one_time_purchase(item_id: str, purchase: OneTimePurchase):
+    """Update a one-time purchase entry"""
+    update_data = {k: v for k, v in purchase.model_dump().items() if v is not None and k != "id"}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.cost_one_time.update_one({"id": item_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    item = await db.cost_one_time.find_one({"id": item_id}, {"_id": 0})
+    return item
+
+@api_router.delete("/admin/cost-calculator/one-time/{item_id}")
+async def delete_one_time_purchase(item_id: str):
+    """Delete a one-time purchase entry"""
+    result = await db.cost_one_time.delete_one({"id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"success": True}
+
+# Monthly Fixed Costs CRUD
+@api_router.get("/admin/cost-calculator/fixed-costs")
+async def get_fixed_costs():
+    """Get all monthly fixed costs"""
+    costs = await db.cost_fixed.find({}, {"_id": 0}).to_list(100)
+    total = sum(c.get("monthly_amount", 0) for c in costs)
+    
+    return {
+        "costs": costs,
+        "summary": {
+            "total_monthly": round(total, 2),
+            "count": len(costs)
+        }
+    }
+
+@api_router.post("/admin/cost-calculator/fixed-costs")
+async def create_fixed_cost(cost: MonthlyFixedCost):
+    """Create a monthly fixed cost entry"""
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": cost.name,
+        "category": cost.category,
+        "monthly_amount": cost.monthly_amount,
+        "notes": cost.notes,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.cost_fixed.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/admin/cost-calculator/fixed-costs/{item_id}")
+async def update_fixed_cost(item_id: str, cost: MonthlyFixedCost):
+    """Update a monthly fixed cost entry"""
+    update_data = {k: v for k, v in cost.model_dump().items() if v is not None and k != "id"}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.cost_fixed.update_one({"id": item_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    item = await db.cost_fixed.find_one({"id": item_id}, {"_id": 0})
+    return item
+
+@api_router.delete("/admin/cost-calculator/fixed-costs/{item_id}")
+async def delete_fixed_cost(item_id: str):
+    """Delete a monthly fixed cost entry"""
+    result = await db.cost_fixed.delete_one({"id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"success": True}
+
+# Production Costs CRUD
+@api_router.get("/admin/cost-calculator/production-costs")
+async def get_production_costs():
+    """Get all production cost items"""
+    costs = await db.cost_production.find({}, {"_id": 0}).to_list(100)
+    return {"costs": costs, "count": len(costs)}
+
+@api_router.post("/admin/cost-calculator/production-costs")
+async def create_production_cost(cost: ProductionCostItem):
+    """Create a production cost item"""
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": cost.name,
+        "category": cost.category,
+        "cost_per_unit": cost.cost_per_unit,
+        "unit": cost.unit,
+        "notes": cost.notes,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.cost_production.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/admin/cost-calculator/production-costs/{item_id}")
+async def update_production_cost(item_id: str, cost: ProductionCostItem):
+    """Update a production cost item"""
+    update_data = {k: v for k, v in cost.model_dump().items() if v is not None and k != "id"}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.cost_production.update_one({"id": item_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    item = await db.cost_production.find_one({"id": item_id}, {"_id": 0})
+    return item
+
+@api_router.delete("/admin/cost-calculator/production-costs/{item_id}")
+async def delete_production_cost(item_id: str):
+    """Delete a production cost item"""
+    result = await db.cost_production.delete_one({"id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"success": True}
+
+# Product Cost Configurations CRUD
+@api_router.get("/admin/cost-calculator/product-configs")
+async def get_product_cost_configs():
+    """Get all product cost configurations"""
+    configs = await db.cost_product_configs.find({}, {"_id": 0}).to_list(100)
+    return {"configs": configs, "count": len(configs)}
+
+@api_router.post("/admin/cost-calculator/product-configs")
+async def create_product_cost_config(config: ProductCostConfig):
+    """Create or update a product cost configuration"""
+    # Check if config exists for this product
+    existing = await db.cost_product_configs.find_one({"product_id": config.product_id})
+    
+    doc = {
+        "product_id": config.product_id,
+        "product_name": config.product_name,
+        "trays_per_batch": config.trays_per_batch,
+        "growth_days": config.growth_days,
+        "yield_grams_per_tray": config.yield_grams_per_tray,
+        "seed_cost_per_tray": config.seed_cost_per_tray,
+        "soil_cost_per_tray": config.soil_cost_per_tray,
+        "labor_hours_per_batch": config.labor_hours_per_batch,
+        "labor_rate_per_hour": config.labor_rate_per_hour,
+        "packaging_cost_per_unit": config.packaging_cost_per_unit,
+        "other_variable_costs": config.other_variable_costs,
+        "notes": config.notes,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if existing:
+        await db.cost_product_configs.update_one({"product_id": config.product_id}, {"$set": doc})
+    else:
+        doc["id"] = str(uuid.uuid4())
+        doc["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.cost_product_configs.insert_one(doc)
+    
+    result = await db.cost_product_configs.find_one({"product_id": config.product_id}, {"_id": 0})
+    return result
+
+@api_router.delete("/admin/cost-calculator/product-configs/{product_id}")
+async def delete_product_cost_config(product_id: str):
+    """Delete a product cost configuration"""
+    result = await db.cost_product_configs.delete_one({"product_id": product_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Config not found")
+    return {"success": True}
+
+# Calculate Product Costs
+@api_router.get("/admin/cost-calculator/calculate")
+async def calculate_product_costs(monthly_production_trays: int = 100):
+    """Calculate per-product costs based on all cost inputs"""
+    
+    # Get all cost data
+    one_time_result = await get_one_time_purchases()
+    fixed_result = await get_fixed_costs()
+    product_configs = await db.cost_product_configs.find({}, {"_id": 0}).to_list(100)
+    products = await db.products.find({}, {"_id": 0}).to_list(100)
+    
+    # Monthly overhead costs
+    monthly_depreciation = one_time_result["summary"]["total_monthly_depreciation"]
+    monthly_fixed = fixed_result["summary"]["total_monthly"]
+    total_monthly_overhead = monthly_depreciation + monthly_fixed
+    
+    # Overhead cost per tray (distributed across monthly production)
+    overhead_per_tray = total_monthly_overhead / monthly_production_trays if monthly_production_trays > 0 else 0
+    
+    # Calculate cost for each configured product
+    product_costs = []
+    for config in product_configs:
+        product = next((p for p in products if p.get("id") == config.get("product_id")), None)
+        
+        # Variable costs per batch
+        seed_cost = config.get("seed_cost_per_tray", 0) * config.get("trays_per_batch", 1)
+        soil_cost = config.get("soil_cost_per_tray", 0) * config.get("trays_per_batch", 1)
+        labor_cost = config.get("labor_hours_per_batch", 0) * config.get("labor_rate_per_hour", 0)
+        packaging_cost = config.get("packaging_cost_per_unit", 0)
+        other_costs = config.get("other_variable_costs", 0)
+        
+        # Total variable cost per batch
+        variable_cost_per_batch = seed_cost + soil_cost + labor_cost + other_costs
+        
+        # Yield per batch
+        trays = config.get("trays_per_batch", 1)
+        yield_per_tray = config.get("yield_grams_per_tray", 100)
+        total_yield_grams = trays * yield_per_tray
+        
+        # Overhead allocation per batch (based on trays used)
+        overhead_per_batch = overhead_per_tray * trays
+        
+        # Total cost per batch
+        total_cost_per_batch = variable_cost_per_batch + overhead_per_batch
+        
+        # Cost per gram
+        cost_per_gram = total_cost_per_batch / total_yield_grams if total_yield_grams > 0 else 0
+        
+        # Cost per 100g (common selling unit)
+        cost_per_100g = cost_per_gram * 100 + packaging_cost
+        
+        # Get selling price from product
+        selling_price = product.get("price", 0) if product else 0
+        
+        # Profit margin
+        profit = selling_price - cost_per_100g
+        margin_percent = (profit / selling_price * 100) if selling_price > 0 else 0
+        
+        product_costs.append({
+            "product_id": config.get("product_id"),
+            "product_name": config.get("product_name"),
+            "selling_price": selling_price,
+            "cost_breakdown": {
+                "seed_cost": round(seed_cost, 2),
+                "soil_cost": round(soil_cost, 2),
+                "labor_cost": round(labor_cost, 2),
+                "packaging_cost": round(packaging_cost, 2),
+                "other_variable": round(other_costs, 2),
+                "overhead_allocation": round(overhead_per_batch, 2),
+                "total_variable": round(variable_cost_per_batch, 2),
+                "total_cost_per_batch": round(total_cost_per_batch, 2)
+            },
+            "yield": {
+                "trays_per_batch": trays,
+                "grams_per_tray": yield_per_tray,
+                "total_grams": total_yield_grams,
+                "growth_days": config.get("growth_days", 7)
+            },
+            "unit_costs": {
+                "cost_per_gram": round(cost_per_gram, 2),
+                "cost_per_100g": round(cost_per_100g, 2),
+                "cost_per_tray": round(total_cost_per_batch / trays if trays > 0 else 0, 2)
+            },
+            "profitability": {
+                "profit_per_unit": round(profit, 2),
+                "margin_percent": round(margin_percent, 1),
+                "profitable": profit > 0
+            }
+        })
+    
+    # Sort by margin
+    product_costs.sort(key=lambda x: x["profitability"]["margin_percent"], reverse=True)
+    
+    return {
+        "monthly_overhead": {
+            "depreciation": round(monthly_depreciation, 2),
+            "fixed_costs": round(monthly_fixed, 2),
+            "total": round(total_monthly_overhead, 2),
+            "overhead_per_tray": round(overhead_per_tray, 2)
+        },
+        "monthly_production_trays": monthly_production_trays,
+        "product_costs": product_costs,
+        "summary": {
+            "products_configured": len(product_costs),
+            "avg_margin": round(sum(p["profitability"]["margin_percent"] for p in product_costs) / len(product_costs), 1) if product_costs else 0,
+            "profitable_products": sum(1 for p in product_costs if p["profitability"]["profitable"]),
+            "unprofitable_products": sum(1 for p in product_costs if not p["profitability"]["profitable"])
+        }
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
