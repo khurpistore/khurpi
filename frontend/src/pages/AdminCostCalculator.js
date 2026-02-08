@@ -218,11 +218,11 @@ const AdminCostCalculator = () => {
     <AdminLayout active="cost-calculator" title="Microgreen Cost Calculator">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-5 w-full max-w-3xl mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="one-time">One-Time</TabsTrigger>
-          <TabsTrigger value="fixed">Fixed Costs</TabsTrigger>
-          <TabsTrigger value="production">Production</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="overview" data-testid="cost-tab-overview">Overview</TabsTrigger>
+          <TabsTrigger value="one-time" data-testid="cost-tab-onetime">One-Time</TabsTrigger>
+          <TabsTrigger value="fixed" data-testid="cost-tab-fixed">Fixed Costs</TabsTrigger>
+          <TabsTrigger value="production" data-testid="cost-tab-production">Production</TabsTrigger>
+          <TabsTrigger value="products" data-testid="cost-tab-products">Products</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
