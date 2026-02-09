@@ -901,8 +901,9 @@ const AdminCostCalculator = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Packaging Cost per Unit (₹)</Label>
+                    <Label>Packaging Cost per 100g (₹)</Label>
                     <Input type="number" value={formData.packaging_cost_per_unit || 5} onChange={(e) => setFormData({...formData, packaging_cost_per_unit: parseFloat(e.target.value) || 0})} />
+                    <p className="text-xs text-muted-foreground mt-1">Per 50g = ₹{((formData.packaging_cost_per_unit || 5) / 2).toFixed(2)}</p>
                   </div>
                   <div>
                     <Label>Other Variable Costs (₹)</Label>
