@@ -5780,12 +5780,17 @@ async def calculate_product_costs(monthly_production_trays: int = 100):
     # Sort by margin
     product_costs.sort(key=lambda x: x["profitability"]["margin_percent"], reverse=True)
     
+    # Total monthly overhead
+    total_monthly_overhead = monthly_depreciation + monthly_fixed
+    
     return {
         "monthly_overhead": {
             "depreciation": round(monthly_depreciation, 2),
             "fixed_costs": round(monthly_fixed, 2),
             "total": round(total_monthly_overhead, 2),
-            "overhead_per_tray": round(overhead_per_tray, 2)
+            "depreciation_per_tray": round(depreciation_per_tray, 2),
+            "fixed_per_tray": round(fixed_per_tray, 2),
+            "overhead_per_tray": round(total_overhead_per_tray, 2)
         },
         "monthly_production_trays": monthly_production_trays,
         "product_costs": product_costs,
