@@ -544,10 +544,31 @@ const AdminProducts = () => {
                       </div>
                     </div>
                     
-                    {/* Price per 50gm (display only - stored as per 100gm) */}
+                    {/* Cost Price per 50gm (from cost calculator) */}
                     <div className="col-span-1">
-                      <div className="h-7 text-xs text-center flex items-center justify-center bg-gray-50 rounded border">
-                        ₹{(product.price / 2).toFixed(0)}
+                      <div className="h-7 text-xs text-center flex items-center justify-center bg-purple-50 rounded border border-purple-200 text-purple-700">
+                        {cost > 0 ? `₹${cost.toFixed(0)}` : '-'}
+                      </div>
+                    </div>
+                    
+                    {/* Sell Price per 50gm (editable - stored as per 100gm) */}
+                    <div className="col-span-1">
+                      <Input
+                        type="number"
+                        value={Math.round((getFieldValue(product, 'price') || product.price) / 2)}
+                        onChange={(e) => handleFieldChange(product.id, 'price', parseInt(e.target.value) * 2)}
+                        className="h-7 text-xs text-center bg-blue-50 border-blue-200 text-blue-700"
+                      />
+                    </div>
+                    
+                    {/* Profit/Loss per 50gm */}
+                    <div className="col-span-1">
+                      <div className={`h-7 text-xs text-center flex items-center justify-center rounded border font-medium ${
+                        profit >= 0 
+                          ? 'bg-green-50 border-green-200 text-green-700' 
+                          : 'bg-red-50 border-red-200 text-red-700'
+                      }`}>
+                        {cost > 0 ? `${profit >= 0 ? '+' : ''}₹${profit.toFixed(0)}` : '-'}
                       </div>
                     </div>
                     
