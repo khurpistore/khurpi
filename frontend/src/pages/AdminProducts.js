@@ -509,21 +509,28 @@ const AdminProducts = () => {
           <Card className="hidden lg:block">
             <CardContent className="p-0">
               {/* Header */}
-              <div className="grid grid-cols-12 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
+              <div className="grid grid-cols-14 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
                 <div className="col-span-3">Product</div>
-                <div className="col-span-1">Price (₹/50gm)</div>
-                <div className="col-span-1">Growth Days</div>
-                <div className="col-span-1">Avl Qty(gm)</div>
+                <div className="col-span-1 text-center text-purple-600">Cost (₹/50g)</div>
+                <div className="col-span-1 text-center text-blue-600">Sell (₹/50g)</div>
+                <div className="col-span-1 text-center">Profit/Loss</div>
+                <div className="col-span-1 text-center">Growth Days</div>
+                <div className="col-span-1 text-center">Avl Qty(gm)</div>
                 <div className="col-span-2">Stock Status</div>
                 <div className="col-span-1">Avl Date</div>
                 <div className="col-span-1 text-center">Active</div>
-                <div className="col-span-2 text-center">Actions</div>
+                <div className="col-span-1 text-center">Actions</div>
               </div>
               
               {/* Product Rows */}
               <div className="divide-y" data-testid="admin-products-list">
-                {products.map((product) => (
-                  <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-12 gap-2 p-3 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
+                {products.map((product) => {
+                  const cost = costData[product.id]?.cost_per_50g || 0;
+                  const sellPrice = product.price / 2; // Sell price per 50g
+                  const profit = sellPrice - cost;
+                  
+                  return (
+                  <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-14 gap-2 p-3 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
                     {/* Product Info */}
                     <div className="col-span-3 flex items-center gap-2">
                       <img
