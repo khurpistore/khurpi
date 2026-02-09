@@ -487,7 +487,7 @@ const AdminProducts = () => {
               {/* Header */}
               <div className="grid grid-cols-12 gap-2 p-3 bg-gray-100 text-xs font-medium text-gray-600 border-b">
                 <div className="col-span-3">Product</div>
-                <div className="col-span-1">Price (₹/100gm)</div>
+                <div className="col-span-1">Price (₹/50gm)</div>
                 <div className="col-span-1">Growth Days</div>
                 <div className="col-span-1">Avl Qty(gm)</div>
                 <div className="col-span-2">Stock Status</div>
