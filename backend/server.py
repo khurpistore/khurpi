@@ -5689,45 +5689,46 @@ async def calculate_product_costs(monthly_production_trays: int = 100):
     product_configs = await db.cost_product_configs.find({}, {"_id": 0}).to_list(100)
     products = await db.products.find({}, {"_id": 0}).to_list(100)
     
-    # Monthly overhead costs
+    # === 1. ONE-TIME COSTS (Depreciation) ===
     monthly_depreciation = one_time_result["summary"]["total_monthly_depreciation"]
-    monthly_fixed = fixed_result["summary"]["total_monthly"]
-    total_monthly_overhead = monthly_depreciation + monthly_fixed
+    depreciation_per_tray = monthly_depreciation / monthly_production_trays if monthly_production_trays > 0 else 0
     
-    # Overhead cost per tray (distributed across monthly production)
-    overhead_per_tray = total_monthly_overhead / monthly_production_trays if monthly_production_trays > 0 else 0
+    # === 2. FIXED COSTS (Monthly) ===
+    monthly_fixed = fixed_result["summary"]["total_monthly"]
+    fixed_per_tray = monthly_fixed / monthly_production_trays if monthly_production_trays > 0 else 0
+    
+    # Total overhead per tray
+    total_overhead_per_tray = depreciation_per_tray + fixed_per_tray
     
     # Calculate cost for each configured product
     product_costs = []
     for config in product_configs:
         product = next((p for p in products if p.get("id") == config.get("product_id")), None)
         
-        # Variable costs per batch
-        seed_cost = config.get("seed_cost_per_tray", 0) * config.get("trays_per_batch", 1)
-        soil_cost = config.get("soil_cost_per_tray", 0) * config.get("trays_per_batch", 1)
-        labor_cost = config.get("labor_hours_per_batch", 0) * config.get("labor_rate_per_hour", 0)
-        packaging_cost = config.get("packaging_cost_per_unit", 0)
-        other_costs = config.get("other_variable_costs", 0)
-        
-        # Total variable cost per batch
-        variable_cost_per_batch = seed_cost + soil_cost + labor_cost + other_costs
-        
-        # Yield per batch
         trays = config.get("trays_per_batch", 1)
         yield_per_tray = config.get("yield_grams_per_tray", 100)
         total_yield_grams = trays * yield_per_tray
         
-        # Overhead allocation per batch (based on trays used)
-        overhead_per_batch = overhead_per_tray * trays
+        # === 3. VARIABLE COSTS (per batch) ===
+        seed_cost = config.get("seed_cost_per_tray", 0) * trays
+        soil_cost = config.get("soil_cost_per_tray", 0) * trays
+        labor_cost = config.get("labor_hours_per_batch", 0) * config.get("labor_rate_per_hour", 0)
+        packaging_cost = config.get("packaging_cost_per_unit", 0)
+        other_variable = config.get("other_variable_costs", 0) * trays
         
-        # Total cost per batch
-        total_cost_per_batch = variable_cost_per_batch + overhead_per_batch
+        total_variable_per_batch = seed_cost + soil_cost + labor_cost + other_variable
         
-        # Cost per gram
+        # === OVERHEAD ALLOCATION (per batch) ===
+        depreciation_allocation = depreciation_per_tray * trays
+        fixed_cost_allocation = fixed_per_tray * trays
+        total_overhead_per_batch = depreciation_allocation + fixed_cost_allocation
+        
+        # === TOTAL COST PER BATCH (All 3 categories) ===
+        total_cost_per_batch = total_variable_per_batch + total_overhead_per_batch
+        
+        # === COST PER 100g ===
         cost_per_gram = total_cost_per_batch / total_yield_grams if total_yield_grams > 0 else 0
-        
-        # Cost per 100g (common selling unit)
-        cost_per_100g = cost_per_gram * 100 + packaging_cost
+        cost_per_100g = (cost_per_gram * 100) + packaging_cost
         
         # Get selling price from product
         selling_price = product.get("price", 0) if product else 0
@@ -5741,13 +5742,21 @@ async def calculate_product_costs(monthly_production_trays: int = 100):
             "product_name": config.get("product_name"),
             "selling_price": selling_price,
             "cost_breakdown": {
+                # Variable Costs
                 "seed_cost": round(seed_cost, 2),
                 "soil_cost": round(soil_cost, 2),
                 "labor_cost": round(labor_cost, 2),
+                "other_variable": round(other_variable, 2),
+                "total_variable": round(total_variable_per_batch, 2),
+                # One-Time (Depreciation)
+                "depreciation_allocation": round(depreciation_allocation, 2),
+                # Fixed Costs
+                "fixed_cost_allocation": round(fixed_cost_allocation, 2),
+                # Total Overhead
+                "total_overhead": round(total_overhead_per_batch, 2),
+                # Packaging (added to final 100g cost)
                 "packaging_cost": round(packaging_cost, 2),
-                "other_variable": round(other_costs, 2),
-                "overhead_allocation": round(overhead_per_batch, 2),
-                "total_variable": round(variable_cost_per_batch, 2),
+                # Grand Total
                 "total_cost_per_batch": round(total_cost_per_batch, 2)
             },
             "yield": {
@@ -5757,7 +5766,7 @@ async def calculate_product_costs(monthly_production_trays: int = 100):
                 "growth_days": config.get("growth_days", 7)
             },
             "unit_costs": {
-                "cost_per_gram": round(cost_per_gram, 2),
+                "cost_per_gram": round(cost_per_gram, 4),
                 "cost_per_100g": round(cost_per_100g, 2),
                 "cost_per_tray": round(total_cost_per_batch / trays if trays > 0 else 0, 2)
             },
