@@ -683,7 +683,7 @@ const AdminProducts = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <h3 className="font-semibold text-sm truncate">{product.name}</h3>
-                        <p className="text-xs text-muted-foreground">₹{product.price}/100gm</p>
+                        <p className="text-xs text-muted-foreground">₹{(product.price / 2).toFixed(0)}/50gm</p>
                       </div>
                       <div className="flex items-center gap-1">
                         <Switch
