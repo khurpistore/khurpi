@@ -311,7 +311,7 @@ const AdminCostCalculator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Leaf className="w-5 h-5" />
-                Product Cost Analysis (All Costs Included)
+                Product Cost Analysis (All Costs Included) - Per 50gm
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -321,23 +321,26 @@ const AdminCostCalculator = () => {
                     <thead>
                       <tr className="border-b bg-gray-50">
                         <th className="text-left p-2 font-medium">Product</th>
-                        <th className="text-right p-2 font-medium text-blue-600">Variable</th>
-                        <th className="text-right p-2 font-medium text-purple-600">Depreciation</th>
-                        <th className="text-right p-2 font-medium text-orange-600">Fixed</th>
-                        <th className="text-right p-2 font-medium bg-gray-100">Cost/100g</th>
-                        <th className="text-right p-2 font-medium">Sell Price</th>
-                        <th className="text-right p-2 font-medium">Profit</th>
-                        <th className="text-center p-2 font-medium">Margin</th>
+                        <th className="text-right p-2 font-medium text-blue-600">Variable/50g</th>
+                        <th className="text-right p-2 font-medium text-purple-600">Depreciation/50g</th>
+                        <th className="text-right p-2 font-medium text-orange-600">Fixed/50g</th>
+                        <th className="text-right p-2 font-medium bg-gray-100">Cost/50g</th>
+                        <th className="text-right p-2 font-medium">Sell Price (50g)</th>
+                        <th className="text-right p-2 font-medium">Profit/50g</th>
                       </tr>
                     </thead>
                     <tbody>
                       {calculatedCosts.product_costs.map((product, idx) => {
                         const cb = product.cost_breakdown;
                         const yld = product.yield;
-                        // Calculate per 100g values - Variable includes packaging as it's part of variable cost
-                        const variableWithPackagingPer100g = ((cb.total_variable / yld.total_grams * 100) + cb.packaging_cost).toFixed(2);
-                        const depreciationPer100g = (cb.depreciation_allocation / yld.total_grams * 100).toFixed(2);
-                        const fixedPer100g = (cb.fixed_cost_allocation / yld.total_grams * 100).toFixed(2);
+                        // Calculate per 50g values - Variable includes packaging as it's part of variable cost
+                        const packagingPer50g = cb.packaging_cost / 2; // packaging is per 100g, so divide by 2
+                        const variableWithPackagingPer50g = ((cb.total_variable / yld.total_grams * 50) + packagingPer50g).toFixed(2);
+                        const depreciationPer50g = (cb.depreciation_allocation / yld.total_grams * 50).toFixed(2);
+                        const fixedPer50g = (cb.fixed_cost_allocation / yld.total_grams * 50).toFixed(2);
+                        const costPer50g = (product.unit_costs.cost_per_100g / 2).toFixed(2);
+                        const sellPricePer50g = (product.selling_price / 2).toFixed(0);
+                        const profitPer50g = (product.profitability.profit_per_unit / 2).toFixed(2);
                         
                         return (
                           <tr key={idx} className="border-b hover:bg-gray-50">
@@ -347,18 +350,13 @@ const AdminCostCalculator = () => {
                                 {yld.growth_days}d | {yld.grams_per_tray}g/tray
                               </p>
                             </td>
-                            <td className="p-2 text-right text-blue-600">₹{variableWithPackagingPer100g}</td>
-                            <td className="p-2 text-right text-purple-600">₹{depreciationPer100g}</td>
-                            <td className="p-2 text-right text-orange-600">₹{fixedPer100g}</td>
-                            <td className="p-2 text-right font-bold bg-gray-50">₹{product.unit_costs.cost_per_100g}</td>
-                            <td className="p-2 text-right">₹{product.selling_price}</td>
-                            <td className={`p-2 text-right font-medium ${product.profitability.profit_per_unit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ₹{product.profitability.profit_per_unit}
-                            </td>
-                            <td className="p-2 text-center">
-                              <Badge className={product.profitability.margin_percent >= 30 ? 'bg-green-600' : product.profitability.margin_percent >= 15 ? 'bg-amber-500' : 'bg-red-500'}>
-                                {product.profitability.margin_percent}%
-                              </Badge>
+                            <td className="p-2 text-right text-blue-600">₹{variableWithPackagingPer50g}</td>
+                            <td className="p-2 text-right text-purple-600">₹{depreciationPer50g}</td>
+                            <td className="p-2 text-right text-orange-600">₹{fixedPer50g}</td>
+                            <td className="p-2 text-right font-bold bg-gray-50">₹{costPer50g}</td>
+                            <td className="p-2 text-right">₹{sellPricePer50g}</td>
+                            <td className={`p-2 text-right font-medium ${parseFloat(profitPer50g) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              ₹{profitPer50g}
                             </td>
                           </tr>
                         );
@@ -368,11 +366,11 @@ const AdminCostCalculator = () => {
                   
                   {/* Cost Formula Legend */}
                   <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
-                    <p className="font-semibold mb-2">Cost/100g Formula:</p>
+                    <p className="font-semibold mb-2">Cost/50g Formula:</p>
                     <p className="text-muted-foreground">
                       <span className="text-blue-600">Variable</span> (Seed + Soil + Labor + Other + Packaging) + 
                       <span className="text-purple-600 ml-1">Depreciation</span> (One-time ÷ Trays) + 
-                      <span className="text-orange-600 ml-1">Fixed</span> (Monthly ÷ Trays)
+                      <span className="text-orange-600 ml-1">Fixed</span> (Monthly ÷ Trays) — all per 50g
                     </p>
                   </div>
                 </div>
