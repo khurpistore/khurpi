@@ -169,7 +169,7 @@ const ProductDetail = () => {
                       </p>
                       <p className="text-amber-700 text-sm flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        Delivery by{' '}{format(deliveryDate, 'MMM d, yyyy')}
+                        Delivery by&nbsp;{format(deliveryDate, 'MMM d, yyyy')}
                       </p>
                     </div>
                   );
