@@ -661,6 +661,7 @@ const AdminCostCalculator = () => {
                       <th className="text-right p-3 font-medium">Seed Cost</th>
                       <th className="text-right p-3 font-medium">Soil Cost</th>
                       <th className="text-right p-3 font-medium">Labor Cost</th>
+                      <th className="text-right p-3 font-medium text-teal-600">Packaging</th>
                       <th className="text-right p-3 font-medium text-blue-600">Variable/100g</th>
                       <th className="text-center p-3 font-medium">Margin</th>
                       <th className="text-right p-3 font-medium">Actions</th>
@@ -669,7 +670,7 @@ const AdminCostCalculator = () => {
                   <tbody>
                     {productConfigs.configs.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                        <td colSpan={10} className="p-8 text-center text-muted-foreground">
                           <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
                           <p>No product costs configured yet</p>
                         </td>
@@ -677,12 +678,14 @@ const AdminCostCalculator = () => {
                     ) : (
                       productConfigs.configs.map((config) => {
                         const productCost = calculatedCosts?.product_costs?.find(p => p.product_id === config.product_id);
-                        // Calculate variable cost per 100g (same as Overview - without packaging)
+                        // Calculate variable cost per 100g (including packaging as it's part of variable cost)
                         const laborCost = (config.labor_hours_per_batch || 0) * (config.labor_rate_per_hour || 0);
+                        const packagingCost = config.packaging_cost_per_unit || 0;
                         const variableCostPerTray = (config.seed_cost_per_tray || 0) + (config.soil_cost_per_tray || 0) + 
                           laborCost + (config.other_variable_costs || 0);
+                        // Variable/100g includes packaging (packaging is per 100g unit)
                         const variablePer100g = config.yield_grams_per_tray > 0 
-                          ? (variableCostPerTray / config.yield_grams_per_tray * 100).toFixed(2)
+                          ? ((variableCostPerTray / config.yield_grams_per_tray * 100) + packagingCost).toFixed(2)
                           : '0';
                         
                         return (
@@ -698,6 +701,7 @@ const AdminCostCalculator = () => {
                             <td className="p-3 text-right">₹{config.seed_cost_per_tray}</td>
                             <td className="p-3 text-right">₹{config.soil_cost_per_tray}</td>
                             <td className="p-3 text-right">₹{laborCost.toFixed(2)}</td>
+                            <td className="p-3 text-right text-teal-600">₹{packagingCost}</td>
                             <td className="p-3 text-right text-blue-600 font-semibold">₹{variablePer100g}</td>
                             <td className="p-3 text-center">
                               {productCost && (
@@ -722,8 +726,7 @@ const AdminCostCalculator = () => {
                 </table>
               </div>
               <div className="p-3 bg-gray-50 text-xs text-muted-foreground">
-                <span className="text-blue-600 font-medium">Variable/100g</span> = (Seed + Soil + Labor + Other) ÷ Yield × 100 | 
-                <span className="ml-2">Packaging (₹{productConfigs.configs[0]?.packaging_cost_per_unit || 5}/100g) added in final cost</span>
+                <span className="text-blue-600 font-medium">Variable/100g</span> = (Seed + Soil + Labor + Other) ÷ Yield × 100 + <span className="text-teal-600">Packaging</span>
               </div>
             </CardContent>
           </Card>
