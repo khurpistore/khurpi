@@ -300,10 +300,10 @@ const Products = () => {
                     {/* Price - Mobile shows compact */}
                     <div className="sm:hidden mb-2">
                       <span className="text-base font-bold text-primary">
-                        ₹{((product.price / 100) * (selectedQty[product.id] || 100)).toFixed(0)}
+                        ₹{((product.price / 100) * (selectedQty[product.id] || 50)).toFixed(0)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">
-                        / {selectedQty[product.id] || 100}gm
+                        / {selectedQty[product.id] || 50}gm
                       </span>
                     </div>
                     
@@ -312,7 +312,7 @@ const Products = () => {
                       <div className="hidden sm:flex items-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
                         <span className="text-sm text-muted-foreground">Qty:</span>
                         <Select
-                          value={String(selectedQty[product.id] || 100)}
+                          value={String(selectedQty[product.id] || 50)}
                           onValueChange={(value) => setSelectedQty(prev => ({ ...prev, [product.id]: parseInt(value) }))}
                         >
                           <SelectTrigger className="w-20 h-8 text-sm">
@@ -328,7 +328,7 @@ const Products = () => {
                         </Select>
                         <span className="text-sm text-muted-foreground">gm</span>
                         <span className="text-xl font-bold text-primary ml-auto">
-                          ₹{((product.price / 100) * (selectedQty[product.id] || 100)).toFixed(0)}
+                          ₹{((product.price / 100) * (selectedQty[product.id] || 50)).toFixed(0)}
                         </span>
                       </div>
                     )}
@@ -337,7 +337,7 @@ const Products = () => {
                     {stockInfo.status !== 'out_of_stock' && (
                       <div className="flex sm:hidden items-center gap-1 mb-2" onClick={(e) => e.stopPropagation()}>
                         <Select
-                          value={String(selectedQty[product.id] || 100)}
+                          value={String(selectedQty[product.id] || 50)}
                           onValueChange={(value) => setSelectedQty(prev => ({ ...prev, [product.id]: parseInt(value) }))}
                         >
                           <SelectTrigger className="w-16 h-7 text-xs">
