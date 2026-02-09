@@ -311,7 +311,7 @@ const AdminCostCalculator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Leaf className="w-5 h-5" />
-                Product Cost Analysis (All Costs Included) - Per 50gm
+                Product Cost Analysis - Per 50gm
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -321,40 +321,46 @@ const AdminCostCalculator = () => {
                     <thead>
                       <tr className="border-b bg-gray-50">
                         <th className="text-left p-2 font-medium">Product</th>
-                        <th className="text-right p-2 font-medium text-blue-600">Variable/50g</th>
-                        <th className="text-right p-2 font-medium text-purple-600">Depreciation/50g</th>
-                        <th className="text-right p-2 font-medium text-orange-600">Fixed/50g</th>
+                        <th className="text-right p-2 font-medium text-blue-600">Variable</th>
+                        <th className="text-right p-2 font-medium text-purple-600">Depreciation</th>
+                        <th className="text-right p-2 font-medium text-orange-600">Fixed</th>
                         <th className="text-right p-2 font-medium bg-gray-100">Cost/50g</th>
-                        <th className="text-right p-2 font-medium">Sell Price (50g)</th>
                         <th className="text-right p-2 font-medium">Profit/50g</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {calculatedCosts.product_costs.map((product, idx) => {
-                        const cb = product.cost_breakdown;
-                        const yld = product.yield;
+                      {calculatedCosts.product_costs.map((productCost, idx) => {
+                        const cb = productCost.cost_breakdown;
+                        const yld = productCost.yield;
+                        // Find matching product from products list for image
+                        const productDetails = products.find(p => p.id === productCost.product_id);
                         // Calculate per 50g values - Variable includes packaging as it's part of variable cost
                         const packagingPer50g = cb.packaging_cost / 2; // packaging is per 100g, so divide by 2
                         const variableWithPackagingPer50g = ((cb.total_variable / yld.total_grams * 50) + packagingPer50g).toFixed(2);
                         const depreciationPer50g = (cb.depreciation_allocation / yld.total_grams * 50).toFixed(2);
                         const fixedPer50g = (cb.fixed_cost_allocation / yld.total_grams * 50).toFixed(2);
-                        const costPer50g = (product.unit_costs.cost_per_100g / 2).toFixed(2);
-                        const sellPricePer50g = (product.selling_price / 2).toFixed(0);
-                        const profitPer50g = (product.profitability.profit_per_unit / 2).toFixed(2);
+                        const costPer50g = (productCost.unit_costs.cost_per_100g / 2).toFixed(2);
+                        const profitPer50g = (productCost.profitability.profit_per_unit / 2).toFixed(2);
                         
                         return (
                           <tr key={idx} className="border-b hover:bg-gray-50">
                             <td className="p-2">
-                              <p className="font-medium">{product.product_name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {yld.growth_days}d | {yld.grams_per_tray}g/tray
-                              </p>
+                              <div className="flex items-center gap-2">
+                                {productDetails?.image && (
+                                  <img src={productDetails.image} alt={productCost.product_name} className="w-8 h-8 rounded object-cover" />
+                                )}
+                                <div>
+                                  <p className="font-medium">{productCost.product_name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {yld.growth_days}d | {yld.grams_per_tray}g/tray
+                                  </p>
+                                </div>
+                              </div>
                             </td>
                             <td className="p-2 text-right text-blue-600">₹{variableWithPackagingPer50g}</td>
                             <td className="p-2 text-right text-purple-600">₹{depreciationPer50g}</td>
                             <td className="p-2 text-right text-orange-600">₹{fixedPer50g}</td>
                             <td className="p-2 text-right font-bold bg-gray-50">₹{costPer50g}</td>
-                            <td className="p-2 text-right">₹{sellPricePer50g}</td>
                             <td className={`p-2 text-right font-medium ${parseFloat(profitPer50g) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                               ₹{profitPer50g}
                             </td>
