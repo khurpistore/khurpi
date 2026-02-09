@@ -660,8 +660,8 @@ const AdminCostCalculator = () => {
                       <th className="text-center p-3 font-medium">Yield/Tray</th>
                       <th className="text-right p-3 font-medium">Seed Cost</th>
                       <th className="text-right p-3 font-medium">Soil Cost</th>
-                      <th className="text-right p-3 font-medium">Variable/100g</th>
-                      <th className="text-right p-3 font-medium">Total Cost/100g</th>
+                      <th className="text-right p-3 font-medium">Labor Cost</th>
+                      <th className="text-right p-3 font-medium text-blue-600">Variable/100g</th>
                       <th className="text-center p-3 font-medium">Margin</th>
                       <th className="text-right p-3 font-medium">Actions</th>
                     </tr>
@@ -677,11 +677,12 @@ const AdminCostCalculator = () => {
                     ) : (
                       productConfigs.configs.map((config) => {
                         const productCost = calculatedCosts?.product_costs?.find(p => p.product_id === config.product_id);
-                        // Calculate variable cost per 100g (without overhead)
+                        // Calculate variable cost per 100g (same as Overview - without packaging)
+                        const laborCost = (config.labor_hours_per_batch || 0) * (config.labor_rate_per_hour || 0);
                         const variableCostPerTray = (config.seed_cost_per_tray || 0) + (config.soil_cost_per_tray || 0) + 
-                          ((config.labor_hours_per_batch || 0) * (config.labor_rate_per_hour || 0)) + (config.other_variable_costs || 0);
+                          laborCost + (config.other_variable_costs || 0);
                         const variablePer100g = config.yield_grams_per_tray > 0 
-                          ? ((variableCostPerTray / config.yield_grams_per_tray) * 100 + (config.packaging_cost_per_unit || 0)).toFixed(2)
+                          ? (variableCostPerTray / config.yield_grams_per_tray * 100).toFixed(2)
                           : '0';
                         
                         return (
@@ -696,10 +697,8 @@ const AdminCostCalculator = () => {
                             <td className="p-3 text-center">{config.yield_grams_per_tray}g</td>
                             <td className="p-3 text-right">₹{config.seed_cost_per_tray}</td>
                             <td className="p-3 text-right">₹{config.soil_cost_per_tray}</td>
-                            <td className="p-3 text-right text-blue-600">₹{variablePer100g}</td>
-                            <td className="p-3 text-right font-semibold">
-                              {productCost ? `₹${productCost.unit_costs.cost_per_100g}` : '-'}
-                            </td>
+                            <td className="p-3 text-right">₹{laborCost.toFixed(2)}</td>
+                            <td className="p-3 text-right text-blue-600 font-semibold">₹{variablePer100g}</td>
                             <td className="p-3 text-center">
                               {productCost && (
                                 <Badge className={productCost.profitability.margin_percent >= 50 ? 'bg-green-600' : productCost.profitability.margin_percent >= 30 ? 'bg-amber-500' : 'bg-red-500'}>
@@ -723,8 +722,8 @@ const AdminCostCalculator = () => {
                 </table>
               </div>
               <div className="p-3 bg-gray-50 text-xs text-muted-foreground">
-                <span className="text-blue-600 font-medium">Variable/100g</span> = Seed + Soil + Labor + Other + Packaging (without overhead) | 
-                <span className="font-medium ml-2">Total Cost/100g</span> = Variable + Depreciation + Fixed (from Overview)
+                <span className="text-blue-600 font-medium">Variable/100g</span> = (Seed + Soil + Labor + Other) ÷ Yield × 100 | 
+                <span className="ml-2">Packaging (₹{productConfigs.configs[0]?.packaging_cost_per_unit || 5}/100g) added in final cost</span>
               </div>
             </CardContent>
           </Card>
