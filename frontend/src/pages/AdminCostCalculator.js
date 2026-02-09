@@ -311,53 +311,60 @@ const AdminCostCalculator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Leaf className="w-5 h-5" />
-                Product Cost Analysis
+                Product Cost Analysis (All Costs Included)
               </CardTitle>
             </CardHeader>
             <CardContent>
               {calculatedCosts?.product_costs?.length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-gray-50">
-                        <th className="text-left p-3 font-medium">Product</th>
-                        <th className="text-right p-3 font-medium">Cost/100g</th>
-                        <th className="text-right p-3 font-medium">Selling Price</th>
-                        <th className="text-right p-3 font-medium">Profit/Unit</th>
-                        <th className="text-right p-3 font-medium">Margin</th>
-                        <th className="text-center p-3 font-medium">Status</th>
+                        <th className="text-left p-2 font-medium">Product</th>
+                        <th className="text-right p-2 font-medium text-blue-600">Variable</th>
+                        <th className="text-right p-2 font-medium text-purple-600">Depreciation</th>
+                        <th className="text-right p-2 font-medium text-orange-600">Fixed</th>
+                        <th className="text-right p-2 font-medium text-teal-600">Packaging</th>
+                        <th className="text-right p-2 font-medium bg-gray-100">Cost/100g</th>
+                        <th className="text-right p-2 font-medium">Sell Price</th>
+                        <th className="text-right p-2 font-medium">Profit</th>
+                        <th className="text-center p-2 font-medium">Margin</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {calculatedCosts.product_costs.map((product, idx) => (
-                        <tr key={idx} className="border-b hover:bg-gray-50">
-                          <td className="p-3">
-                            <p className="font-medium">{product.product_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {product.yield.growth_days} days, {product.yield.grams_per_tray}g/tray
-                            </p>
-                          </td>
-                          <td className="p-3 text-right font-medium">
-                            ₹{product.unit_costs.cost_per_100g}
-                          </td>
-                          <td className="p-3 text-right">
-                            ₹{product.selling_price}
-                          </td>
-                          <td className={`p-3 text-right font-medium ${product.profitability.profit_per_unit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            ₹{product.profitability.profit_per_unit}
-                          </td>
-                          <td className="p-3 text-right">
-                            <Badge className={product.profitability.margin_percent >= 30 ? 'bg-green-600' : product.profitability.margin_percent >= 15 ? 'bg-amber-500' : 'bg-red-500'}>
-                              {product.profitability.margin_percent}%
-                            </Badge>
-                          </td>
-                          <td className="p-3 text-center">
-                            {product.profitability.profitable ? (
-                              <CheckCircle className="w-5 h-5 text-green-600 mx-auto" />
-                            ) : (
-                              <AlertTriangle className="w-5 h-5 text-red-500 mx-auto" />
-                            )}
-                          </td>
+                      {calculatedCosts.product_costs.map((product, idx) => {
+                        const cb = product.cost_breakdown;
+                        const yld = product.yield;
+                        // Calculate per 100g values
+                        const variablePer100g = (cb.total_variable / yld.total_grams * 100).toFixed(2);
+                        const depreciationPer100g = (cb.depreciation_allocation / yld.total_grams * 100).toFixed(2);
+                        const fixedPer100g = (cb.fixed_cost_allocation / yld.total_grams * 100).toFixed(2);
+                        
+                        return (
+                          <tr key={idx} className="border-b hover:bg-gray-50">
+                            <td className="p-2">
+                              <p className="font-medium">{product.product_name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {yld.growth_days}d | {yld.grams_per_tray}g/tray
+                              </p>
+                            </td>
+                            <td className="p-2 text-right text-blue-600">₹{variablePer100g}</td>
+                            <td className="p-2 text-right text-purple-600">₹{depreciationPer100g}</td>
+                            <td className="p-2 text-right text-orange-600">₹{fixedPer100g}</td>
+                            <td className="p-2 text-right text-teal-600">₹{cb.packaging_cost}</td>
+                            <td className="p-2 text-right font-bold bg-gray-50">₹{product.unit_costs.cost_per_100g}</td>
+                            <td className="p-2 text-right">₹{product.selling_price}</td>
+                            <td className={`p-2 text-right font-medium ${product.profitability.profit_per_unit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              ₹{product.profitability.profit_per_unit}
+                            </td>
+                            <td className="p-2 text-center">
+                              <Badge className={product.profitability.margin_percent >= 30 ? 'bg-green-600' : product.profitability.margin_percent >= 15 ? 'bg-amber-500' : 'bg-red-500'}>
+                                {product.profitability.margin_percent}%
+                              </Badge>
+                            </td>
+                          </tr>
+                        );
+                      })}
                         </tr>
                       ))}
                     </tbody>
