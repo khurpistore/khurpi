@@ -137,18 +137,18 @@ const AdminCreateOrder = () => {
     if (existing) {
       setSelectedProducts(prev => prev.map(p => 
         p.product.id === product.id 
-          ? { ...p, quantity: p.quantity + 100 }
+          ? { ...p, quantity: p.quantity + 50 }
           : p
       ));
     } else {
-      setSelectedProducts(prev => [...prev, { product, quantity: 100 }]);
+      setSelectedProducts(prev => [...prev, { product, quantity: 50 }]);
     }
   };
 
   const updateQuantity = (productId, delta) => {
     setSelectedProducts(prev => prev.map(p => {
       if (p.product.id === productId) {
-        const newQty = Math.max(100, p.quantity + delta);
+        const newQty = Math.max(25, p.quantity + delta);
         return { ...p, quantity: newQty };
       }
       return p;
