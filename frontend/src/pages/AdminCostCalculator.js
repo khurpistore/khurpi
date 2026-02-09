@@ -874,11 +874,30 @@ const AdminCostCalculator = () => {
                       setFormData({...formData, product_id: v, product_name: product?.name || ''});
                     }}
                   >
-                    <SelectTrigger><SelectValue placeholder="Choose a product" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Choose a product from catalog" /></SelectTrigger>
                     <SelectContent>
-                      {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name} - ₹{p.price}</SelectItem>)}
+                      {products.map(p => (
+                        <SelectItem key={p.id} value={p.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{p.name}</span>
+                            <span className="text-muted-foreground text-xs">₹{(p.price / 2).toFixed(0)}/50g</span>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  {formData.product_id && (() => {
+                    const selectedProduct = products.find(p => p.id === formData.product_id);
+                    return selectedProduct ? (
+                      <div className="mt-2 p-2 bg-gray-50 rounded-lg flex items-center gap-3">
+                        <img src={selectedProduct.image} alt={selectedProduct.name} className="w-12 h-12 rounded object-cover" />
+                        <div>
+                          <p className="font-medium text-sm">{selectedProduct.name}</p>
+                          <p className="text-xs text-muted-foreground">Sell Price: ₹{(selectedProduct.price / 2).toFixed(0)}/50g</p>
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
