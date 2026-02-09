@@ -157,7 +157,7 @@ const Products = () => {
       return (
         <Badge className="bg-amber-100 text-amber-700 border-0 text-xs">
           <Sprout className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-          <span className="hidden sm:inline">Delivery by </span>{format(deliveryDate, 'MMM d')}
+          <span className="hidden sm:inline">Delivery by{' '}</span>{format(deliveryDate, 'MMM d')}
         </Badge>
       );
     }
@@ -165,7 +165,7 @@ const Products = () => {
     return (
       <Badge className="bg-green-100 text-green-700 border-0 text-xs">
         <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-        <span className="hidden sm:inline">Delivery by </span>{deliveryText}
+        <span className="hidden sm:inline">Delivery by{' '}</span>{deliveryText}
       </Badge>
     );
   };
