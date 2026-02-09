@@ -317,6 +317,7 @@ const AdminProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editedProducts, setEditedProducts] = useState({});
   const [saving, setSaving] = useState({});
+  const [costData, setCostData] = useState({});
   const navigate = useNavigate();
   const { loading: authLoading } = useAuth();
 
@@ -324,6 +325,7 @@ const AdminProducts = () => {
     // Wait for auth to be resolved before fetching
     if (authLoading) return;
     fetchProducts();
+    fetchCostData();
   }, [authLoading]);
 
   const fetchProducts = async () => {
@@ -335,6 +337,26 @@ const AdminProducts = () => {
       toast.error('Failed to load products');
     } finally {
       setProductsLoading(false);
+    }
+  };
+
+  const fetchCostData = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/cost-calculator/calculate?monthly_production_trays=100`);
+      // Create a map of product_id -> cost data
+      const costMap = {};
+      if (response.data?.product_costs) {
+        response.data.product_costs.forEach(pc => {
+          // Cost per 50g = cost_per_100g / 2
+          costMap[pc.product_id] = {
+            cost_per_50g: (pc.unit_costs?.cost_per_100g / 2) || 0,
+            cost_per_100g: pc.unit_costs?.cost_per_100g || 0
+          };
+        });
+      }
+      setCostData(costMap);
+    } catch (error) {
+      console.log('Cost calculator data not available');
     }
   };
 
