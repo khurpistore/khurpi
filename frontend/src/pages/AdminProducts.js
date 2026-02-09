@@ -683,7 +683,7 @@ const AdminProducts = () => {
                   </div>
                   
                   {/* Actions */}
-                  <div className="col-span-2 flex items-center justify-center gap-1">
+                  <div className="col-span-1 flex items-center justify-center gap-1">
                     <Button
                       size="sm"
                       variant="ghost"
