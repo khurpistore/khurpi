@@ -72,8 +72,8 @@ const Products = () => {
       return;
     }
     
-    // Get selected quantity or default to 100
-    const qty = selectedQty[product.id] || 100;
+    // Get selected quantity or default to 50
+    const qty = selectedQty[product.id] || 50;
     const totalPrice = (product.price / 100) * qty;
     
     // Add product with selected quantity and delivery info
