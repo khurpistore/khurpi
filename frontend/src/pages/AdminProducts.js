@@ -712,7 +712,8 @@ const AdminProducts = () => {
                     )}
                   </div>
                 </div>
-              ))}
+                  );
+                })}
             </div>
           </CardContent>
         </Card>
