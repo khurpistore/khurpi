@@ -571,41 +571,53 @@ const AdminCostCalculator = () => {
             </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {productionCosts.costs.map((cost) => (
-              <Card key={cost.id}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Badge variant="outline" className="mb-2">{getCategoryLabel('production', cost.category)}</Badge>
-                      <p className="font-medium">{cost.name}</p>
-                      <p className="text-2xl font-bold mt-1">
-                        ₹{cost.cost_per_unit}
-                        <span className="text-sm font-normal text-muted-foreground ml-1">
-                          /{cost.unit?.replace('per_', '')}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openDialog('production', cost)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete('production', cost.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {productionCosts.costs.length === 0 && (
-              <Card className="col-span-full">
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  No production cost items added yet
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Item Name</th>
+                      <th className="text-left p-3 font-medium">Category</th>
+                      <th className="text-right p-3 font-medium">Cost</th>
+                      <th className="text-left p-3 font-medium">Unit</th>
+                      <th className="text-left p-3 font-medium">Notes</th>
+                      <th className="text-right p-3 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productionCosts.costs.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                          No production cost items added yet
+                        </td>
+                      </tr>
+                    ) : (
+                      productionCosts.costs.map((cost) => (
+                        <tr key={cost.id} className="border-b hover:bg-gray-50">
+                          <td className="p-3 font-medium">{cost.name}</td>
+                          <td className="p-3">
+                            <Badge variant="outline">{getCategoryLabel('production', cost.category)}</Badge>
+                          </td>
+                          <td className="p-3 text-right font-semibold">₹{cost.cost_per_unit}</td>
+                          <td className="p-3 text-muted-foreground">{cost.unit?.replace('per_', '/')}</td>
+                          <td className="p-3 text-sm text-muted-foreground max-w-[200px] truncate">{cost.notes || '-'}</td>
+                          <td className="p-3 text-right">
+                            <Button variant="ghost" size="sm" onClick={() => openDialog('production', cost)}>
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete('production', cost.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Product Configs Tab */}
@@ -621,76 +633,72 @@ const AdminCostCalculator = () => {
             </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {productConfigs.configs.map((config) => {
-              const productCost = calculatedCosts?.product_costs?.find(p => p.product_id === config.product_id);
-              return (
-                <Card key={config.product_id}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <Leaf className="w-5 h-5 text-green-600" />
-                        {config.product_name}
-                      </span>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openDialog('product', config)}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete('product', config.product_id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Growth Days</p>
-                        <p className="font-medium">{config.growth_days} days</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Yield/Tray</p>
-                        <p className="font-medium">{config.yield_grams_per_tray}g</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Seed Cost/Tray</p>
-                        <p className="font-medium">₹{config.seed_cost_per_tray}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Soil Cost/Tray</p>
-                        <p className="font-medium">₹{config.soil_cost_per_tray}</p>
-                      </div>
-                    </div>
-                    {productCost && (
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-muted-foreground text-sm">Cost per 100g</p>
-                            <p className="text-xl font-bold">₹{productCost.unit_costs.cost_per_100g}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-muted-foreground text-sm">Margin</p>
-                            <Badge className={productCost.profitability.margin_percent >= 30 ? 'bg-green-600' : 'bg-amber-500'}>
-                              {productCost.profitability.margin_percent}%
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Product</th>
+                      <th className="text-center p-3 font-medium">Growth</th>
+                      <th className="text-center p-3 font-medium">Yield/Tray</th>
+                      <th className="text-right p-3 font-medium">Seed Cost</th>
+                      <th className="text-right p-3 font-medium">Soil Cost</th>
+                      <th className="text-right p-3 font-medium">Cost/100g</th>
+                      <th className="text-center p-3 font-medium">Margin</th>
+                      <th className="text-right p-3 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productConfigs.configs.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                          <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                          <p>No product costs configured yet</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      productConfigs.configs.map((config) => {
+                        const productCost = calculatedCosts?.product_costs?.find(p => p.product_id === config.product_id);
+                        return (
+                          <tr key={config.product_id} className="border-b hover:bg-gray-50">
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                <Leaf className="w-4 h-4 text-green-600" />
+                                <span className="font-medium">{config.product_name}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-center">{config.growth_days}d</td>
+                            <td className="p-3 text-center">{config.yield_grams_per_tray}g</td>
+                            <td className="p-3 text-right">₹{config.seed_cost_per_tray}</td>
+                            <td className="p-3 text-right">₹{config.soil_cost_per_tray}</td>
+                            <td className="p-3 text-right font-semibold">
+                              {productCost ? `₹${productCost.unit_costs.cost_per_100g}` : '-'}
+                            </td>
+                            <td className="p-3 text-center">
+                              {productCost && (
+                                <Badge className={productCost.profitability.margin_percent >= 50 ? 'bg-green-600' : productCost.profitability.margin_percent >= 30 ? 'bg-amber-500' : 'bg-red-500'}>
+                                  {productCost.profitability.margin_percent}%
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="p-3 text-right">
+                              <Button variant="ghost" size="sm" onClick={() => openDialog('product', config)}>
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete('product', config.product_id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-            {productConfigs.configs.length === 0 && (
-              <Card className="col-span-full">
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No product costs configured yet</p>
-                  <p className="text-sm">Add your microgreen products to calculate their costs</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
