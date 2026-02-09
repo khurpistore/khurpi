@@ -178,7 +178,7 @@ const ProductDetail = () => {
                     <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
                       <p className="text-green-800 font-semibold flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        Delivery by {deliveryText}
+                        Delivery by{' '}{deliveryText}
                       </p>
                     </div>
                   );
