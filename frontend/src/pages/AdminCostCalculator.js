@@ -365,10 +365,19 @@ const AdminCostCalculator = () => {
                           </tr>
                         );
                       })}
-                        </tr>
-                      ))}
                     </tbody>
                   </table>
+                  
+                  {/* Cost Formula Legend */}
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
+                    <p className="font-semibold mb-2">Cost/100g Formula:</p>
+                    <p className="text-muted-foreground">
+                      <span className="text-blue-600">Variable</span> (Seed + Soil + Labor + Other) + 
+                      <span className="text-purple-600 ml-1">Depreciation</span> (One-time ÷ Trays) + 
+                      <span className="text-orange-600 ml-1">Fixed</span> (Monthly ÷ Trays) + 
+                      <span className="text-teal-600 ml-1">Packaging</span>
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
