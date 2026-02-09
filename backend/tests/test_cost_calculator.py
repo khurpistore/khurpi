@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://admin-spend-tracker.preview.emergentagent.com"
+    BASE_URL = "https://microgreen-mgmt.preview.emergentagent.com"
 
 
 class TestCostCalculatorCategories:
