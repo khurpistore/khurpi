@@ -513,14 +513,11 @@ const AdminProducts = () => {
                       </div>
                     </div>
                     
-                    {/* Price */}
+                    {/* Price per 50gm (display only - stored as per 100gm) */}
                     <div className="col-span-1">
-                      <Input
-                        type="number"
-                        value={getFieldValue(product, 'price')}
-                        onChange={(e) => handleFieldChange(product.id, 'price', e.target.value)}
-                        className="h-7 text-xs text-center"
-                      />
+                      <div className="h-7 text-xs text-center flex items-center justify-center bg-gray-50 rounded border">
+                        ₹{(product.price / 2).toFixed(0)}
+                      </div>
                     </div>
                     
                     {/* Growth Days */}
