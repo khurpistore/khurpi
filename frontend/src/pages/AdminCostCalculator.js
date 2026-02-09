@@ -642,7 +642,7 @@ const AdminCostCalculator = () => {
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-semibold">Product Cost Configuration</h3>
-              <p className="text-sm text-muted-foreground">Configure specific costs for each microgreen product</p>
+              <p className="text-sm text-muted-foreground">Configure production costs for products from your catalog</p>
             </div>
             <Button onClick={() => openDialog('product')} data-testid="add-product-config-btn">
               <Plus className="w-4 h-4 mr-2" />
@@ -677,6 +677,8 @@ const AdminCostCalculator = () => {
                       </tr>
                     ) : (
                       productConfigs.configs.map((config) => {
+                        // Find matching product from products list for image and name
+                        const productDetails = products.find(p => p.id === config.product_id);
                         // Calculate variable cost per 50g (including packaging as it's part of variable cost)
                         const laborCost = (config.labor_hours_per_batch || 0) * (config.labor_rate_per_hour || 0);
                         const packagingCost = config.packaging_cost_per_unit || 0;
@@ -691,8 +693,12 @@ const AdminCostCalculator = () => {
                           <tr key={config.product_id} className="border-b hover:bg-gray-50">
                             <td className="p-3">
                               <div className="flex items-center gap-2">
-                                <Leaf className="w-4 h-4 text-green-600" />
-                                <span className="font-medium">{config.product_name}</span>
+                                {productDetails?.image ? (
+                                  <img src={productDetails.image} alt={productDetails?.name || config.product_name} className="w-8 h-8 rounded object-cover" />
+                                ) : (
+                                  <Leaf className="w-4 h-4 text-green-600" />
+                                )}
+                                <span className="font-medium">{productDetails?.name || config.product_name}</span>
                               </div>
                             </td>
                             <td className="p-3 text-center">{config.growth_days}d</td>
