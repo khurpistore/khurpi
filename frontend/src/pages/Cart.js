@@ -10,9 +10,10 @@ import { Trash2, ShoppingBag, ArrowRight, Repeat, Package, Clock, Sprout, Edit2,
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
-// Generate quantity options: 100-1000 (step 100), 1500-5000 (step 500)
+// Generate quantity options: 25g, 50g, then 100-1000 (step 100), 1500-5000 (step 500)
 const getQtyOptions = (maxQty) => {
   const options = [
+    25, 50,  // Small quantities
     ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
     ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
   ];
