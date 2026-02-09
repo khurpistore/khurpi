@@ -26,7 +26,7 @@ const getQtyOptions = (maxQty) => {
 const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedQty, setSelectedQty] = useState(100);
+  const [selectedQty, setSelectedQty] = useState(50); // Default to 50g
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
