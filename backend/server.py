@@ -4022,6 +4022,9 @@ async def get_subscription_deliveries(subscription_id: str):
         {"_id": 0}
     ).sort("delivery_date", 1).to_list(100)
     
+    # Create a map of existing deliveries by date for quick lookup
+    existing_by_date = {d.get("delivery_date"): d for d in existing_deliveries}
+    
     # Get subscription info to generate future deliveries
     subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
     
@@ -4080,27 +4083,30 @@ async def get_subscription_deliveries(subscription_id: str):
     if not selected_days:
         return {"deliveries": existing_deliveries, "total_deliveries_per_month": total_deliveries_per_month, "frequency": frequency}
     
-    # Generate exactly the number of deliveries for the month
+    # Generate exactly the number of deliveries for the month starting from subscription start_date
+    # IMPORTANT: Always start from the original start_date to preserve delivery history
     today = datetime.now(timezone.utc).date()
-    current_date = max(start_date, today)
+    current_date = start_date  # Start from subscription start date, not today
     generated_dates = []
     
     while len(generated_dates) < total_deliveries_per_month:
         if current_date.weekday() in selected_days and current_date.weekday() != 6:  # Skip Sundays
             date_str = current_date.isoformat()
-            # Check if this date already has a delivery record
-            existing = next((d for d in existing_deliveries if d.get("delivery_date") == date_str), None)
+            # Check if this date already has a delivery record in database
+            existing = existing_by_date.get(date_str)
             if existing:
+                # Use the actual saved delivery record (preserves status like "delivered")
                 generated_dates.append(existing)
             else:
-                # Generate a placeholder delivery
+                # Generate a placeholder delivery for dates without saved records
                 status = "scheduled"
                 if subscription.get("status") == "paused":
                     status = "paused"
                 elif subscription.get("status") in ["cancelled", "expired"]:
                     status = "cancelled"
                 elif current_date < today:
-                    status = "delivered"
+                    # Past date without a record - mark as scheduled (not auto-delivered)
+                    status = "scheduled"
                     
                 generated_dates.append({
                     "id": f"gen-{subscription_id}-{date_str}",
@@ -4113,10 +4119,25 @@ async def get_subscription_deliveries(subscription_id: str):
                 })
         current_date += timedelta(days=1)
     
+    # Check if all deliveries are completed (delivered) - if so, mark subscription as expired
+    delivered_count = sum(1 for d in generated_dates if d.get("status") == "delivered")
+    if delivered_count >= total_deliveries_per_month and subscription.get("status") == "active":
+        # Auto-expire the subscription
+        await db.subscriptions.update_one(
+            {"id": subscription_id},
+            {"$set": {"status": "expired"}}
+        )
+        # Also update in orders if it's embedded
+        await db.orders.update_one(
+            {"id": subscription_id, "subscription": {"$exists": True}},
+            {"$set": {"subscription.status": "expired"}}
+        )
+    
     return {
         "deliveries": generated_dates,
         "total_deliveries_per_month": total_deliveries_per_month,
-        "frequency": frequency
+        "frequency": frequency,
+        "delivered_count": delivered_count
     }
 
 @api_router.post("/admin/subscriptions/{subscription_id}/deliveries")

@@ -83,17 +83,22 @@ const AdminSubscriptions = () => {
         setDeliveries(response.data.deliveries);
         setDeliveryInfo({
           total: response.data.total_deliveries_per_month,
-          frequency: response.data.frequency
+          frequency: response.data.frequency,
+          delivered: response.data.delivered_count || 0
         });
+        // If subscription was auto-expired, refresh subscriptions list
+        if (response.data.delivered_count >= response.data.total_deliveries_per_month) {
+          fetchSubscriptions();
+        }
       } else {
         // Fallback for old format
         setDeliveries(response.data);
-        setDeliveryInfo({ total: response.data.length, frequency: null });
+        setDeliveryInfo({ total: response.data.length, frequency: null, delivered: 0 });
       }
     } catch (error) {
       console.error('Failed to fetch deliveries:', error);
       setDeliveries([]);
-      setDeliveryInfo({ total: 0, frequency: null });
+      setDeliveryInfo({ total: 0, frequency: null, delivered: 0 });
     } finally {
       setLoadingDeliveries(false);
     }
@@ -446,8 +451,8 @@ const AdminSubscriptions = () => {
                       <Calendar className="w-4 h-4 text-primary" />
                       <span className="font-semibold text-sm">Delivery Schedule</span>
                       {deliveryInfo.total > 0 && (
-                        <Badge className="bg-blue-100 text-blue-800 text-xs">
-                          {deliveries.length}/{deliveryInfo.total} this month
+                        <Badge className={`text-xs ${deliveryInfo.delivered >= deliveryInfo.total ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                          {deliveryInfo.delivered || 0}/{deliveryInfo.total} delivered
                         </Badge>
                       )}
                     </div>
