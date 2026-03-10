@@ -325,7 +325,6 @@ const AdminCostCalculator = () => {
                         <th className="text-right p-2 font-medium text-purple-600">Depreciation</th>
                         <th className="text-right p-2 font-medium text-orange-600">Fixed</th>
                         <th className="text-right p-2 font-medium bg-gray-100">Cost/50g</th>
-                        <th className="text-right p-2 font-medium">Profit/50g</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -340,7 +339,6 @@ const AdminCostCalculator = () => {
                         const depreciationPer50g = (cb.depreciation_allocation / yld.total_grams * 50).toFixed(2);
                         const fixedPer50g = (cb.fixed_cost_allocation / yld.total_grams * 50).toFixed(2);
                         const costPer50g = (productCost.unit_costs.cost_per_100g / 2).toFixed(2);
-                        const profitPer50g = (productCost.profitability.profit_per_unit / 2).toFixed(2);
                         
                         return (
                           <tr key={idx} className="border-b hover:bg-gray-50">
@@ -361,9 +359,6 @@ const AdminCostCalculator = () => {
                             <td className="p-2 text-right text-purple-600">₹{depreciationPer50g}</td>
                             <td className="p-2 text-right text-orange-600">₹{fixedPer50g}</td>
                             <td className="p-2 text-right font-bold bg-gray-50">₹{costPer50g}</td>
-                            <td className={`p-2 text-right font-medium ${parseFloat(profitPer50g) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ₹{profitPer50g}
-                            </td>
                           </tr>
                         );
                       })}
