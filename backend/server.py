@@ -2785,6 +2785,79 @@ async def get_admin_dashboard():
         "total_revenue": total_revenue
     }
 
+@api_router.post("/subscriptions/{subscription_id}/renew")
+async def renew_subscription_customer(subscription_id: str, renewal_data: dict = {}):
+    """Renew an expired subscription (customer-facing endpoint)"""
+    # Get the subscription
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    
+    if not subscription:
+        # Check if it's an order-based subscription
+        order = await db.orders.find_one({"id": subscription_id, "subscription": {"$exists": True}}, {"_id": 0})
+        if order:
+            subscription = {
+                "id": order["id"],
+                "user_id": order["user_id"],
+                "frequency": order["subscription"].get("frequency"),
+                "delivery_days": order["subscription"].get("delivery_days"),
+                "start_date": order["subscription"].get("start_date"),
+                "status": order["subscription"].get("status", "active"),
+                "is_order_based": True
+            }
+    
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    # Only allow renewal if subscription is expired
+    if subscription.get("status") not in ["expired", "cancelled"]:
+        raise HTTPException(status_code=400, detail="Only expired or cancelled subscriptions can be renewed")
+    
+    # Get the new start date from renewal data or use tomorrow
+    new_start_date = renewal_data.get("new_start_date")
+    if not new_start_date:
+        new_start_date = (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # Get count of completed deliveries
+    existing_deliveries = await db.deliveries.find(
+        {"subscription_id": subscription_id, "status": "delivered"}, 
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Update the subscription
+    update_data = {
+        "status": "active",
+        "start_date": new_start_date,
+        "next_delivery_date": new_start_date,
+        "renewed_at": datetime.now(timezone.utc).isoformat(),
+        "renewal_count": (subscription.get("renewal_count", 0) or 0) + 1
+    }
+    
+    if subscription.get("is_order_based"):
+        # Update order-based subscription
+        await db.orders.update_one(
+            {"id": subscription_id},
+            {"$set": {
+                "subscription.status": "active",
+                "subscription.start_date": new_start_date,
+                "subscription.next_delivery_date": new_start_date,
+                "subscription.renewed_at": update_data["renewed_at"],
+                "subscription.renewal_count": update_data["renewal_count"]
+            }}
+        )
+    else:
+        # Update standalone subscription
+        await db.subscriptions.update_one(
+            {"id": subscription_id},
+            {"$set": update_data}
+        )
+    
+    return {
+        "success": True,
+        "message": f"Subscription renewed successfully! Your new deliveries start from {new_start_date}.",
+        "new_start_date": new_start_date,
+        "previous_deliveries_preserved": len(existing_deliveries)
+    }
+
 @api_router.get("/admin/subscriptions")
 async def get_all_subscriptions_admin():
     # Get subscriptions from both collections: standalone subscriptions and orders with subscriptions

@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Package, MapPin, Calendar, Clock, Repeat, CheckCircle2, Circle, Truck } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, Calendar, Clock, Repeat, CheckCircle2, Circle, Truck, Loader2, RefreshCw } from 'lucide-react';
 import { format, addDays, isBefore, isAfter, startOfDay, isSameDay } from 'date-fns';
+import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -20,6 +21,31 @@ const SubscriptionDetail = () => {
   const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deliveriesFromAPI, setDeliveriesFromAPI] = useState([]);
+  const [renewing, setRenewing] = useState(false);
+
+  const renewSubscription = async () => {
+    setRenewing(true);
+    try {
+      const response = await axios.post(`${API}/subscriptions/${subscriptionId}/renew`);
+      toast.success(response.data.message || 'Subscription renewed successfully!');
+      
+      // Refresh subscription data
+      setSubscription(prev => ({
+        ...prev,
+        status: 'active',
+        start_date: response.data.new_start_date,
+        next_delivery_date: response.data.new_start_date
+      }));
+      
+      // Refresh deliveries
+      const delResponse = await axios.get(`${API}/subscriptions/${subscriptionId}/deliveries`);
+      setDeliveriesFromAPI(delResponse.data);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to renew subscription');
+    } finally {
+      setRenewing(false);
+    }
+  };
 
   useEffect(() => {
     // If we have passed data from navigation state, use it immediately
@@ -499,6 +525,40 @@ const SubscriptionDetail = () => {
 
             {/* Actions */}
             <div className="space-y-2">
+              {/* Renew Button for Expired/Cancelled Subscriptions */}
+              {(subscription.status === 'expired' || subscription.status === 'cancelled') && (
+                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                  <CardContent className="p-4">
+                    <div className="text-center mb-3">
+                      <RefreshCw className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                      <h3 className="font-semibold text-green-800">Renew Your Subscription</h3>
+                      <p className="text-sm text-green-700">Continue enjoying fresh microgreens!</p>
+                    </div>
+                    <Button 
+                      className="w-full bg-green-600 hover:bg-green-700 rounded-full"
+                      onClick={renewSubscription}
+                      disabled={renewing}
+                      data-testid="renew-subscription-btn"
+                    >
+                      {renewing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Renewing...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Renew Subscription
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-green-600 text-center mt-2">
+                      Your delivery history will be preserved
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+              
               <Button 
                 variant="outline" 
                 className="w-full rounded-full"

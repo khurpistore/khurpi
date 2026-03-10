@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package } from 'lucide-react';
+import { Package, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -29,6 +29,7 @@ const getPlanDisplayName = (frequency) => {
 const MySubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [renewingId, setRenewingId] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -69,7 +70,7 @@ const MySubscriptions = () => {
           total_price: order.subscription.total_price,
           bulk_discount_percent: order.subscription.bulk_discount_percent,
           bulk_discount_amount: order.subscription.bulk_discount_amount,
-          status: order.status === 'confirmed' ? 'active' : order.status,
+          status: order.subscription?.status || (order.status === 'confirmed' ? 'active' : order.status),
           address: order.address || order.delivery_address,
           created_at: order.created_at,
           tray_count: order.subscription.items?.reduce((sum, item) => sum + (item.quantity || 100), 0) || 0,
@@ -85,6 +86,21 @@ const MySubscriptions = () => {
       toast.error('Failed to load subscriptions');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const renewSubscription = async (e, subscriptionId) => {
+    e.stopPropagation();
+    setRenewingId(subscriptionId);
+    try {
+      const response = await axios.post(`${API}/subscriptions/${subscriptionId}/renew`);
+      toast.success(response.data.message || 'Subscription renewed successfully!');
+      // Refresh subscriptions list
+      fetchSubscriptions();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to renew subscription');
+    } finally {
+      setRenewingId(null);
     }
   };
 
@@ -207,6 +223,25 @@ const MySubscriptions = () => {
                               : '-'}
                           </p>
                         </div>
+                      )}
+                      {/* Renew Button for Expired/Cancelled */}
+                      {(subscription.status === 'expired' || subscription.status === 'cancelled') && (
+                        <Button
+                          data-testid={`renew-button-${subscription.id}`}
+                          size="sm"
+                          className="rounded-full bg-green-600 hover:bg-green-700 text-xs"
+                          onClick={(e) => renewSubscription(e, subscription.id)}
+                          disabled={renewingId === subscription.id}
+                        >
+                          {renewingId === subscription.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <>
+                              <RefreshCw className="w-3 h-3 mr-1" />
+                              Renew
+                            </>
+                          )}
+                        </Button>
                       )}
                       <Button
                         data-testid={`view-details-button-${subscription.id}`}
