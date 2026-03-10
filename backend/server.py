@@ -5654,6 +5654,37 @@ async def get_cost_categories():
         "production": PRODUCTION_COST_CATEGORIES
     }
 
+# Cost Calculator Settings
+@api_router.get("/admin/cost-calculator/settings")
+async def get_cost_calculator_settings():
+    """Get saved cost calculator settings"""
+    settings = await db.cost_settings.find_one({"id": "default"}, {"_id": 0})
+    if not settings:
+        # Return default settings
+        return {
+            "id": "default",
+            "monthly_production_trays": 100,
+            "updated_at": None
+        }
+    return settings
+
+@api_router.put("/admin/cost-calculator/settings")
+async def update_cost_calculator_settings(settings_data: dict):
+    """Update cost calculator settings"""
+    update_data = {
+        "id": "default",
+        "monthly_production_trays": settings_data.get("monthly_production_trays", 100),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.cost_settings.update_one(
+        {"id": "default"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return update_data
+
 # One-Time Purchases CRUD
 @api_router.get("/admin/cost-calculator/one-time")
 async def get_one_time_purchases():

@@ -25,6 +25,7 @@ const AdminCostCalculator = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
   
   // Data states
   const [oneTimePurchases, setOneTimePurchases] = useState({ purchases: [], summary: {} });
@@ -46,6 +47,7 @@ const AdminCostCalculator = () => {
 
   useEffect(() => {
     fetchAllData();
+    fetchSettings();
   }, []);
 
   useEffect(() => {
@@ -53,6 +55,41 @@ const AdminCostCalculator = () => {
       calculateCosts();
     }
   }, [monthlyTrays]);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/cost-calculator/settings`);
+      if (response.data?.monthly_production_trays) {
+        setMonthlyTrays(response.data.monthly_production_trays);
+      }
+    } catch (error) {
+      console.log('No saved settings, using defaults');
+    }
+  };
+
+  const saveSettings = async (newTrays) => {
+    setSavingSettings(true);
+    try {
+      await axios.put(`${API}/admin/cost-calculator/settings`, {
+        monthly_production_trays: newTrays
+      });
+      toast.success('Settings saved');
+    } catch (error) {
+      toast.error('Failed to save settings');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  const handleTraysChange = (value) => {
+    const newValue = parseInt(value) || 100;
+    setMonthlyTrays(newValue);
+  };
+
+  const handleTraysBlur = () => {
+    // Save when user leaves the input field
+    saveSettings(monthlyTrays);
+  };
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -288,13 +325,19 @@ const AdminCostCalculator = () => {
             <CardContent className="p-4">
               <div className="flex flex-wrap items-center gap-4">
                 <Label className="font-medium">Monthly Production (Trays):</Label>
-                <Input 
-                  type="number" 
-                  value={monthlyTrays} 
-                  onChange={(e) => setMonthlyTrays(parseInt(e.target.value) || 1)}
-                  className="w-32"
-                  min="1"
-                />
+                <div className="relative">
+                  <Input 
+                    type="number" 
+                    value={monthlyTrays} 
+                    onChange={(e) => handleTraysChange(e.target.value)}
+                    onBlur={handleTraysBlur}
+                    className="w-32"
+                    min="1"
+                  />
+                  {savingSettings && (
+                    <Loader2 className="w-4 h-4 animate-spin absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  )}
+                </div>
                 <Button onClick={calculateCosts} variant="outline" size="sm">
                   <Calculator className="w-4 h-4 mr-2" />
                   Recalculate
