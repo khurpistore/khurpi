@@ -4004,6 +4004,93 @@ async def admin_update_subscription(subscription_id: str, sub_data: Subscription
     
     raise HTTPException(status_code=404, detail="Subscription not found")
 
+@api_router.post("/admin/subscriptions/{subscription_id}/renew")
+async def renew_subscription(subscription_id: str, renewal_data: dict):
+    """Renew an expired subscription with new delivery dates while preserving history"""
+    # Get the subscription
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    
+    if not subscription:
+        # Check if it's an order-based subscription
+        order = await db.orders.find_one({"id": subscription_id, "subscription": {"$exists": True}}, {"_id": 0})
+        if order:
+            subscription = {
+                "id": order["id"],
+                "user_id": order["user_id"],
+                "frequency": order["subscription"].get("frequency"),
+                "delivery_days": order["subscription"].get("delivery_days"),
+                "start_date": order["subscription"].get("start_date"),
+                "status": order["subscription"].get("status", "active"),
+                "is_order_based": True
+            }
+    
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    # Get the new start date from renewal data or use today
+    new_start_date = renewal_data.get("new_start_date")
+    if not new_start_date:
+        # Default to tomorrow
+        new_start_date = (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # Calculate how many deliveries were completed in the previous cycle
+    existing_deliveries = await db.deliveries.find(
+        {"subscription_id": subscription_id, "status": "delivered"}, 
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Update the subscription
+    update_data = {
+        "status": "active",
+        "start_date": new_start_date,
+        "next_delivery_date": new_start_date,
+        "renewed_at": datetime.now(timezone.utc).isoformat(),
+        "renewal_count": (subscription.get("renewal_count", 0) or 0) + 1,
+        "previous_deliveries_count": len(existing_deliveries)
+    }
+    
+    # Optionally update delivery days if provided
+    if renewal_data.get("delivery_days"):
+        update_data["delivery_days"] = renewal_data["delivery_days"]
+    
+    if subscription.get("is_order_based"):
+        # Update order-based subscription
+        await db.orders.update_one(
+            {"id": subscription_id},
+            {"$set": {
+                "subscription.status": "active",
+                "subscription.start_date": new_start_date,
+                "subscription.next_delivery_date": new_start_date,
+                "subscription.renewed_at": update_data["renewed_at"],
+                "subscription.renewal_count": update_data["renewal_count"]
+            }}
+        )
+    else:
+        # Update standalone subscription
+        await db.subscriptions.update_one(
+            {"id": subscription_id},
+            {"$set": update_data}
+        )
+    
+    # Return updated subscription
+    updated = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not updated:
+        order = await db.orders.find_one({"id": subscription_id}, {"_id": 0})
+        if order:
+            return {
+                "id": order["id"],
+                "status": "active",
+                "start_date": new_start_date,
+                "message": f"Subscription renewed. Previous {len(existing_deliveries)} deliveries preserved.",
+                "previous_deliveries_count": len(existing_deliveries)
+            }
+    
+    return {
+        **updated,
+        "message": f"Subscription renewed. Previous {len(existing_deliveries)} deliveries preserved.",
+        "previous_deliveries_count": len(existing_deliveries)
+    }
+
 @api_router.delete("/admin/subscriptions/{subscription_id}")
 async def admin_delete_subscription(subscription_id: str):
     await db.subscription_items.delete_many({"subscription_id": subscription_id})
@@ -4083,10 +4170,13 @@ async def get_subscription_deliveries(subscription_id: str):
     if not selected_days:
         return {"deliveries": existing_deliveries, "total_deliveries_per_month": total_deliveries_per_month, "frequency": frequency}
     
-    # Generate exactly the number of deliveries for the month starting from subscription start_date
-    # IMPORTANT: Always start from the original start_date to preserve delivery history
+    # Get all past deliveries that are already saved (from previous cycles)
+    # These are preserved even after renewal
+    past_saved_deliveries = [d for d in existing_deliveries if d.get("status") == "delivered"]
+    
+    # Generate exactly the number of deliveries for the CURRENT month/cycle starting from subscription start_date
     today = datetime.now(timezone.utc).date()
-    current_date = start_date  # Start from subscription start date, not today
+    current_date = start_date  # Start from subscription start date
     generated_dates = []
     
     while len(generated_dates) < total_deliveries_per_month:
@@ -4119,9 +4209,22 @@ async def get_subscription_deliveries(subscription_id: str):
                 })
         current_date += timedelta(days=1)
     
-    # Check if all deliveries are completed (delivered) - if so, mark subscription as expired
-    delivered_count = sum(1 for d in generated_dates if d.get("status") == "delivered")
-    if delivered_count >= total_deliveries_per_month and subscription.get("status") == "active":
+    # Combine past saved deliveries (from previous cycles) with current cycle deliveries
+    # Filter out duplicates - past deliveries that are already in generated_dates
+    current_dates_set = {d.get("delivery_date") for d in generated_dates}
+    past_deliveries_to_add = [d for d in past_saved_deliveries if d.get("delivery_date") not in current_dates_set]
+    
+    # Final list: past delivered + current cycle
+    all_deliveries = past_deliveries_to_add + generated_dates
+    # Sort by date
+    all_deliveries.sort(key=lambda x: x.get("delivery_date", ""))
+    
+    # Count delivered in current cycle only (for expiry check)
+    current_cycle_delivered = sum(1 for d in generated_dates if d.get("status") == "delivered")
+    total_delivered = sum(1 for d in all_deliveries if d.get("status") == "delivered")
+    
+    # Check if all deliveries in CURRENT CYCLE are completed - if so, mark subscription as expired
+    if current_cycle_delivered >= total_deliveries_per_month and subscription.get("status") == "active":
         # Auto-expire the subscription
         await db.subscriptions.update_one(
             {"id": subscription_id},
@@ -4134,10 +4237,12 @@ async def get_subscription_deliveries(subscription_id: str):
         )
     
     return {
-        "deliveries": generated_dates,
+        "deliveries": all_deliveries,
         "total_deliveries_per_month": total_deliveries_per_month,
         "frequency": frequency,
-        "delivered_count": delivered_count
+        "delivered_count": total_delivered,
+        "current_cycle_delivered": current_cycle_delivered,
+        "past_deliveries_count": len(past_deliveries_to_add)
     }
 
 @api_router.post("/admin/subscriptions/{subscription_id}/deliveries")

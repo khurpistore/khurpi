@@ -72,6 +72,37 @@ const AdminSubscriptions = () => {
     }
   };
 
+  const [renewingSubscription, setRenewingSubscription] = useState(false);
+  
+  const renewSubscription = async (subId) => {
+    setRenewingSubscription(true);
+    try {
+      // Calculate tomorrow as the new start date
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const newStartDate = tomorrow.toISOString().split('T')[0];
+      
+      const response = await axios.post(`${API}/admin/subscriptions/${subId}/renew`, {
+        new_start_date: newStartDate
+      });
+      
+      toast.success(response.data.message || 'Subscription renewed successfully');
+      
+      // Refresh subscriptions list
+      fetchSubscriptions();
+      
+      // Refresh selected subscription details
+      if (selectedSubscription?.id === subId) {
+        setSelectedSubscription(prev => ({ ...prev, status: 'active', start_date: newStartDate }));
+        fetchDeliveries(subId);
+      }
+    } catch (error) {
+      toast.error('Failed to renew subscription');
+    } finally {
+      setRenewingSubscription(false);
+    }
+  };
+
   const [deliveryInfo, setDeliveryInfo] = useState({ total: 0, frequency: null });
 
   const fetchDeliveries = async (subscriptionId) => {
@@ -84,21 +115,23 @@ const AdminSubscriptions = () => {
         setDeliveryInfo({
           total: response.data.total_deliveries_per_month,
           frequency: response.data.frequency,
-          delivered: response.data.delivered_count || 0
+          delivered: response.data.delivered_count || 0,
+          currentCycleDelivered: response.data.current_cycle_delivered || 0,
+          pastDeliveriesCount: response.data.past_deliveries_count || 0
         });
         // If subscription was auto-expired, refresh subscriptions list
-        if (response.data.delivered_count >= response.data.total_deliveries_per_month) {
+        if (response.data.current_cycle_delivered >= response.data.total_deliveries_per_month) {
           fetchSubscriptions();
         }
       } else {
         // Fallback for old format
         setDeliveries(response.data);
-        setDeliveryInfo({ total: response.data.length, frequency: null, delivered: 0 });
+        setDeliveryInfo({ total: response.data.length, frequency: null, delivered: 0, currentCycleDelivered: 0, pastDeliveriesCount: 0 });
       }
     } catch (error) {
       console.error('Failed to fetch deliveries:', error);
       setDeliveries([]);
-      setDeliveryInfo({ total: 0, frequency: null, delivered: 0 });
+      setDeliveryInfo({ total: 0, frequency: null, delivered: 0, currentCycleDelivered: 0, pastDeliveriesCount: 0 });
     } finally {
       setLoadingDeliveries(false);
     }
@@ -447,13 +480,20 @@ const AdminSubscriptions = () => {
                 {/* Delivery History & Schedule */}
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Calendar className="w-4 h-4 text-primary" />
                       <span className="font-semibold text-sm">Delivery Schedule</span>
                       {deliveryInfo.total > 0 && (
-                        <Badge className={`text-xs ${deliveryInfo.delivered >= deliveryInfo.total ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                          {deliveryInfo.delivered || 0}/{deliveryInfo.total} delivered
-                        </Badge>
+                        <>
+                          <Badge className={`text-xs ${deliveryInfo.currentCycleDelivered >= deliveryInfo.total ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                            {deliveryInfo.currentCycleDelivered || 0}/{deliveryInfo.total} this cycle
+                          </Badge>
+                          {deliveryInfo.pastDeliveriesCount > 0 && (
+                            <Badge className="text-xs bg-gray-100 text-gray-700">
+                              +{deliveryInfo.pastDeliveriesCount} past
+                            </Badge>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -597,6 +637,33 @@ const AdminSubscriptions = () => {
                     ))}
                   </div>
                 </div>
+                
+                {/* Renew Button for Expired Subscriptions */}
+                {selectedSubscription.status === 'expired' && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      onClick={() => renewSubscription(selectedSubscription.id)}
+                      disabled={renewingSubscription}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      data-testid="renew-subscription-btn"
+                    >
+                      {renewingSubscription ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Renewing...
+                        </>
+                      ) : (
+                        <>
+                          <Repeat className="w-4 h-4 mr-2" />
+                          Renew Subscription
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center mt-2">
+                      Previous deliveries will be preserved
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
