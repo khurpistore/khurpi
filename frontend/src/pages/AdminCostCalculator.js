@@ -41,18 +41,27 @@ const AdminCostCalculator = () => {
   const [dialogType, setDialogType] = useState(''); // one-time, fixed, production, product
   const [editingItem, setEditingItem] = useState(null);
   const [monthlyTrays, setMonthlyTrays] = useState(100);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   
   // Form data
   const [formData, setFormData] = useState({});
 
+  // First, fetch settings to get the saved monthly trays value
   useEffect(() => {
-    fetchAllData();
     fetchSettings();
   }, []);
 
+  // Then fetch all data once settings are loaded
   useEffect(() => {
-    if (oneTimePurchases.purchases.length || fixedCosts.costs.length) {
-      calculateCosts();
+    if (settingsLoaded) {
+      fetchAllData();
+    }
+  }, [settingsLoaded]);
+
+  // Recalculate when monthly trays changes (after initial load)
+  useEffect(() => {
+    if (settingsLoaded && (oneTimePurchases.purchases.length || fixedCosts.costs.length || productConfigs.configs.length)) {
+      calculateCosts(monthlyTrays);
     }
   }, [monthlyTrays]);
 
@@ -64,6 +73,8 @@ const AdminCostCalculator = () => {
       }
     } catch (error) {
       console.log('No saved settings, using defaults');
+    } finally {
+      setSettingsLoaded(true);
     }
   };
 
@@ -74,6 +85,8 @@ const AdminCostCalculator = () => {
         monthly_production_trays: newTrays
       });
       toast.success('Settings saved');
+      // Recalculate costs with new value
+      calculateCosts(newTrays);
     } catch (error) {
       toast.error('Failed to save settings');
     } finally {
@@ -87,7 +100,7 @@ const AdminCostCalculator = () => {
   };
 
   const handleTraysBlur = () => {
-    // Save when user leaves the input field
+    // Save and recalculate when user leaves the input field
     saveSettings(monthlyTrays);
   };
 
@@ -110,7 +123,7 @@ const AdminCostCalculator = () => {
       setProducts(productsRes.data?.products || productsRes.data || []);
       setCategories(categoriesRes.data);
       
-      // Calculate costs
+      // Calculate costs using the current monthlyTrays value
       const calcRes = await axios.get(`${API}/admin/cost-calculator/calculate?monthly_production_trays=${monthlyTrays}`);
       setCalculatedCosts(calcRes.data);
     } catch (error) {
@@ -121,9 +134,9 @@ const AdminCostCalculator = () => {
     }
   };
 
-  const calculateCosts = async () => {
+  const calculateCosts = async (trays) => {
     try {
-      const calcRes = await axios.get(`${API}/admin/cost-calculator/calculate?monthly_production_trays=${monthlyTrays}`);
+      const calcRes = await axios.get(`${API}/admin/cost-calculator/calculate?monthly_production_trays=${trays || monthlyTrays}`);
       setCalculatedCosts(calcRes.data);
     } catch (error) {
       console.error('Error calculating costs:', error);
@@ -338,7 +351,7 @@ const AdminCostCalculator = () => {
                     <Loader2 className="w-4 h-4 animate-spin absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   )}
                 </div>
-                <Button onClick={calculateCosts} variant="outline" size="sm">
+                <Button onClick={() => calculateCosts(monthlyTrays)} variant="outline" size="sm">
                   <Calculator className="w-4 h-4 mr-2" />
                   Recalculate
                 </Button>
