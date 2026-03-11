@@ -407,3 +407,11 @@ January 29, 2025
   - Subscription Create page displays wholesale prices in product selection
   - Added refreshProductData() function in CartContext to fetch fresh product data with wholesale_price
   - All 11 frontend E2E tests passing (100%), 13 backend tests passing
+
+
+- **Mar 11, 2026:** Disabled Discounts for Wholesale Customers
+  - Bulk/order-value discounts are not applied for wholesale-enabled customers
+  - Coupon codes cannot be applied by wholesale customers (shows error toast)
+  - Coupon input section hidden for wholesale users at checkout
+  - Discount banners and tier hints hidden for wholesale users
+  - Added "Wholesale prices applied (offers not applicable)" notice at checkout

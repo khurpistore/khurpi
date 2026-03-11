@@ -88,8 +88,14 @@ const Checkout = () => {
     }
   };
 
-  // Calculate order discount whenever cart total changes
+  // Calculate order discount whenever cart total changes - skip for wholesale users
   useEffect(() => {
+    // No bulk/order-value discounts for wholesale customers
+    if (wholesaleEnabled) {
+      setOrderDiscount(null);
+      return;
+    }
+    
     const subtotal = getWholesaleCartTotal() + getWholesaleSubscriptionTotal();
     if (subtotal > 0 && discountTiers.length > 0) {
       // Find the highest applicable tier
@@ -144,6 +150,12 @@ const Checkout = () => {
   };
 
   const handleApplyCoupon = async () => {
+    // No coupons for wholesale customers
+    if (wholesaleEnabled) {
+      toast.error('Coupons cannot be applied with wholesale pricing');
+      return;
+    }
+    
     if (!couponCode.trim()) return;
     const orderAmount = getWholesaleCartTotal() + getWholesaleSubscriptionTotal();
     setCouponLoading(true);
@@ -619,8 +631,8 @@ const Checkout = () => {
                 )}
               </div>
 
-              {/* Order Discount Banner */}
-              {orderDiscount && (
+              {/* Order Discount Banner - not shown for wholesale users */}
+              {orderDiscount && !wholesaleEnabled && (
                 <div className="mt-3 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">🎉</span>
@@ -631,8 +643,8 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Show next tier hint */}
-              {!orderDiscount && discountTiers.length > 0 && (
+              {/* Show next tier hint - not shown for wholesale users */}
+              {!orderDiscount && discountTiers.length > 0 && !wholesaleEnabled && (
                 <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-xs text-amber-700">
                     💡 Add ₹{(discountTiers[0]?.min_order_value - (cartSubtotal + subscriptionTotal)).toFixed(0)} more to get {discountTiers[0]?.discount_percent}% off!
@@ -640,32 +652,46 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Apply Coupon */}
-              <div className="border-t pt-3 mt-3">
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-700">{appliedCoupon.code}</span>
+              {/* Wholesale pricing notice */}
+              {wholesaleEnabled && (
+                <div className="mt-3 p-2.5 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <BadgePercent className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium text-orange-700">
+                      Wholesale prices applied (offers not applicable)
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Apply Coupon - not shown for wholesale users */}
+              {!wholesaleEnabled && (
+                <div className="border-t pt-3 mt-3">
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-700">{appliedCoupon.code}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="h-6 px-2">
+                        <X className="w-3 h-3" />
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="h-6 px-2">
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Coupon code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      className="h-8 text-sm"
-                    />
-                    <Button onClick={handleApplyCoupon} disabled={couponLoading} size="sm" className="h-8 px-3">
-                      {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
-                    </Button>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Coupon code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="h-8 text-sm"
+                      />
+                      <Button onClick={handleApplyCoupon} disabled={couponLoading} size="sm" className="h-8 px-3">
+                        {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center">
