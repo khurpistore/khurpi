@@ -398,4 +398,12 @@ January 29, 2025
   - Backend endpoints: PUT/GET /api/admin/users/{user_id}/wholesale-access
   - Product model updated with wholesale_price field
   - Extended Tailwind CSS with grid-cols-14 and grid-cols-16 for admin tables
-  - Tests: 13/13 backend tests passing, 6/7 frontend E2E tests passing (86%)
+  
+- **Mar 11, 2026:** Extended Wholesale Pricing to All Customer Pages
+  - Created useWholesale hook for centralized wholesale price logic (/app/frontend/src/hooks/useWholesale.js)
+  - Cart page now shows wholesale prices with WP badge for wholesale-enabled users
+  - Checkout page calculates and displays wholesale prices in totals
+  - Product Detail page shows "Wholesale Price Applied" banner
+  - Subscription Create page displays wholesale prices in product selection
+  - Added refreshProductData() function in CartContext to fetch fresh product data with wholesale_price
+  - All 11 frontend E2E tests passing (100%), 13 backend tests passing
