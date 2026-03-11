@@ -42,7 +42,21 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`${API}/products`);
-      setProducts(response.data);
+      // Sort products by stock status priority: in_stock > growing > out_of_stock
+      const sortedProducts = response.data.sort((a, b) => {
+        const statusPriority = { 'in_stock': 0, 'growing': 1, 'out_of_stock': 2 };
+        const getStatus = (product) => {
+          const status = product.stock_status || 'in_stock';
+          const availableQty = product.weight || 0;
+          if (status === 'out_of_stock' || availableQty <= 0) return 'out_of_stock';
+          if (status === 'growing') return 'growing';
+          return 'in_stock';
+        };
+        const priorityA = statusPriority[getStatus(a)] ?? 2;
+        const priorityB = statusPriority[getStatus(b)] ?? 2;
+        return priorityA - priorityB;
+      });
+      setProducts(sortedProducts);
     } catch (error) {
       toast.error('Failed to load products');
     } finally {
