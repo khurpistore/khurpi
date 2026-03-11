@@ -389,3 +389,13 @@ January 29, 2025
 - **Jan 27, 2025:** Enhanced Address Management with location search bar and dynamic map pins
 - **Jan 27, 2025:** Unified user roles - same phone can register as both customer and delivery_boy
 - **Jan 26, 2025:** Reverted from OTP to Password-based authentication per user request
+
+- **Mar 11, 2026:** Implemented Wholesale Pricing Feature
+  - Admin can enable/disable wholesale access for specific customers via toggle switch in Admin Users page
+  - Admin Products page displays wholesale price column (WP/50g) with editable field (orange colored)
+  - Wholesale profit column shows profit/loss calculation based on cost price
+  - Customer Products page shows wholesale prices for users with wholesale access enabled (displays WP badge)
+  - Backend endpoints: PUT/GET /api/admin/users/{user_id}/wholesale-access
+  - Product model updated with wholesale_price field
+  - Extended Tailwind CSS with grid-cols-14 and grid-cols-16 for admin tables
+  - Tests: 13/13 backend tests passing, 6/7 frontend E2E tests passing (86%)
