@@ -1,0 +1,76 @@
+{
+  "summary": "Wholesale Pricing Feature - Cart and Checkout Bug Fixes VERIFIED. All 11 tests now pass. Fixed missing useEffect import in Cart.js and corrected Checkout.js to use getDisplayPrice() instead of item.product.price for wholesale price display.",
+  "mode": "update",
+  "baseline_commit": "d582c90a68976d3bd3acf766fec916f8eda363c3",
+  "head_commit": "6dcefc1774096b55fd276e25dd936047cd8b5ab5",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "critical": [],
+    "minor": [],
+    "design_issues": []
+  },
+  "bugs_fixed": [
+    {
+      "file": "/app/frontend/src/pages/Cart.js",
+      "issue": "Missing useEffect import - Cart.js was using useEffect on line 31 but only had 'import React from react' without importing useEffect. This would cause the Cart page to crash.",
+      "fix": "Changed 'import React from react' to 'import React, { useEffect } from react'"
+    },
+    {
+      "file": "/app/frontend/src/pages/Checkout.js",
+      "issue": "One-time items display section (lines 501-524) was using item.product.price directly instead of getDisplayPrice() for wholesale price display. While the total calculation was correct using getWholesaleCartTotal(), the displayed unit prices showed retail instead of wholesale.",
+      "fix": "Updated to use getDisplayPrice(item.product) and isShowingWholesale(item.product) with BadgePercent icon for WP indicator"
+    }
+  ],
+  "regression_results": {
+    "total_specs": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0
+  },
+  "specs_created": [],
+  "specs_updated": ["/app/tests/e2e/wholesale-feature.spec.ts"],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/tests/e2e/wholesale-feature.spec.ts",
+    "/app/test_reports/wholesale-cart-fixed.jpeg",
+    "/app/test_reports/wholesale-checkout-fixed.jpeg"
+  ],
+  "action_items": [],
+  "updated_files": [
+    "/app/frontend/src/pages/Cart.js",
+    "/app/frontend/src/pages/Checkout.js",
+    "/app/tests/e2e/wholesale-feature.spec.ts"
+  ],
+  "success_rate": {
+    "backend": "100% (not tested this iteration - backend was already working)",
+    "frontend": "100% (11/11 wholesale tests passed)"
+  },
+  "seed_data_creation": "None - used existing test customer 9971818259 with wholesale_enabled=true",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All wholesale pricing features now work correctly. Cart page shows wholesale prices (₹150/100gm for Turnip) with WP badge icon. Checkout page displays and calculates totals using wholesale prices. The refreshProductData() function in CartContext.js properly fetches fresh product data including wholesale_price field.",
+  "features_verified": {
+    "Products_page_wholesale": "PASS - Shows WP badge and wholesale price (₹75 for 50gm Turnip)",
+    "Product_Detail_wholesale": "PASS - Shows 'Wholesale Price Applied' banner, WP badge, and correct prices",
+    "Subscription_Create_wholesale": "PASS - Shows Wholesale badge, WP badge, and ₹150 for 100gm Turnip",
+    "Cart_page_wholesale": "PASS - Now shows wholesale price ₹150/100gm with WP badge icon (FIXED)",
+    "Checkout_page_wholesale": "PASS - Now shows wholesale price ₹150/100gm and Pay ₹150 button (FIXED)",
+    "Admin_wholesale_toggle": "PASS - Toggle works correctly to enable/disable wholesale access",
+    "Admin_products_WP_column": "PASS - WP/50g column visible for editing wholesale prices"
+  },
+  "screenshots": [
+    "/app/test_reports/wholesale-cart-fixed.jpeg",
+    "/app/test_reports/wholesale-checkout-fixed.jpeg",
+    "/app/test_reports/wholesale-products-page-wp.jpeg"
+  ],
+  "test_credentials_used": {
+    "admin_username": "admin",
+    "admin_password": "Khurpi2026Secure",
+    "test_customer_phone": "9971818259",
+    "test_customer_password": "test1234",
+    "wholesale_enabled": true
+  }
+}

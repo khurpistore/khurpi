@@ -39,10 +39,12 @@ export const CartProvider = ({ children }) => {
   const [pendingSubscription, setPendingSubscription] = useState(() => getStoredSubscription());
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [productsCache, setProductsCache] = useState({}); // Cache fresh product data
   
   // Track if we've already synced on login
   const hasSyncedRef = useRef(false);
   const syncTimeoutRef = useRef(null);
+  const hasRefreshedProductsRef = useRef(false);
 
   // Get current user from localStorage
   const getCurrentUser = () => {
@@ -213,6 +215,53 @@ export const CartProvider = ({ children }) => {
     }
   }, [isSyncing, syncCartToServer]);
 
+  // Refresh product data from API to get latest prices (including wholesale_price)
+  const refreshProductData = useCallback(async () => {
+    if (hasRefreshedProductsRef.current || cartItems.length === 0) return;
+    
+    try {
+      const response = await axios.get(`${API}/products?active_only=false`);
+      const freshProducts = response.data;
+      
+      // Create a map of fresh product data
+      const productMap = {};
+      freshProducts.forEach(p => {
+        productMap[p.id] = p;
+      });
+      
+      setProductsCache(productMap);
+      
+      // Update cart items with fresh product data (including wholesale_price)
+      setCartItems(prevItems => {
+        return prevItems.map(item => {
+          const freshProduct = productMap[item.product?.id || item.product_id];
+          if (freshProduct) {
+            return {
+              ...item,
+              product: {
+                ...item.product,
+                ...freshProduct,
+                selectedQty: item.product?.selectedQty || item.quantity || 100
+              }
+            };
+          }
+          return item;
+        });
+      });
+      
+      hasRefreshedProductsRef.current = true;
+    } catch (error) {
+      console.error('Failed to refresh product data:', error);
+    }
+  }, [cartItems.length]);
+
+  // Refresh product data on mount if cart has items
+  useEffect(() => {
+    if (cartItems.length > 0 && !hasRefreshedProductsRef.current) {
+      refreshProductData();
+    }
+  }, [cartItems.length, refreshProductData]);
+
   // Listen for login events (check user state periodically)
   useEffect(() => {
     const checkAndSync = () => {
@@ -353,7 +402,9 @@ export const CartProvider = ({ children }) => {
       setSubscription,
       clearSubscription,
       isSyncing,
-      syncOnLogin
+      syncOnLogin,
+      refreshProductData,
+      productsCache
     }}>
       {children}
     </CartContext.Provider>

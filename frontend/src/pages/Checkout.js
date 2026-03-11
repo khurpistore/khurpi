@@ -19,7 +19,7 @@ const API = `${BACKEND_URL}/api`;
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
+  const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription, refreshProductData } = useCart();
   const { user, addresses } = useAuth();
   const { wholesaleEnabled, getDisplayPrice, calculatePrice, isShowingWholesale } = useWholesale();
   const { trackPageView, trackCheckoutStarted } = useAnalytics();
@@ -34,6 +34,11 @@ const Checkout = () => {
   const [orderDiscount, setOrderDiscount] = useState(null);
 
   const hasItems = cartItems.length > 0 || pendingSubscription;
+
+  // Refresh product data to get latest prices including wholesale_price
+  useEffect(() => {
+    refreshProductData();
+  }, [refreshProductData]);
 
   // Calculate cart total using wholesale prices if applicable
   const getWholesaleCartTotal = () => {
@@ -496,7 +501,9 @@ const Checkout = () => {
                   {cartItems.map((item) => {
                     const isGrowing = item.product.stock_status === 'growing' || item.product.isGrowing;
                     const selectedQty = item.product.selectedQty || 100;
-                    const unitPrice = (item.product.price / 100) * selectedQty;
+                    const displayPrice = getDisplayPrice(item.product);
+                    const unitPrice = (displayPrice / 100) * selectedQty;
+                    const showingWholesale = isShowingWholesale(item.product);
                     
                     return (
                       <div key={item.product.id} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
@@ -509,8 +516,13 @@ const Checkout = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">₹{item.product.price}/100gm</p>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs font-medium truncate">{item.product.name}</p>
+                            {showingWholesale && (
+                              <BadgePercent className="w-3 h-3 text-orange-500 flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">₹{displayPrice}/100gm</p>
                         </div>
                         <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium">{selectedQty}gm</span>
                         <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>

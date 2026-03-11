@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,9 +23,14 @@ const getQtyOptions = (maxQty) => {
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, updateSelectedQty, removeFromCart, clearCart, pendingSubscription, clearSubscription } = useCart();
+  const { cartItems, updateSelectedQty, removeFromCart, clearCart, pendingSubscription, clearSubscription, refreshProductData } = useCart();
   const { user } = useAuth();
   const { wholesaleEnabled, getDisplayPrice, calculatePrice, isShowingWholesale } = useWholesale();
+
+  // Refresh product data when cart loads to get latest prices including wholesale_price
+  useEffect(() => {
+    refreshProductData();
+  }, [refreshProductData]);
 
   // Calculate cart total using wholesale prices if applicable
   const getCartTotal = () => {
