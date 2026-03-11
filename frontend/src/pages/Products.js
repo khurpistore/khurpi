@@ -29,6 +29,7 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQty, setSelectedQty] = useState({});
+  const [wholesaleEnabled, setWholesaleEnabled] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -38,6 +39,31 @@ const Products = () => {
     trackPageView('Products');
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    // Check if user has wholesale access
+    if (user?.id) {
+      checkWholesaleAccess();
+    }
+  }, [user]);
+
+  const checkWholesaleAccess = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/users/${user.id}/wholesale-access`);
+      setWholesaleEnabled(response.data.wholesale_enabled || false);
+    } catch (error) {
+      // User doesn't have wholesale access
+      setWholesaleEnabled(false);
+    }
+  };
+
+  // Get the display price based on wholesale access
+  const getDisplayPrice = (product) => {
+    if (wholesaleEnabled && product.wholesale_price > 0) {
+      return product.wholesale_price;
+    }
+    return product.price;
+  };
 
   const fetchProducts = async () => {
     try {
@@ -88,7 +114,8 @@ const Products = () => {
     
     // Get selected quantity or default to 50
     const qty = selectedQty[product.id] || 50;
-    const totalPrice = (product.price / 100) * qty;
+    const displayPrice = getDisplayPrice(product);
+    const totalPrice = (displayPrice / 100) * qty;
     
     // Add product with selected quantity and delivery info
     const productWithDetails = {
@@ -97,7 +124,9 @@ const Products = () => {
       isGrowing: stockInfo.status === 'growing',
       deliveryDays: stockInfo.status === 'growing' 
         ? (stockInfo.readyInDays || product.growth_days) 
-        : product.growth_days
+        : product.growth_days,
+      displayPrice: displayPrice, // Store the actual price used (retail or wholesale)
+      isWholesale: wholesaleEnabled && product.wholesale_price > 0
     };
     
     addToCart(productWithDetails, 1);
@@ -314,11 +343,14 @@ const Products = () => {
                     {/* Price - Mobile shows compact */}
                     <div className="sm:hidden mb-2">
                       <span className="text-base font-bold text-primary">
-                        ₹{((product.price / 100) * (selectedQty[product.id] || 50)).toFixed(0)}
+                        ₹{((getDisplayPrice(product) / 100) * (selectedQty[product.id] || 50)).toFixed(0)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">
                         / {selectedQty[product.id] || 50}gm
                       </span>
+                      {wholesaleEnabled && product.wholesale_price > 0 && (
+                        <Badge className="ml-1 bg-orange-100 text-orange-700 text-[10px] px-1">WP</Badge>
+                      )}
                     </div>
                     
                     {/* Quantity Selector - Desktop */}
@@ -341,9 +373,14 @@ const Products = () => {
                           </SelectContent>
                         </Select>
                         <span className="text-sm text-muted-foreground">gm</span>
-                        <span className="text-xl font-bold text-primary ml-auto">
-                          ₹{((product.price / 100) * (selectedQty[product.id] || 50)).toFixed(0)}
-                        </span>
+                        <div className="ml-auto flex items-center gap-2">
+                          <span className="text-xl font-bold text-primary">
+                            ₹{((getDisplayPrice(product) / 100) * (selectedQty[product.id] || 50)).toFixed(0)}
+                          </span>
+                          {wholesaleEnabled && product.wholesale_price > 0 && (
+                            <Badge className="bg-orange-100 text-orange-700 text-xs">WP</Badge>
+                          )}
+                        </div>
                       </div>
                     )}
                     

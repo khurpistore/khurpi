@@ -523,33 +523,37 @@ const AdminProducts = () => {
         <>
           {/* Desktop Table View */}
           <Card className="hidden lg:block overflow-x-auto">
-            <CardContent className="p-0 min-w-[1200px]">
+            <CardContent className="p-0 min-w-[1400px]">
               {/* Header */}
-              <div className="grid grid-cols-12 gap-1 p-2 bg-gray-100 text-xs font-medium text-gray-600 border-b">
+              <div className="grid gap-1 p-2 bg-gray-100 text-xs font-medium text-gray-600 border-b" style={{gridTemplateColumns: 'repeat(16, minmax(0, 1fr))'}}>
                 <div className="col-span-2">Product</div>
                 <div className="col-span-1 text-center text-purple-600" title={`Based on ${monthlyTrays} trays/month`}>
                   Cost/50g
                   <span className="block text-[10px] text-purple-400 font-normal">({monthlyTrays} trays)</span>
                 </div>
-                <div className="col-span-1 text-center text-blue-600">Sell/50g</div>
-                <div className="col-span-1 text-center">Profit</div>
+                <div className="col-span-1 text-center text-blue-600">Retail/50g</div>
+                <div className="col-span-1 text-center text-blue-700">Retail Profit</div>
+                <div className="col-span-1 text-center text-orange-600">WP/50g</div>
+                <div className="col-span-1 text-center text-orange-700">WP Profit</div>
                 <div className="col-span-1 text-center">Growth</div>
                 <div className="col-span-1 text-center">Qty(gm)</div>
                 <div className="col-span-2">Status</div>
                 <div className="col-span-1">Avl Date</div>
                 <div className="col-span-1 text-center">Active</div>
-                <div className="col-span-1 text-center">Actions</div>
+                <div className="col-span-2 text-center">Actions</div>
               </div>
               
               {/* Product Rows */}
               <div className="divide-y" data-testid="admin-products-list">
                 {products.map((product) => {
                   const cost = costData[product.id]?.cost_per_50g || 0;
-                  const sellPrice = (getFieldValue(product, 'price') || product.price) / 2; // Sell price per 50g
-                  const profit = sellPrice - cost;
+                  const retailPrice = (getFieldValue(product, 'price') || product.price) / 2; // Retail price per 50g
+                  const retailProfit = retailPrice - cost;
+                  const wholesalePrice = (getFieldValue(product, 'wholesale_price') || product.wholesale_price || 0) / 2; // WP per 50g
+                  const wholesaleProfit = wholesalePrice - cost;
                   
                   return (
-                  <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid grid-cols-12 gap-1 p-2 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`}>
+                  <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid gap-1 p-2 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`} style={{gridTemplateColumns: 'repeat(16, minmax(0, 1fr))'}}>
                     {/* Product Info */}
                     <div className="col-span-2 flex items-center gap-2">
                       <img
@@ -570,7 +574,7 @@ const AdminProducts = () => {
                       </div>
                     </div>
                     
-                    {/* Sell Price per 50gm (editable - stored as per 100gm) */}
+                    {/* Retail Price per 50gm (editable - stored as per 100gm) */}
                     <div className="col-span-1">
                       <Input
                         type="number"
@@ -580,14 +584,38 @@ const AdminProducts = () => {
                       />
                     </div>
                     
-                    {/* Profit/Loss per 50gm */}
+                    {/* Retail Profit/Loss per 50gm */}
                     <div className="col-span-1">
                       <div className={`h-7 text-xs text-center flex items-center justify-center rounded border font-medium ${
-                        profit >= 0 
+                        retailProfit >= 0 
                           ? 'bg-green-50 border-green-200 text-green-700' 
                           : 'bg-red-50 border-red-200 text-red-700'
                       }`}>
-                        {cost > 0 ? `${profit >= 0 ? '+' : ''}₹${profit.toFixed(0)}` : '-'}
+                        {cost > 0 ? `${retailProfit >= 0 ? '+' : ''}₹${retailProfit.toFixed(0)}` : '-'}
+                      </div>
+                    </div>
+                    
+                    {/* Wholesale Price per 50gm (editable - stored as per 100gm) */}
+                    <div className="col-span-1">
+                      <Input
+                        type="number"
+                        value={Math.round((getFieldValue(product, 'wholesale_price') || product.wholesale_price || 0) / 2)}
+                        onChange={(e) => handleFieldChange(product.id, 'wholesale_price', parseInt(e.target.value) * 2)}
+                        className="h-7 text-xs text-center bg-orange-50 border-orange-200 text-orange-700"
+                        placeholder="0"
+                      />
+                    </div>
+                    
+                    {/* Wholesale Profit/Loss per 50gm */}
+                    <div className="col-span-1">
+                      <div className={`h-7 text-xs text-center flex items-center justify-center rounded border font-medium ${
+                        wholesalePrice > 0 
+                          ? (wholesaleProfit >= 0 
+                              ? 'bg-green-50 border-green-200 text-green-700' 
+                              : 'bg-red-50 border-red-200 text-red-700')
+                          : 'bg-gray-50 border-gray-200 text-gray-400'
+                      }`}>
+                        {wholesalePrice > 0 && cost > 0 ? `${wholesaleProfit >= 0 ? '+' : ''}₹${wholesaleProfit.toFixed(0)}` : '-'}
                       </div>
                     </div>
                     
@@ -702,7 +730,7 @@ const AdminProducts = () => {
                   </div>
                   
                   {/* Actions */}
-                  <div className="col-span-1 flex items-center justify-center gap-1">
+                  <div className="col-span-2 flex items-center justify-center gap-1">
                     <Button
                       size="sm"
                       variant="ghost"

@@ -262,6 +262,7 @@ class Product(BaseModel):
     benefit: str
     nutrients: Optional[str] = None
     price: float
+    wholesale_price: Optional[float] = 0  # Wholesale price per 100g
     growth_days: int
     weight: int = 100  # Weight in grams - represents available stock quantity
     pack_size: str = "100g"  # Display string
@@ -279,6 +280,7 @@ class ProductCreate(BaseModel):
     benefit: str
     nutrients: Optional[str] = None
     price: float
+    wholesale_price: Optional[float] = 0  # Wholesale price per 100g
     growth_days: int
     weight: int = 100  # Weight in grams - represents available stock quantity
     pack_size: str = "100g"  # Display string
@@ -294,6 +296,7 @@ class ProductUpdate(BaseModel):
     benefit: Optional[str] = None
     nutrients: Optional[str] = None
     price: Optional[float] = None
+    wholesale_price: Optional[float] = None  # Wholesale price per 100g
     growth_days: Optional[int] = None
     weight: Optional[int] = None  # Weight in grams - represents available stock quantity
     pack_size: Optional[str] = None  # Display string
@@ -4024,6 +4027,31 @@ async def admin_delete_user(user_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True}
+
+@api_router.put("/admin/users/{user_id}/wholesale-access")
+async def update_user_wholesale_access(user_id: str, access_data: dict):
+    """Enable or disable wholesale price visibility for a user"""
+    wholesale_enabled = access_data.get("wholesale_enabled", False)
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"wholesale_enabled": wholesale_enabled}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"success": True, "wholesale_enabled": wholesale_enabled}
+
+@api_router.get("/admin/users/{user_id}/wholesale-access")
+async def get_user_wholesale_access(user_id: str):
+    """Get wholesale price visibility status for a user"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "wholesale_enabled": 1})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"wholesale_enabled": user.get("wholesale_enabled", False)}
 
 @api_router.put("/admin/subscriptions/{subscription_id}")
 async def admin_update_subscription(subscription_id: str, sub_data: SubscriptionUpdate):

@@ -11,7 +11,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Search, Pencil, Trash2, KeyRound, Truck, Plus } from 'lucide-react';
+import { Search, Pencil, Trash2, KeyRound, Truck, Plus, BadgePercent } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { format } from 'date-fns';
 import AdminLayout from '@/components/AdminLayout';
 
@@ -199,6 +200,8 @@ const AdminUsers = () => {
   const [showAddDeliveryBoy, setShowAddDeliveryBoy] = useState(false);
   const [newDeliveryBoy, setNewDeliveryBoy] = useState({ name: '', phone: '', password: '' });
   const [addingDeliveryBoy, setAddingDeliveryBoy] = useState(false);
+  const [wholesaleStatus, setWholesaleStatus] = useState({});
+  const [wholesaleLoading, setWholesaleLoading] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -214,10 +217,34 @@ const AdminUsers = () => {
       const response = await axios.get(`${API}/admin/users`);
       setUsers(response.data);
       setFilteredUsers(response.data);
+      
+      // Fetch wholesale status for all customers
+      const wholesaleStatusMap = {};
+      for (const user of response.data) {
+        if (user.role === 'customer') {
+          wholesaleStatusMap[user.id] = user.wholesale_enabled || false;
+        }
+      }
+      setWholesaleStatus(wholesaleStatusMap);
     } catch (error) {
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWholesaleToggle = async (userId, enabled) => {
+    setWholesaleLoading(prev => ({ ...prev, [userId]: true }));
+    try {
+      await axios.put(`${API}/admin/users/${userId}/wholesale-access`, {
+        wholesale_enabled: enabled
+      });
+      setWholesaleStatus(prev => ({ ...prev, [userId]: enabled }));
+      toast.success(enabled ? 'Wholesale access enabled' : 'Wholesale access disabled');
+    } catch (error) {
+      toast.error('Failed to update wholesale access');
+    } finally {
+      setWholesaleLoading(prev => ({ ...prev, [userId]: false }));
     }
   };
 
@@ -460,19 +487,20 @@ const AdminUsers = () => {
       ) : (
         <div className="space-y-2" data-testid="admin-users-list">
           {/* Table Header */}
-          <div className="hidden md:grid md:grid-cols-12 gap-4 px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium text-muted-foreground">
+          <div className="hidden md:grid md:grid-cols-14 gap-4 px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium text-muted-foreground">
             <div className="col-span-3">Name</div>
             <div className="col-span-2">Phone</div>
-            <div className="col-span-3">Address</div>
+            <div className="col-span-2">Address</div>
             <div className="col-span-2">Joined</div>
-            <div className="col-span-2 text-right">Actions</div>
+            <div className="col-span-2 text-center text-orange-600">Wholesale</div>
+            <div className="col-span-3 text-right">Actions</div>
           </div>
           
           {regularUsers.map((u) => (
             <Card key={u.id} data-testid={`admin-user-row-${u.id}`} className="hover:bg-gray-50">
               <CardContent className="p-3 sm:p-4">
                 {/* Desktop List View */}
-                <div className="hidden md:grid md:grid-cols-12 gap-4 items-center">
+                <div className="hidden md:grid md:grid-cols-14 gap-4 items-center">
                   <div className="col-span-3 flex items-center gap-2">
                     <div>
                       <p className="font-medium text-primary">{u.name}</p>
@@ -482,9 +510,25 @@ const AdminUsers = () => {
                     </div>
                   </div>
                   <div className="col-span-2 text-sm">{u.phone}</div>
-                  <div className="col-span-3 text-sm text-muted-foreground truncate">{u.address || '-'}</div>
+                  <div className="col-span-2 text-sm text-muted-foreground truncate">{u.address || '-'}</div>
                   <div className="col-span-2 text-sm text-muted-foreground">{format(new Date(u.created_at), 'PP')}</div>
-                  <div className="col-span-2 flex justify-end gap-1">
+                  <div className="col-span-2 flex justify-center">
+                    {u.role === 'customer' && (
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          data-testid={`wholesale-toggle-${u.id}`}
+                          checked={wholesaleStatus[u.id] || false}
+                          disabled={wholesaleLoading[u.id]}
+                          onCheckedChange={(checked) => handleWholesaleToggle(u.id, checked)}
+                          className={wholesaleStatus[u.id] ? 'data-[state=checked]:bg-orange-500' : ''}
+                        />
+                        {wholesaleStatus[u.id] && (
+                          <BadgePercent className="w-4 h-4 text-orange-500" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-span-3 flex justify-end gap-1">
                     <Dialog open={dialogOpen && selectedUser?.id === u.id} onOpenChange={setDialogOpen}>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="ghost" onClick={() => openDialog(u)}>
@@ -535,6 +579,24 @@ const AdminUsers = () => {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">Joined {format(new Date(u.created_at), 'PP')}</p>
+                  
+                  {/* Wholesale Toggle for Mobile */}
+                  {u.role === 'customer' && (
+                    <div className="flex items-center justify-between mb-3 p-2 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="flex items-center gap-2">
+                        <BadgePercent className="w-4 h-4 text-orange-600" />
+                        <span className="text-sm font-medium text-orange-700">Wholesale Access</span>
+                      </div>
+                      <Switch
+                        data-testid={`wholesale-toggle-mobile-${u.id}`}
+                        checked={wholesaleStatus[u.id] || false}
+                        disabled={wholesaleLoading[u.id]}
+                        onCheckedChange={(checked) => handleWholesaleToggle(u.id, checked)}
+                        className={wholesaleStatus[u.id] ? 'data-[state=checked]:bg-orange-500' : ''}
+                      />
+                    </div>
+                  )}
+                  
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => openDialog(u)}>
                       <Pencil className="w-3 h-3 mr-1" /> Edit
