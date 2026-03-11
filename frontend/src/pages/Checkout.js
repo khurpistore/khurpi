@@ -7,7 +7,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { MapPin, CreditCard, Plus, Loader2, AlertCircle, Truck, Tag, X, Repeat, Package, ChevronLeft, Clock, Sprout } from 'lucide-react';
+import { useWholesale } from '@/hooks/useWholesale';
+import { MapPin, CreditCard, Plus, Loader2, AlertCircle, Truck, Tag, X, Repeat, Package, ChevronLeft, Clock, Sprout, BadgePercent } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -20,6 +21,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
   const { user, addresses } = useAuth();
+  const { wholesaleEnabled, getDisplayPrice, calculatePrice, isShowingWholesale } = useWholesale();
   const { trackPageView, trackCheckoutStarted } = useAnalytics();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -33,6 +35,23 @@ const Checkout = () => {
 
   const hasItems = cartItems.length > 0 || pendingSubscription;
 
+  // Calculate cart total using wholesale prices if applicable
+  const getWholesaleCartTotal = () => {
+    return cartItems.reduce((total, item) => {
+      const qty = item.product.selectedQty || 100;
+      return total + calculatePrice(item.product, qty);
+    }, 0);
+  };
+
+  // Calculate subscription total using wholesale prices if applicable
+  const getWholesaleSubscriptionTotal = () => {
+    if (!pendingSubscription?.products) return 0;
+    return pendingSubscription.products.reduce((total, product) => {
+      const qty = product.selectedQty || 100;
+      return total + calculatePrice(product, qty);
+    }, 0);
+  };
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -45,7 +64,7 @@ const Checkout = () => {
     loadRazorpayScript();
     fetchDiscountTiers();
     trackPageView('Checkout');
-    trackCheckoutStarted(getCartTotal() + (pendingSubscription?.monthlyTotal || 0));
+    trackCheckoutStarted(getWholesaleCartTotal() + getWholesaleSubscriptionTotal());
     const defaultAddr = addresses.find(a => a.is_default);
     if (defaultAddr) {
       setSelectedAddressId(defaultAddr.id);
@@ -66,7 +85,7 @@ const Checkout = () => {
 
   // Calculate order discount whenever cart total changes
   useEffect(() => {
-    const subtotal = getCartTotal() + (pendingSubscription?.monthlyTotal || 0);
+    const subtotal = getWholesaleCartTotal() + getWholesaleSubscriptionTotal();
     if (subtotal > 0 && discountTiers.length > 0) {
       // Find the highest applicable tier
       const sortedTiers = [...discountTiers].sort((a, b) => b.min_order_value - a.min_order_value);
@@ -84,7 +103,7 @@ const Checkout = () => {
     } else {
       setOrderDiscount(null);
     }
-  }, [cartItems, pendingSubscription, discountTiers]);
+  }, [cartItems, pendingSubscription, discountTiers, wholesaleEnabled]);
 
   useEffect(() => {
     if (selectedAddressId) {
@@ -121,7 +140,7 @@ const Checkout = () => {
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
-    const orderAmount = cartSubtotal + subscriptionTotal;
+    const orderAmount = getWholesaleCartTotal() + getWholesaleSubscriptionTotal();
     setCouponLoading(true);
     try {
       const response = await axios.post(
@@ -157,20 +176,20 @@ const Checkout = () => {
         throw new Error('No delivery address selected');
       }
       
-      // Prepare one-time items
+      // Prepare one-time items with wholesale prices if applicable
       let oneTimeItems = null;
       if (cartItems.length > 0) {
         oneTimeItems = cartItems.map(item => ({ 
           product_id: item.product.id, 
           quantity: item.product.selectedQty || 100, 
-          price: item.product.price 
+          price: getDisplayPrice(item.product)  // Use wholesale price if applicable
         }));
       }
       
-      // Prepare subscription data
+      // Prepare subscription data with wholesale prices if applicable
       let subscriptionData = null;
       if (pendingSubscription) {
-        const subscriptionSubtotal = pendingSubscription.monthlyTotal || 0;
+        const subscriptionSubtotal = getWholesaleSubscriptionTotal();
         const bulkDiscountOnSubscription = orderDiscount ? (subscriptionSubtotal * orderDiscount.tier.discount_percent) / 100 : 0;
         const actualMonthlyPaid = subscriptionSubtotal - bulkDiscountOnSubscription;
         
@@ -181,7 +200,7 @@ const Checkout = () => {
           items: pendingSubscription.products.map(p => ({ 
             product_id: p.product_id || p.id, 
             quantity: p.selectedQty || 100,
-            price: p.price || 0
+            price: getDisplayPrice(p)  // Use wholesale price if applicable
           })),
           subtotal: subscriptionSubtotal,
           total_price: actualMonthlyPaid,
@@ -326,8 +345,8 @@ const Checkout = () => {
 
   if (!user || !hasItems) return null;
 
-  const cartSubtotal = getCartTotal();
-  const subscriptionTotal = pendingSubscription?.monthlyTotal || 0;
+  const cartSubtotal = getWholesaleCartTotal();
+  const subscriptionTotal = getWholesaleSubscriptionTotal();
   const couponDiscount = appliedCoupon?.discount_amount || 0;
   const orderDiscountAmount = orderDiscount?.discount_amount || 0;
   const grandTotal = Math.max(0, cartSubtotal + subscriptionTotal - couponDiscount - orderDiscountAmount);

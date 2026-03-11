@@ -3,11 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, ShoppingCart, Sparkles, Truck, Tag, Zap } from 'lucide-react';
+import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, ShoppingCart, Sparkles, Truck, Tag, Zap, BadgePercent } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useWholesale } from '@/hooks/useWholesale';
 import { format, addDays } from 'date-fns';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -31,6 +33,7 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { id } = useParams();
+  const { wholesaleEnabled, getDisplayPrice, calculatePrice, isShowingWholesale } = useWholesale();
 
   useEffect(() => {
     fetchProduct();
@@ -55,7 +58,9 @@ const ProductDetail = () => {
       return;
     }
     
-    const totalPrice = (product.price / 100) * selectedQty;
+    const displayPrice = getDisplayPrice(product);
+    const totalPrice = (displayPrice / 100) * selectedQty;
+    const showingWholesale = isShowingWholesale(product);
     
     const productWithDetails = {
       ...product,
@@ -63,12 +68,14 @@ const ProductDetail = () => {
       isGrowing: stockInfo.status === 'growing',
       deliveryDays: stockInfo.status === 'growing' 
         ? (product.ready_in_days || product.growth_days) 
-        : product.growth_days
+        : product.growth_days,
+      displayPrice: displayPrice,
+      isWholesale: showingWholesale
     };
     
     addToCart(productWithDetails, 1);
     toast.success(`${product.name} (${selectedQty}gm) added to cart`, {
-      description: `₹${totalPrice.toFixed(0)}`
+      description: `₹${totalPrice.toFixed(0)}${showingWholesale ? ' (Wholesale)' : ''}`
     });
   };
 
@@ -200,6 +207,14 @@ const ProductDetail = () => {
             {/* Buy Options */}
             <div className="space-y-4 p-4 sm:p-6 bg-white rounded-xl border border-border shadow-sm">
               
+              {/* Wholesale Badge if applicable */}
+              {isShowingWholesale(product) && (
+                <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg border border-orange-200">
+                  <BadgePercent className="w-4 h-4 text-orange-600" />
+                  <span className="text-sm font-medium text-orange-700">Wholesale Price Applied</span>
+                </div>
+              )}
+              
               {/* Quantity Selector */}
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">Qty:</span>
@@ -219,9 +234,14 @@ const ProductDetail = () => {
                   </SelectContent>
                 </Select>
                 <span className="text-sm text-muted-foreground">gm</span>
-                <span className="text-2xl font-bold text-primary ml-auto">
-                  ₹{((product.price / 100) * selectedQty).toFixed(0)}
-                </span>
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="text-2xl font-bold text-primary">
+                    ₹{calculatePrice(product, selectedQty).toFixed(0)}
+                  </span>
+                  {isShowingWholesale(product) && (
+                    <Badge className="bg-orange-100 text-orange-700">WP</Badge>
+                  )}
+                </div>
               </div>
 
               <Button
@@ -232,7 +252,7 @@ const ProductDetail = () => {
                 className="w-full bg-primary hover:bg-primary/90 text-white rounded-full py-5 text-lg font-medium"
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart - ₹{((product.price / 100) * selectedQty).toFixed(0)}
+                Add to Cart - ₹{calculatePrice(product, selectedQty).toFixed(0)}
               </Button>
 
               <div className="relative">

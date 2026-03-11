@@ -1,0 +1,90 @@
+{
+  "summary": "Wholesale Pricing Feature Update Testing - Cart and Checkout pages show retail prices instead of wholesale prices for wholesale-enabled users. Products page, Product Detail page, and Subscription Create page correctly show wholesale prices.",
+  "mode": "update",
+  "baseline_commit": "b25a73369a7626897ad41a398bc654be70a51b7b",
+  "head_commit": "d582c90a68976d3bd3acf766fec916f8eda363c3",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "critical": [
+      {
+        "component": "Cart.js",
+        "issue": "Cart page shows retail price (₹180/100gm) instead of wholesale price (₹150/100gm) for wholesale-enabled users. The useWholesale hook's getDisplayPrice() function is called but the product object in cart doesn't have wholesale_price field properly populated.",
+        "selector": "[data-testid='cart-item-*']",
+        "priority": "HIGH",
+        "expected": "₹150/100gm with WP badge for Turnip Microgreens",
+        "actual": "₹180/100gm without WP badge"
+      },
+      {
+        "component": "Checkout.js",
+        "issue": "Checkout page calculates totals using retail prices instead of wholesale prices. Shows ₹180 total instead of ₹150 for 100gm Turnip Microgreens for wholesale users.",
+        "selector": "[data-testid='pay-now-button']",
+        "priority": "HIGH",
+        "expected": "₹150 total for wholesale user",
+        "actual": "₹180 total showing"
+      }
+    ],
+    "minor": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 11,
+    "passed": 8,
+    "failed": 3,
+    "skipped": 0
+  },
+  "specs_created": [],
+  "specs_updated": ["/app/tests/e2e/wholesale-feature.spec.ts"],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_wholesale.py",
+    "/app/tests/e2e/wholesale-feature.spec.ts"
+  ],
+  "action_items": [
+    "FIX Cart.js: Ensure cart items have wholesale_price field when products are added. The issue is in Cart.js lines 156-161 - the product object from cartItems doesn't contain the wholesale_price field.",
+    "FIX Checkout.js: Same issue - checkout uses cart items which lack wholesale_price field. Lines 496-519 show one-time items using item.product.price directly instead of getDisplayPrice().",
+    "ROOT CAUSE: When products are added to cart from Products page, the product object is stored in localStorage/cart. However, when the cart is loaded, the useWholesale hook's getDisplayPrice() checks product.wholesale_price which may be undefined/0 if the product was added before wholesale feature was implemented, or if the API doesn't return wholesale_price in the stored cart product."
+  ],
+  "updated_files": [
+    "/app/tests/e2e/wholesale-feature.spec.ts"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 wholesale tests passed)",
+    "frontend": "73% (8/11 tests passed - 3 BUG TESTS failed as expected)"
+  },
+  "seed_data_creation": "Test customer 9971818259 with wholesale_enabled=true",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The Cart and Checkout bugs are confirmed. The useWholesale hook is correctly implemented but Cart.js and Checkout.js show retail prices. The issue appears to be that cart items stored in localStorage don't have wholesale_price field, so getDisplayPrice() falls back to retail price. Products page, Product Detail page, and Subscription Create page work correctly because they fetch fresh product data with wholesale_price field.",
+  "rca_of_issue": {
+    "root_cause": "Cart items stored in localStorage/CartContext don't have wholesale_price field populated. When products are fetched fresh from API, they have wholesale_price. But cart items loaded from storage lack this field.",
+    "affected_pages": ["Cart.js", "Checkout.js"],
+    "working_pages": ["Products.js", "ProductDetail.js", "SubscriptionCreate.js"],
+    "fix_approach": "Either: (1) Ensure addToCart() includes wholesale_price when adding products, (2) Refresh cart item product data from API when cart loads, or (3) Use the products API data in Cart/Checkout instead of stored cart product data"
+  },
+  "features_verified": {
+    "Products_page_wholesale": "PASS - Shows WP badge and wholesale price (₹75 for 50gm Turnip)",
+    "Product_Detail_wholesale": "PASS - Shows 'Wholesale Price Applied' banner, WP badge, and correct prices",
+    "Subscription_Create_wholesale": "PASS - Shows Wholesale badge, WP badge, and ₹150 for 100gm Turnip",
+    "Cart_page_wholesale": "FAIL - Shows retail price ₹180/100gm instead of wholesale ₹150/100gm",
+    "Checkout_page_wholesale": "FAIL - Shows retail total ₹180 instead of wholesale ₹150",
+    "Admin_wholesale_toggle": "PASS - Toggle works correctly to enable/disable wholesale access",
+    "Admin_products_WP_column": "PASS - WP/50g column visible for editing wholesale prices"
+  },
+  "screenshots": [
+    "/app/test_reports/wholesale-cart-bug.jpeg",
+    "/app/test_reports/wholesale-checkout-bug.jpeg",
+    "/app/test_reports/wholesale-product-detail.jpeg",
+    "/app/test_reports/wholesale-subscription-create.jpeg",
+    "/app/test_reports/wholesale-products-page-wp.jpeg"
+  ],
+  "test_credentials_used": {
+    "admin_username": "admin",
+    "admin_password": "Khurpi2026Secure",
+    "test_customer_phone": "9971818259",
+    "test_customer_password": "test1234",
+    "wholesale_user_id": "fb06743d-c50a-405e-8895-e48ec46d2fce"
+  }
+}

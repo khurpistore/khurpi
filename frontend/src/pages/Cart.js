@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { Trash2, ShoppingBag, ArrowRight, Repeat, Package, Clock, Sprout, Edit2, Truck } from 'lucide-react';
+import { useWholesale } from '@/hooks/useWholesale';
+import { Trash2, ShoppingBag, ArrowRight, Repeat, Package, Clock, Sprout, Edit2, Truck, BadgePercent } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
@@ -22,8 +23,17 @@ const getQtyOptions = (maxQty) => {
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, updateSelectedQty, removeFromCart, getCartTotal, clearCart, pendingSubscription, clearSubscription } = useCart();
+  const { cartItems, updateSelectedQty, removeFromCart, clearCart, pendingSubscription, clearSubscription } = useCart();
   const { user } = useAuth();
+  const { wholesaleEnabled, getDisplayPrice, calculatePrice, isShowingWholesale } = useWholesale();
+
+  // Calculate cart total using wholesale prices if applicable
+  const getCartTotal = () => {
+    return cartItems.reduce((total, item) => {
+      const qty = item.product.selectedQty || 100;
+      return total + calculatePrice(item.product, qty);
+    }, 0);
+  };
 
   const handleCheckout = () => {
     if (!user) {
@@ -99,13 +109,20 @@ const Cart = () => {
                   <div className="space-y-2">
                     {pendingSubscription.products?.map((product) => {
                       const qty = product.selectedQty || 100;
-                      const price = (product.price / 100) * qty;
+                      const displayPrice = getDisplayPrice(product);
+                      const price = (displayPrice / 100) * qty;
+                      const showingWholesale = isShowingWholesale(product);
                       return (
                         <div key={product.id || product.product_id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
                           <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
                           <div className="flex-1 min-w-0">
-                            <span className="text-xs font-medium truncate block">{product.name}</span>
-                            <span className="text-xs text-muted-foreground">₹{product.price}/100gm • {qty}gm - ₹{price.toFixed(0)}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs font-medium truncate block">{product.name}</span>
+                              {showingWholesale && (
+                                <BadgePercent className="w-3 h-3 text-orange-500 flex-shrink-0" />
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">₹{displayPrice}/100gm • {qty}gm - ₹{price.toFixed(0)}</span>
                           </div>
                         </div>
                       );
@@ -139,7 +156,9 @@ const Cart = () => {
                   {cartItems.map((item) => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
                     const selectedQty = item.product.selectedQty || 100;
-                    const unitPrice = (item.product.price / 100) * selectedQty;
+                    const displayPrice = getDisplayPrice(item.product);
+                    const unitPrice = (displayPrice / 100) * selectedQty;
+                    const showingWholesale = isShowingWholesale(item.product);
                     
                     return (
                       <div key={item.product.id} data-testid={`cart-item-${item.product.id}`} className={`flex items-center gap-2 p-2 rounded-lg ${isGrowing ? 'bg-amber-50' : 'bg-gray-50'}`}>
@@ -152,8 +171,13 @@ const Cart = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">₹{item.product.price}/100gm</p>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs font-medium truncate">{item.product.name}</p>
+                            {showingWholesale && (
+                              <BadgePercent className="w-3 h-3 text-orange-500 flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">₹{displayPrice}/100gm</p>
                         </div>
                         {/* Weight Dropdown */}
                         <div className="flex items-center gap-1">

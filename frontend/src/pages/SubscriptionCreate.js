@@ -9,12 +9,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight, Sparkles, Tag, Truck, CreditCard, Gift, X, Loader2, MapPin, Plus, ArrowLeft, FlaskConical, Shield, Sprout, Clock, XCircle } from 'lucide-react';
+import { CalendarIcon, Check, Package, ChevronLeft, ChevronRight, Sparkles, Tag, Truck, CreditCard, Gift, X, Loader2, MapPin, Plus, ArrowLeft, FlaskConical, Shield, Sprout, Clock, XCircle, BadgePercent } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { format, addDays } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useWholesale } from '@/hooks/useWholesale';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -66,6 +67,7 @@ const SubscriptionCreate = () => {
   const location = useLocation();
   const { user, addresses, fetchAddresses } = useAuth();
   const { setSubscription, pendingSubscription } = useCart();
+  const { wholesaleEnabled, getDisplayPrice, isShowingWholesale } = useWholesale();
 
   // Delivery days - excluding Sunday (no delivery on Sunday)
   const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -602,14 +604,15 @@ const SubscriptionCreate = () => {
     }
   };
 
-  // Calculate per-delivery cost based on weight (price per 100gm)
+  // Calculate per-delivery cost based on weight (price per 100gm) - uses wholesale prices if applicable
   const calculatePerDeliveryPrice = () => {
     let total = 0;
     selectedProducts.forEach(item => {
       const product = products.find(p => p.id === item.product_id);
       if (product) {
         const qty = item.selectedQty || 100;
-        total += (product.price / 100) * qty;
+        const displayPrice = getDisplayPrice(product);
+        total += (displayPrice / 100) * qty;
       }
     });
     return total;
@@ -866,7 +869,9 @@ const SubscriptionCreate = () => {
                 }
                 
                 const selectedQty = selectedItem?.selectedQty || 100;
-                const totalPrice = (product.price / 100) * selectedQty;
+                const displayPrice = getDisplayPrice(product);
+                const totalPrice = (displayPrice / 100) * selectedQty;
+                const showingWholesale = isShowingWholesale(product);
 
                 return (
                   <Card
@@ -898,6 +903,14 @@ const SubscriptionCreate = () => {
                           <Badge className="bg-amber-500 text-white border-0 shadow-lg">
                             <Sprout className="w-3 h-3 mr-1" />
                             Growing
+                          </Badge>
+                        </div>
+                      )}
+                      {showingWholesale && (
+                        <div className="absolute top-2 right-2">
+                          <Badge className="bg-orange-500 text-white border-0 shadow-lg">
+                            <BadgePercent className="w-3 h-3 mr-1" />
+                            Wholesale
                           </Badge>
                         </div>
                       )}
@@ -933,9 +946,14 @@ const SubscriptionCreate = () => {
                             </SelectContent>
                           </Select>
                           <span className="text-sm text-muted-foreground">gm</span>
-                          <span className="text-xl font-bold text-primary ml-auto">
-                            ₹{totalPrice.toFixed(0)}
-                          </span>
+                          <div className="ml-auto flex items-center gap-1">
+                            <span className="text-xl font-bold text-primary">
+                              ₹{totalPrice.toFixed(0)}
+                            </span>
+                            {showingWholesale && (
+                              <Badge className="bg-orange-100 text-orange-700 text-xs">WP</Badge>
+                            )}
+                          </div>
                         </div>
                       )}
                       
