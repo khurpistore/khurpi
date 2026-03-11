@@ -318,6 +318,7 @@ const AdminProducts = () => {
   const [editedProducts, setEditedProducts] = useState({});
   const [saving, setSaving] = useState({});
   const [costData, setCostData] = useState({});
+  const [monthlyTrays, setMonthlyTrays] = useState(100);
   const navigate = useNavigate();
   const { loading: authLoading } = useAuth();
 
@@ -325,7 +326,7 @@ const AdminProducts = () => {
     // Wait for auth to be resolved before fetching
     if (authLoading) return;
     fetchProducts();
-    fetchCostData();
+    fetchCostSettings();
   }, [authLoading]);
 
   const fetchProducts = async () => {
@@ -340,9 +341,24 @@ const AdminProducts = () => {
     }
   };
 
-  const fetchCostData = async () => {
+  const fetchCostSettings = async () => {
     try {
-      const response = await axios.get(`${API}/admin/cost-calculator/calculate?monthly_production_trays=100`);
+      // First get the saved monthly trays setting
+      const settingsRes = await axios.get(`${API}/admin/cost-calculator/settings`);
+      const trays = settingsRes.data?.monthly_production_trays || 100;
+      setMonthlyTrays(trays);
+      
+      // Then fetch cost data using the saved setting
+      fetchCostData(trays);
+    } catch (error) {
+      console.log('Cost settings not available, using default');
+      fetchCostData(100);
+    }
+  };
+
+  const fetchCostData = async (trays) => {
+    try {
+      const response = await axios.get(`${API}/admin/cost-calculator/calculate?monthly_production_trays=${trays}`);
       // Create a map of product_id -> cost data
       const costMap = {};
       if (response.data?.product_costs) {
@@ -511,7 +527,10 @@ const AdminProducts = () => {
               {/* Header */}
               <div className="grid grid-cols-12 gap-1 p-2 bg-gray-100 text-xs font-medium text-gray-600 border-b">
                 <div className="col-span-2">Product</div>
-                <div className="col-span-1 text-center text-purple-600">Cost/50g</div>
+                <div className="col-span-1 text-center text-purple-600" title={`Based on ${monthlyTrays} trays/month`}>
+                  Cost/50g
+                  <span className="block text-[10px] text-purple-400 font-normal">({monthlyTrays} trays)</span>
+                </div>
                 <div className="col-span-1 text-center text-blue-600">Sell/50g</div>
                 <div className="col-span-1 text-center">Profit</div>
                 <div className="col-span-1 text-center">Growth</div>
