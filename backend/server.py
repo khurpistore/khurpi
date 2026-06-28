@@ -2450,7 +2450,11 @@ async def get_payment_config():
 @api_router.get("/products", response_model=List[Product])
 async def get_products(active_only: bool = True):
     query = {"active": True} if active_only else {}
-    products = await db.products.find(query, {"_id": 0}).to_list(100)
+    products = await db.products.find(query, {"_id": 0}).to_list(200)
+    
+    # Build category lookup for resolving names
+    categories = await db.categories.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+    category_map = {c["id"]: c["name"] for c in categories}
     
     # Auto-sync: Update stock_status to out_of_stock for products with weight=0
     for product in products:
@@ -2461,6 +2465,10 @@ async def get_products(active_only: bool = True):
             )
             product["stock_status"] = "out_of_stock"
             product["weight"] = 0
+        
+        # Resolve category name
+        if product.get("category_id"):
+            product["category_name"] = category_map.get(product["category_id"])
     
     return products
 
@@ -6661,7 +6669,16 @@ async def get_products_by_category(category_id: str, active_only: bool = True):
     if active_only:
         query["active"] = True
     
+    # Get category name
+    category = await db.categories.find_one({"id": category_id}, {"_id": 0, "name": 1})
+    category_name = category["name"] if category else None
+    
     products = await db.products.find(query, {"_id": 0}).sort("display_order", 1).to_list(200)
+    
+    # Add category name to each product
+    for product in products:
+        product["category_name"] = category_name
+    
     return products
 
 @api_router.get("/products/featured")
