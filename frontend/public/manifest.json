@@ -1,0 +1,54 @@
+{
+  "short_name": "Khurpi",
+  "name": "Khurpi - Fresh Microgreens Delivery",
+  "description": "Fresh microgreens delivered to your doorstep. Subscribe for premium microgreens with FREE delivery!",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "khurpi-logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "khurpi-logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#16a34a",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["food", "shopping", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Shop Products",
+      "short_name": "Products",
+      "description": "Browse our microgreens",
+      "url": "/products",
+      "icons": [{ "src": "khurpi-logo.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "description": "View your orders",
+      "url": "/my-orders",
+      "icons": [{ "src": "khurpi-logo.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "Subscriptions",
+      "short_name": "Subscribe",
+      "description": "Manage subscriptions",
+      "url": "/subscribe",
+      "icons": [{ "src": "khurpi-logo.png", "sizes": "512x512" }]
+    }
+  ]
+}

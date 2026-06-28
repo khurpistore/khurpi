@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/context/AuthContext';
@@ -7,6 +7,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import { registerServiceWorker } from '@/utils/serviceWorker';
 import '@/App.css';
 
 import Landing from '@/pages/Landing';
@@ -71,6 +73,11 @@ const AppLayout = ({ children }) => {
 };
 
 function App() {
+  // Register service worker for PWA
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
   return (
     <AuthProvider>
       <CartProvider>
@@ -130,6 +137,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AppLayout>
+          <PWAInstallPrompt />
           <Toaster position="top-center" />
         </BrowserRouter>
       </CartProvider>

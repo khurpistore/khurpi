@@ -2,9 +2,21 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="theme-color" content="#16a34a" />
         <meta name="description" content="Khurpi - Fresh Microgreens Delivered to Your Doorstep. Subscribe for premium microgreens with FREE delivery and up to 50% off!" />
+        
+        <!-- PWA Meta Tags -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="Khurpi">
+        <meta name="application-name" content="Khurpi">
+        <meta name="msapplication-TileColor" content="#16a34a">
+        <meta name="msapplication-tap-highlight" content="no">
+        
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
         
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website" />
@@ -22,7 +34,14 @@
         
         <!-- Favicon -->
         <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.ico" />
-        <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon.ico" />
+        <link rel="apple-touch-icon" href="%PUBLIC_URL%/khurpi-logo.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/khurpi-logo.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/khurpi-logo.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="%PUBLIC_URL%/khurpi-logo.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="%PUBLIC_URL%/khurpi-logo.png" />
+        
+        <!-- Splash screens for iOS -->
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         
         <!--
         manifest.json provides metadata used when your web app is installed on a

@@ -415,3 +415,14 @@ January 29, 2025
   - Coupon input section hidden for wholesale users at checkout
   - Discount banners and tier hints hidden for wholesale users
   - Added "Wholesale prices applied (offers not applicable)" notice at checkout
+
+
+- **Jun 28, 2026:** Converted to Progressive Web App (PWA)
+  - Added manifest.json with app metadata, icons, and shortcuts
+  - Created service-worker.js for offline support and caching
+  - Added offline.html fallback page for no-connectivity scenarios
+  - Created PWAInstallPrompt component for install prompts (iOS + Android)
+  - Updated index.html with PWA meta tags (apple-mobile-web-app-capable, etc.)
+  - Service worker auto-registered on app load
+  - Features: Install to home screen, offline access, push notifications ready
+  - Updated logo to new Khurpi™ trademark version
