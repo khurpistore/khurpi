@@ -426,3 +426,22 @@ January 29, 2025
   - Service worker auto-registered on app load
   - Features: Install to home screen, offline access, push notifications ready
   - Updated logo to new Khurpi™ trademark version
+
+
+- **Jun 28, 2026:** Admin-Driven Store Configuration System (Phase 1 - Backend & Admin UI)
+  - **New Backend APIs:**
+    - Store Settings: GET/PUT `/api/store/settings` - Configure store name, tagline, delivery options, fees, hours, theme
+    - Categories: Full CRUD `/api/categories`, `/api/admin/categories` - Manage product categories with subcategories
+    - Delivery Slots: Full CRUD `/api/delivery-slots`, `/api/admin/delivery-slots` - Configurable time slots with capacity limits
+    - Blocked Dates: `/api/admin/blocked-dates` - Block delivery dates for holidays
+    - Product Units: `/api/product-units` - Configurable units (kg, g, piece, dozen, bunch)
+    - Products by Category: `/api/products/by-category/{id}`, `/api/products/featured`
+  - **New Admin Pages:**
+    - `/admin/store-settings` - Store configuration with tabs (General, Delivery, Hours, Theme)
+    - `/admin/categories` - Category management with drag-and-drop ordering
+    - `/admin/delivery-slots` - Delivery slot and blocked date management
+  - **Updated Product Model:**
+    - Added: category_id, unit, unit_value, price_per, min_quantity, step_quantity
+    - Added: stock_quantity, low_stock_threshold, harvest_date, shelf_life_days
+    - Added: featured, display_order, updated_at
+  - **Database Collections:** store_settings, categories, delivery_slots, blocked_dates, product_units

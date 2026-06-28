@@ -262,17 +262,37 @@ class Product(BaseModel):
     benefit: str
     nutrients: Optional[str] = None
     price: float
-    wholesale_price: Optional[float] = 0  # Wholesale price per 100g
-    growth_days: int
+    wholesale_price: Optional[float] = 0  # Wholesale price per unit
+    # Category
+    category_id: Optional[str] = None
+    category_name: Optional[str] = None
+    # Unit configuration
+    unit: str = "kg"  # kg, g, piece, dozen
+    unit_value: float = 1  # e.g., 1 for 1kg, 500 for 500g
+    price_per: str = "kg"  # Price is per kg/piece/etc.
+    min_quantity: float = 0.25  # Minimum order quantity (e.g., 250g = 0.25kg)
+    step_quantity: float = 0.25  # Increment step
+    # Stock
+    stock_quantity: float = 0  # Available stock in base unit
+    low_stock_threshold: float = 5  # Alert when below this
+    # Legacy fields (kept for compatibility)
+    growth_days: int = 0
     weight: int = 100  # Weight in grams - represents available stock quantity
-    pack_size: str = "100g"  # Display string
+    pack_size: str = "1 kg"  # Display string
     active: bool = True
     # Stock availability status
-    stock_status: str = "in_stock"  # in_stock, growing, out_of_stock
+    stock_status: str = "in_stock"  # in_stock, growing, out_of_stock, low_stock
     ready_in_days: Optional[int] = None  # For "growing" status - days until ready
     availability_date: Optional[str] = None  # ISO date string when product will be available
     seeds_available: bool = True  # Whether seeds are available for growing
+    # Freshness
+    harvest_date: Optional[str] = None  # When was it harvested
+    shelf_life_days: int = 7  # How long it stays fresh
+    # Display
+    featured: bool = False  # Show in featured section
+    display_order: int = 0
     created_at: str
+    updated_at: Optional[str] = None
 
 class ProductCreate(BaseModel):
     name: str
@@ -280,15 +300,33 @@ class ProductCreate(BaseModel):
     benefit: str
     nutrients: Optional[str] = None
     price: float
-    wholesale_price: Optional[float] = 0  # Wholesale price per 100g
-    growth_days: int
-    weight: int = 100  # Weight in grams - represents available stock quantity
-    pack_size: str = "100g"  # Display string
+    wholesale_price: Optional[float] = 0
+    # Category
+    category_id: Optional[str] = None
+    # Unit configuration
+    unit: str = "kg"
+    unit_value: float = 1
+    price_per: str = "kg"
+    min_quantity: float = 0.25
+    step_quantity: float = 0.25
+    # Stock
+    stock_quantity: float = 0
+    low_stock_threshold: float = 5
+    # Legacy fields
+    growth_days: int = 0
+    weight: int = 100
+    pack_size: str = "1 kg"
     active: bool = True
     stock_status: str = "in_stock"
     ready_in_days: Optional[int] = None
     availability_date: Optional[str] = None
     seeds_available: bool = True
+    # Freshness
+    harvest_date: Optional[str] = None
+    shelf_life_days: int = 7
+    # Display
+    featured: bool = False
+    display_order: int = 0
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -296,15 +334,33 @@ class ProductUpdate(BaseModel):
     benefit: Optional[str] = None
     nutrients: Optional[str] = None
     price: Optional[float] = None
-    wholesale_price: Optional[float] = None  # Wholesale price per 100g
+    wholesale_price: Optional[float] = None
+    # Category
+    category_id: Optional[str] = None
+    # Unit configuration
+    unit: Optional[str] = None
+    unit_value: Optional[float] = None
+    price_per: Optional[str] = None
+    min_quantity: Optional[float] = None
+    step_quantity: Optional[float] = None
+    # Stock
+    stock_quantity: Optional[float] = None
+    low_stock_threshold: Optional[float] = None
+    # Legacy fields
     growth_days: Optional[int] = None
-    weight: Optional[int] = None  # Weight in grams - represents available stock quantity
-    pack_size: Optional[str] = None  # Display string
+    weight: Optional[int] = None
+    pack_size: Optional[str] = None
     active: Optional[bool] = None
     stock_status: Optional[str] = None
     ready_in_days: Optional[int] = None
     availability_date: Optional[str] = None
     seeds_available: Optional[bool] = None
+    # Freshness
+    harvest_date: Optional[str] = None
+    shelf_life_days: Optional[int] = None
+    # Display
+    featured: Optional[bool] = None
+    display_order: Optional[int] = None
 
 class SubscriptionItem(BaseModel):
     product_id: str
@@ -646,6 +702,206 @@ class DiscountTierCreate(BaseModel):
     min_order_value: float
     discount_percent: float
     active: bool = True
+
+# ==========================================
+# STORE CONFIGURATION MODELS
+# ==========================================
+
+class StoreSettings(BaseModel):
+    """Store-wide settings configurable by admin"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = "store_settings"
+    store_name: str = "Khurpi"
+    tagline: str = "Fresh from Farm to Your Table"
+    description: str = "Fresh vegetables, fruits and groceries delivered to your doorstep"
+    logo_url: Optional[str] = None
+    phone: str = ""
+    email: str = ""
+    address: str = ""
+    # Delivery Configuration
+    instant_delivery_enabled: bool = True
+    instant_delivery_fee: float = 30
+    instant_delivery_time_minutes: int = 60
+    slotted_delivery_enabled: bool = True
+    subscription_enabled: bool = True
+    # Minimum order values
+    min_order_value: float = 0
+    min_order_for_free_delivery: float = 500
+    default_delivery_fee: float = 30
+    # Operating hours
+    opening_time: str = "07:00"
+    closing_time: str = "21:00"
+    # Product display
+    default_unit: str = "kg"  # kg, g, piece, dozen
+    show_stock_quantity: bool = True
+    # Theme colors (for dynamic UI)
+    primary_color: str = "#16a34a"
+    secondary_color: str = "#22c55e"
+    updated_at: Optional[str] = None
+
+class StoreSettingsUpdate(BaseModel):
+    store_name: Optional[str] = None
+    tagline: Optional[str] = None
+    description: Optional[str] = None
+    logo_url: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    instant_delivery_enabled: Optional[bool] = None
+    instant_delivery_fee: Optional[float] = None
+    instant_delivery_time_minutes: Optional[int] = None
+    slotted_delivery_enabled: Optional[bool] = None
+    subscription_enabled: Optional[bool] = None
+    min_order_value: Optional[float] = None
+    min_order_for_free_delivery: Optional[float] = None
+    default_delivery_fee: Optional[float] = None
+    opening_time: Optional[str] = None
+    closing_time: Optional[str] = None
+    default_unit: Optional[str] = None
+    show_stock_quantity: Optional[bool] = None
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+
+# ==========================================
+# CATEGORY MODELS
+# ==========================================
+
+class Category(BaseModel):
+    """Product category for organizing products"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    slug: str  # URL-friendly name
+    description: Optional[str] = None
+    image: Optional[str] = None
+    icon: Optional[str] = None  # Icon name (e.g., "carrot", "apple")
+    parent_id: Optional[str] = None  # For subcategories
+    display_order: int = 0
+    active: bool = True
+    show_on_home: bool = False  # Show on homepage
+    created_at: str
+    updated_at: Optional[str] = None
+
+class CategoryCreate(BaseModel):
+    name: str
+    slug: Optional[str] = None  # Auto-generated if not provided
+    description: Optional[str] = None
+    image: Optional[str] = None
+    icon: Optional[str] = None
+    parent_id: Optional[str] = None
+    display_order: int = 0
+    active: bool = True
+    show_on_home: bool = False
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    image: Optional[str] = None
+    icon: Optional[str] = None
+    parent_id: Optional[str] = None
+    display_order: Optional[int] = None
+    active: Optional[bool] = None
+    show_on_home: Optional[bool] = None
+
+# ==========================================
+# DELIVERY SLOT MODELS
+# ==========================================
+
+class DeliverySlot(BaseModel):
+    """Configurable delivery time slots"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str  # e.g., "Morning", "Afternoon", "Evening"
+    start_time: str  # e.g., "07:00"
+    end_time: str  # e.g., "10:00"
+    display_text: str  # e.g., "7:00 AM - 10:00 AM"
+    max_orders: int = 50  # Maximum orders per slot
+    delivery_fee: float = 0  # Additional fee for this slot (0 = no extra)
+    active: bool = True
+    display_order: int = 0
+    # Days when this slot is available (empty = all days)
+    available_days: List[str] = []  # ["Monday", "Tuesday", ...] or empty for all
+    # Cutoff time - how many hours before slot start to stop accepting orders
+    cutoff_hours: int = 2
+    created_at: str
+    updated_at: Optional[str] = None
+
+class DeliverySlotCreate(BaseModel):
+    name: str
+    start_time: str
+    end_time: str
+    display_text: Optional[str] = None
+    max_orders: int = 50
+    delivery_fee: float = 0
+    active: bool = True
+    display_order: int = 0
+    available_days: List[str] = []
+    cutoff_hours: int = 2
+
+class DeliverySlotUpdate(BaseModel):
+    name: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    display_text: Optional[str] = None
+    max_orders: Optional[int] = None
+    delivery_fee: Optional[float] = None
+    active: Optional[bool] = None
+    display_order: Optional[int] = None
+    available_days: Optional[List[str]] = None
+    cutoff_hours: Optional[int] = None
+
+class SlotAvailability(BaseModel):
+    """Check slot availability for a specific date"""
+    slot_id: str
+    date: str  # ISO date string
+    available: bool
+    orders_count: int
+    max_orders: int
+    remaining_capacity: int
+
+# ==========================================
+# PRODUCT UNIT MODELS
+# ==========================================
+
+class ProductUnit(BaseModel):
+    """Configurable product units (kg, g, piece, etc.)"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str  # e.g., "Kilogram", "Gram", "Piece"
+    short_name: str  # e.g., "kg", "g", "pc"
+    conversion_to_grams: float  # e.g., 1000 for kg, 1 for g, 0 for piece
+    is_weight_based: bool = True  # False for piece, dozen, etc.
+    active: bool = True
+    display_order: int = 0
+
+class ProductUnitCreate(BaseModel):
+    name: str
+    short_name: str
+    conversion_to_grams: float = 1
+    is_weight_based: bool = True
+    active: bool = True
+    display_order: int = 0
+
+# ==========================================
+# BLOCKED DATES MODEL (for holidays, etc.)
+# ==========================================
+
+class BlockedDate(BaseModel):
+    """Dates when delivery is not available"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    date: str  # ISO date string
+    reason: str  # e.g., "Diwali Holiday", "Maintenance"
+    block_all_slots: bool = True  # If false, can specify which slots to block
+    blocked_slot_ids: List[str] = []  # Specific slots to block (if block_all_slots is False)
+    created_at: str
+
+class BlockedDateCreate(BaseModel):
+    date: str
+    reason: str
+    block_all_slots: bool = True
+    blocked_slot_ids: List[str] = []
 
 @api_router.post("/analytics/track")
 async def track_analytics_event(event: AnalyticsEvent):
@@ -6059,6 +6315,363 @@ async def calculate_product_costs(monthly_production_trays: int = 100):
             "unprofitable_products": sum(1 for p in product_costs if not p["profitability"]["profitable"])
         }
     }
+
+# ==========================================
+# STORE SETTINGS ENDPOINTS
+# ==========================================
+
+@api_router.get("/store/settings")
+async def get_store_settings():
+    """Get store settings (public endpoint)"""
+    settings = await db.store_settings.find_one({"id": "store_settings"}, {"_id": 0})
+    if not settings:
+        # Return defaults
+        return StoreSettings().model_dump()
+    return settings
+
+@api_router.get("/admin/store/settings")
+async def get_admin_store_settings():
+    """Get store settings (admin)"""
+    settings = await db.store_settings.find_one({"id": "store_settings"}, {"_id": 0})
+    if not settings:
+        return StoreSettings().model_dump()
+    return settings
+
+@api_router.put("/admin/store/settings")
+async def update_store_settings(settings_update: StoreSettingsUpdate):
+    """Update store settings"""
+    update_data = {k: v for k, v in settings_update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.store_settings.update_one(
+        {"id": "store_settings"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    settings = await db.store_settings.find_one({"id": "store_settings"}, {"_id": 0})
+    return settings
+
+# ==========================================
+# CATEGORY ENDPOINTS
+# ==========================================
+
+@api_router.get("/categories")
+async def get_categories(active_only: bool = True, include_subcategories: bool = True):
+    """Get all categories (public)"""
+    query = {"active": True} if active_only else {}
+    categories = await db.categories.find(query, {"_id": 0}).sort("display_order", 1).to_list(100)
+    
+    if include_subcategories:
+        # Organize into parent-child structure
+        parents = [c for c in categories if not c.get("parent_id")]
+        for parent in parents:
+            parent["subcategories"] = [c for c in categories if c.get("parent_id") == parent["id"]]
+        return parents
+    
+    return categories
+
+@api_router.get("/categories/{category_id}")
+async def get_category(category_id: str):
+    """Get a single category"""
+    category = await db.categories.find_one({"id": category_id}, {"_id": 0})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category
+
+@api_router.get("/admin/categories")
+async def get_admin_categories():
+    """Get all categories (admin - includes inactive)"""
+    categories = await db.categories.find({}, {"_id": 0}).sort("display_order", 1).to_list(100)
+    return categories
+
+@api_router.post("/admin/categories")
+async def create_category(category: CategoryCreate):
+    """Create a new category"""
+    # Generate slug if not provided
+    slug = category.slug or category.name.lower().replace(" ", "-").replace("&", "and")
+    
+    # Check for duplicate slug
+    existing = await db.categories.find_one({"slug": slug})
+    if existing:
+        slug = f"{slug}-{str(uuid.uuid4())[:8]}"
+    
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": category.name,
+        "slug": slug,
+        "description": category.description,
+        "image": category.image,
+        "icon": category.icon,
+        "parent_id": category.parent_id,
+        "display_order": category.display_order,
+        "active": category.active,
+        "show_on_home": category.show_on_home,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.categories.insert_one(doc)
+    return {k: v for k, v in doc.items() if k != "_id"}
+
+@api_router.put("/admin/categories/{category_id}")
+async def update_category(category_id: str, category_update: CategoryUpdate):
+    """Update a category"""
+    update_data = {k: v for k, v in category_update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.categories.update_one({"id": category_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    category = await db.categories.find_one({"id": category_id}, {"_id": 0})
+    return category
+
+@api_router.delete("/admin/categories/{category_id}")
+async def delete_category(category_id: str):
+    """Delete a category"""
+    # Check if category has products
+    products_count = await db.products.count_documents({"category_id": category_id})
+    if products_count > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete category with {products_count} products. Reassign products first.")
+    
+    # Check if category has subcategories
+    subcategories_count = await db.categories.count_documents({"parent_id": category_id})
+    if subcategories_count > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete category with {subcategories_count} subcategories. Delete subcategories first.")
+    
+    result = await db.categories.delete_one({"id": category_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"success": True}
+
+# ==========================================
+# DELIVERY SLOT ENDPOINTS
+# ==========================================
+
+@api_router.get("/delivery-slots")
+async def get_delivery_slots(date: Optional[str] = None):
+    """Get available delivery slots (public)"""
+    slots = await db.delivery_slots.find({"active": True}, {"_id": 0}).sort("display_order", 1).to_list(50)
+    
+    if date:
+        # Check availability for specific date
+        from datetime import datetime as dt
+        target_date = dt.fromisoformat(date.replace('Z', '+00:00'))
+        day_name = target_date.strftime("%A")
+        
+        # Check if date is blocked
+        blocked = await db.blocked_dates.find_one({"date": date})
+        
+        available_slots = []
+        for slot in slots:
+            # Check if slot is available on this day
+            if slot.get("available_days") and day_name not in slot["available_days"]:
+                continue
+            
+            # Check if date is blocked
+            if blocked:
+                if blocked.get("block_all_slots"):
+                    continue
+                if slot["id"] in blocked.get("blocked_slot_ids", []):
+                    continue
+            
+            # Count existing orders for this slot on this date
+            orders_count = await db.orders.count_documents({
+                "delivery_slot_id": slot["id"],
+                "delivery_date": date
+            })
+            
+            slot_info = {
+                **slot,
+                "available": orders_count < slot["max_orders"],
+                "orders_count": orders_count,
+                "remaining_capacity": max(0, slot["max_orders"] - orders_count)
+            }
+            available_slots.append(slot_info)
+        
+        return available_slots
+    
+    return slots
+
+@api_router.get("/admin/delivery-slots")
+async def get_admin_delivery_slots():
+    """Get all delivery slots (admin - includes inactive)"""
+    slots = await db.delivery_slots.find({}, {"_id": 0}).sort("display_order", 1).to_list(50)
+    return slots
+
+@api_router.post("/admin/delivery-slots")
+async def create_delivery_slot(slot: DeliverySlotCreate):
+    """Create a new delivery slot"""
+    display_text = slot.display_text or f"{slot.start_time} - {slot.end_time}"
+    
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": slot.name,
+        "start_time": slot.start_time,
+        "end_time": slot.end_time,
+        "display_text": display_text,
+        "max_orders": slot.max_orders,
+        "delivery_fee": slot.delivery_fee,
+        "active": slot.active,
+        "display_order": slot.display_order,
+        "available_days": slot.available_days,
+        "cutoff_hours": slot.cutoff_hours,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.delivery_slots.insert_one(doc)
+    return {k: v for k, v in doc.items() if k != "_id"}
+
+@api_router.put("/admin/delivery-slots/{slot_id}")
+async def update_delivery_slot(slot_id: str, slot_update: DeliverySlotUpdate):
+    """Update a delivery slot"""
+    update_data = {k: v for k, v in slot_update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    # Update display_text if times changed
+    if "start_time" in update_data or "end_time" in update_data:
+        slot = await db.delivery_slots.find_one({"id": slot_id})
+        if slot:
+            start = update_data.get("start_time", slot.get("start_time"))
+            end = update_data.get("end_time", slot.get("end_time"))
+            update_data["display_text"] = f"{start} - {end}"
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.delivery_slots.update_one({"id": slot_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Delivery slot not found")
+    
+    slot = await db.delivery_slots.find_one({"id": slot_id}, {"_id": 0})
+    return slot
+
+@api_router.delete("/admin/delivery-slots/{slot_id}")
+async def delete_delivery_slot(slot_id: str):
+    """Delete a delivery slot"""
+    result = await db.delivery_slots.delete_one({"id": slot_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Delivery slot not found")
+    return {"success": True}
+
+# ==========================================
+# BLOCKED DATES ENDPOINTS
+# ==========================================
+
+@api_router.get("/admin/blocked-dates")
+async def get_blocked_dates():
+    """Get all blocked dates"""
+    dates = await db.blocked_dates.find({}, {"_id": 0}).sort("date", 1).to_list(100)
+    return dates
+
+@api_router.post("/admin/blocked-dates")
+async def create_blocked_date(blocked_date: BlockedDateCreate):
+    """Block a date for delivery"""
+    # Check if date is already blocked
+    existing = await db.blocked_dates.find_one({"date": blocked_date.date})
+    if existing:
+        raise HTTPException(status_code=400, detail="This date is already blocked")
+    
+    doc = {
+        "id": str(uuid.uuid4()),
+        "date": blocked_date.date,
+        "reason": blocked_date.reason,
+        "block_all_slots": blocked_date.block_all_slots,
+        "blocked_slot_ids": blocked_date.blocked_slot_ids,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.blocked_dates.insert_one(doc)
+    return {k: v for k, v in doc.items() if k != "_id"}
+
+@api_router.delete("/admin/blocked-dates/{blocked_date_id}")
+async def delete_blocked_date(blocked_date_id: str):
+    """Unblock a date"""
+    result = await db.blocked_dates.delete_one({"id": blocked_date_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Blocked date not found")
+    return {"success": True}
+
+# ==========================================
+# PRODUCT UNIT ENDPOINTS
+# ==========================================
+
+@api_router.get("/product-units")
+async def get_product_units():
+    """Get all product units (public)"""
+    units = await db.product_units.find({"active": True}, {"_id": 0}).sort("display_order", 1).to_list(20)
+    
+    # Return defaults if none exist
+    if not units:
+        return [
+            {"id": "kg", "name": "Kilogram", "short_name": "kg", "conversion_to_grams": 1000, "is_weight_based": True},
+            {"id": "g", "name": "Gram", "short_name": "g", "conversion_to_grams": 1, "is_weight_based": True},
+            {"id": "piece", "name": "Piece", "short_name": "pc", "conversion_to_grams": 0, "is_weight_based": False},
+            {"id": "dozen", "name": "Dozen", "short_name": "dz", "conversion_to_grams": 0, "is_weight_based": False},
+            {"id": "bunch", "name": "Bunch", "short_name": "bunch", "conversion_to_grams": 0, "is_weight_based": False}
+        ]
+    
+    return units
+
+@api_router.get("/admin/product-units")
+async def get_admin_product_units():
+    """Get all product units (admin)"""
+    units = await db.product_units.find({}, {"_id": 0}).sort("display_order", 1).to_list(20)
+    return units
+
+@api_router.post("/admin/product-units")
+async def create_product_unit(unit: ProductUnitCreate):
+    """Create a new product unit"""
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": unit.name,
+        "short_name": unit.short_name,
+        "conversion_to_grams": unit.conversion_to_grams,
+        "is_weight_based": unit.is_weight_based,
+        "active": unit.active,
+        "display_order": unit.display_order
+    }
+    
+    await db.product_units.insert_one(doc)
+    return {k: v for k, v in doc.items() if k != "_id"}
+
+@api_router.delete("/admin/product-units/{unit_id}")
+async def delete_product_unit(unit_id: str):
+    """Delete a product unit"""
+    result = await db.product_units.delete_one({"id": unit_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Product unit not found")
+    return {"success": True}
+
+# ==========================================
+# PRODUCTS BY CATEGORY ENDPOINT
+# ==========================================
+
+@api_router.get("/products/by-category/{category_id}")
+async def get_products_by_category(category_id: str, active_only: bool = True):
+    """Get all products in a category"""
+    query = {"category_id": category_id}
+    if active_only:
+        query["active"] = True
+    
+    products = await db.products.find(query, {"_id": 0}).sort("display_order", 1).to_list(200)
+    return products
+
+@api_router.get("/products/featured")
+async def get_featured_products():
+    """Get featured products"""
+    products = await db.products.find(
+        {"active": True, "featured": True}, 
+        {"_id": 0}
+    ).sort("display_order", 1).to_list(20)
+    return products
 
 app.include_router(api_router)
 

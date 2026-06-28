@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -12,8 +12,10 @@ const menuItems = [
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
   { id: 'customer-view', label: 'Customer View', icon: UserSearch, path: '/admin/customer-view' },
   { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
+  { id: 'categories', label: 'Categories', icon: FolderTree, path: '/admin/categories' },
   { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
   { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
+  { id: 'delivery-slots', label: 'Delivery Slots', icon: Clock, path: '/admin/delivery-slots' },
   { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
   { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/admin/expenses' },
   { id: 'cost-calculator', label: 'Cost Calculator', icon: Calculator, path: '/admin/cost-calculator' },
@@ -23,6 +25,7 @@ const menuItems = [
   { id: 'referrals', label: 'Referral Program', icon: Gift, path: '/admin/referrals' },
   { id: 'pages', label: 'Page Content', icon: FileText, path: '/admin/pages' },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
+  { id: 'store-settings', label: 'Store Settings', icon: Store, path: '/admin/store-settings' },
   { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' }
 ];
 
