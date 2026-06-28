@@ -472,3 +472,23 @@ January 29, 2025
     - Header.js - Added search icon and expandable search form
     - Products.js - Complete redesign with categories, search, sorting
     - Checkout.js - Added delivery slot selection UI
+
+- **Jun 28, 2026:** Product Catalog Population - Veg & Fruit Shop Data
+  - **82 new products added across 6 categories:**
+    - Vegetables (16): Tomatoes, Cauliflower, Cabbage, Broccoli, Bell Peppers, Cucumber, Eggplant, Green Peas, Bitter Gourd, Okra, Pumpkin, Green Chillies, Corn, Mushrooms, Bean Sprouts
+    - Root Vegetables (15): Potatoes, Onions, Carrots, Beetroot, Radish, Ginger, Garlic, Sweet Potato, Turnip, Yam, Colocasia, Elephant Foot Yam, Raw Banana, Lotus Root, Tapioca
+    - Leafy Greens (16): Spinach, Coriander, Mint, Lettuce, Kale, Bok Choy, Celery, Fenugreek, Mustard Greens, Amaranth, Moringa, Curry Leaves, Spring Onions, Dill, Bathua, Parsley
+    - Fruits (19): Apples, Bananas, Oranges, Mangoes, Grapes, Watermelon, Papaya, Pomegranate, Guava, Pineapple, Lemons, Coconut, Pears, Plums, Peaches, Cherries, Amla, Custard Apple, Chickoo
+    - Exotic & Imported (16): Avocado, Dragon Fruit, Blueberries, Strawberries, Kiwi, Asparagus, Lychee, Passion Fruit, Red Cabbage, Baby Corn, Zucchini, Cherry Tomatoes, Yellow Bell Pepper, Enoki Mushrooms, Brussels Sprouts, Artichoke
+    - Microgreens (24): Existing products now properly categorized
+  - **Backend API improvements:**
+    - Updated /api/products to resolve category names
+    - Updated /api/products/by-category to include category name
+    - Increased product list limit from 100 to 200
+  - **All products include:**
+    - High-quality stock images from Pexels/Unsplash
+    - Price and wholesale price per kg
+    - Nutritional benefits and health information
+    - Stock status (in_stock, growing, out_of_stock)
+    - Shelf life days
+  - **Total catalog:** 106 products across 6 categories
