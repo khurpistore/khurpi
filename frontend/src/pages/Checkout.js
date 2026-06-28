@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useWholesale } from '@/hooks/useWholesale';
-import { MapPin, CreditCard, Plus, Loader2, AlertCircle, Truck, Tag, X, Repeat, Package, ChevronLeft, Clock, Sprout, BadgePercent } from 'lucide-react';
+import { MapPin, CreditCard, Plus, Loader2, AlertCircle, Truck, Tag, X, Repeat, Package, ChevronLeft, Clock, Sprout, BadgePercent, Zap, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -32,13 +32,87 @@ const Checkout = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [discountTiers, setDiscountTiers] = useState([]);
   const [orderDiscount, setOrderDiscount] = useState(null);
+  
+  // Delivery slot states
+  const [storeSettings, setStoreSettings] = useState(null);
+  const [deliverySlots, setDeliverySlots] = useState([]);
+  const [deliveryType, setDeliveryType] = useState('slotted'); // 'instant' or 'slotted'
+  const [selectedDate, setSelectedDate] = useState(format(addDays(new Date(), 1), 'yyyy-MM-dd'));
+  const [selectedSlotId, setSelectedSlotId] = useState(null);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   const hasItems = cartItems.length > 0 || pendingSubscription;
 
   // Refresh product data to get latest prices including wholesale_price
   useEffect(() => {
     refreshProductData();
+    fetchStoreSettings();
   }, [refreshProductData]);
+
+  // Fetch store settings
+  const fetchStoreSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/store/settings`);
+      setStoreSettings(response.data);
+      
+      // Set default delivery type based on settings
+      if (response.data.instant_delivery_enabled && !response.data.slotted_delivery_enabled) {
+        setDeliveryType('instant');
+      } else if (response.data.slotted_delivery_enabled) {
+        setDeliveryType('slotted');
+        fetchDeliverySlots(selectedDate);
+      }
+    } catch (error) {
+      console.log('Failed to load store settings');
+    }
+  };
+
+  // Fetch delivery slots for a date
+  const fetchDeliverySlots = async (date) => {
+    setSlotsLoading(true);
+    try {
+      const response = await axios.get(`${API}/delivery-slots?date=${date}`);
+      setDeliverySlots(response.data);
+      
+      // Auto-select first available slot
+      const availableSlot = response.data.find(s => s.available);
+      if (availableSlot) {
+        setSelectedSlotId(availableSlot.id);
+      }
+    } catch (error) {
+      console.log('Failed to load delivery slots');
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  // Fetch slots when date changes
+  useEffect(() => {
+    if (deliveryType === 'slotted' && selectedDate) {
+      fetchDeliverySlots(selectedDate);
+    }
+  }, [selectedDate, deliveryType]);
+
+  // Calculate delivery fee
+  const getDeliveryFee = () => {
+    const subtotal = getWholesaleCartTotal() + getWholesaleSubscriptionTotal();
+    
+    // Free delivery above threshold
+    if (subtotal >= (storeSettings?.min_order_for_free_delivery || 500)) {
+      return 0;
+    }
+    
+    if (deliveryType === 'instant') {
+      return storeSettings?.instant_delivery_fee || 0;
+    }
+    
+    if (deliveryType === 'slotted' && selectedSlotId) {
+      const slot = deliverySlots.find(s => s.id === selectedSlotId);
+      return (slot?.delivery_fee || 0) + (storeSettings?.default_delivery_fee || 0);
+    }
+    
+    return storeSettings?.default_delivery_fee || 0;
+  };
 
   // Calculate cart total using wholesale prices if applicable
   const getWholesaleCartTotal = () => {
@@ -241,7 +315,11 @@ const Checkout = () => {
         one_time_items: oneTimeItems,
         subscription: subscriptionData,
         subtotal: grandTotal + orderDiscountAmount + couponDiscount, // Original total before discounts
-        delivery_fee: 0,
+        delivery_fee: getDeliveryFee(),
+        // Delivery slot info
+        delivery_type: deliveryType,
+        delivery_date: deliveryType === 'slotted' ? selectedDate : null,
+        delivery_slot_id: deliveryType === 'slotted' ? selectedSlotId : null,
         // Automatic order-value based discount
         discount_type: orderDiscount ? 'bulk_discount' : null,
         discount_percent: orderDiscount?.tier?.discount_percent || 0,
@@ -250,7 +328,7 @@ const Checkout = () => {
         // Coupon discount
         coupon_code: appliedCoupon?.code || null,
         coupon_discount: couponDiscount,
-        total: grandTotal,
+        total: grandTotal + getDeliveryFee(),
         order_type: orderType,
         payment_id: paymentId,
         razorpay_order_id: razorpayOrderId,
@@ -366,7 +444,8 @@ const Checkout = () => {
   const subscriptionTotal = getWholesaleSubscriptionTotal();
   const couponDiscount = appliedCoupon?.discount_amount || 0;
   const orderDiscountAmount = orderDiscount?.discount_amount || 0;
-  const grandTotal = Math.max(0, cartSubtotal + subscriptionTotal - couponDiscount - orderDiscountAmount);
+  const deliveryFee = getDeliveryFee();
+  const grandTotal = Math.max(0, cartSubtotal + subscriptionTotal - couponDiscount - orderDiscountAmount + deliveryFee);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -434,6 +513,149 @@ const Checkout = () => {
 
             </CardContent>
           </Card>
+
+          {/* Delivery Time Selection */}
+          {(storeSettings?.instant_delivery_enabled || storeSettings?.slotted_delivery_enabled) && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold">Delivery Time</h3>
+                </div>
+
+                {/* Delivery Type Selection */}
+                <div className="flex gap-3 mb-4">
+                  {storeSettings?.instant_delivery_enabled && (
+                    <button
+                      onClick={() => setDeliveryType('instant')}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        deliveryType === 'instant' 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Zap className={`w-5 h-5 ${deliveryType === 'instant' ? 'text-primary' : 'text-gray-400'}`} />
+                        <div className="text-left">
+                          <p className="font-medium text-sm">Instant Delivery</p>
+                          <p className="text-xs text-muted-foreground">
+                            Within {storeSettings?.instant_delivery_time_minutes || 60} mins
+                            {storeSettings?.instant_delivery_fee > 0 && ` • +₹${storeSettings.instant_delivery_fee}`}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                  
+                  {storeSettings?.slotted_delivery_enabled && (
+                    <button
+                      onClick={() => setDeliveryType('slotted')}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        deliveryType === 'slotted' 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Calendar className={`w-5 h-5 ${deliveryType === 'slotted' ? 'text-primary' : 'text-gray-400'}`} />
+                        <div className="text-left">
+                          <p className="font-medium text-sm">Scheduled Delivery</p>
+                          <p className="text-xs text-muted-foreground">Choose date & time slot</p>
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {/* Slotted Delivery Options */}
+                {deliveryType === 'slotted' && (
+                  <div className="space-y-3">
+                    {/* Date Selection */}
+                    <div>
+                      <Label className="text-sm mb-2 block">Select Date</Label>
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {[0, 1, 2, 3, 4, 5, 6].map(dayOffset => {
+                          const date = addDays(new Date(), dayOffset);
+                          const dateStr = format(date, 'yyyy-MM-dd');
+                          const isSelected = selectedDate === dateStr;
+                          const isToday = dayOffset === 0;
+                          
+                          return (
+                            <button
+                              key={dayOffset}
+                              onClick={() => setSelectedDate(dateStr)}
+                              className={`flex-shrink-0 p-2 rounded-lg border-2 text-center min-w-[70px] transition-all ${
+                                isSelected 
+                                  ? 'border-primary bg-primary/5' 
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <p className="text-xs text-muted-foreground">{format(date, 'EEE')}</p>
+                              <p className="font-semibold">{format(date, 'd')}</p>
+                              <p className="text-xs text-muted-foreground">{format(date, 'MMM')}</p>
+                              {isToday && <p className="text-xs text-primary font-medium">Today</p>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Time Slot Selection */}
+                    <div>
+                      <Label className="text-sm mb-2 block">Select Time Slot</Label>
+                      {slotsLoading ? (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                        </div>
+                      ) : deliverySlots.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No delivery slots available for this date
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {deliverySlots.map(slot => (
+                            <button
+                              key={slot.id}
+                              onClick={() => slot.available && setSelectedSlotId(slot.id)}
+                              disabled={!slot.available}
+                              className={`p-3 rounded-lg border-2 text-left transition-all ${
+                                !slot.available 
+                                  ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
+                                  : selectedSlotId === slot.id
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <p className="font-medium text-sm">{slot.name}</p>
+                              <p className="text-xs text-muted-foreground">{slot.display_text}</p>
+                              {slot.delivery_fee > 0 && (
+                                <p className="text-xs text-primary mt-1">+₹{slot.delivery_fee}</p>
+                              )}
+                              {!slot.available && (
+                                <p className="text-xs text-red-500 mt-1">Full</p>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Instant Delivery Info */}
+                {deliveryType === 'instant' && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-600" />
+                      <span className="text-sm font-medium text-amber-800">
+                        Your order will be delivered within {storeSettings?.instant_delivery_time_minutes || 60} minutes
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Order Items - Compact */}
           <Card>
@@ -608,8 +830,16 @@ const Checkout = () => {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span className="text-green-600 font-medium">FREE</span>
+                  <span className="text-muted-foreground">
+                    Delivery
+                    {deliveryType === 'instant' && ' (Instant)'}
+                    {deliveryType === 'slotted' && selectedSlotId && ` (${deliverySlots.find(s => s.id === selectedSlotId)?.name || 'Scheduled'})`}
+                  </span>
+                  {deliveryFee > 0 ? (
+                    <span>₹{deliveryFee.toFixed(0)}</span>
+                  ) : (
+                    <span className="text-green-600 font-medium">FREE</span>
+                  )}
                 </div>
                 {orderDiscount && (
                   <div className="flex justify-between text-green-600">

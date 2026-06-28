@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +27,8 @@ import {
   CalendarCheck,
   Gift,
   Truck,
-  Percent
+  Percent,
+  Search
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -39,6 +41,8 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [maxDiscount, setMaxDiscount] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -46,6 +50,15 @@ const Header = () => {
 
   const cartCount = getCartCount();
   const unreadCount = notifications.filter(n => n.unread).length;
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setShowSearch(false);
+    }
+  };
 
   // Generate notifications based on user state
   useEffect(() => {
@@ -174,6 +187,35 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2 lg:gap-4">
+            {/* Search */}
+            {showSearch ? (
+              <form onSubmit={handleSearch} className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-48 h-9"
+                  autoFocus
+                />
+                <Button type="submit" size="sm" className="h-9">
+                  <Search className="w-4 h-4" />
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowSearch(false)} className="h-9 px-2">
+                  <X className="w-4 h-4" />
+                </Button>
+              </form>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSearch(true)}
+                className="rounded-full"
+              >
+                <Search className="w-5 h-5" />
+              </Button>
+            )}
+            
             <Button
               variant="ghost"
               onClick={() => navigate('/products')}

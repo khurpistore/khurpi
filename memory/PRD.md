@@ -445,3 +445,30 @@ January 29, 2025
     - Added: stock_quantity, low_stock_threshold, harvest_date, shelf_life_days
     - Added: featured, display_order, updated_at
   - **Database Collections:** store_settings, categories, delivery_slots, blocked_dates, product_units
+
+
+- **Jun 28, 2026:** Phase 2 - Customer-Facing Updates + Search
+  - **Products Page Complete Redesign:**
+    - Hero section with large search bar
+    - Category pills for quick filtering
+    - Product count display with clear filters option
+    - Sort by: Availability, Price (Low/High), Name
+    - Grid/List view toggle
+    - Stock status badges (In Stock, Growing with date, Out of Stock)
+    - Quantity selector with unit support (kg, g, piece, dozen, bunch)
+    - URL params support for category and search queries
+  - **Search Functionality:**
+    - Global search in header with expandable input
+    - Products page search bar in hero
+    - Search by name, benefits, nutrients
+    - URL-based search persistence (?search=query)
+  - **Checkout Delivery Slot Selection:**
+    - Delivery type toggle (Instant vs Scheduled)
+    - Date picker (next 7 days)
+    - Time slot selection with availability and pricing
+    - Delivery fee calculation based on slot and order value
+    - Store settings integration for delivery configuration
+  - **Updated Components:**
+    - Header.js - Added search icon and expandable search form
+    - Products.js - Complete redesign with categories, search, sorting
+    - Checkout.js - Added delivery slot selection UI
