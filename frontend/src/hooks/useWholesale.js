@@ -38,7 +38,7 @@ export const useWholesale = () => {
   /**
    * Get the display price for a product based on wholesale access
    * @param {Object} product - Product object with price and wholesale_price
-   * @returns {number} - The price to display (per 100gm)
+   * @returns {number} - The price to display (per unit - kg, piece, etc.)
    */
   const getDisplayPrice = useCallback((product) => {
     if (!product) return 0;
@@ -52,12 +52,12 @@ export const useWholesale = () => {
   /**
    * Calculate price for a given quantity
    * @param {Object} product - Product object
-   * @param {number} quantity - Quantity in grams
+   * @param {number} quantity - Quantity in product's unit (kg, piece, etc.)
    * @returns {number} - Total price for the quantity
    */
-  const calculatePrice = useCallback((product, quantity = 100) => {
-    const pricePerHundred = getDisplayPrice(product);
-    return (pricePerHundred / 100) * quantity;
+  const calculatePrice = useCallback((product, quantity = 1) => {
+    const pricePerUnit = getDisplayPrice(product);
+    return pricePerUnit * quantity;
   }, [getDisplayPrice]);
 
   /**

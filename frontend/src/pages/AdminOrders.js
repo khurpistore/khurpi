@@ -13,6 +13,22 @@ import { useNavigate } from 'react-router-dom';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Format quantity with appropriate unit label
+const formatQtyLabel = (qty, unit) => {
+  if (unit === 'piece') return `${qty} pc`;
+  if (unit === 'dozen') return `${qty} dz`;
+  if (unit === 'bunch') return `${qty} bunch`;
+  return `${qty} kg`;
+};
+
+// Format price per unit
+const formatPricePerUnit = (price, unit) => {
+  if (unit === 'piece') return `₹${price}/pc`;
+  if (unit === 'dozen') return `₹${price}/dz`;
+  if (unit === 'bunch') return `₹${price}/bunch`;
+  return `₹${price}/kg`;
+};
+
 const AdminOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -413,22 +429,27 @@ const AdminOrders = () => {
                     {/* Subscription Items */}
                     <p className="text-xs text-blue-600 mb-1">Items ({selectedOrder.subscription.items?.length || 0})</p>
                     <div className="space-y-1.5">
-                      {selectedOrder.subscription.items?.map((item, idx) => (
-                        <div key={`sub-${idx}`} className="flex items-center gap-2 bg-white p-2 rounded-lg">
-                          {item.product?.image ? (
-                            <img src={item.product.image} alt="" className="w-9 h-9 rounded object-cover" />
-                          ) : (
-                            <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center">
-                              <Package className="w-4 h-4 text-gray-400" />
+                      {selectedOrder.subscription.items?.map((item, idx) => {
+                        const qty = item.quantity || 1;
+                        const unit = item.unit || item.product?.unit || 'kg';
+                        const price = item.price_at_order || item.price || 0;
+                        return (
+                          <div key={`sub-${idx}`} className="flex items-center gap-2 bg-white p-2 rounded-lg">
+                            {item.product?.image ? (
+                              <img src={item.product.image} alt="" className="w-9 h-9 rounded object-cover" />
+                            ) : (
+                              <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center">
+                                <Package className="w-4 h-4 text-gray-400" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{item.product?.name || item.product_name_at_order || `Product ${idx + 1}`}</p>
+                              <p className="text-xs text-muted-foreground">{formatQtyLabel(qty, unit)} • {formatPricePerUnit(price, unit)}</p>
                             </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{item.product?.name || item.product_name_at_order || `Product ${idx + 1}`}</p>
-                            <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price_at_order || item.price}/100gm</p>
+                            <p className="text-sm font-medium">₹{(qty * price).toFixed(0)}</p>
                           </div>
-                          <p className="text-sm font-medium">₹{((item.quantity / 100) * (item.price_at_order || item.price)).toFixed(0)}</p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     {selectedOrder.subscription.bulk_discount_amount > 0 && (
                       <div className="mt-2 pt-2 border-t border-blue-200 flex justify-between text-sm">
@@ -449,22 +470,27 @@ const AdminOrders = () => {
                       One-time Items
                     </p>
                     <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                      {(selectedOrder.one_time_items || selectedOrder.items)?.map((item, idx) => (
-                        <div key={`item-${idx}`} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                          {item.product?.image ? (
-                            <img src={item.product.image} alt="" className="w-9 h-9 rounded object-cover" />
-                          ) : (
-                            <div className="w-9 h-9 rounded bg-gray-200 flex items-center justify-center">
-                              <Package className="w-4 h-4 text-gray-400" />
+                      {(selectedOrder.one_time_items || selectedOrder.items)?.map((item, idx) => {
+                        const qty = item.quantity || 1;
+                        const unit = item.unit || item.product?.unit || 'kg';
+                        const price = item.price_at_order || item.price || 0;
+                        return (
+                          <div key={`item-${idx}`} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                            {item.product?.image ? (
+                              <img src={item.product.image} alt="" className="w-9 h-9 rounded object-cover" />
+                            ) : (
+                              <div className="w-9 h-9 rounded bg-gray-200 flex items-center justify-center">
+                                <Package className="w-4 h-4 text-gray-400" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{item.product?.name || item.product_name_at_order}</p>
+                              <p className="text-xs text-muted-foreground">{formatQtyLabel(qty, unit)} • {formatPricePerUnit(price, unit)}</p>
                             </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{item.product?.name || item.product_name_at_order}</p>
-                            <p className="text-xs text-muted-foreground">{item.quantity}gm • ₹{item.price_at_order || item.price}/100gm</p>
+                            <p className="text-sm font-medium">₹{(qty * price).toFixed(0)}</p>
                           </div>
-                          <p className="text-sm font-medium">₹{((item.quantity / 100) * (item.price_at_order || item.price)).toFixed(0)}</p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

@@ -15,20 +15,46 @@ import { format, addDays } from 'date-fns';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Generate quantity options: 25g, 50g, then 100-1000 (step 100), 1500-5000 (step 500)
-const getQtyOptions = (maxQty) => {
-  const options = [
-    25, 50,  // Small quantities
-    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
-    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
-  ];
-  return options.filter(q => q <= maxQty);
+// Generate quantity options based on product unit type
+const getQtyOptions = (product) => {
+  const unit = product?.unit || 'kg';
+  const minQty = product?.min_quantity || 0.25;
+  const stepQty = product?.step_quantity || 0.25;
+  const maxQty = product?.stock_quantity || 10;
+  
+  if (unit === 'piece' || unit === 'dozen' || unit === 'bunch') {
+    // For countable items: 1, 2, 3, 4, 5, 6, 10, 12
+    return [1, 2, 3, 4, 5, 6, 10, 12].filter(q => q <= Math.max(maxQty, 12));
+  }
+  
+  // For weight-based items (kg)
+  const options = [];
+  for (let qty = minQty; qty <= Math.min(maxQty, 5); qty += stepQty) {
+    options.push(parseFloat(qty.toFixed(2)));
+  }
+  return options.length > 0 ? options : [0.25, 0.5, 1, 2];
+};
+
+// Format quantity with appropriate unit label
+const formatQtyLabel = (qty, unit) => {
+  if (unit === 'piece') return `${qty} pc`;
+  if (unit === 'dozen') return `${qty} dz`;
+  if (unit === 'bunch') return `${qty} bunch`;
+  return `${qty} kg`;
+};
+
+// Format price per unit
+const formatPricePerUnit = (price, unit) => {
+  if (unit === 'piece') return `₹${price}/pc`;
+  if (unit === 'dozen') return `₹${price}/dz`;
+  if (unit === 'bunch') return `₹${price}/bunch`;
+  return `₹${price}/kg`;
 };
 
 const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedQty, setSelectedQty] = useState(50); // Default to 50g
+  const [selectedQty, setSelectedQty] = useState(0.5); // Default to 0.5 kg
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -59,8 +85,9 @@ const ProductDetail = () => {
     }
     
     const displayPrice = getDisplayPrice(product);
-    const totalPrice = (displayPrice / 100) * selectedQty;
+    const totalPrice = displayPrice * selectedQty;
     const showingWholesale = isShowingWholesale(product);
+    const unit = product.unit || 'kg';
     
     const productWithDetails = {
       ...product,
@@ -74,7 +101,7 @@ const ProductDetail = () => {
     };
     
     addToCart(productWithDetails, 1);
-    toast.success(`${product.name} (${selectedQty}gm) added to cart`, {
+    toast.success(`${product.name} (${formatQtyLabel(selectedQty, unit)}) added to cart`, {
       description: `₹${totalPrice.toFixed(0)}${showingWholesale ? ' (Wholesale)' : ''}`
     });
   };
@@ -220,20 +247,19 @@ const ProductDetail = () => {
                 <span className="text-sm text-muted-foreground">Qty:</span>
                 <Select
                   value={String(selectedQty)}
-                  onValueChange={(value) => setSelectedQty(parseInt(value))}
+                  onValueChange={(value) => setSelectedQty(parseFloat(value))}
                 >
-                  <SelectTrigger className="w-24 h-10">
+                  <SelectTrigger className="w-28 h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {getQtyOptions(product.weight || 5000).map((qty) => (
+                    {getQtyOptions(product).map((qty) => (
                       <SelectItem key={qty} value={String(qty)}>
-                        {qty}
+                        {formatQtyLabel(qty, product.unit || 'kg')}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <span className="text-sm text-muted-foreground">gm</span>
                 <div className="ml-auto flex items-center gap-2">
                   <span className="text-2xl font-bold text-primary">
                     ₹{calculatePrice(product, selectedQty).toFixed(0)}

@@ -11,14 +11,40 @@ import { Trash2, ShoppingBag, ArrowRight, Repeat, Package, Clock, Sprout, Edit2,
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
-// Generate quantity options: 25g, 50g, then 100-1000 (step 100), 1500-5000 (step 500)
-const getQtyOptions = (maxQty) => {
-  const options = [
-    25, 50,  // Small quantities
-    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
-    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
-  ];
-  return options.filter(q => q <= maxQty);
+// Generate quantity options based on product unit type
+const getQtyOptions = (product) => {
+  const unit = product.unit || 'kg';
+  const minQty = product.min_quantity || 0.25;
+  const stepQty = product.step_quantity || 0.25;
+  const maxQty = product.stock_quantity || 10;
+  
+  if (unit === 'piece' || unit === 'dozen' || unit === 'bunch') {
+    // For countable items: 1, 2, 3, 4, 5, 6, 10, 12
+    return [1, 2, 3, 4, 5, 6, 10, 12].filter(q => q <= Math.max(maxQty, 12));
+  }
+  
+  // For weight-based items (kg)
+  const options = [];
+  for (let qty = minQty; qty <= Math.min(maxQty, 5); qty += stepQty) {
+    options.push(parseFloat(qty.toFixed(2)));
+  }
+  return options.length > 0 ? options : [0.25, 0.5, 1, 2];
+};
+
+// Format quantity with appropriate unit label
+const formatQtyLabel = (qty, unit) => {
+  if (unit === 'piece') return `${qty} pc`;
+  if (unit === 'dozen') return `${qty} dz`;
+  if (unit === 'bunch') return `${qty} bunch`;
+  return `${qty} kg`;
+};
+
+// Format price per unit
+const formatPricePerUnit = (price, unit) => {
+  if (unit === 'piece') return `₹${price}/pc`;
+  if (unit === 'dozen') return `₹${price}/dz`;
+  if (unit === 'bunch') return `₹${price}/bunch`;
+  return `₹${price}/kg`;
 };
 
 const Cart = () => {
@@ -35,7 +61,7 @@ const Cart = () => {
   // Calculate cart total using wholesale prices if applicable
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const qty = item.product.selectedQty || 100;
+      const qty = item.product.selectedQty || 1;
       return total + calculatePrice(item.product, qty);
     }, 0);
   };
@@ -113,9 +139,10 @@ const Cart = () => {
                   </div>
                   <div className="space-y-2">
                     {pendingSubscription.products?.map((product) => {
-                      const qty = product.selectedQty || 100;
+                      const qty = product.selectedQty || 1;
+                      const unit = product.unit || 'kg';
                       const displayPrice = getDisplayPrice(product);
-                      const price = (displayPrice / 100) * qty;
+                      const price = displayPrice * qty;
                       const showingWholesale = isShowingWholesale(product);
                       return (
                         <div key={product.id || product.product_id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
@@ -127,7 +154,7 @@ const Cart = () => {
                                 <BadgePercent className="w-3 h-3 text-orange-500 flex-shrink-0" />
                               )}
                             </div>
-                            <span className="text-xs text-muted-foreground">₹{displayPrice}/100gm • {qty}gm - ₹{price.toFixed(0)}</span>
+                            <span className="text-xs text-muted-foreground">{formatPricePerUnit(displayPrice, unit)} • {formatQtyLabel(qty, unit)} - ₹{price.toFixed(0)}</span>
                           </div>
                         </div>
                       );
@@ -160,9 +187,10 @@ const Cart = () => {
                   )}
                   {cartItems.map((item) => {
                     const isGrowing = item.product.isGrowing || item.product.stock_status === 'growing';
-                    const selectedQty = item.product.selectedQty || 100;
+                    const selectedQty = item.product.selectedQty || 1;
+                    const unit = item.product.unit || 'kg';
                     const displayPrice = getDisplayPrice(item.product);
-                    const unitPrice = (displayPrice / 100) * selectedQty;
+                    const unitPrice = displayPrice * selectedQty;
                     const showingWholesale = isShowingWholesale(item.product);
                     
                     return (
@@ -182,26 +210,25 @@ const Cart = () => {
                               <BadgePercent className="w-3 h-3 text-orange-500 flex-shrink-0" />
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground">₹{displayPrice}/100gm</p>
+                          <p className="text-xs text-muted-foreground">{formatPricePerUnit(displayPrice, unit)}</p>
                         </div>
-                        {/* Weight Dropdown */}
+                        {/* Quantity Dropdown */}
                         <div className="flex items-center gap-1">
                           <Select
                             value={String(selectedQty)}
-                            onValueChange={(value) => updateSelectedQty(item.product.id, parseInt(value))}
+                            onValueChange={(value) => updateSelectedQty(item.product.id, parseFloat(value))}
                           >
                             <SelectTrigger className="w-20 h-7 text-xs">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {getQtyOptions(item.product.weight || 5000).map((qty) => (
+                              {getQtyOptions(item.product).map((qty) => (
                                 <SelectItem key={qty} value={String(qty)}>
-                                  {qty}
+                                  {formatQtyLabel(qty, unit)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <span className="text-xs text-muted-foreground">gm</span>
                         </div>
                         <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>
                         <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">

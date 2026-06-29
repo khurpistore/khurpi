@@ -19,6 +19,22 @@ import {
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Format quantity with appropriate unit label
+const formatQtyLabel = (qty, unit) => {
+  if (unit === 'piece') return `${qty} pc`;
+  if (unit === 'dozen') return `${qty} dz`;
+  if (unit === 'bunch') return `${qty} bunch`;
+  return `${qty} kg`;
+};
+
+// Format price per unit
+const formatPricePerUnit = (price, unit) => {
+  if (unit === 'piece') return `₹${price}/pc`;
+  if (unit === 'dozen') return `₹${price}/dz`;
+  if (unit === 'bunch') return `₹${price}/bunch`;
+  return `₹${price}/kg`;
+};
+
 const AdminCreateOrder = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: Customer, 2: Products, 3: Review

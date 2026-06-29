@@ -17,6 +17,22 @@ import { format, addDays } from 'date-fns';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Format quantity with appropriate unit label
+const formatQtyLabel = (qty, unit) => {
+  if (unit === 'piece') return `${qty} pc`;
+  if (unit === 'dozen') return `${qty} dz`;
+  if (unit === 'bunch') return `${qty} bunch`;
+  return `${qty} kg`;
+};
+
+// Format price per unit
+const formatPricePerUnit = (price, unit) => {
+  if (unit === 'piece') return `₹${price}/pc`;
+  if (unit === 'dozen') return `₹${price}/dz`;
+  if (unit === 'bunch') return `₹${price}/bunch`;
+  return `₹${price}/kg`;
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems, getCartTotal, clearCart, pendingSubscription, clearSubscription, refreshProductData } = useCart();
@@ -117,7 +133,7 @@ const Checkout = () => {
   // Calculate cart total using wholesale prices if applicable
   const getWholesaleCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const qty = item.product.selectedQty || 100;
+      const qty = item.product.selectedQty || 1;
       return total + calculatePrice(item.product, qty);
     }, 0);
   };
@@ -126,7 +142,7 @@ const Checkout = () => {
   const getWholesaleSubscriptionTotal = () => {
     if (!pendingSubscription?.products) return 0;
     return pendingSubscription.products.reduce((total, product) => {
-      const qty = product.selectedQty || 100;
+      const qty = product.selectedQty || 1;
       return total + calculatePrice(product, qty);
     }, 0);
   };
@@ -272,7 +288,8 @@ const Checkout = () => {
       if (cartItems.length > 0) {
         oneTimeItems = cartItems.map(item => ({ 
           product_id: item.product.id, 
-          quantity: item.product.selectedQty || 100, 
+          quantity: item.product.selectedQty || 1, 
+          unit: item.product.unit || 'kg',
           price: getDisplayPrice(item.product)  // Use wholesale price if applicable
         }));
       }
@@ -290,7 +307,8 @@ const Checkout = () => {
           start_date: pendingSubscription.startDate,
           items: pendingSubscription.products.map(p => ({ 
             product_id: p.product_id || p.id, 
-            quantity: p.selectedQty || 100,
+            quantity: p.selectedQty || 1,
+            unit: p.unit || 'kg',
             price: getDisplayPrice(p)  // Use wholesale price if applicable
           })),
           subtotal: subscriptionSubtotal,
@@ -680,14 +698,15 @@ const Checkout = () => {
                   </div>
                   <div className="space-y-2">
                     {pendingSubscription.products?.map((product) => {
-                      const qty = product.selectedQty || 100;
-                      const price = (product.price / 100) * qty;
+                      const qty = product.selectedQty || 1;
+                      const unit = product.unit || 'kg';
+                      const price = product.price * qty;
                       return (
                         <div key={product.id || product.product_id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
                           <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
                           <div className="flex-1 min-w-0">
                             <span className="text-xs font-medium truncate block">{product.name}</span>
-                            <span className="text-xs text-muted-foreground">₹{product.price}/100gm • {qty}gm - ₹{price.toFixed(0)}</span>
+                            <span className="text-xs text-muted-foreground">{formatPricePerUnit(product.price, unit)} • {formatQtyLabel(qty, unit)} - ₹{price.toFixed(0)}</span>
                           </div>
                         </div>
                       );
@@ -734,9 +753,10 @@ const Checkout = () => {
                   )}
                   {cartItems.map((item) => {
                     const isGrowing = item.product.stock_status === 'growing' || item.product.isGrowing;
-                    const selectedQty = item.product.selectedQty || 100;
+                    const selectedQty = item.product.selectedQty || 1;
+                    const unit = item.product.unit || 'kg';
                     const displayPrice = getDisplayPrice(item.product);
-                    const unitPrice = (displayPrice / 100) * selectedQty;
+                    const unitPrice = displayPrice * selectedQty;
                     const showingWholesale = isShowingWholesale(item.product);
                     
                     return (
@@ -756,9 +776,9 @@ const Checkout = () => {
                               <BadgePercent className="w-3 h-3 text-orange-500 flex-shrink-0" />
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground">₹{displayPrice}/100gm</p>
+                          <p className="text-xs text-muted-foreground">{formatPricePerUnit(displayPrice, unit)}</p>
                         </div>
-                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium">{selectedQty}gm</span>
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium">{formatQtyLabel(selectedQty, unit)}</span>
                         <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>
                       </div>
                     );

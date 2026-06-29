@@ -353,9 +353,9 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const qty = item.product.selectedQty || 100;
-      const unitPrice = (item.product.price / 100) * qty;
-      return total + unitPrice;
+      const qty = item.product.selectedQty || 1;
+      const price = item.product.price || 0;
+      return total + (price * qty);
     }, 0);
   };
 

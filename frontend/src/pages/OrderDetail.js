@@ -10,6 +10,22 @@ import { format } from 'date-fns';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Format quantity with appropriate unit label
+const formatQtyLabel = (qty, unit) => {
+  if (unit === 'piece') return `${qty} pc`;
+  if (unit === 'dozen') return `${qty} dz`;
+  if (unit === 'bunch') return `${qty} bunch`;
+  return `${qty} kg`;
+};
+
+// Format price per unit
+const formatPricePerUnit = (price, unit) => {
+  if (unit === 'piece') return `₹${price}/pc`;
+  if (unit === 'dozen') return `₹${price}/dz`;
+  if (unit === 'bunch') return `₹${price}/bunch`;
+  return `₹${price}/kg`;
+};
+
 const OrderDetail = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
@@ -189,8 +205,9 @@ const OrderDetail = () => {
                   <div className="space-y-3">
                     {order.subscription.items?.map((item, idx) => {
                       const pricePerUnit = item.price_at_order || item.price || item.product?.price || 0;
-                      const quantity = item.quantity || 100;
-                      const totalPrice = (quantity / 100) * pricePerUnit;
+                      const quantity = item.quantity || 1;
+                      const unit = item.unit || item.product?.unit || 'kg';
+                      const totalPrice = pricePerUnit * quantity;
                       return (
                         <div 
                           key={idx}
@@ -204,7 +221,7 @@ const OrderDetail = () => {
                           <div className="flex-1">
                             <p className="font-medium">{item.product?.name || item.product_name_at_order}</p>
                             <p className="text-sm text-muted-foreground">
-                              {quantity}gm × ₹{pricePerUnit}/100gm
+                              {formatQtyLabel(quantity, unit)} × {formatPricePerUnit(pricePerUnit, unit)}
                             </p>
                           </div>
                           <div className="text-right">
@@ -259,8 +276,9 @@ const OrderDetail = () => {
                   <div className="space-y-3">
                     {(order.one_time_items || order.items || []).map((item, idx) => {
                       const pricePerUnit = item.price_at_order || item.price || item.product?.price || 0;
-                      const quantity = item.quantity || 100;
-                      const totalPrice = (quantity / 100) * pricePerUnit;
+                      const quantity = item.quantity || 1;
+                      const unit = item.unit || item.product?.unit || 'kg';
+                      const totalPrice = pricePerUnit * quantity;
                       const isGrowing = item.product?.stock_status === 'growing';
                       return (
                         <div 
@@ -281,7 +299,7 @@ const OrderDetail = () => {
                           <div className="flex-1">
                             <p className="font-medium">{item.product?.name || item.product_name_at_order || 'Product'}</p>
                             <p className="text-sm text-muted-foreground">
-                              {quantity}gm × ₹{pricePerUnit}/100gm
+                              {formatQtyLabel(quantity, unit)} × {formatPricePerUnit(pricePerUnit, unit)}
                             </p>
                           </div>
                           <p className="font-bold text-primary">₹{totalPrice.toFixed(0)}</p>
