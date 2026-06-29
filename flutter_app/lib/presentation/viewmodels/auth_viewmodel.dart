@@ -5,8 +5,8 @@ import 'package:khurpi_fresh/data/datasources/remote/auth_remote_datasource.dart
 import 'package:khurpi_fresh/data/datasources/local/auth_local_datasource.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-part '../../generated/viewmodels/auth_viewmodel.freezed.dart';
-part '../../generated/viewmodels/auth_viewmodel.g.dart';
+part 'auth_viewmodel.freezed.dart';
+part 'auth_viewmodel.g.dart';
 
 @freezed
 sealed class AuthState with _$AuthState {

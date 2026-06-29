@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part '../../generated/models/banner_model.freezed.dart';
-part '../../generated/models/banner_model.g.dart';
+part 'banner_model.freezed.dart';
+part 'banner_model.g.dart';
 
 @freezed
 abstract class BannerModel with _$BannerModel {

@@ -5,8 +5,8 @@ import 'package:khurpi_fresh/data/models/category_model.dart';
 import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-part '../../generated/viewmodels/products_viewmodel.freezed.dart';
-part '../../generated/viewmodels/products_viewmodel.g.dart';
+part 'products_viewmodel.freezed.dart';
+part 'products_viewmodel.g.dart';
 
 @freezed
 sealed class ProductsState with _$ProductsState {

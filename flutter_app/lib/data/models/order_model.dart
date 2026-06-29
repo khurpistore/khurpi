@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part '../../generated/models/order_model.freezed.dart';
-part '../../generated/models/order_model.g.dart';
+part 'order_model.freezed.dart';
+part 'order_model.g.dart';
 
 @freezed
 abstract class OrderModel with _$OrderModel {

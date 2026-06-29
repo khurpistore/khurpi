@@ -1,8 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
 
-part '../../generated/models/auth_response_model.freezed.dart';
-part '../../generated/models/auth_response_model.g.dart';
+part 'auth_response_model.freezed.dart';
+part 'auth_response_model.g.dart';
 
 @freezed
 abstract class AuthResponseModel with _$AuthResponseModel {
