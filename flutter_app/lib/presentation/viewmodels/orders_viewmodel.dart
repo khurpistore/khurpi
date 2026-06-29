@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
 import 'package:khurpi_fresh/data/models/cart_item_model.dart';

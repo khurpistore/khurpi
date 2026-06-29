@@ -23,25 +23,38 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Delay provider modification to avoid "modifying provider while building" error
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
   }
 
   Future<void> _loadData() async {
-    await Future.wait([
-      ref.read(productsViewModelProvider.notifier).loadProducts(),
-      ref.read(productsViewModelProvider.notifier).loadCategories(),
-      ref.read(bannersViewModelProvider.notifier).loadBanners(),
-    ]);
+    final productsVM = ref.read(productsViewModelProvider);
+    final bannersVM = ref.read(bannersViewModelProvider);
+    
+    if (productsVM != null && bannersVM != null) {
+      await Future.wait([
+        productsVM.loadProducts(),
+        productsVM.loadCategories(),
+        bannersVM.loadBanners(),
+      ]);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsState = ref.watch(productsViewModelProvider);
-    final bannersState = ref.watch(bannersViewModelProvider);
-    final authState = ref.watch(authViewModelProvider);
+    final productsVM = ref.watch(productsViewModelProvider);
+    final bannersVM = ref.watch(bannersViewModelProvider);
+    final authVM = ref.watch(authViewModelProvider);
+
+    if (productsVM == null || bannersVM == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final productsState = productsVM.state;
+    final bannersState = bannersVM.state;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -79,115 +92,131 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
 
-              // Banners
-              if (bannersState.banners.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: BannerCarousel(
-                      banners: bannersState.banners,
-                      onBannerTap: (banner) => _handleBannerTap(banner),
-                    ),
-                  ),
-                ),
-
-              // Categories
+            // Banner Carousel
+            if (bannersState.banners.isNotEmpty)
               SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('Categories', style: AppTextStyles.h4),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 100,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: productsState.categories.length,
-                        itemBuilder: (context, index) {
-                          final category = productsState.categories[index];
-                          return CategoryCard(
-                            category: category,
-                            onTap: () => _navigateToProducts(category.categoryId),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                child: BannerCarousel(banners: bannersState.banners),
               ),
 
-              // Products Header
-              SliverToBoxAdapter(
+            // Categories Section
+            if (productsState.categories.isNotEmpty) ...[
+              const SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Fresh Products', style: AppTextStyles.h4),
-                      TextButton(
-                        onPressed: () => _navigateToProducts(null),
-                        child: const Text('See All'),
-                      ),
+                      Text('Categories', style: AppTextStyles.h4),
                     ],
                   ),
                 ),
               ),
-
-              // Products Grid
-              if (productsState.isLoading)
-                const SliverToBoxAdapter(
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else if (productsState.products.isEmpty)
-                const SliverToBoxAdapter(
-                  child: Center(child: Text('No products available')),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.7,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final product = productsState.products[index];
-                        return ProductCard(
-                          product: product,
-                          showWholesalePrice: authState.user?.wholesaleEnabled ?? false,
-                          onTap: () => _navigateToProductDetail(product.productId),
-                          onAddToCart: product.stockStatus == 'in_stock'
-                              ? () => _addToCart(product)
-                              : null,
-                        );
-                      },
-                      childCount: productsState.products.length.clamp(0, 6),
-                    ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: productsState.categories.length,
+                    itemBuilder: (context, index) {
+                      final category = productsState.categories[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: CategoryCard(
+                          category: category,
+                          onTap: () => _navigateToProducts(category.categoryId),
+                        ),
+                      );
+                    },
                   ),
                 ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              ),
             ],
-          ),
+
+            // Featured Products Section
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Featured Products', style: AppTextStyles.h4),
+                  ],
+                ),
+              ),
+            ),
+
+            // Products Grid
+            if (productsState.isLoading)
+              const SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              )
+            else if (productsState.products.isEmpty)
+              const SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Text('No products available'),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final product = productsState.products[index];
+                      return ProductCard(
+                        product: product,
+                        onTap: () => _navigateToProductDetail(product),
+                        onAddToCart: () => _addToCart(product),
+                      );
+                    },
+                    childCount: productsState.products.length > 6 
+                        ? 6 
+                        : productsState.products.length,
+                  ),
+                ),
+              ),
+
+            // View All Products Button
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: OutlinedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProductsPage()),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: const BorderSide(color: AppColors.primary),
+                  ),
+                  child: const Text('View All Products'),
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+          ],
         ),
       ),
     );
   }
 
-  void _handleBannerTap(BannerModel banner) {
-    if (banner.actionType == 'category' && banner.actionValue != null) {
-      _navigateToProducts(banner.actionValue);
-    }
-  }
-
-  void _navigateToProducts(String? categoryId) {
+  void _navigateToProducts(String categoryId) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -196,17 +225,18 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  void _navigateToProductDetail(String productId) {
+  void _navigateToProductDetail(ProductModel product) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ProductDetailPage(productId: productId),
+        builder: (_) => ProductDetailPage(productId: product.productId),
       ),
     );
   }
 
   void _addToCart(ProductModel product) {
-    ref.read(cartViewModelProvider.notifier).addToCart(product, quantity: 0.5, unit: 'kg');
+    final cartVM = ref.read(cartViewModelProvider);
+    cartVM?.addToCart(product);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${product.name} added to cart')),
     );

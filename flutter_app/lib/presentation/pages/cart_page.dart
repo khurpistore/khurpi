@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/presentation/widgets/cart_item_card.dart';
 import 'package:khurpi_fresh/presentation/pages/checkout_page.dart';
 
@@ -11,7 +11,15 @@ class CartPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cartState = ref.watch(cartViewModelProvider);
+    final cartVM = ref.watch(cartViewModelProvider);
+
+    if (cartVM == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final cartState = cartVM.state;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -23,27 +31,15 @@ class CartPage extends ConsumerWidget {
         actions: [
           if (cartState.items.isNotEmpty)
             TextButton(
-              onPressed: () => ref.read(cartViewModelProvider.notifier).clearCart(),
-              child: const Text('Clear', style: TextStyle(color: AppColors.error)),
+              onPressed: () => cartVM.clearCart(),
+              child: const Text('Clear All', style: TextStyle(color: AppColors.error)),
             ),
         ],
       ),
       body: cartState.items.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.shopping_cart_outlined, size: 80, color: AppColors.textHint.withValues(alpha: 0.5)),
-                  const SizedBox(height: 16),
-                  const Text('Your cart is empty', style: AppTextStyles.h4),
-                  const SizedBox(height: 8),
-                  Text('Add some fresh products!', style: AppTextStyles.body.copyWith(color: AppColors.textHint)),
-                ],
-              ),
-            )
+          ? _buildEmptyCart()
           : Column(
               children: [
-                // Cart Items
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -52,81 +48,107 @@ class CartPage extends ConsumerWidget {
                       final item = cartState.items[index];
                       return CartItemCard(
                         item: item,
-                        onIncrement: () => ref.read(cartViewModelProvider.notifier).incrementQuantity(item.productId),
-                        onDecrement: () => ref.read(cartViewModelProvider.notifier).decrementQuantity(item.productId),
-                        onRemove: () => ref.read(cartViewModelProvider.notifier).removeFromCart(item.productId),
+                        onIncrement: () => cartVM.incrementQuantity(item.productId),
+                        onDecrement: () => cartVM.decrementQuantity(item.productId),
+                        onRemove: () => cartVM.removeFromCart(item.productId),
                       );
                     },
                   ),
                 ),
-
-                // Summary
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
-                  ),
-                  child: SafeArea(
-                    child: Column(
-                      children: [
-                        _buildSummaryRow('Subtotal', cartState.formattedSubtotal),
-                        const SizedBox(height: 8),
-                        _buildSummaryRow('Delivery', cartState.formattedDeliveryFee),
-                        const Divider(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total', style: AppTextStyles.h4),
-                            Text(
-                              cartState.formattedTotal,
-                              style: AppTextStyles.h3.copyWith(color: AppColors.primary),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const CheckoutPage()),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Checkout • ${cartState.formattedTotal}',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildCartSummary(context, ref, cartState),
               ],
             ),
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
-        Text(value, style: AppTextStyles.body),
-      ],
+  Widget _buildEmptyCart() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.shopping_cart_outlined,
+            size: 80,
+            color: AppColors.textHint.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          const Text('Your cart is empty', style: AppTextStyles.h4),
+          const SizedBox(height: 8),
+          Text(
+            'Add some fresh products to your cart',
+            style: AppTextStyles.body.copyWith(color: AppColors.textHint),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCartSummary(BuildContext context, WidgetRef ref, CartState cartState) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Subtotal', style: AppTextStyles.body),
+                Text(cartState.formattedSubtotal, style: AppTextStyles.body),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Delivery Fee', style: AppTextStyles.body),
+                Text(cartState.formattedDeliveryFee, style: AppTextStyles.body),
+              ],
+            ),
+            const Divider(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Total', style: AppTextStyles.h4),
+                Text(
+                  cartState.formattedTotal,
+                  style: AppTextStyles.h4.copyWith(color: AppColors.primary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CheckoutPage()),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Proceed to Checkout',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

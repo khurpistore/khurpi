@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/data/models/category_model.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/presentation/pages/products_page.dart';
 
 class CategoriesPage extends ConsumerStatefulWidget {
@@ -19,13 +19,21 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(productsViewModelProvider.notifier).loadCategories();
+      ref.read(productsViewModelProvider)?.loadCategories();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsState = ref.watch(productsViewModelProvider);
+    final productsVM = ref.watch(productsViewModelProvider);
+
+    if (productsVM == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final productsState = productsVM.state;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -97,7 +105,6 @@ class _CategoryTile extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Category Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: category.imageUrl != null && category.imageUrl!.isNotEmpty
@@ -133,7 +140,6 @@ class _CategoryTile extends StatelessWidget {
                     ),
             ),
             const SizedBox(height: 12),
-            // Category Name
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(

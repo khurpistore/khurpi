@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 
@@ -35,174 +36,196 @@ import 'package:khurpi_fresh/presentation/viewmodels/orders_viewmodel.dart';
 import 'package:khurpi_fresh/presentation/viewmodels/product_detail_viewmodel.dart';
 import 'package:khurpi_fresh/presentation/viewmodels/banners_viewmodel.dart';
 
+part 'providers.g.dart';
+
 // ==================== Core Providers ====================
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('SharedPreferences must be overridden in main');
 });
 
-final dioProvider = Provider<Dio>((ref) {
+@Riverpod(keepAlive: true)
+Dio provideDio(Ref ref) {
   return DioClient.instance;
-});
+}
 
 // ==================== Retrofit API Service Providers ====================
 
-final productApiServiceProvider = Provider<ProductApiService>((ref) {
-  final dio = ref.watch(dioProvider);
+@Riverpod(keepAlive: true)
+ProductApiService? provideProductApiService(Ref ref) {
+  final dio = ref.watch(provideDioProvider);
+  if (dio == null) return null;
   return ProductApiService(dio);
-});
+}
 
-final authApiServiceProvider = Provider<AuthApiService>((ref) {
-  final dio = ref.watch(dioProvider);
+@Riverpod(keepAlive: true)
+AuthApiService? provideAuthApiService(Ref ref) {
+  final dio = ref.watch(provideDioProvider);
+  if (dio == null) return null;
   return AuthApiService(dio);
-});
+}
 
-final orderApiServiceProvider = Provider<OrderApiService>((ref) {
-  final dio = ref.watch(dioProvider);
+@Riverpod(keepAlive: true)
+OrderApiService? provideOrderApiService(Ref ref) {
+  final dio = ref.watch(provideDioProvider);
+  if (dio == null) return null;
   return OrderApiService(dio);
-});
+}
 
-final bannerApiServiceProvider = Provider<BannerApiService>((ref) {
-  final dio = ref.watch(dioProvider);
+@Riverpod(keepAlive: true)
+BannerApiService? provideBannerApiService(Ref ref) {
+  final dio = ref.watch(provideDioProvider);
+  if (dio == null) return null;
   return BannerApiService(dio);
-});
+}
 
 // ==================== Data Source Providers ====================
 
-final productRemoteDataSourceProvider = Provider<ProductRemoteDataSource>((ref) {
-  final apiService = ref.watch(productApiServiceProvider);
+@Riverpod(keepAlive: true)
+ProductRemoteDataSource? provideProductRemoteDataSource(Ref ref) {
+  final apiService = ref.watch(provideProductApiServiceProvider);
+  if (apiService == null) return null;
   return ProductRemoteDataSourceImpl(apiService);
-});
+}
 
-final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
-  final apiService = ref.watch(authApiServiceProvider);
+@Riverpod(keepAlive: true)
+AuthRemoteDataSource? provideAuthRemoteDataSource(Ref ref) {
+  final apiService = ref.watch(provideAuthApiServiceProvider);
+  if (apiService == null) return null;
   return AuthRemoteDataSourceImpl(apiService);
-});
+}
 
-final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {
+@Riverpod(keepAlive: true)
+AuthLocalDataSource? provideAuthLocalDataSource(Ref ref) {
   final sharedPreferences = ref.watch(sharedPreferencesProvider);
   return AuthLocalDataSourceImpl(sharedPreferences);
-});
+}
 
-final cartLocalDataSourceProvider = Provider<CartLocalDataSource>((ref) {
+@Riverpod(keepAlive: true)
+CartLocalDataSource? provideCartLocalDataSource(Ref ref) {
   final sharedPreferences = ref.watch(sharedPreferencesProvider);
   return CartLocalDataSourceImpl(sharedPreferences);
-});
+}
 
-final orderRemoteDataSourceProvider = Provider<OrderRemoteDataSource>((ref) {
-  final apiService = ref.watch(orderApiServiceProvider);
+@Riverpod(keepAlive: true)
+OrderRemoteDataSource? provideOrderRemoteDataSource(Ref ref) {
+  final apiService = ref.watch(provideOrderApiServiceProvider);
+  if (apiService == null) return null;
   return OrderRemoteDataSourceImpl(apiService);
-});
+}
 
-final bannerRemoteDataSourceProvider = Provider<BannerRemoteDataSource>((ref) {
-  final apiService = ref.watch(bannerApiServiceProvider);
+@Riverpod(keepAlive: true)
+BannerRemoteDataSource? provideBannerRemoteDataSource(Ref ref) {
+  final apiService = ref.watch(provideBannerApiServiceProvider);
+  if (apiService == null) return null;
   return BannerRemoteDataSourceImpl(apiService);
-});
+}
 
 // ==================== ViewModel Providers ====================
 
-/// Auth ViewModel Provider - manages authentication state
-final provideAuthViewModelProvider = Provider<AuthViewModel?>((ref) {
-  final authRemoteDataSource = ref.watch(authRemoteDataSourceProvider);
-  final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
+@Riverpod(keepAlive: true)
+AuthViewModel? provideAuthViewModel(Ref ref) {
+  final authRemoteDataSource = ref.watch(provideAuthRemoteDataSourceProvider);
+  final authLocalDataSource = ref.watch(provideAuthLocalDataSourceProvider);
+
+  if (authRemoteDataSource == null || authLocalDataSource == null) {
+    return null;
+  }
 
   return AuthViewModel(
     authRemoteDataSource: authRemoteDataSource,
     authLocalDataSource: authLocalDataSource,
   );
-});
+}
 
-final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
-  final authRemoteDataSource = ref.watch(authRemoteDataSourceProvider);
-  final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
+@Riverpod(keepAlive: true)
+ProductsViewModel? provideProductsViewModel(Ref ref) {
+  final productRemoteDataSource = ref.watch(provideProductRemoteDataSourceProvider);
 
-  return AuthViewModel(
-    authRemoteDataSource: authRemoteDataSource,
-    authLocalDataSource: authLocalDataSource,
-  );
-});
-
-/// Products ViewModel Provider - manages products list state
-final provideProductsViewModelProvider = Provider<ProductsViewModel?>((ref) {
-  final productRemoteDataSource = ref.watch(productRemoteDataSourceProvider);
+  if (productRemoteDataSource == null) {
+    return null;
+  }
 
   return ProductsViewModel(
     productRemoteDataSource: productRemoteDataSource,
   );
-});
+}
 
-final productsViewModelProvider = StateNotifierProvider<ProductsViewModel, ProductsState>((ref) {
-  final productRemoteDataSource = ref.watch(productRemoteDataSourceProvider);
+@Riverpod(keepAlive: true)
+CartViewModel? provideCartViewModel(Ref ref) {
+  final cartLocalDataSource = ref.watch(provideCartLocalDataSourceProvider);
 
-  return ProductsViewModel(
-    productRemoteDataSource: productRemoteDataSource,
-  );
-});
-
-/// Cart ViewModel Provider - manages cart state
-final provideCartViewModelProvider = Provider<CartViewModel?>((ref) {
-  final cartLocalDataSource = ref.watch(cartLocalDataSourceProvider);
+  if (cartLocalDataSource == null) {
+    return null;
+  }
 
   return CartViewModel(
     cartLocalDataSource: cartLocalDataSource,
   );
-});
+}
 
-final cartViewModelProvider = StateNotifierProvider<CartViewModel, CartState>((ref) {
-  final cartLocalDataSource = ref.watch(cartLocalDataSourceProvider);
+@Riverpod(keepAlive: true)
+OrdersViewModel? provideOrdersViewModel(Ref ref) {
+  final orderRemoteDataSource = ref.watch(provideOrderRemoteDataSourceProvider);
 
-  return CartViewModel(
-    cartLocalDataSource: cartLocalDataSource,
-  );
-});
-
-/// Orders ViewModel Provider - manages orders state
-final provideOrdersViewModelProvider = Provider<OrdersViewModel?>((ref) {
-  final orderRemoteDataSource = ref.watch(orderRemoteDataSourceProvider);
+  if (orderRemoteDataSource == null) {
+    return null;
+  }
 
   return OrdersViewModel(
     orderRemoteDataSource: orderRemoteDataSource,
   );
-});
+}
 
-final ordersViewModelProvider = StateNotifierProvider<OrdersViewModel, OrdersState>((ref) {
-  final orderRemoteDataSource = ref.watch(orderRemoteDataSourceProvider);
+@riverpod
+ProductDetailViewModel? provideProductDetailViewModel(Ref ref) {
+  final productRemoteDataSource = ref.watch(provideProductRemoteDataSourceProvider);
 
-  return OrdersViewModel(
-    orderRemoteDataSource: orderRemoteDataSource,
-  );
-});
-
-/// Product Detail ViewModel Provider - manages product detail state
-final provideProductDetailViewModelProvider = Provider.autoDispose<ProductDetailViewModel?>((ref) {
-  final productRemoteDataSource = ref.watch(productRemoteDataSourceProvider);
+  if (productRemoteDataSource == null) {
+    return null;
+  }
 
   return ProductDetailViewModel(
     productRemoteDataSource: productRemoteDataSource,
   );
-});
+}
 
-final productDetailViewModelProvider = StateNotifierProvider.autoDispose<ProductDetailViewModel, ProductDetailState>((ref) {
-  final productRemoteDataSource = ref.watch(productRemoteDataSourceProvider);
+@Riverpod(keepAlive: true)
+BannersViewModel? provideBannersViewModel(Ref ref) {
+  final bannerRemoteDataSource = ref.watch(provideBannerRemoteDataSourceProvider);
 
-  return ProductDetailViewModel(
-    productRemoteDataSource: productRemoteDataSource,
-  );
-});
-
-/// Banners ViewModel Provider - manages banners state
-final provideBannersViewModelProvider = Provider<BannersViewModel?>((ref) {
-  final bannerRemoteDataSource = ref.watch(bannerRemoteDataSourceProvider);
+  if (bannerRemoteDataSource == null) {
+    return null;
+  }
 
   return BannersViewModel(
     bannerRemoteDataSource: bannerRemoteDataSource,
   );
+}
+
+// ==================== Legacy Providers for UI Compatibility ====================
+// These wrap the @riverpod providers for use with ref.watch() in UI
+
+final authViewModelProvider = Provider<AuthViewModel?>((ref) {
+  return ref.watch(provideAuthViewModelProvider);
 });
 
-final bannersViewModelProvider = StateNotifierProvider<BannersViewModel, BannersState>((ref) {
-  final bannerRemoteDataSource = ref.watch(bannerRemoteDataSourceProvider);
+final productsViewModelProvider = Provider<ProductsViewModel?>((ref) {
+  return ref.watch(provideProductsViewModelProvider);
+});
 
-  return BannersViewModel(
-    bannerRemoteDataSource: bannerRemoteDataSource,
-  );
+final cartViewModelProvider = Provider<CartViewModel?>((ref) {
+  return ref.watch(provideCartViewModelProvider);
+});
+
+final ordersViewModelProvider = Provider<OrdersViewModel?>((ref) {
+  return ref.watch(provideOrdersViewModelProvider);
+});
+
+final productDetailViewModelProvider = Provider.autoDispose<ProductDetailViewModel?>((ref) {
+  return ref.watch(provideProductDetailViewModelProvider);
+});
+
+final bannersViewModelProvider = Provider<BannersViewModel?>((ref) {
+  return ref.watch(provideBannersViewModelProvider);
 });

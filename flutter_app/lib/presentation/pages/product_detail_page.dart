@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
@@ -18,28 +18,34 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   @override
   void initState() {
     super.initState();
-    // Delay provider modification to avoid "modifying provider while building" error
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(productDetailViewModelProvider.notifier).loadProduct(widget.productId);
+      ref.read(productDetailViewModelProvider)?.loadProduct(widget.productId);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(productDetailViewModelProvider);
-    final authState = ref.watch(authViewModelProvider);
-    final product = state.product;
+    final productDetailVM = ref.watch(productDetailViewModelProvider);
+    final cartVM = ref.watch(cartViewModelProvider);
+
+    if (productDetailVM == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final state = productDetailVM.state;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        title: Text(state.product?.name ?? 'Product Details'),
+        backgroundColor: AppColors.surface,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : product == null
+          : state.product == null
               ? const Center(child: Text('Product not found'))
               : SingleChildScrollView(
                   child: Column(
@@ -48,18 +54,23 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                       // Product Image
                       AspectRatio(
                         aspectRatio: 1,
-                        child: CachedNetworkImage(
-                          imageUrl: product.imageUrl ?? '',
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: AppColors.background,
-                            child: const Center(child: CircularProgressIndicator()),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            color: AppColors.background,
-                            child: const Icon(Icons.image_not_supported, size: 60),
-                          ),
-                        ),
+                        child: state.product!.imageUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: state.product!.imageUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: AppColors.background,
+                                  child: const Center(child: CircularProgressIndicator()),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: AppColors.background,
+                                  child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint),
+                                ),
+                              )
+                            : Container(
+                                color: AppColors.background,
+                                child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint),
+                              ),
                       ),
 
                       Padding(
@@ -67,89 +78,115 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Name
-                            Text(product.name, style: AppTextStyles.h2),
+                            // Name & Price
+                            Text(state.product!.name, style: AppTextStyles.h2),
                             const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Text(
+                                  '₹${state.product!.price.toStringAsFixed(0)}',
+                                  style: AppTextStyles.h3.copyWith(color: AppColors.primary),
+                                ),
+                                const Text(' / 100g', style: AppTextStyles.body),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
 
                             // Stock Status
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: product.stockStatus == 'in_stock'
-                                    ? AppColors.success.withValues(alpha: 0.1)
-                                    : AppColors.error.withValues(alpha: 0.1),
+                                color: _getStockColor(state.product!.stockStatus).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                product.stockStatus == 'in_stock' ? 'In Stock' : 'Out of Stock',
+                                state.product!.stockStatus.toUpperCase(),
                                 style: TextStyle(
-                                  color: product.stockStatus == 'in_stock'
-                                      ? AppColors.success
-                                      : AppColors.error,
+                                  color: _getStockColor(state.product!.stockStatus),
                                   fontWeight: FontWeight.w600,
+                                  fontSize: 12,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Price
-                            Row(
-                              children: [
-                                Text(
-                                  '₹${((authState.user?.wholesaleEnabled ?? false) && product.wholesalePrice != null ? product.wholesalePrice : product.price)?.toStringAsFixed(0) ?? "0"}',
-                                  style: AppTextStyles.h2.copyWith(color: AppColors.primary),
-                                ),
-                                Text('/kg', style: AppTextStyles.body),
-                                if ((authState.user?.wholesaleEnabled ?? false) && product.wholesalePrice != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 12),
-                                    child: Text(
-                                      '₹${product.price.toStringAsFixed(0)}',
-                                      style: AppTextStyles.body.copyWith(
-                                        decoration: TextDecoration.lineThrough,
-                                        color: AppColors.textHint,
-                                      ),
-                                    ),
-                                  ),
-                              ],
                             ),
                             const SizedBox(height: 24),
 
                             // Description
-                            if (product.description != null) ...[
-                              const Text('Description', style: AppTextStyles.h4),
-                              const SizedBox(height: 8),
-                              Text(product.description!, style: AppTextStyles.body),
-                              const SizedBox(height: 24),
-                            ],
+                            const Text('Description', style: AppTextStyles.h4),
+                            const SizedBox(height: 8),
+                            Text(
+                              state.product!.benefit,
+                              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(height: 24),
 
                             // Quantity Selector
                             const Text('Quantity', style: AppTextStyles.h4),
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                IconButton(
-                                  onPressed: () => ref.read(productDetailViewModelProvider.notifier).decrementQuantity(),
-                                  icon: const Icon(Icons.remove_circle_outline),
-                                  color: AppColors.primary,
-                                ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                                   decoration: BoxDecoration(
                                     border: Border.all(color: AppColors.border),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Text(
-                                    '${state.quantity} ${state.selectedUnit}',
-                                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                                  child: Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: productDetailVM.decrementQuantity,
+                                        icon: const Icon(Icons.remove),
+                                      ),
+                                      Text(
+                                        '${state.quantity} ${state.selectedUnit}',
+                                        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                                      ),
+                                      IconButton(
+                                        onPressed: productDetailVM.incrementQuantity,
+                                        icon: const Icon(Icons.add),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                IconButton(
-                                  onPressed: () => ref.read(productDetailViewModelProvider.notifier).incrementQuantity(),
-                                  icon: const Icon(Icons.add_circle_outline),
-                                  color: AppColors.primary,
+                                const SizedBox(width: 16),
+                                Text(
+                                  state.formattedTotal,
+                                  style: AppTextStyles.h4.copyWith(color: AppColors.primary),
                                 ),
                               ],
+                            ),
+                            const SizedBox(height: 32),
+
+                            // Add to Cart Button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: state.product!.stockStatus == 'in_stock'
+                                    ? () {
+                                        cartVM?.addToCart(
+                                          state.product!,
+                                          quantity: state.quantity,
+                                          unit: state.selectedUnit,
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('${state.product!.name} added to cart')),
+                                        );
+                                      }
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Add to Cart',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -157,44 +194,17 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ],
                   ),
                 ),
-      bottomNavigationBar: product != null && product.stockStatus == 'in_stock'
-          ? SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ElevatedButton(
-                  onPressed: () => _addToCart(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Add to Cart • ${state.formattedTotal}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-              ),
-            )
-          : null,
     );
   }
 
-  void _addToCart() {
-    final state = ref.read(productDetailViewModelProvider);
-    final product = state.product;
-    
-    if (product != null) {
-      ref.read(cartViewModelProvider.notifier).addToCart(
-        product,
-        quantity: state.quantity,
-        unit: state.selectedUnit,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${product.name} added to cart')),
-      );
-      Navigator.pop(context);
+  Color _getStockColor(String stockStatus) {
+    switch (stockStatus.toLowerCase()) {
+      case 'in_stock':
+        return AppColors.success;
+      case 'growing':
+        return AppColors.warning;
+      default:
+        return AppColors.error;
     }
   }
 }

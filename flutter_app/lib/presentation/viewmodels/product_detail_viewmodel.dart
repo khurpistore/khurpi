@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/presentation/pages/login_page.dart';
 import 'package:khurpi_fresh/presentation/pages/orders_page.dart';
 
@@ -18,13 +18,21 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Load any profile-specific data if needed
+      // Load profile data if needed
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authViewModelProvider);
+    final authVM = ref.watch(authViewModelProvider);
+
+    if (authVM == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final authState = authVM.state;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -35,7 +43,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         automaticallyImplyLeading: false,
       ),
       body: authState.isAuthenticated
-          ? _buildAuthenticatedView(authState)
+          ? _buildAuthenticatedView(authVM, authState)
           : _buildGuestView(),
     );
   }
@@ -91,14 +99,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _buildAuthenticatedView(AuthState authState) {
+  Widget _buildAuthenticatedView(AuthViewModel authVM, AuthState authState) {
     final user = authState.user;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Profile Header
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -131,27 +138,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        user?.name ?? 'User',
-                        style: AppTextStyles.h4,
-                      ),
+                      Text(user?.name ?? 'User', style: AppTextStyles.h4),
                       const SizedBox(height: 4),
                       Text(
                         user?.phone ?? '',
                         style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                       ),
-                      if (user?.email != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          user!.email!,
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint),
-                        ),
-                      ],
                     ],
                   ),
                 ),
                 IconButton(
-                  onPressed: () => _showEditProfileDialog(),
+                  onPressed: () => _showEditProfileDialog(authVM),
                   icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
                 ),
               ],
@@ -159,7 +156,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
           const SizedBox(height: 20),
 
-          // Menu Items
           _buildMenuSection([
             _MenuItem(
               icon: Icons.shopping_bag_outlined,
@@ -174,40 +170,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               icon: Icons.location_on_outlined,
               title: 'Saved Addresses',
               subtitle: user?.address ?? 'Add your delivery address',
-              onTap: () => _showAddressDialog(),
-            ),
-            _MenuItem(
-              icon: Icons.notifications_outlined,
-              title: 'Notifications',
-              subtitle: 'Manage your notifications',
-              onTap: () {},
+              onTap: () => _showAddressDialog(authVM),
             ),
           ]),
 
           const SizedBox(height: 16),
 
-          _buildMenuSection([
-            _MenuItem(
-              icon: Icons.help_outline,
-              title: 'Help & Support',
-              subtitle: 'Get help with your orders',
-              onTap: () {},
-            ),
-            _MenuItem(
-              icon: Icons.info_outline,
-              title: 'About',
-              subtitle: 'App version 1.0.0',
-              onTap: () {},
-            ),
-          ]),
-
-          const SizedBox(height: 16),
-
-          // Logout Button
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => _showLogoutConfirmation(),
+              onPressed: () => _showLogoutConfirmation(authVM),
               icon: const Icon(Icons.logout, color: AppColors.error),
               label: const Text('Logout', style: TextStyle(color: AppColors.error)),
               style: OutlinedButton.styleFrom(
@@ -219,7 +191,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
         ],
       ),
     );
@@ -247,17 +218,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ListTile(
                 leading: Icon(item.icon, color: AppColors.primary),
                 title: Text(item.title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-                subtitle: Text(
-                  item.subtitle,
-                  style: AppTextStyles.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                subtitle: Text(item.subtitle, style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                 trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
                 onTap: item.onTap,
               ),
-              if (index < items.length - 1)
-                const Divider(height: 1, indent: 16, endIndent: 16),
+              if (index < items.length - 1) const Divider(height: 1, indent: 16, endIndent: 16),
             ],
           );
         }).toList(),
@@ -265,47 +230,23 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  void _showEditProfileDialog() {
-    final user = ref.read(authViewModelProvider).user;
+  void _showEditProfileDialog(AuthViewModel authVM) {
+    final user = authVM.state.user;
     final nameController = TextEditingController(text: user?.name ?? '');
-    final emailController = TextEditingController(text: user?.email ?? '');
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Edit Profile'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-          ],
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
-              ref.read(authViewModelProvider.notifier).updateProfile(
-                name: nameController.text,
-                email: emailController.text,
-              );
+              authVM.updateProfile(name: nameController.text);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
@@ -316,8 +257,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  void _showAddressDialog() {
-    final user = ref.read(authViewModelProvider).user;
+  void _showAddressDialog(AuthViewModel authVM) {
+    final user = authVM.state.user;
     final addressController = TextEditingController(text: user?.address ?? '');
     final cityController = TextEditingController(text: user?.city ?? '');
     final pincodeController = TextEditingController(text: user?.pincode ?? '');
@@ -329,53 +270,22 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: addressController,
-              decoration: const InputDecoration(
-                labelText: 'Address',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
-            ),
+            TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Address', border: OutlineInputBorder()), maxLines: 2),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: cityController,
-                    decoration: const InputDecoration(
-                      labelText: 'City',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
+                Expanded(child: TextField(controller: cityController, decoration: const InputDecoration(labelText: 'City', border: OutlineInputBorder()))),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: pincodeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Pincode',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
+                Expanded(child: TextField(controller: pincodeController, decoration: const InputDecoration(labelText: 'Pincode', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
               ],
             ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
-              ref.read(authViewModelProvider.notifier).updateAddress(
-                address: addressController.text,
-                city: cityController.text,
-                pincode: pincodeController.text,
-              );
+              authVM.updateAddress(address: addressController.text, city: cityController.text, pincode: pincodeController.text);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
@@ -386,21 +296,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  void _showLogoutConfirmation() {
+  void _showLogoutConfirmation(AuthViewModel authVM) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Logout'),
         content: const Text('Are you sure you want to logout?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ref.read(authViewModelProvider.notifier).logout();
+              authVM.logout();
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
@@ -417,10 +324,5 @@ class _MenuItem {
   final String subtitle;
   final VoidCallback onTap;
 
-  _MenuItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+  _MenuItem({required this.icon, required this.title, required this.subtitle, required this.onTap});
 }

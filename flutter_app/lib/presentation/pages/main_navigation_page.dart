@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/presentation/pages/home_page.dart';
 import 'package:khurpi_fresh/presentation/pages/categories_page.dart';
 import 'package:khurpi_fresh/presentation/pages/cart_page.dart';
@@ -26,9 +26,11 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cartState = ref.watch(cartViewModelProvider);
-    final authState = ref.watch(authViewModelProvider);
-    final userAddress = authState.user?.address ?? 'Set your delivery address';
+    final cartVM = ref.watch(cartViewModelProvider);
+    final authVM = ref.watch(authViewModelProvider);
+    
+    final cartItemCount = cartVM?.state.items.length ?? 0;
+    final userAddress = authVM?.state.user?.address ?? 'Set your delivery address';
 
     return Scaffold(
       body: Column(
@@ -118,7 +120,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
                 clipBehavior: Clip.none,
                 children: [
                   const Icon(Icons.shopping_cart_outlined),
-                  if (cartState.items.isNotEmpty)
+                  if (cartItemCount > 0)
                     Positioned(
                       right: -6,
                       top: -6,
@@ -130,7 +132,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
                         ),
                         constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                         child: Text(
-                          '${cartState.items.length}',
+                          '$cartItemCount',
                           style: const TextStyle(color: Colors.white, fontSize: 10),
                           textAlign: TextAlign.center,
                         ),
@@ -142,7 +144,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
                 clipBehavior: Clip.none,
                 children: [
                   const Icon(Icons.shopping_cart),
-                  if (cartState.items.isNotEmpty)
+                  if (cartItemCount > 0)
                     Positioned(
                       right: -6,
                       top: -6,
@@ -154,7 +156,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
                         ),
                         constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                         child: Text(
-                          '${cartState.items.length}',
+                          '$cartItemCount',
                           style: const TextStyle(color: Colors.white, fontSize: 10),
                           textAlign: TextAlign.center,
                         ),
@@ -176,10 +178,12 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
   }
 
   void _showAddressBottomSheet(BuildContext context) {
-    final authState = ref.read(authViewModelProvider);
-    final addressController = TextEditingController(text: authState.user?.address ?? '');
-    final cityController = TextEditingController(text: authState.user?.city ?? '');
-    final pincodeController = TextEditingController(text: authState.user?.pincode ?? '');
+    final authVM = ref.read(authViewModelProvider);
+    if (authVM == null) return;
+
+    final addressController = TextEditingController(text: authVM.state.user?.address ?? '');
+    final cityController = TextEditingController(text: authVM.state.user?.city ?? '');
+    final pincodeController = TextEditingController(text: authVM.state.user?.pincode ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -241,8 +245,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Save address
-                  ref.read(authViewModelProvider.notifier).updateAddress(
+                  authVM.updateAddress(
                     address: addressController.text,
                     city: cityController.text,
                     pincode: pincodeController.text,
