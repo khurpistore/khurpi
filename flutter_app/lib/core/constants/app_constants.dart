@@ -18,4 +18,8 @@ class AppConstants {
   // Default Values
   static const String defaultCurrency = '₹';
   static const String defaultUnit = 'kg';
+  
+  // Delivery
+  static const double freeDeliveryThreshold = 500.0;
+  static const double standardDeliveryFee = 40.0;
 }

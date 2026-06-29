@@ -522,32 +522,53 @@ January 29, 2025
     - Fixed kg-based quantity calculations (removed old gram-based calculations)
   - **Testing:** All 48 E2E tests + 32 backend tests pass (100%)
 
-- **Jun 29, 2026:** Flutter Customer App Development
+- **Jun 29, 2026:** Flutter Customer App Development (Clean Architecture + Riverpod)
   - **Complete Flutter mobile app created at `/app/flutter_app/`**
-  - **Core Architecture (Clean/MVVM):**
-    - `lib/core/constants/` - App colors, text styles, constants
-    - `lib/core/models/` - Product, Category, Cart, Order, User, Banner models
-    - `lib/core/services/` - API service, Auth, Products, Orders, Banners
-    - `lib/core/providers/` - State management with Provider
-    - `lib/core/widgets/` - Reusable UI components
+  - **Clean Architecture Implementation:**
+    - **Core Layer (`lib/core/`):**
+      - `constants/` - App colors, text styles, API constants
+      - `error/` - Failure and Exception classes for error handling
+      - `network/` - Dio-based API client with interceptors
+      - `usecase/` - Base UseCase abstract classes
+    - **Domain Layer (`lib/domain/`):**
+      - `entities/` - Business entities (Product, Category, User, Cart, Order, Banner)
+      - `repositories/` - Repository interfaces (contracts)
+      - `usecases/` - Business logic operations (GetProducts, Login, CreateOrder, etc.)
+    - **Data Layer (`lib/data/`):**
+      - `models/` - Data models extending entities (JSON serialization)
+      - `datasources/local/` - Local storage (SharedPreferences for cart)
+      - `datasources/remote/` - API data sources (Products, Auth, Orders, Banners)
+      - `repositories/` - Repository implementations
+    - **Presentation Layer (`lib/presentation/`):**
+      - `viewmodels/` - StateNotifier ViewModels with immutable states
+      - `providers/` - Riverpod providers (dependency injection)
+      - `pages/` - Screen pages (Home, Products, Cart, Checkout)
+      - `widgets/` - Reusable UI components
+  - **State Management: Riverpod + MVVM**
+    - ViewModels use `StateNotifier` pattern
+    - Immutable state classes with `copyWith` methods
+    - Providers handle all dependency injection
+    - `Either<Failure, T>` for functional error handling (dartz package)
+  - **ViewModels Created:**
+    - `ProductsViewModel` - Products list, categories, search, filters
+    - `ProductDetailViewModel` - Single product, quantity selection
+    - `AuthViewModel` - Login, register, profile management
+    - `CartViewModel` - Cart items, totals, persistence
+    - `OrdersViewModel` - Order creation, history, cancellation
+    - `BannersViewModel` - Promotional banners
   - **Feature Screens:**
-    - Home Screen - Location header, search bar, category horizontal scroll, banner carousel, featured products
-    - Products Screen - Category filters, search, product grid
-    - Product Detail - Large image, stock badge, quantity selector (kg/gm toggle), add to cart
-    - Cart Screen - Item list, quantity adjustment, order summary, checkout button
-    - Checkout Screen - Address, delivery date/slot, payment method, order confirmation
-    - Orders Screen - Order history with status badges
-    - Profile Screen - User info, menu items, logout
-    - Auth Screen - Login/Register with phone number
-  - **State Management:** Provider pattern with ChangeNotifier
-  - **Local Storage:** Cart persisted with SharedPreferences
-  - **API Integration:** Connects to existing FastAPI backend
+    - Splash Page - Animated logo, auth/cart initialization
+    - Home Page - Location, search, categories scroll, banners, featured products
+    - Products Page - Category filters, search, product grid
+    - Product Detail Page - Image, details, kg/gm toggle, add to cart
+    - Cart Page - Items list, quantity management, checkout
+    - Checkout Page - Address, schedule, payment, order confirmation
   - **UI Features:**
     - Material Design 3 with custom theme
     - Animated splash screen
-    - Bottom navigation with FAB cart button
+    - Bottom navigation with floating cart FAB
     - Horizontal scrolling categories
-    - Banner carousel with auto-play
+    - Banner carousel with auto-play and indicators
     - Stock status badges (In Stock, Growing, Out of Stock)
     - Wholesale pricing support for enabled users
   - **Build Targets:** Android APK, iOS (requires macOS)

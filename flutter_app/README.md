@@ -1,201 +1,183 @@
-# Khurpi Fresh - Flutter Customer App
+# Khurpi Fresh - Flutter Customer App (Clean Architecture + Riverpod)
 
-A complete Flutter mobile application for the Khurpi Fresh Veg & Fruit Shop. This app allows customers to browse products, manage their cart, and place orders.
+A complete Flutter mobile application built with **Clean Architecture**, **Riverpod** state management, and **MVVM** pattern.
 
-## Features
-
-### 🏠 Home Screen
-- Location header with delivery address
-- Global search bar
-- Horizontal scrolling categories
-- Banner carousel with auto-play
-- Featured products grid
-
-### 📦 Products
-- Browse all products with category filtering
-- Search products by name
-- Product detail page with:
-  - Large product image
-  - Stock status badge
-  - Price (retail/wholesale based on user)
-  - Quantity selector (kg/gm toggle)
-  - Add to cart functionality
-
-### 🛒 Cart & Checkout
-- View cart items with quantity adjustment
-- Remove items from cart
-- Order summary with delivery fee calculation
-- Free delivery on orders above ₹500
-- Select delivery date and time slot
-- Payment method selection (COD/UPI)
-- Order confirmation
-
-### 👤 User Features
-- Login/Register with phone number
-- Profile management
-- Order history
-- Wholesale pricing for enabled customers
-
-## Project Structure
+## 🏗️ Architecture Overview
 
 ```
-flutter_app/
-├── lib/
-│   ├── core/
-│   │   ├── constants/       # App colors, text styles, constants
-│   │   ├── models/          # Data models (Product, Category, Cart, Order, User)
-│   │   ├── services/        # API services (Auth, Products, Orders)
-│   │   ├── providers/       # State management (Provider)
-│   │   └── widgets/         # Reusable UI components
-│   ├── features/
-│   │   ├── home/           # Home screen
-│   │   ├── products/       # Products list & detail screens
-│   │   ├── cart/           # Cart screen
-│   │   ├── checkout/       # Checkout screen
-│   │   ├── orders/         # Orders history
-│   │   ├── auth/           # Login/Register screens
-│   │   └── profile/        # User profile
-│   └── main.dart           # App entry point
-├── assets/
-│   └── images/             # Local images
-└── pubspec.yaml            # Dependencies
+lib/
+├── core/                      # Shared utilities and base classes
+│   ├── constants/             # App constants, colors, text styles
+│   ├── error/                 # Failure and Exception classes
+│   ├── network/               # API Client (Dio)
+│   └── usecase/               # Base UseCase abstract class
+│
+├── data/                      # Data Layer
+│   ├── datasources/
+│   │   ├── local/             # Local data sources (SharedPreferences)
+│   │   └── remote/            # Remote data sources (API calls)
+│   ├── models/                # Data models (extend entities)
+│   └── repositories/          # Repository implementations
+│
+├── domain/                    # Domain Layer (Business Logic)
+│   ├── entities/              # Business entities
+│   ├── repositories/          # Repository interfaces
+│   └── usecases/              # Use cases (business operations)
+│
+├── presentation/              # Presentation Layer (UI)
+│   ├── pages/                 # Screen pages
+│   ├── viewmodels/            # ViewModels (StateNotifier)
+│   ├── widgets/               # Reusable UI components
+│   └── providers/             # Riverpod providers (DI)
+│
+└── main.dart                  # App entry point
 ```
 
-## Setup & Installation
+## 🎯 Key Patterns
 
-### Prerequisites
-- Flutter SDK 3.0.0 or higher
-- Dart SDK 3.0.0 or higher
-- Android Studio / Xcode (for building)
+### Clean Architecture Layers
+1. **Domain Layer** - Business logic, entities, repository contracts, use cases
+2. **Data Layer** - API implementation, data models, repository implementations
+3. **Presentation Layer** - UI, ViewModels, state management
 
-### Steps
+### MVVM + Riverpod
+- **ViewModels** use `StateNotifier` for state management
+- **States** are immutable data classes
+- **Providers** handle dependency injection
+- Unidirectional data flow
 
-1. **Clone/Download the flutter_app folder**
-
-2. **Install dependencies**
-   ```bash
-   cd flutter_app
-   flutter pub get
-   ```
-
-3. **Update API Base URL**
-   
-   Edit `lib/core/constants/app_constants.dart`:
-   ```dart
-   static const String baseUrl = 'YOUR_API_URL/api';
-   ```
-
-4. **Add Poppins font (optional)**
-   
-   Download Poppins font files and place them in `assets/fonts/`:
-   - Poppins-Regular.ttf
-   - Poppins-Medium.ttf
-   - Poppins-SemiBold.ttf
-   - Poppins-Bold.ttf
-
-5. **Run the app**
-   ```bash
-   # For development
-   flutter run
-   
-   # For Android release
-   flutter build apk --release
-   
-   # For iOS release
-   flutter build ios --release
-   ```
-
-## Configuration
-
-### Android (android/app/build.gradle)
-```gradle
-android {
-    compileSdkVersion 34
-    
-    defaultConfig {
-        applicationId "com.khurpifresh.app"
-        minSdkVersion 21
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0.0"
-    }
-}
+### Either Type (Functional Error Handling)
+Using `dartz` package for functional programming:
+```dart
+Future<Either<Failure, List<ProductEntity>>> getProducts();
 ```
 
-### iOS (ios/Runner/Info.plist)
-- Bundle Identifier: com.khurpifresh.app
-- App Name: Khurpi Fresh
-
-## API Endpoints Used
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/products` | GET | Get all products |
-| `/api/products/{id}` | GET | Get product details |
-| `/api/categories` | GET | Get all categories |
-| `/api/auth/login` | POST | User login |
-| `/api/auth/register` | POST | User registration |
-| `/api/auth/me` | GET | Get current user |
-| `/api/orders` | POST | Create order |
-| `/api/orders/my` | GET | Get user orders |
-| `/api/banners` | GET | Get promotional banners |
-
-## State Management
-
-Using **Provider** for state management:
-- `AuthProvider` - User authentication state
-- `ProductProvider` - Products and categories
-- `CartProvider` - Shopping cart (persisted locally)
-- `OrderProvider` - Order management
-- `BannerProvider` - Promotional banners
-
-## Key Dependencies
+## 📦 Dependencies
 
 ```yaml
-dependencies:
-  provider: ^6.1.2          # State management
-  http: ^1.2.0              # API calls
-  shared_preferences: ^2.2.2 # Local storage
-  cached_network_image: ^3.3.1 # Image caching
-  carousel_slider: ^4.2.1   # Banner carousel
-  intl: ^0.19.0             # Date formatting
+# State Management
+flutter_riverpod: ^2.5.1
+
+# HTTP & Network
+dio: ^5.4.0
+
+# Functional Programming
+dartz: ^0.10.1
+
+# Local Storage
+shared_preferences: ^2.2.2
+
+# UI
+cached_network_image: ^3.3.1
+carousel_slider: ^4.2.1
 ```
 
-## Screens Preview
+## 🚀 Getting Started
 
-1. **Splash Screen** - Animated logo with loading
-2. **Home Screen** - Location → Search → Categories → Banners → Products
-3. **Products Screen** - Category filters, search, product grid
-4. **Product Detail** - Image, details, quantity selector, add to cart
-5. **Cart Screen** - Items list, quantity adjustment, order summary
-6. **Checkout Screen** - Address, date/time slot, payment, confirm
-7. **Orders Screen** - Order history with status
-8. **Profile Screen** - User info, settings, logout
+### Prerequisites
+- Flutter SDK 3.0.0+
+- Dart SDK 3.0.0+
 
-## Building for Production
+### Installation
 
-### Android
 ```bash
+cd flutter_app
+flutter pub get
+flutter run
+```
+
+### Update API URL
+Edit `lib/core/constants/app_constants.dart`:
+```dart
+static const String baseUrl = 'YOUR_API_URL/api';
+```
+
+## 📱 Screens
+
+| Screen | Description |
+|--------|-------------|
+| Splash | Animated logo, auth initialization |
+| Home | Location, search, categories, banners, products |
+| Products | Category filters, search, product grid |
+| Product Detail | Image, details, quantity selector, add to cart |
+| Cart | Items list, quantity management, checkout |
+| Checkout | Address, delivery schedule, payment, order |
+
+## 🔄 State Management Flow
+
+```
+UI Action → ViewModel → UseCase → Repository → DataSource → API
+                ↓
+          State Update → UI Rebuild
+```
+
+### Example: Fetching Products
+
+```dart
+// 1. ViewModel method
+Future<void> fetchProducts() async {
+  state = state.copyWith(isLoading: true);
+  
+  final result = await _getProductsUseCase(GetProductsParams());
+  
+  result.fold(
+    (failure) => state = state.copyWith(error: failure.message),
+    (products) => state = state.copyWith(products: products),
+  );
+}
+
+// 2. UI watches state
+final productsState = ref.watch(productsViewModelProvider);
+
+// 3. UI triggers action
+ref.read(productsViewModelProvider.notifier).fetchProducts();
+```
+
+## 🗂️ ViewModels
+
+| ViewModel | State | Purpose |
+|-----------|-------|---------|
+| `ProductsViewModel` | Products, categories, filters | Product listing |
+| `ProductDetailViewModel` | Selected product, quantity | Product details |
+| `AuthViewModel` | User, auth status | Authentication |
+| `CartViewModel` | Cart items, totals | Shopping cart |
+| `OrdersViewModel` | Orders list | Order management |
+| `BannersViewModel` | Promotional banners | Home banners |
+
+## 🧪 Testing
+
+The architecture enables easy testing:
+- **Unit tests**: Use cases, repositories
+- **Widget tests**: ViewModels with mocked use cases
+- **Integration tests**: Full flow with mocked data sources
+
+## 📝 Building
+
+```bash
+# Android APK
 flutter build apk --release
-# Output: build/app/outputs/flutter-apk/app-release.apk
 
-# For App Bundle (recommended for Play Store)
+# Android App Bundle
 flutter build appbundle --release
-```
 
-### iOS
-```bash
+# iOS (requires macOS)
 flutter build ios --release
-# Then open in Xcode for archive and distribution
 ```
 
-## Notes
+## 🔑 Key Features
 
-- The app uses the same backend API as the web admin panel
-- Cart data is persisted locally using SharedPreferences
-- Wholesale pricing is automatically shown for enabled customers
-- Stock status affects add-to-cart availability
+- ✅ Clean Architecture separation
+- ✅ Riverpod state management
+- ✅ MVVM pattern with ViewModels
+- ✅ Functional error handling (Either)
+- ✅ Repository pattern
+- ✅ Use cases for business logic
+- ✅ Dependency injection via providers
+- ✅ Immutable state objects
+- ✅ Cart persistence (local storage)
+- ✅ Wholesale pricing support
+- ✅ Stock status handling
 
-## License
+## 📄 License
 
 © 2024 Khurpi Fresh. All rights reserved.
