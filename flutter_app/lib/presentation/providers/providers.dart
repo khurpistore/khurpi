@@ -11,12 +11,14 @@ import 'package:khurpi_fresh/data/api/product_api_service.dart';
 import 'package:khurpi_fresh/data/api/auth_api_service.dart';
 import 'package:khurpi_fresh/data/api/order_api_service.dart';
 import 'package:khurpi_fresh/data/api/banner_api_service.dart';
+import 'package:khurpi_fresh/data/api/store_api_service.dart';
 
 // Data Sources
 import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
 import 'package:khurpi_fresh/data/datasources/remote/auth_remote_datasource.dart';
 import 'package:khurpi_fresh/data/datasources/remote/order_remote_datasource.dart';
 import 'package:khurpi_fresh/data/datasources/remote/banner_remote_datasource.dart';
+import 'package:khurpi_fresh/data/datasources/remote/store_remote_datasource.dart';
 import 'package:khurpi_fresh/data/datasources/local/cart_local_datasource.dart';
 import 'package:khurpi_fresh/data/datasources/local/auth_local_datasource.dart';
 
@@ -27,6 +29,7 @@ export 'package:khurpi_fresh/presentation/viewmodels/cart_viewmodel.dart';
 export 'package:khurpi_fresh/presentation/viewmodels/orders_viewmodel.dart';
 export 'package:khurpi_fresh/presentation/viewmodels/product_detail_viewmodel.dart';
 export 'package:khurpi_fresh/presentation/viewmodels/banners_viewmodel.dart';
+export 'package:khurpi_fresh/presentation/viewmodels/store_viewmodel.dart';
 
 part 'providers.g.dart';
 
@@ -111,4 +114,18 @@ BannerRemoteDataSource? provideBannerRemoteDataSource(Ref ref) {
   final apiService = ref.watch(provideBannerApiServiceProvider);
   if (apiService == null) return null;
   return BannerRemoteDataSourceImpl(apiService);
+}
+
+@Riverpod(keepAlive: true)
+StoreApiService? provideStoreApiService(Ref ref) {
+  final dio = ref.watch(provideDioProvider);
+  if (dio == null) return null;
+  return StoreApiService(dio);
+}
+
+@Riverpod(keepAlive: true)
+StoreRemoteDataSource? provideStoreRemoteDataSource(Ref ref) {
+  final apiService = ref.watch(provideStoreApiServiceProvider);
+  if (apiService == null) return null;
+  return StoreRemoteDataSourceImpl(apiService);
 }

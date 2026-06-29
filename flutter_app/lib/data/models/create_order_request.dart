@@ -13,6 +13,10 @@ abstract class CreateOrderRequest with _$CreateOrderRequest {
     required String phone,
     @JsonKey(name: 'payment_method') required String paymentMethod,
     String? notes,
+    // Delivery options
+    @JsonKey(name: 'delivery_type') String? deliveryType,
+    @JsonKey(name: 'delivery_date') String? deliveryDate,
+    @JsonKey(name: 'delivery_slot_id') String? deliverySlotId,
   }) = _CreateOrderRequest;
 
   factory CreateOrderRequest.fromJson(Map<String, dynamic> json) =>

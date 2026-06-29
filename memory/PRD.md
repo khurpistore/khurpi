@@ -19,34 +19,26 @@ Build a Veg & Fruit Shop e-commerce application with:
 ### Customer Mobile App (Flutter)
 - Location: `/app/flutter_app/`
 - Architecture: Clean Architecture (simplified - removed Entity/UseCase layers, models used directly)
-- State Management: Riverpod with StateNotifier pattern (manual providers, no annotations)
+- State Management: **Riverpod Class Annotations** (`@riverpod class ViewModel extends _$ViewModel`)
 - Data Models: Freezed (@freezed)
 - Networking: Retrofit + Dio
 - Package name: `khurpi_fresh`
 
-#### Provider Pattern
+#### Provider Pattern (Updated - Using Annotations)
 ```dart
-// Provider factory pattern
-final provideAuthViewModelProvider = Provider<AuthViewModel?>((ref) {
-  final authRemoteDataSource = ref.watch(authRemoteDataSourceProvider);
-  final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
+// ViewModel with Riverpod annotations
+@Riverpod(keepAlive: true)
+class CartViewModel extends _$CartViewModel {
+  @override
+  CartState build() {
+    // Initialize state
+    return const CartState();
+  }
+}
 
-  return AuthViewModel(
-    authRemoteDataSource: authRemoteDataSource,
-    authLocalDataSource: authLocalDataSource,
-  );
-});
-
-// StateNotifier provider for UI consumption
-final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
-  final authRemoteDataSource = ref.watch(authRemoteDataSourceProvider);
-  final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
-
-  return AuthViewModel(
-    authRemoteDataSource: authRemoteDataSource,
-    authLocalDataSource: authLocalDataSource,
-  );
-});
+// Usage in UI
+final cartState = ref.watch(cartViewModelProvider);
+ref.read(cartViewModelProvider.notifier).addToCart(product);
 ```
 
 ## What's Been Implemented
@@ -61,26 +53,27 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((r
 - ✅ User management with wholesale access toggle
 - ✅ 50gm unit standardization
 
-### Flutter Customer App (Jun 29, 2026)
+### Flutter Customer App (Jun 30, 2026)
 - ✅ Clean Architecture folder structure (simplified - no Entity layer)
-- ✅ Freezed Models (Product, Category, User, Order, Cart, Banner)
-- ✅ Retrofit API Services for networking
-- ✅ Riverpod Annotated ViewModels
+- ✅ Freezed Models (Product, Category, User, Order, Cart, Banner, **StoreSettings, DeliverySlot**)
+- ✅ Retrofit API Services for networking (Product, Auth, Order, Banner, **Store**)
+- ✅ **Riverpod Class Annotated ViewModels** (@riverpod class pattern)
 - ✅ **Bottom Navigation Bar** (Home, Categories, Cart, Profile)
 - ✅ **Address bar at top** of main navigation
 - ✅ UI Pages: Splash, Main Navigation, Home, Products, Product Detail, Cart, Checkout, Categories, Profile, Login, Orders
 - ✅ Reusable Widgets (ProductCard, CategoryCard, BannerCarousel, CartItemCard)
 - ✅ Fixed Riverpod "modifying provider while building" errors with WidgetsBinding.addPostFrameCallback
 - ✅ Backend returns `image_url` field for Flutter compatibility
+- ✅ **Delivery Options in Checkout** (Instant & Slotted delivery with date/time slot picker)
 
 ## Prioritized Backlog
 
 ### P0 (Immediate)
 - [ ] User verification: Run `flutter pub run build_runner build --delete-conflicting-outputs` locally
-- [ ] Test Flutter app end-to-end with live backend
+- [ ] Test Flutter checkout with delivery options end-to-end
 
 ### P1 (Next Sprint)
-- [ ] Fix Web frontend "No product found" bug (recurring issue)
+- [ ] Fix Web frontend "No product found" bug (recurring issue - 3x)
 - [ ] Refactor `server.py` into modular routers
 - [ ] Complete authentication flow in Flutter
 
@@ -98,8 +91,10 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((r
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - User registration
 - `GET /api/auth/me` - Current user (includes wholesale_enabled)
-- `POST /api/orders` - Create order
+- `POST /api/orders` - Create order (supports delivery_type, delivery_date, delivery_slot_id)
 - `GET /api/orders/my-orders` - User's orders
+- **`GET /api/store/settings` - Store settings (delivery options, fees)**
+- **`GET /api/delivery-slots?date=YYYY-MM-DD` - Available delivery slots for date**
 
 ## Test Credentials
 - **Admin**: username `admin`, password `Khurpi2026Secure`

@@ -75,6 +75,9 @@ class OrdersViewModel extends _$OrdersViewModel {
     required String phone,
     required String paymentMethod,
     String? notes,
+    String? deliveryType,
+    String? deliveryDate,
+    String? deliverySlotId,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -87,6 +90,9 @@ class OrdersViewModel extends _$OrdersViewModel {
         phone: phone,
         paymentMethod: paymentMethod,
         notes: notes,
+        deliveryType: deliveryType,
+        deliveryDate: deliveryDate,
+        deliverySlotId: deliverySlotId,
       );
 
       state = state.copyWith(

@@ -6,3 +6,5 @@ export 'banner_model.dart';
 export 'cart_item_model.dart';
 export 'auth_response_model.dart';
 export 'create_order_request.dart';
+export 'store_settings_model.dart';
+export 'delivery_slot_model.dart';

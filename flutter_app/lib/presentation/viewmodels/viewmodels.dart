@@ -4,3 +4,4 @@ export 'orders_viewmodel.dart';
 export 'products_viewmodel.dart';
 export 'product_detail_viewmodel.dart';
 export 'banners_viewmodel.dart';
+export 'store_viewmodel.dart';

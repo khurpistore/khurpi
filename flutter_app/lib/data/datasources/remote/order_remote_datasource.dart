@@ -13,6 +13,9 @@ abstract class OrderRemoteDataSource {
     required String phone,
     required String paymentMethod,
     String? notes,
+    String? deliveryType,
+    String? deliveryDate,
+    String? deliverySlotId,
   });
   Future<List<OrderModel>> getMyOrders();
   Future<OrderModel> getOrderById(String id);
@@ -33,6 +36,9 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     required String phone,
     required String paymentMethod,
     String? notes,
+    String? deliveryType,
+    String? deliveryDate,
+    String? deliverySlotId,
   }) async {
     try {
       final request = CreateOrderRequest(
@@ -47,6 +53,9 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         phone: phone,
         paymentMethod: paymentMethod,
         notes: notes,
+        deliveryType: deliveryType,
+        deliveryDate: deliveryDate,
+        deliverySlotId: deliverySlotId,
       );
       return await _apiService.createOrder(request);
     } catch (e) {
