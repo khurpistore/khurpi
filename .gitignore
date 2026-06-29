@@ -197,3 +197,8 @@ frontend/node_modules/.cache/default-development/15.pack
 *.env
 *.env.*
 tests/test-results/product-navigation-Product-3d578--product-image-in-list-view-chromium-retry1/trace.zip
+.env
+.env.*
+credentials.json
+*.key
+.credentials
