@@ -46,13 +46,22 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   Future<void> _initApp() async {
-    // Initialize auth and cart
-    await Future.wait([
-      ref.read(authViewModelProvider.notifier).initialize(),
-      ref.read(cartViewModelProvider.notifier).loadCart(),
-      Future.delayed(const Duration(seconds: 2)),
-    ]);
+    try {
+      // Initialize auth and cart with timeout
+      await Future.wait([
+        ref.read(authViewModelProvider.notifier).initialize(),
+        ref.read(cartViewModelProvider.notifier).loadCart(),
+        Future.delayed(const Duration(seconds: 2)),
+      ]).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => [], // Continue even if timeout
+      );
+    } catch (e) {
+      // Log error but continue to home page
+      debugPrint('Splash init error: $e');
+    }
 
+    // Always navigate to home page
     if (mounted) {
       Navigator.pushReplacement(
         context,
