@@ -380,7 +380,7 @@ const Products = () => {
                 >
                   <div 
                     className="relative aspect-square cursor-pointer"
-                    onClick={() => navigate(`/products/${product.id}`)}
+                    onClick={() => navigate(`/product/${product.id}`)}
                   >
                     <img 
                       src={product.image} 
@@ -410,7 +410,7 @@ const Products = () => {
                   <CardContent className="p-3">
                     <h3 
                       className="font-semibold text-sm mb-1 line-clamp-1 cursor-pointer hover:text-primary"
-                      onClick={() => navigate(`/products/${product.id}`)}
+                      onClick={() => navigate(`/product/${product.id}`)}
                     >
                       {product.name}
                     </h3>
@@ -483,7 +483,7 @@ const Products = () => {
                   <CardContent className="p-3 flex gap-4">
                     <div 
                       className="relative w-24 h-24 flex-shrink-0 cursor-pointer"
-                      onClick={() => navigate(`/products/${product.id}`)}
+                      onClick={() => navigate(`/product/${product.id}`)}
                     >
                       <img 
                         src={product.image} 
@@ -498,7 +498,7 @@ const Products = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h3 className="font-semibold cursor-pointer hover:text-primary" onClick={() => navigate(`/products/${product.id}`)}>
+                          <h3 className="font-semibold cursor-pointer hover:text-primary" onClick={() => navigate(`/product/${product.id}`)}>
                             {product.name}
                           </h3>
                           <p className="text-sm text-muted-foreground line-clamp-1">{product.benefit}</p>
