@@ -1,104 +1,81 @@
 import 'package:dartz/dartz.dart';
-import 'package:khurpi_fresh/core/error/exceptions.dart';
 import 'package:khurpi_fresh/core/error/failures.dart';
-import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
-import 'package:khurpi_fresh/domain/entities/product_entity.dart';
+import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 import 'package:khurpi_fresh/domain/repositories/cart_repository.dart';
 import 'package:khurpi_fresh/data/datasources/local/cart_local_datasource.dart';
 
 class CartRepositoryImpl implements CartRepository {
   final CartLocalDataSource localDataSource;
-  List<CartItemEntity> _cachedItems = [];
 
-  CartRepositoryImpl(this.localDataSource);
+  CartRepositoryImpl({required this.localDataSource});
 
   @override
-  Future<Either<Failure, List<CartItemEntity>>> getCartItems() async {
+  Future<Either<Failure, List<CartItemModel>>> getCartItems() async {
     try {
-      _cachedItems = await localDataSource.getCartItems();
-      return Right(_cachedItems);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+      final items = await localDataSource.getCartItems();
+      return Right(items);
+    } catch (e) {
+      return Left(CacheFailure(message: 'Failed to get cart items: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> addItem(ProductEntity product, double quantity, String unit) async {
+  Future<Either<Failure, void>> addToCart(CartItemModel item) async {
     try {
-      final existingIndex = _cachedItems.indexWhere((item) => item.product.id == product.id);
-
+      final items = await localDataSource.getCartItems();
+      final existingIndex = items.indexWhere((i) => i.productId == item.productId);
+      
       if (existingIndex >= 0) {
-        _cachedItems[existingIndex] = _cachedItems[existingIndex].copyWith(
-          quantity: _cachedItems[existingIndex].quantity + quantity,
+        items[existingIndex] = item.copyWith(
+          quantity: items[existingIndex].quantity + item.quantity,
         );
       } else {
-        _cachedItems.add(CartItemEntity(
-          product: product,
-          quantity: quantity,
-          unit: unit,
-        ));
+        items.add(item);
       }
-
-      await localDataSource.saveCartItems(_cachedItems);
+      
+      await localDataSource.saveCartItems(items);
       return const Right(null);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: 'Failed to add to cart: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> updateQuantity(String productId, double quantity) async {
+  Future<Either<Failure, void>> updateCartItem(CartItemModel item) async {
     try {
-      final index = _cachedItems.indexWhere((item) => item.product.id == productId);
-
+      final items = await localDataSource.getCartItems();
+      final index = items.indexWhere((i) => i.productId == item.productId);
+      
       if (index >= 0) {
-        if (quantity <= 0) {
-          _cachedItems.removeAt(index);
-        } else {
-          _cachedItems[index] = _cachedItems[index].copyWith(quantity: quantity);
-        }
-        await localDataSource.saveCartItems(_cachedItems);
+        items[index] = item;
+        await localDataSource.saveCartItems(items);
       }
-
+      
       return const Right(null);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: 'Failed to update cart: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> removeItem(String productId) async {
+  Future<Either<Failure, void>> removeFromCart(String productId) async {
     try {
-      _cachedItems.removeWhere((item) => item.product.id == productId);
-      await localDataSource.saveCartItems(_cachedItems);
+      final items = await localDataSource.getCartItems();
+      items.removeWhere((i) => i.productId == productId);
+      await localDataSource.saveCartItems(items);
       return const Right(null);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: 'Failed to remove from cart: $e'));
     }
   }
 
   @override
   Future<Either<Failure, void>> clearCart() async {
     try {
-      _cachedItems = [];
       await localDataSource.clearCart();
       return const Right(null);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    }
-  }
-
-  @override
-  bool isInCart(String productId) {
-    return _cachedItems.any((item) => item.product.id == productId);
-  }
-
-  @override
-  CartItemEntity? getCartItem(String productId) {
-    try {
-      return _cachedItems.firstWhere((item) => item.product.id == productId);
     } catch (e) {
-      return null;
+      return Left(CacheFailure(message: 'Failed to clear cart: $e'));
     }
   }
 }

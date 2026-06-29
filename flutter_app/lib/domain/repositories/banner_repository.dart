@@ -1,8 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:khurpi_fresh/core/error/failures.dart';
-import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
+import 'package:khurpi_fresh/data/models/banner_model.dart';
 
 abstract class BannerRepository {
-  /// Get all active banners
-  Future<Either<Failure, List<BannerEntity>>> getBanners();
+  Future<Either<Failure, List<BannerModel>>> getBanners();
 }
