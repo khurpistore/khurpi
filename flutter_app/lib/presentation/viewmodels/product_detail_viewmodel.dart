@@ -1,9 +1,8 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
+import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
 
-part 'product_detail_viewmodel.g.dart';
 part 'product_detail_viewmodel.freezed.dart';
 
 @freezed
@@ -25,23 +24,24 @@ extension ProductDetailStateX on ProductDetailState {
   }
 }
 
-@riverpod
-class ProductDetailViewModel extends _$ProductDetailViewModel {
-  @override
-  ProductDetailState build() {
-    return const ProductDetailState();
-  }
+class ProductDetailViewModel extends StateNotifier<ProductDetailState> {
+  final ProductRemoteDataSource _productRemoteDataSource;
+
+  ProductDetailViewModel({
+    required ProductRemoteDataSource productRemoteDataSource,
+  })  : _productRemoteDataSource = productRemoteDataSource,
+        super(const ProductDetailState());
 
   Future<void> loadProduct(String productId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final product = await ref.read(productRemoteDataSourceProvider).getProductById(productId);
+      final product = await _productRemoteDataSource.getProductById(productId);
       state = state.copyWith(
         isLoading: false,
         product: product,
       );
-      
+
       if (product.categoryId != null) {
         _loadRelatedProducts(product.categoryId!, product.productId);
       }
@@ -55,7 +55,7 @@ class ProductDetailViewModel extends _$ProductDetailViewModel {
 
   Future<void> _loadRelatedProducts(String categoryId, String excludeProductId) async {
     try {
-      final products = await ref.read(productRemoteDataSourceProvider).getProductsByCategory(categoryId);
+      final products = await _productRemoteDataSource.getProductsByCategory(categoryId);
       final related = products.where((p) => p.productId != excludeProductId).take(4).toList();
       state = state.copyWith(relatedProducts: related);
     } catch (e) {

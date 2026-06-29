@@ -18,11 +18,36 @@ Build a Veg & Fruit Shop e-commerce application with:
 
 ### Customer Mobile App (Flutter)
 - Location: `/app/flutter_app/`
-- Architecture: Clean Architecture (simplified - removed Entity layer, models used directly)
-- State Management: Riverpod Annotations (@riverpod)
+- Architecture: Clean Architecture (simplified - removed Entity/UseCase layers, models used directly)
+- State Management: Riverpod with StateNotifier pattern (manual providers, no annotations)
 - Data Models: Freezed (@freezed)
 - Networking: Retrofit + Dio
 - Package name: `khurpi_fresh`
+
+#### Provider Pattern
+```dart
+// Provider factory pattern
+final provideAuthViewModelProvider = Provider<AuthViewModel?>((ref) {
+  final authRemoteDataSource = ref.watch(authRemoteDataSourceProvider);
+  final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
+
+  return AuthViewModel(
+    authRemoteDataSource: authRemoteDataSource,
+    authLocalDataSource: authLocalDataSource,
+  );
+});
+
+// StateNotifier provider for UI consumption
+final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
+  final authRemoteDataSource = ref.watch(authRemoteDataSourceProvider);
+  final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
+
+  return AuthViewModel(
+    authRemoteDataSource: authRemoteDataSource,
+    authLocalDataSource: authLocalDataSource,
+  );
+});
+```
 
 ## What's Been Implemented
 

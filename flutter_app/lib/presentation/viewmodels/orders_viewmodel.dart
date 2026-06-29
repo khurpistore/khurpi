@@ -1,10 +1,9 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
 import 'package:khurpi_fresh/data/models/cart_item_model.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
+import 'package:khurpi_fresh/data/datasources/remote/order_remote_datasource.dart';
 
-part 'orders_viewmodel.g.dart';
 part 'orders_viewmodel.freezed.dart';
 
 @freezed
@@ -17,18 +16,19 @@ sealed class OrdersState with _$OrdersState {
   }) = _OrdersState;
 }
 
-@riverpod
-class OrdersViewModel extends _$OrdersViewModel {
-  @override
-  OrdersState build() {
-    return const OrdersState();
-  }
+class OrdersViewModel extends StateNotifier<OrdersState> {
+  final OrderRemoteDataSource _orderRemoteDataSource;
+
+  OrdersViewModel({
+    required OrderRemoteDataSource orderRemoteDataSource,
+  })  : _orderRemoteDataSource = orderRemoteDataSource,
+        super(const OrdersState());
 
   Future<void> loadOrders() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final orders = await ref.read(orderRemoteDataSourceProvider).getMyOrders();
+      final orders = await _orderRemoteDataSource.getMyOrders();
       state = state.copyWith(
         isLoading: false,
         orders: orders,
@@ -43,9 +43,9 @@ class OrdersViewModel extends _$OrdersViewModel {
 
   Future<void> loadOrderById(String orderId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final order = await ref.read(orderRemoteDataSourceProvider).getOrderById(orderId);
+      final order = await _orderRemoteDataSource.getOrderById(orderId);
       state = state.copyWith(
         isLoading: false,
         currentOrder: order,
@@ -68,9 +68,9 @@ class OrdersViewModel extends _$OrdersViewModel {
     String? notes,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final order = await ref.read(orderRemoteDataSourceProvider).createOrder(
+      final order = await _orderRemoteDataSource.createOrder(
         items: items,
         deliveryAddress: deliveryAddress,
         city: city,
@@ -79,13 +79,13 @@ class OrdersViewModel extends _$OrdersViewModel {
         paymentMethod: paymentMethod,
         notes: notes,
       );
-      
+
       state = state.copyWith(
         isLoading: false,
         currentOrder: order,
         orders: [order, ...state.orders],
       );
-      
+
       return order;
     } catch (e) {
       state = state.copyWith(
@@ -98,23 +98,23 @@ class OrdersViewModel extends _$OrdersViewModel {
 
   Future<bool> cancelOrder(String orderId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final order = await ref.read(orderRemoteDataSourceProvider).cancelOrder(orderId);
-      
+      final order = await _orderRemoteDataSource.cancelOrder(orderId);
+
       final updatedOrders = state.orders.map((o) {
         if (o.orderId == orderId) {
           return order;
         }
         return o;
       }).toList();
-      
+
       state = state.copyWith(
         isLoading: false,
         orders: updatedOrders,
         currentOrder: order,
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(

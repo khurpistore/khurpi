@@ -1,10 +1,9 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/data/models/category_model.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
+import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
 
-part 'products_viewmodel.g.dart';
 part 'products_viewmodel.freezed.dart';
 
 @freezed
@@ -20,18 +19,19 @@ sealed class ProductsState with _$ProductsState {
   }) = _ProductsState;
 }
 
-@riverpod
-class ProductsViewModel extends _$ProductsViewModel {
-  @override
-  ProductsState build() {
-    return const ProductsState();
-  }
+class ProductsViewModel extends StateNotifier<ProductsState> {
+  final ProductRemoteDataSource _productRemoteDataSource;
+
+  ProductsViewModel({
+    required ProductRemoteDataSource productRemoteDataSource,
+  })  : _productRemoteDataSource = productRemoteDataSource,
+        super(const ProductsState());
 
   Future<void> loadProducts() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final products = await ref.read(productRemoteDataSourceProvider).getProducts();
+      final products = await _productRemoteDataSource.getProducts();
       state = state.copyWith(
         isLoading: false,
         products: products,
@@ -47,7 +47,7 @@ class ProductsViewModel extends _$ProductsViewModel {
 
   Future<void> loadCategories() async {
     try {
-      final categories = await ref.read(productRemoteDataSourceProvider).getCategories();
+      final categories = await _productRemoteDataSource.getCategories();
       state = state.copyWith(categories: categories);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
@@ -56,9 +56,9 @@ class ProductsViewModel extends _$ProductsViewModel {
 
   Future<void> loadProductsByCategory(String categoryId) async {
     state = state.copyWith(isLoading: true, selectedCategoryId: categoryId);
-    
+
     try {
-      final products = await ref.read(productRemoteDataSourceProvider).getProductsByCategory(categoryId);
+      final products = await _productRemoteDataSource.getProductsByCategory(categoryId);
       state = state.copyWith(
         isLoading: false,
         filteredProducts: products,
@@ -73,7 +73,7 @@ class ProductsViewModel extends _$ProductsViewModel {
 
   void setSelectedCategory(String? categoryId) {
     state = state.copyWith(selectedCategoryId: categoryId);
-    
+
     if (categoryId == null) {
       state = state.copyWith(filteredProducts: state.products);
     } else {
@@ -86,7 +86,7 @@ class ProductsViewModel extends _$ProductsViewModel {
 
   void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
-    
+
     if (query.isEmpty) {
       state = state.copyWith(filteredProducts: state.products);
     } else {

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
-import 'package:khurpi_fresh/presentation/viewmodels/cart_viewmodel.dart';
-import 'package:khurpi_fresh/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:khurpi_fresh/presentation/pages/home_page.dart';
 import 'package:khurpi_fresh/presentation/pages/categories_page.dart';
 import 'package:khurpi_fresh/presentation/pages/cart_page.dart';

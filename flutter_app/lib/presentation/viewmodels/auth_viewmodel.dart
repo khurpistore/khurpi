@@ -1,9 +1,9 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
+import 'package:khurpi_fresh/data/datasources/remote/auth_remote_datasource.dart';
+import 'package:khurpi_fresh/data/datasources/local/auth_local_datasource.dart';
 
-part 'auth_viewmodel.g.dart';
 part 'auth_viewmodel.freezed.dart';
 
 @freezed
@@ -20,20 +20,24 @@ extension AuthStateX on AuthState {
   String? get error => errorMessage;
 }
 
-@Riverpod(keepAlive: true)
-class AuthViewModel extends _$AuthViewModel {
-  @override
-  AuthState build() {
-    return const AuthState();
-  }
+class AuthViewModel extends StateNotifier<AuthState> {
+  final AuthRemoteDataSource _authRemoteDataSource;
+  final AuthLocalDataSource _authLocalDataSource;
+
+  AuthViewModel({
+    required AuthRemoteDataSource authRemoteDataSource,
+    required AuthLocalDataSource authLocalDataSource,
+  })  : _authRemoteDataSource = authRemoteDataSource,
+        _authLocalDataSource = authLocalDataSource,
+        super(const AuthState());
 
   Future<void> initialize() async {
     state = state.copyWith(isLoading: true);
-    
+
     try {
-      final token = await ref.read(authLocalDataSourceProvider).getToken();
+      final token = await _authLocalDataSource.getToken();
       if (token != null) {
-        final user = await ref.read(authLocalDataSourceProvider).getUser();
+        final user = await _authLocalDataSource.getUser();
         state = state.copyWith(
           isLoading: false,
           isAuthenticated: true,
@@ -52,11 +56,11 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<bool> login(String phone, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final response = await ref.read(authRemoteDataSourceProvider).login(phone, password);
-      await ref.read(authLocalDataSourceProvider).saveAuthData(response.token, response.user);
-      
+      final response = await _authRemoteDataSource.login(phone, password);
+      await _authLocalDataSource.saveAuthData(response.token, response.user);
+
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
@@ -74,15 +78,15 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<bool> register(String name, String phone, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final response = await ref.read(authRemoteDataSourceProvider).register(
+      final response = await _authRemoteDataSource.register(
         phone: phone,
         password: password,
         name: name,
       );
-      await ref.read(authLocalDataSourceProvider).saveAuthData(response.token, response.user);
-      
+      await _authLocalDataSource.saveAuthData(response.token, response.user);
+
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
@@ -100,9 +104,9 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> logout() async {
     state = state.copyWith(isLoading: true);
-    
+
     try {
-      await ref.read(authLocalDataSourceProvider).clearAuthData();
+      await _authLocalDataSource.clearAuthData();
       state = const AuthState();
     } catch (e) {
       state = state.copyWith(
@@ -120,21 +124,21 @@ class AuthViewModel extends _$AuthViewModel {
     String? pincode,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    
+
     try {
-      final user = await ref.read(authRemoteDataSourceProvider).updateProfile(
+      final user = await _authRemoteDataSource.updateProfile(
         name: name,
         email: email,
         address: address,
         city: city,
         pincode: pincode,
       );
-      
-      final token = await ref.read(authLocalDataSourceProvider).getToken();
+
+      final token = await _authLocalDataSource.getToken();
       if (token != null) {
-        await ref.read(authLocalDataSourceProvider).saveAuthData(token, user);
+        await _authLocalDataSource.saveAuthData(token, user);
       }
-      
+
       state = state.copyWith(
         isLoading: false,
         user: user,
@@ -147,10 +151,6 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
-  void clearError() {
-    state = state.copyWith(errorMessage: null);
-  }
-
   Future<void> updateAddress({
     required String address,
     required String city,
@@ -161,5 +161,9 @@ class AuthViewModel extends _$AuthViewModel {
       city: city,
       pincode: pincode,
     );
+  }
+
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
   }
 }

@@ -1,10 +1,9 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
-import 'package:khurpi_fresh/presentation/providers/providers.dart';
+import 'package:khurpi_fresh/data/datasources/local/cart_local_datasource.dart';
 
-part 'cart_viewmodel.g.dart';
 part 'cart_viewmodel.freezed.dart';
 
 @freezed
@@ -27,20 +26,21 @@ extension CartStateX on CartState {
   String get formattedTotal => '₹${total.toStringAsFixed(0)}';
 }
 
-@Riverpod(keepAlive: true)
-class CartViewModel extends _$CartViewModel {
-  @override
-  CartState build() {
-    return const CartState();
-  }
+class CartViewModel extends StateNotifier<CartState> {
+  final CartLocalDataSource _cartLocalDataSource;
+
+  CartViewModel({
+    required CartLocalDataSource cartLocalDataSource,
+  })  : _cartLocalDataSource = cartLocalDataSource,
+        super(const CartState());
 
   Future<void> loadCart() async {
     state = state.copyWith(isLoading: true);
-    
+
     try {
-      final items = await ref.read(cartLocalDataSourceProvider).getCartItems();
+      final items = await _cartLocalDataSource.getCartItems();
       final subtotal = _calculateSubtotal(items);
-      
+
       state = state.copyWith(
         isLoading: false,
         items: items,
@@ -57,9 +57,9 @@ class CartViewModel extends _$CartViewModel {
   Future<void> addToCart(ProductModel product, {double quantity = 1, String unit = 'kg'}) async {
     try {
       final existingIndex = state.items.indexWhere((item) => item.productId == product.productId);
-      
+
       List<CartItemModel> updatedItems;
-      
+
       if (existingIndex >= 0) {
         final existingItem = state.items[existingIndex];
         final updatedItem = existingItem.copyWith(
@@ -79,9 +79,9 @@ class CartViewModel extends _$CartViewModel {
         );
         updatedItems = [...state.items, newItem];
       }
-      
-      await ref.read(cartLocalDataSourceProvider).saveCartItems(updatedItems);
-      
+
+      await _cartLocalDataSource.saveCartItems(updatedItems);
+
       state = state.copyWith(
         items: updatedItems,
         subtotal: _calculateSubtotal(updatedItems),
@@ -97,16 +97,16 @@ class CartViewModel extends _$CartViewModel {
         await removeFromCart(productId);
         return;
       }
-      
+
       final updatedItems = state.items.map((item) {
         if (item.productId == productId) {
           return item.copyWith(quantity: quantity);
         }
         return item;
       }).toList();
-      
-      await ref.read(cartLocalDataSourceProvider).saveCartItems(updatedItems);
-      
+
+      await _cartLocalDataSource.saveCartItems(updatedItems);
+
       state = state.copyWith(
         items: updatedItems,
         subtotal: _calculateSubtotal(updatedItems),
@@ -129,9 +129,9 @@ class CartViewModel extends _$CartViewModel {
   Future<void> removeFromCart(String productId) async {
     try {
       final updatedItems = state.items.where((item) => item.productId != productId).toList();
-      
-      await ref.read(cartLocalDataSourceProvider).saveCartItems(updatedItems);
-      
+
+      await _cartLocalDataSource.saveCartItems(updatedItems);
+
       state = state.copyWith(
         items: updatedItems,
         subtotal: _calculateSubtotal(updatedItems),
@@ -143,7 +143,7 @@ class CartViewModel extends _$CartViewModel {
 
   Future<void> clearCart() async {
     try {
-      await ref.read(cartLocalDataSourceProvider).clearCart();
+      await _cartLocalDataSource.clearCart();
       state = const CartState();
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());

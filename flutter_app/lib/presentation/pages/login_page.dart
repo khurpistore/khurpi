@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
-import 'package:khurpi_fresh/presentation/viewmodels/auth_viewmodel.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
