@@ -20,7 +20,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   @override
   void initState() {
     super.initState();
-    ref.read(productDetailViewModelProvider.notifier).loadProduct(widget.productId);
+    // Delay provider modification to avoid "modifying provider while building" error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(productDetailViewModelProvider.notifier).loadProduct(widget.productId);
+    });
   }
 
   @override

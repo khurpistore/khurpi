@@ -26,7 +26,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   void initState() {
     super.initState();
     if (widget.initialCategoryId != null) {
-      ref.read(productsViewModelProvider.notifier).setSelectedCategory(widget.initialCategoryId);
+      // Delay provider modification to avoid "modifying provider while building" error
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(productsViewModelProvider.notifier).setSelectedCategory(widget.initialCategoryId);
+      });
     }
   }
 

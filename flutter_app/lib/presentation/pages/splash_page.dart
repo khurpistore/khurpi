@@ -34,7 +34,10 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
     );
     
     _controller.forward();
-    _initApp();
+    // Delay provider modification to avoid "modifying provider while building" error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initApp();
+    });
   }
 
   Future<void> _initApp() async {

@@ -25,7 +25,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   @override
   void initState() {
     super.initState();
-    _prefillUserData();
+    // Delay reading provider to avoid "modifying provider while building" error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prefillUserData();
+    });
   }
 
   void _prefillUserData() {
