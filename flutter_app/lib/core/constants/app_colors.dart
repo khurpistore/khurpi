@@ -31,6 +31,10 @@ class AppColors {
   static const Color growing = Color(0xFFFFC107);
   static const Color outOfStock = Color(0xFFF44336);
   
+  // Border Colors
+  static const Color border = Color(0xFFE0E0E0);
+  static const Color divider = Color(0xFFEEEEEE);
+  
   // Gradient
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primary, primaryDark],

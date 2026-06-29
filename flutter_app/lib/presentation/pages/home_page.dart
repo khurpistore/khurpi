@@ -4,6 +4,7 @@ import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/data/models/banner_model.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
+import 'package:khurpi_fresh/data/models/category_model.dart';
 import 'package:khurpi_fresh/presentation/viewmodels/products_viewmodel.dart';
 import 'package:khurpi_fresh/presentation/viewmodels/banners_viewmodel.dart';
 import 'package:khurpi_fresh/presentation/viewmodels/auth_viewmodel.dart';
