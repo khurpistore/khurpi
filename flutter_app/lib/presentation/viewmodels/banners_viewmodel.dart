@@ -4,8 +4,8 @@ import 'package:khurpi_fresh/data/models/banner_model.dart';
 import 'package:khurpi_fresh/data/datasources/remote/banner_remote_datasource.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-part 'banners_viewmodel.freezed.dart';
-part 'banners_viewmodel.g.dart';
+part '../../generated/viewmodels/banners_viewmodel.freezed.dart';
+part '../../generated/viewmodels/banners_viewmodel.g.dart';
 
 @freezed
 sealed class BannersState with _$BannersState {

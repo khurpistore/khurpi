@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'cart_item_model.freezed.dart';
-part 'cart_item_model.g.dart';
+part '../../generated/models/cart_item_model.freezed.dart';
+part '../../generated/models/cart_item_model.g.dart';
 
 @freezed
 abstract class CartItemModel with _$CartItemModel {

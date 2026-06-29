@@ -28,7 +28,7 @@ export 'package:khurpi_fresh/presentation/viewmodels/orders_viewmodel.dart';
 export 'package:khurpi_fresh/presentation/viewmodels/product_detail_viewmodel.dart';
 export 'package:khurpi_fresh/presentation/viewmodels/banners_viewmodel.dart';
 
-part 'providers.g.dart';
+part '../../generated/providers/providers.g.dart';
 
 // ==================== Core Providers ====================
 

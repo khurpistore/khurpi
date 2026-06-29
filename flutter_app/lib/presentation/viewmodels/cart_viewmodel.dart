@@ -5,8 +5,8 @@ import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/data/datasources/local/cart_local_datasource.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-part 'cart_viewmodel.freezed.dart';
-part 'cart_viewmodel.g.dart';
+part '../../generated/viewmodels/cart_viewmodel.freezed.dart';
+part '../../generated/viewmodels/cart_viewmodel.g.dart';
 
 @freezed
 sealed class CartState with _$CartState {
