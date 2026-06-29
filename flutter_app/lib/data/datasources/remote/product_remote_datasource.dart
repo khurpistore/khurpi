@@ -1,33 +1,26 @@
-import 'package:khurpi_fresh/core/network/api_client.dart';
 import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/data/api/product_api_service.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/data/models/category_model.dart';
 
 abstract class ProductRemoteDataSource {
-  Future<List<ProductModel>> getProducts({String? search, String? categoryId});
+  Future<List<ProductModel>> getProducts();
   Future<ProductModel> getProductById(String id);
-  Future<List<ProductModel>> getProductsByCategory(String categoryId);
   Future<List<CategoryModel>> getCategories();
-  Future<CategoryModel> getCategoryById(String id);
+  Future<List<ProductModel>> getProductsByCategory(String categoryId);
+  Future<List<ProductModel>> searchProducts(String query);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
-  final ApiClient apiClient;
+  final ProductApiService _apiService;
 
-  ProductRemoteDataSourceImpl(this.apiClient);
+  ProductRemoteDataSourceImpl(this._apiService);
 
   @override
-  Future<List<ProductModel>> getProducts({String? search, String? categoryId}) async {
+  Future<List<ProductModel>> getProducts() async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (search != null && search.isNotEmpty) queryParams['search'] = search;
-      if (categoryId != null && categoryId.isNotEmpty) queryParams['category_id'] = categoryId;
-
-      final response = await apiClient.get('/products', queryParams: queryParams);
-      final List<dynamic> data = response is List ? response : (response['products'] ?? []);
-      return data.map((json) => ProductModel.fromJson(json)).toList();
+      return await _apiService.getProducts();
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to fetch products: $e');
     }
   }
@@ -35,46 +28,36 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<ProductModel> getProductById(String id) async {
     try {
-      final response = await apiClient.get('/products/$id');
-      return ProductModel.fromJson(response);
+      return await _apiService.getProductById(id);
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to fetch product: $e');
-    }
-  }
-
-  @override
-  Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
-    try {
-      final response = await apiClient.get('/categories/$categoryId/products');
-      final List<dynamic> data = response is List ? response : (response['products'] ?? []);
-      return data.map((json) => ProductModel.fromJson(json)).toList();
-    } catch (e) {
-      if (e is ServerException) rethrow;
-      throw ServerException(message: 'Failed to fetch products by category: $e');
     }
   }
 
   @override
   Future<List<CategoryModel>> getCategories() async {
     try {
-      final response = await apiClient.get('/categories');
-      final List<dynamic> data = response is List ? response : (response['categories'] ?? []);
-      return data.map((json) => CategoryModel.fromJson(json)).toList();
+      return await _apiService.getCategories();
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to fetch categories: $e');
     }
   }
 
   @override
-  Future<CategoryModel> getCategoryById(String id) async {
+  Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
     try {
-      final response = await apiClient.get('/categories/$id');
-      return CategoryModel.fromJson(response);
+      return await _apiService.getProductsByCategory(categoryId);
     } catch (e) {
-      if (e is ServerException) rethrow;
-      throw ServerException(message: 'Failed to fetch category: $e');
+      throw ServerException(message: 'Failed to fetch products by category: $e');
+    }
+  }
+
+  @override
+  Future<List<ProductModel>> searchProducts(String query) async {
+    try {
+      return await _apiService.searchProducts(query);
+    } catch (e) {
+      throw ServerException(message: 'Failed to search products: $e');
     }
   }
 }

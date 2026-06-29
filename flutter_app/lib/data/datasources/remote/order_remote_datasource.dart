@@ -1,14 +1,16 @@
-import 'package:khurpi_fresh/core/network/api_client.dart';
 import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/data/api/order_api_service.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
+import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
 
 abstract class OrderRemoteDataSource {
   Future<OrderModel> createOrder({
-    required List<Map<String, dynamic>> items,
+    required List<CartItemEntity> items,
     required String deliveryAddress,
-    required String deliverySlot,
-    required DateTime deliveryDate,
-    String? paymentMethod,
+    required String city,
+    required String pincode,
+    required String phone,
+    required String paymentMethod,
     String? notes,
   });
   Future<List<OrderModel>> getMyOrders();
@@ -17,31 +19,36 @@ abstract class OrderRemoteDataSource {
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
-  final ApiClient apiClient;
+  final OrderApiService _apiService;
 
-  OrderRemoteDataSourceImpl(this.apiClient);
+  OrderRemoteDataSourceImpl(this._apiService);
 
   @override
   Future<OrderModel> createOrder({
-    required List<Map<String, dynamic>> items,
+    required List<CartItemEntity> items,
     required String deliveryAddress,
-    required String deliverySlot,
-    required DateTime deliveryDate,
-    String? paymentMethod,
+    required String city,
+    required String pincode,
+    required String phone,
+    required String paymentMethod,
     String? notes,
   }) async {
     try {
-      final response = await apiClient.post('/orders', data: {
-        'items': items,
-        'delivery_address': deliveryAddress,
-        'delivery_slot': deliverySlot,
-        'delivery_date': deliveryDate.toIso8601String(),
-        if (paymentMethod != null) 'payment_method': paymentMethod,
-        if (notes != null) 'notes': notes,
-      });
-      return OrderModel.fromJson(response);
+      final request = CreateOrderRequest(
+        items: items.map((item) => OrderItemRequest(
+          productId: item.product.id,
+          quantity: item.quantity,
+          unit: item.unit,
+        )).toList(),
+        deliveryAddress: deliveryAddress,
+        city: city,
+        pincode: pincode,
+        phone: phone,
+        paymentMethod: paymentMethod,
+        notes: notes,
+      );
+      return await _apiService.createOrder(request);
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to create order: $e');
     }
   }
@@ -49,11 +56,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<List<OrderModel>> getMyOrders() async {
     try {
-      final response = await apiClient.get('/orders/my');
-      final List<dynamic> data = response is List ? response : (response['orders'] ?? []);
-      return data.map((json) => OrderModel.fromJson(json)).toList();
+      return await _apiService.getMyOrders();
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to fetch orders: $e');
     }
   }
@@ -61,10 +65,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<OrderModel> getOrderById(String id) async {
     try {
-      final response = await apiClient.get('/orders/$id');
-      return OrderModel.fromJson(response);
+      return await _apiService.getOrderById(id);
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to fetch order: $e');
     }
   }
@@ -72,10 +74,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<OrderModel> cancelOrder(String id) async {
     try {
-      final response = await apiClient.post('/orders/$id/cancel', data: {});
-      return OrderModel.fromJson(response);
+      return await _apiService.cancelOrder(id);
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to cancel order: $e');
     }
   }

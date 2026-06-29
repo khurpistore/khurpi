@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:khurpi_fresh/core/error/exceptions.dart';
 import 'package:khurpi_fresh/core/error/failures.dart';
-import 'package:khurpi_fresh/core/network/api_client.dart';
+import 'package:khurpi_fresh/core/network/dio_client.dart';
 import 'package:khurpi_fresh/domain/entities/user_entity.dart';
 import 'package:khurpi_fresh/domain/repositories/auth_repository.dart';
 import 'package:khurpi_fresh/data/datasources/remote/auth_remote_datasource.dart';
@@ -10,12 +10,10 @@ import 'package:khurpi_fresh/data/models/user_model.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
-  final ApiClient apiClient;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
-    required this.apiClient,
   });
 
   @override
@@ -23,7 +21,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await remoteDataSource.login(phone, password);
       await localDataSource.saveAuthData(response.token, response.user);
-      apiClient.setAuthToken(response.token);
       return Right(AuthResult(token: response.token, user: response.user));
     } on ServerException catch (e) {
       return Left(AuthFailure(message: e.message, statusCode: e.statusCode));
@@ -45,7 +42,6 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
       );
       await localDataSource.saveAuthData(response.token, response.user);
-      apiClient.setAuthToken(response.token);
       return Right(AuthResult(token: response.token, user: response.user));
     } on ServerException catch (e) {
       return Left(AuthFailure(message: e.message, statusCode: e.statusCode));
@@ -59,7 +55,6 @@ class AuthRepositoryImpl implements AuthRepository {
       if (token == null) {
         return const Left(AuthFailure(message: 'Not authenticated'));
       }
-      apiClient.setAuthToken(token);
       final user = await remoteDataSource.getCurrentUser();
       await localDataSource.saveAuthData(token, user);
       return Right(user);
@@ -78,7 +73,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> logout() async {
     try {
       await localDataSource.clearAuthData();
-      apiClient.setAuthToken(null);
+      DioClient.clearToken();
       return const Right(null);
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to logout: $e'));

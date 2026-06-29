@@ -1,8 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
 // Core
-import 'package:khurpi_fresh/core/network/api_client.dart';
+import 'package:khurpi_fresh/core/network/dio_client.dart';
+
+// Retrofit API Services
+import 'package:khurpi_fresh/data/api/product_api_service.dart';
+import 'package:khurpi_fresh/data/api/auth_api_service.dart';
+import 'package:khurpi_fresh/data/api/order_api_service.dart';
+import 'package:khurpi_fresh/data/api/banner_api_service.dart';
 
 // Data Sources
 import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
@@ -36,18 +43,36 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('SharedPreferences must be overridden in main');
 });
 
-final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
+final dioProvider = Provider<Dio>((ref) {
+  return DioClient.instance;
+});
+
+// ==================== Retrofit API Service Providers ====================
+
+final productApiServiceProvider = Provider<ProductApiService>((ref) {
+  return ProductApiService(ref.watch(dioProvider));
+});
+
+final authApiServiceProvider = Provider<AuthApiService>((ref) {
+  return AuthApiService(ref.watch(dioProvider));
+});
+
+final orderApiServiceProvider = Provider<OrderApiService>((ref) {
+  return OrderApiService(ref.watch(dioProvider));
+});
+
+final bannerApiServiceProvider = Provider<BannerApiService>((ref) {
+  return BannerApiService(ref.watch(dioProvider));
 });
 
 // ==================== Data Source Providers ====================
 
 final productRemoteDataSourceProvider = Provider<ProductRemoteDataSource>((ref) {
-  return ProductRemoteDataSourceImpl(ref.watch(apiClientProvider));
+  return ProductRemoteDataSourceImpl(ref.watch(productApiServiceProvider));
 });
 
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
-  return AuthRemoteDataSourceImpl(ref.watch(apiClientProvider));
+  return AuthRemoteDataSourceImpl(ref.watch(authApiServiceProvider));
 });
 
 final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {
@@ -59,11 +84,11 @@ final cartLocalDataSourceProvider = Provider<CartLocalDataSource>((ref) {
 });
 
 final orderRemoteDataSourceProvider = Provider<OrderRemoteDataSource>((ref) {
-  return OrderRemoteDataSourceImpl(ref.watch(apiClientProvider));
+  return OrderRemoteDataSourceImpl(ref.watch(orderApiServiceProvider));
 });
 
 final bannerRemoteDataSourceProvider = Provider<BannerRemoteDataSource>((ref) {
-  return BannerRemoteDataSourceImpl(ref.watch(apiClientProvider));
+  return BannerRemoteDataSourceImpl(ref.watch(bannerApiServiceProvider));
 });
 
 // ==================== Repository Providers ====================
@@ -76,7 +101,6 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(
     remoteDataSource: ref.watch(authRemoteDataSourceProvider),
     localDataSource: ref.watch(authLocalDataSourceProvider),
-    apiClient: ref.watch(apiClientProvider),
   );
 });
 

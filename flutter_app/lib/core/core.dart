@@ -9,6 +9,7 @@ export 'error/failures.dart';
 
 // Core network
 export 'network/api_client.dart';
+export 'network/dio_client.dart';
 
 // Core usecase base class
 export 'usecase/usecase.dart';

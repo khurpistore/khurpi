@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:khurpi_fresh/core/network/api_client.dart';
-import 'package:khurpi_fresh/core/error/exceptions.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/core/network/dio_client.dart';
+import 'package:khurpi_fresh/data/api/auth_api_service.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -38,23 +39,19 @@ class AuthResponse {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final ApiClient apiClient;
+  final AuthApiService _apiService;
 
-  AuthRemoteDataSourceImpl(this.apiClient);
+  AuthRemoteDataSourceImpl(this._apiService);
 
   @override
   Future<AuthResponse> login(String phone, String password) async {
     try {
-      final response = await apiClient.post('/auth/login', data: {
-        'phone': phone,
-        'password': password,
-      });
-      return AuthResponse(
-        token: response['token'],
-        user: UserModel.fromJson(response['user']),
+      final response = await _apiService.login(
+        LoginRequest(phone: phone, password: password),
       );
+      DioClient.setAuthToken(response.token);
+      return AuthResponse(token: response.token, user: response.user);
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Login failed: $e');
     }
   }
@@ -67,18 +64,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? email,
   }) async {
     try {
-      final response = await apiClient.post('/auth/register', data: {
-        'phone': phone,
-        'password': password,
-        if (name != null) 'name': name,
-        if (email != null) 'email': email,
-      });
-      return AuthResponse(
-        token: response['token'],
-        user: UserModel.fromJson(response['user']),
+      final response = await _apiService.register(
+        RegisterRequest(
+          phone: phone,
+          password: password,
+          name: name,
+          email: email,
+        ),
       );
+      DioClient.setAuthToken(response.token);
+      return AuthResponse(token: response.token, user: response.user);
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Registration failed: $e');
     }
   }
@@ -86,10 +82,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> getCurrentUser() async {
     try {
-      final response = await apiClient.get('/auth/me');
-      return UserModel.fromJson(response);
+      return await _apiService.getCurrentUser();
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to get current user: $e');
     }
   }
@@ -103,16 +97,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? pincode,
   }) async {
     try {
-      final response = await apiClient.put('/auth/profile', data: {
-        if (name != null) 'name': name,
-        if (email != null) 'email': email,
-        if (address != null) 'address': address,
-        if (city != null) 'city': city,
-        if (pincode != null) 'pincode': pincode,
-      });
-      return UserModel.fromJson(response);
+      return await _apiService.updateProfile(
+        UpdateProfileRequest(
+          name: name,
+          email: email,
+          address: address,
+          city: city,
+          pincode: pincode,
+        ),
+      );
     } catch (e) {
-      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to update profile: $e');
     }
   }
@@ -127,11 +121,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> saveAuthData(String token, UserModel user) async {
     await sharedPreferences.setString(AppConstants.tokenKey, token);
     await sharedPreferences.setString(AppConstants.userKey, jsonEncode(user.toJson()));
+    DioClient.setAuthToken(token);
   }
 
   @override
   Future<String?> getToken() async {
-    return sharedPreferences.getString(AppConstants.tokenKey);
+    final token = sharedPreferences.getString(AppConstants.tokenKey);
+    if (token != null) {
+      DioClient.setAuthToken(token);
+    }
+    return token;
   }
 
   @override
@@ -145,5 +144,6 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> clearAuthData() async {
     await sharedPreferences.remove(AppConstants.tokenKey);
     await sharedPreferences.remove(AppConstants.userKey);
+    DioClient.clearToken();
   }
 }
