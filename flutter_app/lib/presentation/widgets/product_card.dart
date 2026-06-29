@@ -2,24 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
-import 'package:khurpi_fresh/domain/entities/product_entity.dart';
+import 'package:khurpi_fresh/data/models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
-  final ProductEntity product;
-  final VoidCallback onTap;
+  final ProductModel product;
+  final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
   final bool showWholesalePrice;
 
   const ProductCard({
     super.key,
     required this.product,
-    required this.onTap,
+    this.onTap,
     this.onAddToCart,
     this.showWholesalePrice = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isInStock = product.stockStatus == 'in_stock';
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -28,15 +30,16 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image
             Expanded(
               flex: 3,
               child: Stack(
@@ -45,52 +48,57 @@ class ProductCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                     child: CachedNetworkImage(
                       imageUrl: product.imageUrl ?? '',
-                      width: double.infinity,
-                      height: double.infinity,
                       fit: BoxFit.cover,
+                      width: double.infinity,
                       placeholder: (context, url) => Container(
                         color: AppColors.background,
                         child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: AppColors.background,
-                        child: const Icon(Icons.image_not_supported_outlined, color: AppColors.textHint, size: 40),
+                        child: const Icon(Icons.image_not_supported, color: AppColors.textHint),
                       ),
                     ),
                   ),
-                  Positioned(top: 8, left: 8, child: _buildStockBadge()),
-                  if (showWholesalePrice && product.wholesalePrice != null)
-                    Positioned(
-                      top: 8,
-                      right: 8,
+                  if (!isInStock)
+                    Positioned.fill(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary,
-                          borderRadius: BorderRadius.circular(4),
+                          color: Colors.black.withValues(alpha: 0.5),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                         ),
-                        child: const Text(
-                          'Wholesale',
-                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.error,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              product.stockStatus == 'growing' ? 'Growing' : 'Out of Stock',
+                              style: AppTextStyles.caption.copyWith(color: Colors.white),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                 ],
               ),
             ),
+            // Details
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       product.name,
-                      style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                      style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -100,11 +108,24 @@ class ProductCard extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(_getDisplayPrice(), style: AppTextStyles.priceSmall),
-                            Text('per ${product.displayUnit}', style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                            Text(
+                              '₹${(showWholesalePrice && product.wholesalePrice != null ? product.wholesalePrice : product.price)?.toStringAsFixed(0) ?? "0"}/kg',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (showWholesalePrice && product.wholesalePrice != null)
+                              Text(
+                                '₹${product.price.toStringAsFixed(0)}',
+                                style: AppTextStyles.caption.copyWith(
+                                  decoration: TextDecoration.lineThrough,
+                                  color: AppColors.textHint,
+                                ),
+                              ),
                           ],
                         ),
-                        if (product.isInStock && onAddToCart != null)
+                        if (isInStock && onAddToCart != null)
                           GestureDetector(
                             onTap: onAddToCart,
                             child: Container(
@@ -113,7 +134,7 @@ class ProductCard extends StatelessWidget {
                                 color: AppColors.primary,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.add, color: Colors.white, size: 20),
+                              child: const Icon(Icons.add, color: Colors.white, size: 18),
                             ),
                           ),
                       ],
@@ -125,38 +146,6 @@ class ProductCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  String _getDisplayPrice() {
-    if (showWholesalePrice && product.wholesalePrice != null) {
-      return '₹${product.wholesalePrice!.toStringAsFixed(0)}';
-    }
-    return '₹${product.price.toStringAsFixed(0)}';
-  }
-
-  Widget _buildStockBadge() {
-    Color backgroundColor;
-    String text;
-
-    switch (product.stockStatus) {
-      case 'in_stock':
-        backgroundColor = AppColors.inStock;
-        text = 'In Stock';
-        break;
-      case 'growing':
-        backgroundColor = AppColors.growing;
-        text = 'Growing';
-        break;
-      default:
-        backgroundColor = AppColors.outOfStock;
-        text = 'Out of Stock';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(4)),
-      child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
     );
   }
 }

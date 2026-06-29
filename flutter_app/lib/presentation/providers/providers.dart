@@ -23,65 +23,65 @@ part 'providers.g.dart';
 // ==================== Core Providers ====================
 
 @Riverpod(keepAlive: true)
-SharedPreferences sharedPreferences(SharedPreferencesRef ref) {
+SharedPreferences sharedPreferences(Ref ref) {
   throw UnimplementedError('SharedPreferences must be overridden in main');
 }
 
 @Riverpod(keepAlive: true)
-Dio dio(DioRef ref) {
+Dio dio(Ref ref) {
   return DioClient.instance;
 }
 
 // ==================== Retrofit API Service Providers ====================
 
 @riverpod
-ProductApiService productApiService(ProductApiServiceRef ref) {
+ProductApiService productApiService(Ref ref) {
   return ProductApiService(ref.watch(dioProvider));
 }
 
 @riverpod
-AuthApiService authApiService(AuthApiServiceRef ref) {
+AuthApiService authApiService(Ref ref) {
   return AuthApiService(ref.watch(dioProvider));
 }
 
 @riverpod
-OrderApiService orderApiService(OrderApiServiceRef ref) {
+OrderApiService orderApiService(Ref ref) {
   return OrderApiService(ref.watch(dioProvider));
 }
 
 @riverpod
-BannerApiService bannerApiService(BannerApiServiceRef ref) {
+BannerApiService bannerApiService(Ref ref) {
   return BannerApiService(ref.watch(dioProvider));
 }
 
 // ==================== Data Source Providers ====================
 
 @riverpod
-ProductRemoteDataSource productRemoteDataSource(ProductRemoteDataSourceRef ref) {
+ProductRemoteDataSource productRemoteDataSource(Ref ref) {
   return ProductRemoteDataSourceImpl(ref.watch(productApiServiceProvider));
 }
 
 @riverpod
-AuthRemoteDataSource authRemoteDataSource(AuthRemoteDataSourceRef ref) {
+AuthRemoteDataSource authRemoteDataSource(Ref ref) {
   return AuthRemoteDataSourceImpl(ref.watch(authApiServiceProvider));
 }
 
 @Riverpod(keepAlive: true)
-AuthLocalDataSource authLocalDataSource(AuthLocalDataSourceRef ref) {
+AuthLocalDataSource authLocalDataSource(Ref ref) {
   return AuthLocalDataSourceImpl(ref.watch(sharedPreferencesProvider));
 }
 
 @Riverpod(keepAlive: true)
-CartLocalDataSource cartLocalDataSource(CartLocalDataSourceRef ref) {
+CartLocalDataSource cartLocalDataSource(Ref ref) {
   return CartLocalDataSourceImpl(ref.watch(sharedPreferencesProvider));
 }
 
 @riverpod
-OrderRemoteDataSource orderRemoteDataSource(OrderRemoteDataSourceRef ref) {
+OrderRemoteDataSource orderRemoteDataSource(Ref ref) {
   return OrderRemoteDataSourceImpl(ref.watch(orderApiServiceProvider));
 }
 
 @riverpod
-BannerRemoteDataSource bannerRemoteDataSource(BannerRemoteDataSourceRef ref) {
+BannerRemoteDataSource bannerRemoteDataSource(Ref ref) {
   return BannerRemoteDataSourceImpl(ref.watch(bannerApiServiceProvider));
 }

@@ -8,7 +8,7 @@ part 'cart_viewmodel.g.dart';
 part 'cart_viewmodel.freezed.dart';
 
 @freezed
-class CartState with _$CartState {
+sealed class CartState with _$CartState {
   const factory CartState({
     @Default(false) bool isLoading,
     @Default([]) List<CartItemModel> items,
@@ -22,6 +22,9 @@ extension CartStateX on CartState {
   double get total => subtotal + deliveryFee;
   int get itemCount => items.length;
   bool get isEmpty => items.isEmpty;
+  String get formattedSubtotal => '₹${subtotal.toStringAsFixed(0)}';
+  String get formattedDeliveryFee => '₹${deliveryFee.toStringAsFixed(0)}';
+  String get formattedTotal => '₹${total.toStringAsFixed(0)}';
 }
 
 @Riverpod(keepAlive: true)
@@ -58,7 +61,6 @@ class CartViewModel extends _$CartViewModel {
       List<CartItemModel> updatedItems;
       
       if (existingIndex >= 0) {
-        // Update existing item
         final existingItem = state.items[existingIndex];
         final updatedItem = existingItem.copyWith(
           quantity: existingItem.quantity + quantity,
@@ -66,7 +68,6 @@ class CartViewModel extends _$CartViewModel {
         updatedItems = [...state.items];
         updatedItems[existingIndex] = updatedItem;
       } else {
-        // Add new item
         final newItem = CartItemModel(
           productId: product.productId,
           productName: product.name,
@@ -113,6 +114,16 @@ class CartViewModel extends _$CartViewModel {
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
     }
+  }
+
+  Future<void> incrementQuantity(String productId) async {
+    final item = state.items.firstWhere((i) => i.productId == productId);
+    await updateQuantity(productId, item.quantity + 0.5);
+  }
+
+  Future<void> decrementQuantity(String productId) async {
+    final item = state.items.firstWhere((i) => i.productId == productId);
+    await updateQuantity(productId, item.quantity - 0.5);
   }
 
   Future<void> removeFromCart(String productId) async {

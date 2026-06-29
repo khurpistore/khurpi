@@ -8,7 +8,7 @@ part 'products_viewmodel.g.dart';
 part 'products_viewmodel.freezed.dart';
 
 @freezed
-class ProductsState with _$ProductsState {
+sealed class ProductsState with _$ProductsState {
   const factory ProductsState({
     @Default(false) bool isLoading,
     @Default([]) List<ProductModel> products,
@@ -71,7 +71,7 @@ class ProductsViewModel extends _$ProductsViewModel {
     }
   }
 
-  void filterByCategory(String? categoryId) {
+  void setSelectedCategory(String? categoryId) {
     state = state.copyWith(selectedCategoryId: categoryId);
     
     if (categoryId == null) {
@@ -84,7 +84,7 @@ class ProductsViewModel extends _$ProductsViewModel {
     }
   }
 
-  void searchProducts(String query) {
+  void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
     
     if (query.isEmpty) {

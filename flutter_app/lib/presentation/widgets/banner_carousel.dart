@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
-import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
+import 'package:khurpi_fresh/data/models/banner_model.dart';
 
 class BannerCarousel extends StatefulWidget {
-  final List<BannerEntity> banners;
-  final Function(BannerEntity)? onBannerTap;
+  final List<BannerModel> banners;
+  final Function(BannerModel)? onBannerTap;
 
   const BannerCarousel({super.key, required this.banners, this.onBannerTap});
 
@@ -23,7 +23,6 @@ class _BannerCarouselState extends State<BannerCarousel> {
     super.initState();
     _pageController = PageController(viewportFraction: 0.92);
     
-    // Auto-play functionality
     if (widget.banners.length > 1) {
       _startAutoPlay();
     }
@@ -89,7 +88,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
     );
   }
 
-  Widget _buildBannerItem(BannerEntity banner) {
+  Widget _buildBannerItem(BannerModel banner) {
     return GestureDetector(
       onTap: () => widget.onBannerTap?.call(banner),
       child: Container(
@@ -115,19 +114,12 @@ class _BannerCarouselState extends State<BannerCarousel> {
                 placeholder: (context, url) => Container(
                   color: AppColors.background,
                   child: const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.primary,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
                   ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  child: const Icon(
-                    Icons.image_not_supported_outlined,
-                    color: AppColors.textHint,
-                    size: 40,
-                  ),
+                  child: const Icon(Icons.image_not_supported_outlined, color: AppColors.textHint, size: 40),
                 ),
               ),
               Container(
@@ -135,10 +127,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.6),
-                    ],
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
                   ),
                 ),
               ),
@@ -150,17 +139,12 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        banner.title!,
-                        style: AppTextStyles.h4.copyWith(color: Colors.white),
-                      ),
+                      Text(banner.title!, style: AppTextStyles.h4.copyWith(color: Colors.white)),
                       if (banner.subtitle != null) ...[
                         const SizedBox(height: 4),
                         Text(
                           banner.subtitle!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
+                          style: AppTextStyles.bodySmall.copyWith(color: Colors.white.withValues(alpha: 0.9)),
                         ),
                       ],
                     ],

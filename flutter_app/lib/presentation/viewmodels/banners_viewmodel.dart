@@ -7,7 +7,7 @@ part 'banners_viewmodel.g.dart';
 part 'banners_viewmodel.freezed.dart';
 
 @freezed
-class BannersState with _$BannersState {
+sealed class BannersState with _$BannersState {
   const factory BannersState({
     @Default(false) bool isLoading,
     @Default([]) List<BannerModel> banners,

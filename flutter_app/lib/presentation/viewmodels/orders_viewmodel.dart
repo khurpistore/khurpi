@@ -8,7 +8,7 @@ part 'orders_viewmodel.g.dart';
 part 'orders_viewmodel.freezed.dart';
 
 @freezed
-class OrdersState with _$OrdersState {
+sealed class OrdersState with _$OrdersState {
   const factory OrdersState({
     @Default(false) bool isLoading,
     @Default([]) List<OrderModel> orders,

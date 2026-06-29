@@ -7,15 +7,22 @@ part 'product_detail_viewmodel.g.dart';
 part 'product_detail_viewmodel.freezed.dart';
 
 @freezed
-class ProductDetailState with _$ProductDetailState {
+sealed class ProductDetailState with _$ProductDetailState {
   const factory ProductDetailState({
     @Default(false) bool isLoading,
     ProductModel? product,
     @Default([]) List<ProductModel> relatedProducts,
-    @Default(1) int quantity,
+    @Default(1.0) double quantity,
     @Default('kg') String selectedUnit,
     String? errorMessage,
   }) = _ProductDetailState;
+}
+
+extension ProductDetailStateX on ProductDetailState {
+  String get formattedTotal {
+    if (product == null) return '₹0';
+    return '₹${(product!.price * quantity).toStringAsFixed(0)}';
+  }
 }
 
 @riverpod
@@ -35,7 +42,6 @@ class ProductDetailViewModel extends _$ProductDetailViewModel {
         product: product,
       );
       
-      // Load related products if category exists
       if (product.categoryId != null) {
         _loadRelatedProducts(product.categoryId!, product.productId);
       }
@@ -57,19 +63,19 @@ class ProductDetailViewModel extends _$ProductDetailViewModel {
     }
   }
 
-  void setQuantity(int quantity) {
+  void setQuantity(double quantity) {
     if (quantity > 0) {
       state = state.copyWith(quantity: quantity);
     }
   }
 
   void incrementQuantity() {
-    state = state.copyWith(quantity: state.quantity + 1);
+    state = state.copyWith(quantity: state.quantity + 0.5);
   }
 
   void decrementQuantity() {
-    if (state.quantity > 1) {
-      state = state.copyWith(quantity: state.quantity - 1);
+    if (state.quantity > 0.5) {
+      state = state.copyWith(quantity: state.quantity - 0.5);
     }
   }
 
