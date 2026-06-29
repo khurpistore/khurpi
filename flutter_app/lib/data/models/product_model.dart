@@ -5,11 +5,14 @@ part 'product_model.g.dart';
 
 @freezed
 abstract class ProductModel with _$ProductModel {
+  const ProductModel._(); // Add private constructor for extensions
+  
   const factory ProductModel({
     @JsonKey(name: 'id') String? id,
     @JsonKey(name: '_id') String? mongoId,
     required String name,
     String? description,
+    String? benefit,
     required double price,
     @JsonKey(name: 'wholesale_price') double? wholesalePrice,
     @JsonKey(name: 'image_url') String? imageUrl,
@@ -26,6 +29,12 @@ abstract class ProductModel with _$ProductModel {
   factory ProductModel.fromJson(Map<String, dynamic> json) =>
       _$ProductModelFromJson(json);
 
+  // Getter for productId
+  String get productId => id ?? mongoId ?? '';
+  
+  // Getter for display benefit/description
+  String get displayBenefit => benefit ?? description ?? '';
+
   static ProductModel initial() {
     return const ProductModel(
       name: '',
@@ -34,8 +43,4 @@ abstract class ProductModel with _$ProductModel {
       stockQuantity: 0,
     );
   }
-}
-
-extension ProductModelX on ProductModel {
-  String get productId => id ?? mongoId ?? '';
 }

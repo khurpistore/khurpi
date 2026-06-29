@@ -5,6 +5,8 @@ part 'category_model.g.dart';
 
 @freezed
 abstract class CategoryModel with _$CategoryModel {
+  const CategoryModel._(); // Add private constructor for extensions
+  
   const factory CategoryModel({
     @JsonKey(name: 'id') String? id,
     @JsonKey(name: '_id') String? mongoId,
@@ -18,13 +20,12 @@ abstract class CategoryModel with _$CategoryModel {
   factory CategoryModel.fromJson(Map<String, dynamic> json) =>
       _$CategoryModelFromJson(json);
 
+  // Getter for categoryId
+  String get categoryId => id ?? mongoId ?? '';
+
   static CategoryModel initial() {
     return const CategoryModel(
       name: '',
     );
   }
-}
-
-extension CategoryModelX on CategoryModel {
-  String get categoryId => id ?? mongoId ?? '';
 }

@@ -66,7 +66,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             const SizedBox(height: 24),
                             const Text('Description', style: AppTextStyles.h4),
                             const SizedBox(height: 8),
-                            Text(state.product!.benefit, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
+                            Text(state.product!.displayBenefit, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                             const SizedBox(height: 24),
                             const Text('Quantity', style: AppTextStyles.h4),
                             const SizedBox(height: 12),
