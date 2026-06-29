@@ -521,3 +521,34 @@ January 29, 2025
     - Fixed stock status detection for explicit 'in_stock' products
     - Fixed kg-based quantity calculations (removed old gram-based calculations)
   - **Testing:** All 48 E2E tests + 32 backend tests pass (100%)
+
+- **Jun 29, 2026:** Flutter Customer App Development
+  - **Complete Flutter mobile app created at `/app/flutter_app/`**
+  - **Core Architecture (Clean/MVVM):**
+    - `lib/core/constants/` - App colors, text styles, constants
+    - `lib/core/models/` - Product, Category, Cart, Order, User, Banner models
+    - `lib/core/services/` - API service, Auth, Products, Orders, Banners
+    - `lib/core/providers/` - State management with Provider
+    - `lib/core/widgets/` - Reusable UI components
+  - **Feature Screens:**
+    - Home Screen - Location header, search bar, category horizontal scroll, banner carousel, featured products
+    - Products Screen - Category filters, search, product grid
+    - Product Detail - Large image, stock badge, quantity selector (kg/gm toggle), add to cart
+    - Cart Screen - Item list, quantity adjustment, order summary, checkout button
+    - Checkout Screen - Address, delivery date/slot, payment method, order confirmation
+    - Orders Screen - Order history with status badges
+    - Profile Screen - User info, menu items, logout
+    - Auth Screen - Login/Register with phone number
+  - **State Management:** Provider pattern with ChangeNotifier
+  - **Local Storage:** Cart persisted with SharedPreferences
+  - **API Integration:** Connects to existing FastAPI backend
+  - **UI Features:**
+    - Material Design 3 with custom theme
+    - Animated splash screen
+    - Bottom navigation with FAB cart button
+    - Horizontal scrolling categories
+    - Banner carousel with auto-play
+    - Stock status badges (In Stock, Growing, Out of Stock)
+    - Wholesale pricing support for enabled users
+  - **Build Targets:** Android APK, iOS (requires macOS)
+  - **Admin panel remains web-only as requested**
