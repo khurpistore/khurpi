@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_constants.dart';
-import '../../domain/entities/cart_item_entity.dart';
-import '../../domain/entities/product_entity.dart';
-import '../../domain/repositories/cart_repository.dart';
-import '../providers/providers.dart';
+import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
+import 'package:khurpi_fresh/domain/entities/product_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/cart_repository.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 // ==================== State Classes ====================
 

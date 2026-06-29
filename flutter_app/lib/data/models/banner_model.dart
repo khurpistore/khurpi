@@ -1,4 +1,4 @@
-import '../../domain/entities/banner_entity.dart';
+import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
 
 class BannerModel extends BannerEntity {
   const BannerModel({

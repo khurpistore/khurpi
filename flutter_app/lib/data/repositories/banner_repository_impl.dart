@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../../domain/entities/banner_entity.dart';
-import '../../domain/repositories/banner_repository.dart';
-import '../datasources/remote/banner_remote_datasource.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/banner_repository.dart';
+import 'package:khurpi_fresh/data/datasources/remote/banner_remote_datasource.dart';
 
 class BannerRepositoryImpl implements BannerRepository {
   final BannerRemoteDataSource remoteDataSource;

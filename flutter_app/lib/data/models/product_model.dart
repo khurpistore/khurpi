@@ -1,4 +1,4 @@
-import '../../domain/entities/product_entity.dart';
+import 'package:khurpi_fresh/domain/entities/product_entity.dart';
 
 class ProductModel extends ProductEntity {
   const ProductModel({

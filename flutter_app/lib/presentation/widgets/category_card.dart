@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../../domain/entities/category_entity.dart';
+import 'package:khurpi_fresh/core/constants/app_colors.dart';
+import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
+import 'package:khurpi_fresh/domain/entities/category_entity.dart';
 
 class CategoryCard extends StatelessWidget {
   final CategoryEntity category;

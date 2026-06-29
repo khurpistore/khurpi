@@ -1,4 +1,4 @@
-import '../../domain/entities/category_entity.dart';
+import 'package:khurpi_fresh/domain/entities/category_entity.dart';
 
 class CategoryModel extends CategoryEntity {
   const CategoryModel({

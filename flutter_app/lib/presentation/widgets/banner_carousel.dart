@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../../domain/entities/banner_entity.dart';
+import 'package:khurpi_fresh/core/constants/app_colors.dart';
+import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
+import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
 
 class BannerCarousel extends StatefulWidget {
   final List<BannerEntity> banners;

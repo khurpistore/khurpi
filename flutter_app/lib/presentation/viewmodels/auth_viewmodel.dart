@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/user_entity.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../../domain/usecases/auth_usecases.dart';
-import '../providers/providers.dart';
+import 'package:khurpi_fresh/domain/entities/user_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/auth_repository.dart';
+import 'package:khurpi_fresh/domain/usecases/auth_usecases.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 // ==================== State Classes ====================
 

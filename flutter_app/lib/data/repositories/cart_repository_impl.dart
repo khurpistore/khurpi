@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/exceptions.dart';
-import '../../core/error/failures.dart';
-import '../../domain/entities/cart_item_entity.dart';
-import '../../domain/entities/product_entity.dart';
-import '../../domain/repositories/cart_repository.dart';
-import '../datasources/local/cart_local_datasource.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
+import 'package:khurpi_fresh/domain/entities/product_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/cart_repository.dart';
+import 'package:khurpi_fresh/data/datasources/local/cart_local_datasource.dart';
 
 class CartRepositoryImpl implements CartRepository {
   final CartLocalDataSource localDataSource;

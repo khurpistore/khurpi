@@ -1,6 +1,6 @@
-import '../../../core/network/api_client.dart';
-import '../../../core/error/exceptions.dart';
-import '../../models/banner_model.dart';
+import 'package:khurpi_fresh/core/network/api_client.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/data/models/banner_model.dart';
 
 abstract class BannerRemoteDataSource {
   Future<List<BannerModel>> getBanners();

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../viewmodels/viewmodels.dart';
-import '../widgets/quantity_selector.dart';
-import 'cart_page.dart';
+import 'package:khurpi_fresh/core/constants/app_colors.dart';
+import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
+import 'package:khurpi_fresh/presentation/viewmodels/viewmodels.dart';
+import 'package:khurpi_fresh/presentation/widgets/quantity_selector.dart';
+import 'package:khurpi_fresh/presentation/pages/cart_page.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;

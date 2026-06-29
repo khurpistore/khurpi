@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/error/exceptions.dart';
-import '../../../domain/entities/product_entity.dart';
-import '../../../domain/entities/cart_item_entity.dart';
-import '../../models/product_model.dart';
+import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
+import 'package:khurpi_fresh/data/models/product_model.dart';
 
 abstract class CartLocalDataSource {
   Future<List<CartItemEntity>> getCartItems();

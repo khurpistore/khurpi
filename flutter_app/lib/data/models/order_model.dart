@@ -1,4 +1,4 @@
-import '../../domain/entities/order_entity.dart';
+import 'package:khurpi_fresh/domain/entities/order_entity.dart';
 
 class OrderModel extends OrderEntity {
   const OrderModel({

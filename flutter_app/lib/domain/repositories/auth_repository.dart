@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../entities/user_entity.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/domain/entities/user_entity.dart';
 
 abstract class AuthRepository {
   /// Login with phone and password

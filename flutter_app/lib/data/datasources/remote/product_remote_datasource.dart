@@ -1,7 +1,7 @@
-import '../../../core/network/api_client.dart';
-import '../../../core/error/exceptions.dart';
-import '../../models/product_model.dart';
-import '../../models/category_model.dart';
+import 'package:khurpi_fresh/core/network/api_client.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/data/models/product_model.dart';
+import 'package:khurpi_fresh/data/models/category_model.dart';
 
 abstract class ProductRemoteDataSource {
   Future<List<ProductModel>> getProducts({String? search, String? categoryId});

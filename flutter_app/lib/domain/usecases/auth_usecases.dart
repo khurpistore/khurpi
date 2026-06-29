@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../../core/usecase/usecase.dart';
-import '../entities/user_entity.dart';
-import '../repositories/auth_repository.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/core/usecase/usecase.dart';
+import 'package:khurpi_fresh/domain/entities/user_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/auth_repository.dart';
 
 // Login Use Case
 class LoginUseCase implements UseCase<AuthResult, LoginParams> {

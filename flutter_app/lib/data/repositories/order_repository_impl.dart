@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/exceptions.dart';
-import '../../core/error/failures.dart';
-import '../../domain/entities/order_entity.dart';
-import '../../domain/repositories/order_repository.dart';
-import '../datasources/remote/order_remote_datasource.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/domain/entities/order_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/order_repository.dart';
+import 'package:khurpi_fresh/data/datasources/remote/order_remote_datasource.dart';
 
 class OrderRepositoryImpl implements OrderRepository {
   final OrderRemoteDataSource remoteDataSource;

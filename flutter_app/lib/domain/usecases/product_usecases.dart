@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../../core/usecase/usecase.dart';
-import '../entities/product_entity.dart';
-import '../entities/category_entity.dart';
-import '../repositories/product_repository.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/core/usecase/usecase.dart';
+import 'package:khurpi_fresh/domain/entities/product_entity.dart';
+import 'package:khurpi_fresh/domain/entities/category_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/product_repository.dart';
 
 // Get Products Use Case
 class GetProductsUseCase implements UseCase<List<ProductEntity>, GetProductsParams> {

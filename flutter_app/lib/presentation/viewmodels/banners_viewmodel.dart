@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/banner_entity.dart';
-import '../../domain/repositories/banner_repository.dart';
-import '../providers/providers.dart';
+import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/banner_repository.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 // ==================== State Classes ====================
 

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/network/api_client.dart';
-import '../../../core/error/exceptions.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../models/user_model.dart';
+import 'package:khurpi_fresh/core/network/api_client.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/data/models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<AuthResponse> login(String phone, String password);

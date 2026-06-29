@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/exceptions.dart';
-import '../../core/error/failures.dart';
-import '../../domain/entities/product_entity.dart';
-import '../../domain/entities/category_entity.dart';
-import '../../domain/repositories/product_repository.dart';
-import '../datasources/remote/product_remote_datasource.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/domain/entities/product_entity.dart';
+import 'package:khurpi_fresh/domain/entities/category_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/product_repository.dart';
+import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource remoteDataSource;

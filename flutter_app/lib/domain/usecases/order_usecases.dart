@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../../core/usecase/usecase.dart';
-import '../entities/order_entity.dart';
-import '../repositories/order_repository.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/core/usecase/usecase.dart';
+import 'package:khurpi_fresh/domain/entities/order_entity.dart';
+import 'package:khurpi_fresh/domain/repositories/order_repository.dart';
 
 // Create Order Use Case
 class CreateOrderUseCase implements UseCase<OrderEntity, CreateOrderParams> {

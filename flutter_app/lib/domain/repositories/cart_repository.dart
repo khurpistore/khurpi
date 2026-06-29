@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../entities/cart_item_entity.dart';
-import '../entities/product_entity.dart';
+import 'package:khurpi_fresh/core/error/failures.dart';
+import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
+import 'package:khurpi_fresh/domain/entities/product_entity.dart';
 
 abstract class CartRepository {
   /// Get all cart items

@@ -1,6 +1,6 @@
-import '../../../core/network/api_client.dart';
-import '../../../core/error/exceptions.dart';
-import '../../models/order_model.dart';
+import 'package:khurpi_fresh/core/network/api_client.dart';
+import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/data/models/order_model.dart';
 
 abstract class OrderRemoteDataSource {
   Future<OrderModel> createOrder({

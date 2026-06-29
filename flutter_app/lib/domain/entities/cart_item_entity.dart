@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'product_entity.dart';
+import 'package:khurpi_fresh/domain/entities/product_entity.dart';
 
 class CartItemEntity extends Equatable {
   final ProductEntity product;

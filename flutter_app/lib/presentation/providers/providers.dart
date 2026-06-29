@@ -2,33 +2,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Core
-import '../../core/network/api_client.dart';
+import 'package:khurpi_fresh/core/network/api_client.dart';
 
 // Data Sources
-import '../../data/datasources/remote/product_remote_datasource.dart';
-import '../../data/datasources/remote/auth_remote_datasource.dart';
-import '../../data/datasources/remote/order_remote_datasource.dart';
-import '../../data/datasources/remote/banner_remote_datasource.dart';
-import '../../data/datasources/local/cart_local_datasource.dart';
+import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
+import 'package:khurpi_fresh/data/datasources/remote/auth_remote_datasource.dart';
+import 'package:khurpi_fresh/data/datasources/remote/order_remote_datasource.dart';
+import 'package:khurpi_fresh/data/datasources/remote/banner_remote_datasource.dart';
+import 'package:khurpi_fresh/data/datasources/local/cart_local_datasource.dart';
 
 // Repositories
-import '../../data/repositories/product_repository_impl.dart';
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/repositories/cart_repository_impl.dart';
-import '../../data/repositories/order_repository_impl.dart';
-import '../../data/repositories/banner_repository_impl.dart';
+import 'package:khurpi_fresh/data/repositories/product_repository_impl.dart';
+import 'package:khurpi_fresh/data/repositories/auth_repository_impl.dart';
+import 'package:khurpi_fresh/data/repositories/cart_repository_impl.dart';
+import 'package:khurpi_fresh/data/repositories/order_repository_impl.dart';
+import 'package:khurpi_fresh/data/repositories/banner_repository_impl.dart';
 
 // Domain Repositories
-import '../../domain/repositories/product_repository.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../../domain/repositories/cart_repository.dart';
-import '../../domain/repositories/order_repository.dart';
-import '../../domain/repositories/banner_repository.dart';
+import 'package:khurpi_fresh/domain/repositories/product_repository.dart';
+import 'package:khurpi_fresh/domain/repositories/auth_repository.dart';
+import 'package:khurpi_fresh/domain/repositories/cart_repository.dart';
+import 'package:khurpi_fresh/domain/repositories/order_repository.dart';
+import 'package:khurpi_fresh/domain/repositories/banner_repository.dart';
 
 // Use Cases
-import '../../domain/usecases/product_usecases.dart';
-import '../../domain/usecases/auth_usecases.dart';
-import '../../domain/usecases/order_usecases.dart';
+import 'package:khurpi_fresh/domain/usecases/product_usecases.dart';
+import 'package:khurpi_fresh/domain/usecases/auth_usecases.dart';
+import 'package:khurpi_fresh/domain/usecases/order_usecases.dart';
 
 // ==================== Core Providers ====================
 
