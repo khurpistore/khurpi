@@ -35,7 +35,7 @@ class KhurpiFreshApp extends StatelessWidget {
           seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
-        fontFamily: 'Roboto', // Change to 'Poppins' after adding font files
+        fontFamily: 'Poppins',
         scaffoldBackgroundColor: AppColors.background,
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.surface,
