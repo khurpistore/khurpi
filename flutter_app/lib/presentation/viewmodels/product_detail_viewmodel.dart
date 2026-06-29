@@ -1,119 +1,87 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/domain/entities/product_entity.dart';
-import 'package:khurpi_fresh/domain/usecases/product_usecases.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-// ==================== State Classes ====================
+part 'product_detail_viewmodel.g.dart';
+part 'product_detail_viewmodel.freezed.dart';
 
-class ProductDetailState {
-  final ProductEntity? product;
-  final bool isLoading;
-  final String? error;
-  final double quantity;
-  final String unit;
-
-  const ProductDetailState({
-    this.product,
-    this.isLoading = false,
-    this.error,
-    this.quantity = 0.5,
-    this.unit = 'kg',
-  });
-
-  ProductDetailState copyWith({
-    ProductEntity? product,
-    bool? isLoading,
-    String? error,
-    double? quantity,
-    String? unit,
-    bool clearError = false,
-  }) {
-    return ProductDetailState(
-      product: product ?? this.product,
-      isLoading: isLoading ?? this.isLoading,
-      error: clearError ? null : (error ?? this.error),
-      quantity: quantity ?? this.quantity,
-      unit: unit ?? this.unit,
-    );
-  }
-
-  double get totalPrice {
-    if (product == null) return 0;
-    if (unit == 'gm') {
-      return product!.price * (quantity / 1000);
-    }
-    return product!.price * quantity;
-  }
-
-  String get formattedTotal => '₹${totalPrice.toStringAsFixed(2)}';
+@freezed
+class ProductDetailState with _$ProductDetailState {
+  const factory ProductDetailState({
+    @Default(false) bool isLoading,
+    ProductModel? product,
+    @Default([]) List<ProductModel> relatedProducts,
+    @Default(1) int quantity,
+    @Default('kg') String selectedUnit,
+    String? errorMessage,
+  }) = _ProductDetailState;
 }
 
-// ==================== ViewModel ====================
-
-class ProductDetailViewModel extends StateNotifier<ProductDetailState> {
-  final GetProductByIdUseCase _getProductByIdUseCase;
-
-  ProductDetailViewModel({
-    required GetProductByIdUseCase getProductByIdUseCase,
-  })  : _getProductByIdUseCase = getProductByIdUseCase,
-        super(const ProductDetailState());
-
-  Future<void> fetchProduct(String id) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _getProductByIdUseCase(id);
-
-    result.fold(
-      (failure) => state = state.copyWith(
-        isLoading: false,
-        error: failure.message,
-      ),
-      (product) => state = state.copyWith(
-        isLoading: false,
-        product: product,
-      ),
-    );
+@riverpod
+class ProductDetailViewModel extends _$ProductDetailViewModel {
+  @override
+  ProductDetailState build() {
+    return const ProductDetailState();
   }
 
-  void setUnit(String unit) {
-    double newQuantity = unit == 'kg' ? 0.5 : 250;
-    state = state.copyWith(unit: unit, quantity: newQuantity);
+  Future<void> loadProduct(String productId) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final product = await ref.read(productRemoteDataSourceProvider).getProductById(productId);
+      state = state.copyWith(
+        isLoading: false,
+        product: product,
+      );
+      
+      // Load related products if category exists
+      if (product.categoryId != null) {
+        _loadRelatedProducts(product.categoryId!, product.productId);
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<void> _loadRelatedProducts(String categoryId, String excludeProductId) async {
+    try {
+      final products = await ref.read(productRemoteDataSourceProvider).getProductsByCategory(categoryId);
+      final related = products.where((p) => p.productId != excludeProductId).take(4).toList();
+      state = state.copyWith(relatedProducts: related);
+    } catch (e) {
+      // Silently fail for related products
+    }
+  }
+
+  void setQuantity(int quantity) {
+    if (quantity > 0) {
+      state = state.copyWith(quantity: quantity);
+    }
   }
 
   void incrementQuantity() {
-    if (state.unit == 'gm') {
-      state = state.copyWith(quantity: state.quantity + 100);
-    } else {
-      state = state.copyWith(quantity: state.quantity + 0.5);
-    }
+    state = state.copyWith(quantity: state.quantity + 1);
   }
 
   void decrementQuantity() {
-    if (state.unit == 'gm') {
-      if (state.quantity > 100) {
-        state = state.copyWith(quantity: state.quantity - 100);
-      }
-    } else {
-      if (state.quantity > 0.5) {
-        state = state.copyWith(quantity: state.quantity - 0.5);
-      }
+    if (state.quantity > 1) {
+      state = state.copyWith(quantity: state.quantity - 1);
     }
   }
 
-  void setQuantity(double quantity) {
-    state = state.copyWith(quantity: quantity);
+  void setUnit(String unit) {
+    state = state.copyWith(selectedUnit: unit);
+  }
+
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
   }
 
   void reset() {
     state = const ProductDetailState();
   }
 }
-
-// ==================== Provider ====================
-
-final productDetailViewModelProvider =
-    StateNotifierProvider.autoDispose<ProductDetailViewModel, ProductDetailState>((ref) {
-  return ProductDetailViewModel(
-    getProductByIdUseCase: ref.watch(getProductByIdUseCaseProvider),
-  );
-});

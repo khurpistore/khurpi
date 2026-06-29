@@ -14,7 +14,7 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        sharedPreferencesProvider.overrideWith((ref) => sharedPreferences),
       ],
       child: const KhurpiFreshApp(),
     ),

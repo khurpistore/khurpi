@@ -1,104 +1,71 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/domain/entities/user_entity.dart';
-import 'package:khurpi_fresh/domain/repositories/auth_repository.dart';
-import 'package:khurpi_fresh/domain/usecases/auth_usecases.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-// ==================== State Classes ====================
+part 'auth_viewmodel.g.dart';
+part 'auth_viewmodel.freezed.dart';
 
-class AuthState {
-  final UserEntity? user;
-  final bool isLoading;
-  final bool isInitialized;
-  final String? error;
-
-  const AuthState({
-    this.user,
-    this.isLoading = false,
-    this.isInitialized = false,
-    this.error,
-  });
-
-  AuthState copyWith({
-    UserEntity? user,
-    bool? isLoading,
-    bool? isInitialized,
-    String? error,
-    bool clearError = false,
-    bool clearUser = false,
-  }) {
-    return AuthState(
-      user: clearUser ? null : (user ?? this.user),
-      isLoading: isLoading ?? this.isLoading,
-      isInitialized: isInitialized ?? this.isInitialized,
-      error: clearError ? null : (error ?? this.error),
-    );
-  }
-
-  bool get isLoggedIn => user != null;
-  bool get isWholesaleEnabled => user?.wholesaleEnabled ?? false;
+@freezed
+class AuthState with _$AuthState {
+  const factory AuthState({
+    @Default(false) bool isLoading,
+    @Default(false) bool isAuthenticated,
+    UserModel? user,
+    String? errorMessage,
+  }) = _AuthState;
 }
 
-// ==================== ViewModel ====================
-
-class AuthViewModel extends StateNotifier<AuthState> {
-  final LoginUseCase _loginUseCase;
-  final RegisterUseCase _registerUseCase;
-  final GetCurrentUserUseCase _getCurrentUserUseCase;
-  final LogoutUseCase _logoutUseCase;
-  final UpdateProfileUseCase _updateProfileUseCase;
-
-  AuthViewModel({
-    required LoginUseCase loginUseCase,
-    required RegisterUseCase registerUseCase,
-    required GetCurrentUserUseCase getCurrentUserUseCase,
-    required LogoutUseCase logoutUseCase,
-    required UpdateProfileUseCase updateProfileUseCase,
-  })  : _loginUseCase = loginUseCase,
-        _registerUseCase = registerUseCase,
-        _getCurrentUserUseCase = getCurrentUserUseCase,
-        _logoutUseCase = logoutUseCase,
-        _updateProfileUseCase = updateProfileUseCase,
-        super(const AuthState());
+@Riverpod(keepAlive: true)
+class AuthViewModel extends _$AuthViewModel {
+  @override
+  AuthState build() {
+    return const AuthState();
+  }
 
   Future<void> initialize() async {
-    if (state.isInitialized) return;
-
     state = state.copyWith(isLoading: true);
-
-    final result = await _getCurrentUserUseCase();
-
-    result.fold(
-      (failure) => state = state.copyWith(
+    
+    try {
+      final token = await ref.read(authLocalDataSourceProvider).getToken();
+      if (token != null) {
+        final user = await ref.read(authLocalDataSourceProvider).getUser();
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: true,
+          user: user,
+        );
+      } else {
+        state = state.copyWith(isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(
         isLoading: false,
-        isInitialized: true,
-      ),
-      (user) => state = state.copyWith(
-        isLoading: false,
-        isInitialized: true,
-        user: user,
-      ),
-    );
+        errorMessage: e.toString(),
+      );
+    }
   }
 
   Future<bool> login(String phone, String password) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _loginUseCase(LoginParams(
-      phone: phone,
-      password: password,
-    ));
-
-    return result.fold(
-      (failure) {
-        state = state.copyWith(isLoading: false, error: failure.message);
-        return false;
-      },
-      (authResult) {
-        state = state.copyWith(isLoading: false, user: authResult.user);
-        return true;
-      },
-    );
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final response = await ref.read(authRemoteDataSourceProvider).login(phone, password);
+      await ref.read(authLocalDataSourceProvider).saveAuthData(response.token, response.user);
+      
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: response.user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
   }
 
   Future<bool> register({
@@ -107,75 +74,82 @@ class AuthViewModel extends StateNotifier<AuthState> {
     String? name,
     String? email,
   }) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _registerUseCase(RegisterParams(
-      phone: phone,
-      password: password,
-      name: name,
-      email: email,
-    ));
-
-    return result.fold(
-      (failure) {
-        state = state.copyWith(isLoading: false, error: failure.message);
-        return false;
-      },
-      (authResult) {
-        state = state.copyWith(isLoading: false, user: authResult.user);
-        return true;
-      },
-    );
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final response = await ref.read(authRemoteDataSourceProvider).register(
+        phone: phone,
+        password: password,
+        name: name,
+        email: email,
+      );
+      await ref.read(authLocalDataSourceProvider).saveAuthData(response.token, response.user);
+      
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: response.user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
   }
 
   Future<void> logout() async {
-    await _logoutUseCase();
-    state = state.copyWith(clearUser: true);
+    state = state.copyWith(isLoading: true);
+    
+    try {
+      await ref.read(authLocalDataSourceProvider).clearAuthData();
+      state = const AuthState();
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
   }
 
-  Future<bool> updateProfile({
+  Future<void> updateProfile({
     String? name,
     String? email,
     String? address,
     String? city,
     String? pincode,
   }) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _updateProfileUseCase(UpdateProfileParams(
-      name: name,
-      email: email,
-      address: address,
-      city: city,
-      pincode: pincode,
-    ));
-
-    return result.fold(
-      (failure) {
-        state = state.copyWith(isLoading: false, error: failure.message);
-        return false;
-      },
-      (user) {
-        state = state.copyWith(isLoading: false, user: user);
-        return true;
-      },
-    );
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final user = await ref.read(authRemoteDataSourceProvider).updateProfile(
+        name: name,
+        email: email,
+        address: address,
+        city: city,
+        pincode: pincode,
+      );
+      
+      final token = await ref.read(authLocalDataSourceProvider).getToken();
+      if (token != null) {
+        await ref.read(authLocalDataSourceProvider).saveAuthData(token, user);
+      }
+      
+      state = state.copyWith(
+        isLoading: false,
+        user: user,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
   }
 
   void clearError() {
-    state = state.copyWith(clearError: true);
+    state = state.copyWith(errorMessage: null);
   }
 }
-
-// ==================== Provider ====================
-
-final authViewModelProvider =
-    StateNotifierProvider<AuthViewModel, AuthState>((ref) {
-  return AuthViewModel(
-    loginUseCase: ref.watch(loginUseCaseProvider),
-    registerUseCase: ref.watch(registerUseCaseProvider),
-    getCurrentUserUseCase: ref.watch(getCurrentUserUseCaseProvider),
-    logoutUseCase: ref.watch(logoutUseCaseProvider),
-    updateProfileUseCase: ref.watch(updateProfileUseCaseProvider),
-  );
-});

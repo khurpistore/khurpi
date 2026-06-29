@@ -1,178 +1,149 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/core/constants/app_constants.dart';
-import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
-import 'package:khurpi_fresh/domain/entities/product_entity.dart';
-import 'package:khurpi_fresh/domain/repositories/cart_repository.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:khurpi_fresh/data/models/cart_item_model.dart';
+import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-// ==================== State Classes ====================
+part 'cart_viewmodel.g.dart';
+part 'cart_viewmodel.freezed.dart';
 
-class CartState {
-  final List<CartItemEntity> items;
-  final bool isLoading;
-  final String? error;
-
-  const CartState({
-    this.items = const [],
-    this.isLoading = false,
-    this.error,
-  });
-
-  CartState copyWith({
-    List<CartItemEntity>? items,
-    bool? isLoading,
-    String? error,
-    bool clearError = false,
-  }) {
-    return CartState(
-      items: items ?? this.items,
-      isLoading: isLoading ?? this.isLoading,
-      error: clearError ? null : (error ?? this.error),
-    );
-  }
-
-  int get itemCount => items.length;
-  bool get isEmpty => items.isEmpty;
-
-  double get subtotal {
-    return items.fold(0, (sum, item) => sum + item.totalPrice);
-  }
-
-  double get deliveryFee {
-    if (subtotal >= AppConstants.freeDeliveryThreshold) return 0;
-    return AppConstants.standardDeliveryFee;
-  }
-
-  double get total => subtotal + deliveryFee;
-
-  String get formattedSubtotal => '₹${subtotal.toStringAsFixed(2)}';
-  String get formattedDeliveryFee => deliveryFee == 0 ? 'FREE' : '₹${deliveryFee.toStringAsFixed(2)}';
-  String get formattedTotal => '₹${total.toStringAsFixed(2)}';
+@freezed
+class CartState with _$CartState {
+  const factory CartState({
+    @Default(false) bool isLoading,
+    @Default([]) List<CartItemModel> items,
+    @Default(0) double subtotal,
+    @Default(40) double deliveryFee,
+    String? errorMessage,
+  }) = _CartState;
 }
 
-// ==================== ViewModel ====================
+extension CartStateX on CartState {
+  double get total => subtotal + deliveryFee;
+  int get itemCount => items.length;
+  bool get isEmpty => items.isEmpty;
+}
 
-class CartViewModel extends StateNotifier<CartState> {
-  final CartRepository _cartRepository;
-
-  CartViewModel({required CartRepository cartRepository})
-      : _cartRepository = cartRepository,
-        super(const CartState());
-
-  Future<void> loadCart() async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _cartRepository.getCartItems();
-
-    result.fold(
-      (failure) => state = state.copyWith(
-        isLoading: false,
-        error: failure.message,
-      ),
-      (items) => state = state.copyWith(
-        isLoading: false,
-        items: items,
-      ),
-    );
+@Riverpod(keepAlive: true)
+class CartViewModel extends _$CartViewModel {
+  @override
+  CartState build() {
+    return const CartState();
   }
 
-  Future<void> addItem(ProductEntity product, {double quantity = 0.5, String unit = 'kg'}) async {
-    final result = await _cartRepository.addItem(product, quantity, unit);
+  Future<void> loadCart() async {
+    state = state.copyWith(isLoading: true);
+    
+    try {
+      final items = await ref.read(cartLocalDataSourceProvider).getCartItems();
+      final subtotal = _calculateSubtotal(items);
+      
+      state = state.copyWith(
+        isLoading: false,
+        items: items,
+        subtotal: subtotal,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
 
-    result.fold(
-      (failure) => state = state.copyWith(error: failure.message),
-      (_) => loadCart(),
-    );
+  Future<void> addToCart(ProductModel product, {double quantity = 1, String unit = 'kg'}) async {
+    try {
+      final existingIndex = state.items.indexWhere((item) => item.productId == product.productId);
+      
+      List<CartItemModel> updatedItems;
+      
+      if (existingIndex >= 0) {
+        // Update existing item
+        final existingItem = state.items[existingIndex];
+        final updatedItem = existingItem.copyWith(
+          quantity: existingItem.quantity + quantity,
+        );
+        updatedItems = [...state.items];
+        updatedItems[existingIndex] = updatedItem;
+      } else {
+        // Add new item
+        final newItem = CartItemModel(
+          productId: product.productId,
+          productName: product.name,
+          price: product.price,
+          wholesalePrice: product.wholesalePrice,
+          imageUrl: product.imageUrl,
+          quantity: quantity,
+          unit: unit,
+        );
+        updatedItems = [...state.items, newItem];
+      }
+      
+      await ref.read(cartLocalDataSourceProvider).saveCartItems(updatedItems);
+      
+      state = state.copyWith(
+        items: updatedItems,
+        subtotal: _calculateSubtotal(updatedItems),
+      );
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+    }
   }
 
   Future<void> updateQuantity(String productId, double quantity) async {
-    final result = await _cartRepository.updateQuantity(productId, quantity);
-
-    result.fold(
-      (failure) => state = state.copyWith(error: failure.message),
-      (_) => loadCart(),
-    );
-  }
-
-  Future<void> incrementQuantity(String productId) async {
-    final item = state.items.firstWhere(
-      (item) => item.product.id == productId,
-      orElse: () => throw Exception('Item not found'),
-    );
-
-    double newQuantity;
-    if (item.unit == 'gm') {
-      newQuantity = item.quantity + 100;
-    } else {
-      newQuantity = item.quantity + 0.5;
+    try {
+      if (quantity <= 0) {
+        await removeFromCart(productId);
+        return;
+      }
+      
+      final updatedItems = state.items.map((item) {
+        if (item.productId == productId) {
+          return item.copyWith(quantity: quantity);
+        }
+        return item;
+      }).toList();
+      
+      await ref.read(cartLocalDataSourceProvider).saveCartItems(updatedItems);
+      
+      state = state.copyWith(
+        items: updatedItems,
+        subtotal: _calculateSubtotal(updatedItems),
+      );
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
     }
-
-    await updateQuantity(productId, newQuantity);
   }
 
-  Future<void> decrementQuantity(String productId) async {
-    final item = state.items.firstWhere(
-      (item) => item.product.id == productId,
-      orElse: () => throw Exception('Item not found'),
-    );
-
-    double newQuantity;
-    if (item.unit == 'gm') {
-      newQuantity = item.quantity > 100 ? item.quantity - 100 : 0;
-    } else {
-      newQuantity = item.quantity > 0.5 ? item.quantity - 0.5 : 0;
+  Future<void> removeFromCart(String productId) async {
+    try {
+      final updatedItems = state.items.where((item) => item.productId != productId).toList();
+      
+      await ref.read(cartLocalDataSourceProvider).saveCartItems(updatedItems);
+      
+      state = state.copyWith(
+        items: updatedItems,
+        subtotal: _calculateSubtotal(updatedItems),
+      );
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
     }
-
-    await updateQuantity(productId, newQuantity);
-  }
-
-  Future<void> removeItem(String productId) async {
-    final result = await _cartRepository.removeItem(productId);
-
-    result.fold(
-      (failure) => state = state.copyWith(error: failure.message),
-      (_) => loadCart(),
-    );
   }
 
   Future<void> clearCart() async {
-    final result = await _cartRepository.clearCart();
-
-    result.fold(
-      (failure) => state = state.copyWith(error: failure.message),
-      (_) => state = state.copyWith(items: []),
-    );
-  }
-
-  bool isInCart(String productId) {
-    return state.items.any((item) => item.product.id == productId);
-  }
-
-  CartItemEntity? getCartItem(String productId) {
     try {
-      return state.items.firstWhere((item) => item.product.id == productId);
+      await ref.read(cartLocalDataSourceProvider).clearCart();
+      state = const CartState();
     } catch (e) {
-      return null;
+      state = state.copyWith(errorMessage: e.toString());
     }
   }
 
-  List<Map<String, dynamic>> getOrderItems() {
-    return state.items.map((item) => {
-      'product_id': item.product.id,
-      'product_name': item.product.name,
-      'price': item.product.price,
-      'quantity': item.quantity,
-      'unit': item.unit,
-      'total': item.totalPrice,
-    }).toList();
+  double _calculateSubtotal(List<CartItemModel> items) {
+    return items.fold(0, (sum, item) => sum + (item.price * item.quantity));
+  }
+
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
   }
 }
-
-// ==================== Provider ====================
-
-final cartViewModelProvider =
-    StateNotifierProvider<CartViewModel, CartState>((ref) {
-  return CartViewModel(
-    cartRepository: ref.watch(cartRepositoryProvider),
-  );
-});

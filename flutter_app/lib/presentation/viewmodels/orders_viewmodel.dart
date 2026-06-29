@@ -1,179 +1,131 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:khurpi_fresh/domain/entities/order_entity.dart';
-import 'package:khurpi_fresh/domain/usecases/order_usecases.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:khurpi_fresh/data/models/order_model.dart';
+import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
-// ==================== State Classes ====================
+part 'orders_viewmodel.g.dart';
+part 'orders_viewmodel.freezed.dart';
 
-class OrdersState {
-  final List<OrderEntity> orders;
-  final OrderEntity? selectedOrder;
-  final bool isLoading;
-  final String? error;
-
-  const OrdersState({
-    this.orders = const [],
-    this.selectedOrder,
-    this.isLoading = false,
-    this.error,
-  });
-
-  OrdersState copyWith({
-    List<OrderEntity>? orders,
-    OrderEntity? selectedOrder,
-    bool? isLoading,
-    String? error,
-    bool clearError = false,
-    bool clearSelectedOrder = false,
-  }) {
-    return OrdersState(
-      orders: orders ?? this.orders,
-      selectedOrder: clearSelectedOrder ? null : (selectedOrder ?? this.selectedOrder),
-      isLoading: isLoading ?? this.isLoading,
-      error: clearError ? null : (error ?? this.error),
-    );
-  }
-
-  List<OrderEntity> get recentOrders => orders.take(5).toList();
-
-  List<OrderEntity> get activeOrders {
-    return orders.where((o) =>
-      o.status != 'delivered' && o.status != 'cancelled'
-    ).toList();
-  }
+@freezed
+class OrdersState with _$OrdersState {
+  const factory OrdersState({
+    @Default(false) bool isLoading,
+    @Default([]) List<OrderModel> orders,
+    OrderModel? currentOrder,
+    String? errorMessage,
+  }) = _OrdersState;
 }
 
-// ==================== ViewModel ====================
-
-class OrdersViewModel extends StateNotifier<OrdersState> {
-  final GetMyOrdersUseCase _getMyOrdersUseCase;
-  final GetOrderByIdUseCase _getOrderByIdUseCase;
-  final CancelOrderUseCase _cancelOrderUseCase;
-  final CreateOrderUseCase _createOrderUseCase;
-
-  OrdersViewModel({
-    required GetMyOrdersUseCase getMyOrdersUseCase,
-    required GetOrderByIdUseCase getOrderByIdUseCase,
-    required CancelOrderUseCase cancelOrderUseCase,
-    required CreateOrderUseCase createOrderUseCase,
-  })  : _getMyOrdersUseCase = getMyOrdersUseCase,
-        _getOrderByIdUseCase = getOrderByIdUseCase,
-        _cancelOrderUseCase = cancelOrderUseCase,
-        _createOrderUseCase = createOrderUseCase,
-        super(const OrdersState());
-
-  Future<void> fetchOrders() async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _getMyOrdersUseCase();
-
-    result.fold(
-      (failure) => state = state.copyWith(
-        isLoading: false,
-        error: failure.message,
-      ),
-      (orders) {
-        final sorted = List<OrderEntity>.from(orders)
-          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        state = state.copyWith(
-          isLoading: false,
-          orders: sorted,
-        );
-      },
-    );
+@riverpod
+class OrdersViewModel extends _$OrdersViewModel {
+  @override
+  OrdersState build() {
+    return const OrdersState();
   }
 
-  Future<void> fetchOrder(String id) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _getOrderByIdUseCase(id);
-
-    result.fold(
-      (failure) => state = state.copyWith(
+  Future<void> loadOrders() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final orders = await ref.read(orderRemoteDataSourceProvider).getMyOrders();
+      state = state.copyWith(
         isLoading: false,
-        error: failure.message,
-      ),
-      (order) => state = state.copyWith(
+        orders: orders,
+      );
+    } catch (e) {
+      state = state.copyWith(
         isLoading: false,
-        selectedOrder: order,
-      ),
-    );
+        errorMessage: e.toString(),
+      );
+    }
   }
 
-  Future<OrderEntity?> createOrder({
-    required List<Map<String, dynamic>> items,
+  Future<void> loadOrderById(String orderId) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final order = await ref.read(orderRemoteDataSourceProvider).getOrderById(orderId);
+      state = state.copyWith(
+        isLoading: false,
+        currentOrder: order,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<OrderModel?> createOrder({
+    required List<CartItemModel> items,
     required String deliveryAddress,
-    required String deliverySlot,
-    required DateTime deliveryDate,
-    String? paymentMethod,
+    required String city,
+    required String pincode,
+    required String phone,
+    required String paymentMethod,
     String? notes,
   }) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _createOrderUseCase(CreateOrderParams(
-      items: items,
-      deliveryAddress: deliveryAddress,
-      deliverySlot: deliverySlot,
-      deliveryDate: deliveryDate,
-      paymentMethod: paymentMethod,
-      notes: notes,
-    ));
-
-    return result.fold(
-      (failure) {
-        state = state.copyWith(isLoading: false, error: failure.message);
-        return null;
-      },
-      (order) {
-        final updatedOrders = [order, ...state.orders];
-        state = state.copyWith(isLoading: false, orders: updatedOrders);
-        return order;
-      },
-    );
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final order = await ref.read(orderRemoteDataSourceProvider).createOrder(
+        items: items,
+        deliveryAddress: deliveryAddress,
+        city: city,
+        pincode: pincode,
+        phone: phone,
+        paymentMethod: paymentMethod,
+        notes: notes,
+      );
+      
+      state = state.copyWith(
+        isLoading: false,
+        currentOrder: order,
+        orders: [order, ...state.orders],
+      );
+      
+      return order;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      return null;
+    }
   }
 
-  Future<bool> cancelOrder(String id) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    final result = await _cancelOrderUseCase(id);
-
-    return result.fold(
-      (failure) {
-        state = state.copyWith(isLoading: false, error: failure.message);
-        return false;
-      },
-      (updatedOrder) {
-        final updatedOrders = state.orders.map((o) {
-          return o.id == id ? updatedOrder : o;
-        }).toList();
-
-        state = state.copyWith(
-          isLoading: false,
-          orders: updatedOrders,
-          selectedOrder: state.selectedOrder?.id == id ? updatedOrder : state.selectedOrder,
-        );
-        return true;
-      },
-    );
-  }
-
-  void clearSelectedOrder() {
-    state = state.copyWith(clearSelectedOrder: true);
+  Future<bool> cancelOrder(String orderId) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    
+    try {
+      final order = await ref.read(orderRemoteDataSourceProvider).cancelOrder(orderId);
+      
+      final updatedOrders = state.orders.map((o) {
+        if (o.orderId == orderId) {
+          return order;
+        }
+        return o;
+      }).toList();
+      
+      state = state.copyWith(
+        isLoading: false,
+        orders: updatedOrders,
+        currentOrder: order,
+      );
+      
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
   }
 
   void clearError() {
-    state = state.copyWith(clearError: true);
+    state = state.copyWith(errorMessage: null);
   }
 }
-
-// ==================== Provider ====================
-
-final ordersViewModelProvider =
-    StateNotifierProvider<OrdersViewModel, OrdersState>((ref) {
-  return OrdersViewModel(
-    getMyOrdersUseCase: ref.watch(getMyOrdersUseCaseProvider),
-    getOrderByIdUseCase: ref.watch(getOrderByIdUseCaseProvider),
-    cancelOrderUseCase: ref.watch(cancelOrderUseCaseProvider),
-    createOrderUseCase: ref.watch(createOrderUseCaseProvider),
-  );
-});
