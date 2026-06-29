@@ -61,10 +61,11 @@ ref.read(cartViewModelProvider.notifier).addToCart(product);
 - ✅ **Bottom Navigation Bar** (Home, Categories, Cart, Profile)
 - ✅ **Address bar at top** of main navigation
 - ✅ UI Pages: Splash, Main Navigation, Home, Products, Product Detail, Cart, Checkout, Categories, Profile, Login, Orders
-- ✅ Reusable Widgets (ProductCard, CategoryCard, BannerCarousel, CartItemCard)
+- ✅ Reusable Widgets (ProductCard, CategoryCard, BannerCarousel, CartItemCard, **SpinWheelWidget**)
 - ✅ Fixed Riverpod "modifying provider while building" errors with WidgetsBinding.addPostFrameCallback
 - ✅ Backend returns `image_url` field for Flutter compatibility
 - ✅ **Delivery Options in Checkout** (Instant & Slotted delivery with date/time slot picker)
+- ✅ **Spin the Wheel Game** on Home Page (6 sections: 5 vegetables + 1 "Better Luck", free item added to cart, once per order)
 
 ## Prioritized Backlog
 

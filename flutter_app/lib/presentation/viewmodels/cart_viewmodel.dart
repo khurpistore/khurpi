@@ -153,7 +153,47 @@ class CartViewModel extends _$CartViewModel {
   Future<void> clearCart() async {
     try {
       await _cartLocalDataSource.clearCart();
+      
+      // Reset spin eligibility when cart is cleared (order completed)
+      final prefs = ref.read(sharedPreferencesProvider);
+      await prefs.remove('last_spin_order_id');
+      
       state = const CartState();
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+    }
+  }
+
+  Future<void> addFreeItem({
+    required String productId,
+    required String productName,
+    required double quantity,
+    required String unit,
+  }) async {
+    try {
+      // Check if free item already exists
+      final existingIndex = state.items.indexWhere((item) => item.productId == productId);
+      
+      if (existingIndex >= 0) {
+        // Already have this free item, don't add again
+        return;
+      }
+
+      final newItem = CartItemModel(
+        productId: productId,
+        productName: productName,
+        price: 0, // FREE!
+        quantity: quantity,
+        unit: unit,
+      );
+
+      final updatedItems = [...state.items, newItem];
+      await _cartLocalDataSource.saveCartItems(updatedItems);
+
+      state = state.copyWith(
+        items: updatedItems,
+        // Subtotal doesn't change since price is 0
+      );
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
     }

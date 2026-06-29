@@ -4,3 +4,4 @@ export 'quantity_selector.dart';
 export 'custom_search_bar.dart';
 export 'banner_carousel.dart';
 export 'cart_item_card.dart';
+export 'spin_wheel_widget.dart';
