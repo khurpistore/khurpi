@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
@@ -16,7 +15,39 @@ class BannerCarousel extends StatefulWidget {
 }
 
 class _BannerCarouselState extends State<BannerCarousel> {
+  late PageController _pageController;
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.92);
+    
+    // Auto-play functionality
+    if (widget.banners.length > 1) {
+      _startAutoPlay();
+    }
+  }
+
+  void _startAutoPlay() {
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted && widget.banners.isNotEmpty) {
+        final nextPage = (_currentIndex + 1) % widget.banners.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut,
+        );
+        _startAutoPlay();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,33 +55,32 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
     return Column(
       children: [
-        CarouselSlider.builder(
-          itemCount: widget.banners.length,
-          itemBuilder: (context, index, realIndex) {
-            final banner = widget.banners[index];
-            return _buildBannerItem(banner);
-          },
-          options: CarouselOptions(
-            height: 160,
-            viewportFraction: 0.92,
-            enlargeCenterPage: true,
-            autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 5),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            onPageChanged: (index, reason) => setState(() => _currentIndex = index),
+        SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.banners.length,
+            onPageChanged: (index) => setState(() => _currentIndex = index),
+            itemBuilder: (context, index) {
+              final banner = widget.banners[index];
+              return _buildBannerItem(banner);
+            },
           ),
         ),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: widget.banners.asMap().entries.map((entry) {
-            return Container(
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
               width: _currentIndex == entry.key ? 24 : 8,
               height: 8,
               margin: const EdgeInsets.symmetric(horizontal: 3),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(4),
-                color: _currentIndex == entry.key ? AppColors.primary : AppColors.textHint.withOpacity(0.3),
+                color: _currentIndex == entry.key 
+                    ? AppColors.primary 
+                    : AppColors.textHint.withValues(alpha: 0.3),
               ),
             );
           }).toList(),
@@ -66,7 +96,13 @@ class _BannerCarouselState extends State<BannerCarousel> {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
@@ -78,11 +114,20 @@ class _BannerCarouselState extends State<BannerCarousel> {
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
                   color: AppColors.background,
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: AppColors.primary.withOpacity(0.1),
-                  child: const Icon(Icons.image_not_supported_outlined, color: AppColors.textHint, size: 40),
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  child: const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: AppColors.textHint,
+                    size: 40,
+                  ),
                 ),
               ),
               Container(
@@ -90,7 +135,10 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.6),
+                    ],
                   ),
                 ),
               ),
@@ -102,10 +150,18 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(banner.title!, style: AppTextStyles.h4.copyWith(color: Colors.white)),
+                      Text(
+                        banner.title!,
+                        style: AppTextStyles.h4.copyWith(color: Colors.white),
+                      ),
                       if (banner.subtitle != null) ...[
                         const SizedBox(height: 4),
-                        Text(banner.subtitle!, style: AppTextStyles.bodySmall.copyWith(color: Colors.white.withOpacity(0.9))),
+                        Text(
+                          banner.subtitle!,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
                       ],
                     ],
                   ),
