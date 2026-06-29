@@ -492,3 +492,32 @@ January 29, 2025
     - Stock status (in_stock, growing, out_of_stock)
     - Shelf life days
   - **Total catalog:** 106 products across 6 categories
+
+
+- **Jun 29, 2026:** Clean Architecture & Core Module Implementation
+  - **Core Module Created (`/frontend/src/core/`):**
+    - `constants/` - Unit types, stock status, currency configuration
+    - `utils/` - Pure functions for quantity, price, stock operations
+    - `hooks/` - useProduct and useCartOperations ViewModels
+    - `components/` - Reusable UI: QuantitySelector, StockBadge, CartItem, PriceDisplay, ProductCard
+  - **Single Source of Truth Implemented:**
+    - All quantity operations: `formatQuantity`, `getQuantityOptions`, `getDefaultQuantity`
+    - All price operations: `formatPricePerUnit`, `calculateProductPrice`, `getDisplayPrice`
+    - All stock operations: `getStockStatus`, `canOrderProduct`, `sortByStockStatus`
+  - **Pages Refactored to Use Core Module:**
+    - Products.js - Imports QuantitySelector, StockBadge, formatQuantity
+    - ProductDetail.js - Imports QuantitySelector, formatQuantity, getStockStatus
+    - Cart.js - Imports QuantitySelector, CartItem, formatQuantity
+    - Checkout.js - Imports CartItemReadOnly, formatQuantity, formatPricePerUnit
+    - SubscriptionCreate.js - Imports QuantitySelector, formatQuantity, getStockStatus
+    - AdminProducts.js - Imports StockBadge, getStockStatus
+    - AdminOrders.js - Imports formatQuantity, formatPricePerUnit
+    - OrderDetail.js - Imports OrderItem, formatQuantity, formatPricePerUnit
+  - **Removed All Duplicate Utility Functions** from pages
+  - **MVVM Pattern:** Hooks serve as ViewModels separating business logic from UI
+  - **Architecture Documentation:** Created `/core/ARCHITECTURE.md`
+  - **Bug Fixes:**
+    - Fixed product navigation (routes changed from `/products/:id` to `/product/:id`)
+    - Fixed stock status detection for explicit 'in_stock' products
+    - Fixed kg-based quantity calculations (removed old gram-based calculations)
+  - **Testing:** All 48 E2E tests + 32 backend tests pass (100%)
