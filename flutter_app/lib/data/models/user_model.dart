@@ -1,49 +1,34 @@
-import 'package:khurpi_fresh/domain/entities/user_entity.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class UserModel extends UserEntity {
-  const UserModel({
-    required super.id,
-    super.name,
-    required super.phone,
-    super.email,
-    super.address,
-    super.city,
-    super.pincode,
-    super.isAdmin,
-    super.wholesaleEnabled,
-    super.createdAt,
-  });
+part 'user_model.freezed.dart';
+part 'user_model.g.dart';
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      name: json['name'],
-      phone: json['phone'] ?? '',
-      email: json['email'],
-      address: json['address'],
-      city: json['city'],
-      pincode: json['pincode'],
-      isAdmin: json['is_admin'] ?? false,
-      wholesaleEnabled: json['wholesale_enabled'] ?? false,
-      createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'])
-          : null,
+@freezed
+abstract class UserModel with _$UserModel {
+  const factory UserModel({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: '_id') String? mongoId,
+    String? name,
+    required String phone,
+    String? email,
+    String? address,
+    String? city,
+    String? pincode,
+    @JsonKey(name: 'is_admin') @Default(false) bool isAdmin,
+    @JsonKey(name: 'wholesale_enabled') @Default(false) bool wholesaleEnabled,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+  }) = _UserModel;
+
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
+
+  static UserModel initial() {
+    return const UserModel(
+      phone: '',
     );
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'phone': phone,
-      'email': email,
-      'address': address,
-      'city': city,
-      'pincode': pincode,
-      'is_admin': isAdmin,
-      'wholesale_enabled': wholesaleEnabled,
-    };
-  }
-
-  UserEntity toEntity() => this;
+extension UserModelX on UserModel {
+  String get userId => id ?? mongoId ?? '';
 }

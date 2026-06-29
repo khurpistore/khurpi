@@ -1,61 +1,41 @@
-import 'package:khurpi_fresh/domain/entities/product_entity.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ProductModel extends ProductEntity {
-  const ProductModel({
-    required super.id,
-    required super.name,
-    super.description,
-    required super.price,
-    super.wholesalePrice,
-    super.imageUrl,
-    super.categoryId,
-    super.categoryName,
-    required super.stockStatus,
-    required super.stockQuantity,
-    super.unit,
-    super.weight,
-    super.isActive,
-    super.createdAt,
-  });
+part 'product_model.freezed.dart';
+part 'product_model.g.dart';
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) {
-    return ProductModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'],
-      price: (json['price'] ?? 0).toDouble(),
-      wholesalePrice: json['wholesale_price']?.toDouble(),
-      imageUrl: json['image_url'],
-      categoryId: json['category_id'],
-      categoryName: json['category_name'],
-      stockStatus: json['stock_status'] ?? 'out_of_stock',
-      stockQuantity: json['stock_quantity'] ?? 0,
-      unit: json['unit'],
-      weight: json['weight']?.toDouble(),
-      isActive: json['is_active'] ?? true,
-      createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'])
-          : null,
+@freezed
+abstract class ProductModel with _$ProductModel {
+  const factory ProductModel({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: '_id') String? mongoId,
+    required String name,
+    String? description,
+    required double price,
+    @JsonKey(name: 'wholesale_price') double? wholesalePrice,
+    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'category_id') String? categoryId,
+    @JsonKey(name: 'category_name') String? categoryName,
+    @JsonKey(name: 'stock_status') @Default('out_of_stock') String stockStatus,
+    @JsonKey(name: 'stock_quantity') @Default(0) int stockQuantity,
+    String? unit,
+    double? weight,
+    @JsonKey(name: 'is_active') @Default(true) bool isActive,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+  }) = _ProductModel;
+
+  factory ProductModel.fromJson(Map<String, dynamic> json) =>
+      _$ProductModelFromJson(json);
+
+  static ProductModel initial() {
+    return const ProductModel(
+      name: '',
+      price: 0,
+      stockStatus: 'out_of_stock',
+      stockQuantity: 0,
     );
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'price': price,
-      'wholesale_price': wholesalePrice,
-      'image_url': imageUrl,
-      'category_id': categoryId,
-      'category_name': categoryName,
-      'stock_status': stockStatus,
-      'stock_quantity': stockQuantity,
-      'unit': unit,
-      'weight': weight,
-      'is_active': isActive,
-    };
-  }
-
-  ProductEntity toEntity() => this;
+extension ProductModelX on ProductModel {
+  String get productId => id ?? mongoId ?? '';
 }

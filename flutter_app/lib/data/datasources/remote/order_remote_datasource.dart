@@ -1,11 +1,12 @@
 import 'package:khurpi_fresh/core/error/exceptions.dart';
 import 'package:khurpi_fresh/data/api/order_api_service.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
-import 'package:khurpi_fresh/domain/entities/cart_item_entity.dart';
+import 'package:khurpi_fresh/data/models/create_order_request.dart';
+import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 
 abstract class OrderRemoteDataSource {
   Future<OrderModel> createOrder({
-    required List<CartItemEntity> items,
+    required List<CartItemModel> items,
     required String deliveryAddress,
     required String city,
     required String pincode,
@@ -25,7 +26,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
 
   @override
   Future<OrderModel> createOrder({
-    required List<CartItemEntity> items,
+    required List<CartItemModel> items,
     required String deliveryAddress,
     required String city,
     required String pincode,
@@ -36,7 +37,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     try {
       final request = CreateOrderRequest(
         items: items.map((item) => OrderItemRequest(
-          productId: item.product.id,
+          productId: item.productId,
           quantity: item.quantity,
           unit: item.unit,
         )).toList(),

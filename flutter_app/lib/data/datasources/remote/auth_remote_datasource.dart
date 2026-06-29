@@ -5,10 +5,11 @@ import 'package:khurpi_fresh/core/error/exceptions.dart';
 import 'package:khurpi_fresh/core/network/dio_client.dart';
 import 'package:khurpi_fresh/data/api/auth_api_service.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
+import 'package:khurpi_fresh/data/models/auth_response_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthResponse> login(String phone, String password);
-  Future<AuthResponse> register({
+  Future<AuthResponseModel> login(String phone, String password);
+  Future<AuthResponseModel> register({
     required String phone,
     required String password,
     String? name,
@@ -31,33 +32,26 @@ abstract class AuthLocalDataSource {
   Future<void> clearAuthData();
 }
 
-class AuthResponse {
-  final String token;
-  final UserModel user;
-
-  AuthResponse({required this.token, required this.user});
-}
-
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final AuthApiService _apiService;
 
   AuthRemoteDataSourceImpl(this._apiService);
 
   @override
-  Future<AuthResponse> login(String phone, String password) async {
+  Future<AuthResponseModel> login(String phone, String password) async {
     try {
       final response = await _apiService.login(
         LoginRequest(phone: phone, password: password),
       );
       DioClient.setAuthToken(response.token);
-      return AuthResponse(token: response.token, user: response.user);
+      return response;
     } catch (e) {
       throw ServerException(message: 'Login failed: $e');
     }
   }
 
   @override
-  Future<AuthResponse> register({
+  Future<AuthResponseModel> register({
     required String phone,
     required String password,
     String? name,
@@ -73,7 +67,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         ),
       );
       DioClient.setAuthToken(response.token);
-      return AuthResponse(token: response.token, user: response.user);
+      return response;
     } catch (e) {
       throw ServerException(message: 'Registration failed: $e');
     }

@@ -1,42 +1,32 @@
-import 'package:khurpi_fresh/domain/entities/banner_entity.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class BannerModel extends BannerEntity {
-  const BannerModel({
-    required super.id,
-    required super.imageUrl,
-    super.title,
-    super.subtitle,
-    super.actionType,
-    super.actionValue,
-    super.displayOrder,
-    super.isActive,
-  });
+part 'banner_model.freezed.dart';
+part 'banner_model.g.dart';
 
-  factory BannerModel.fromJson(Map<String, dynamic> json) {
-    return BannerModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      imageUrl: json['image_url'] ?? '',
-      title: json['title'],
-      subtitle: json['subtitle'],
-      actionType: json['action_type'],
-      actionValue: json['action_value'],
-      displayOrder: json['display_order'] ?? 0,
-      isActive: json['is_active'] ?? true,
+@freezed
+abstract class BannerModel with _$BannerModel {
+  const factory BannerModel({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: '_id') String? mongoId,
+    @JsonKey(name: 'image_url') required String imageUrl,
+    String? title,
+    String? subtitle,
+    @JsonKey(name: 'action_type') String? actionType,
+    @JsonKey(name: 'action_value') String? actionValue,
+    @JsonKey(name: 'display_order') @Default(0) int displayOrder,
+    @JsonKey(name: 'is_active') @Default(true) bool isActive,
+  }) = _BannerModel;
+
+  factory BannerModel.fromJson(Map<String, dynamic> json) =>
+      _$BannerModelFromJson(json);
+
+  static BannerModel initial() {
+    return const BannerModel(
+      imageUrl: '',
     );
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'image_url': imageUrl,
-      'title': title,
-      'subtitle': subtitle,
-      'action_type': actionType,
-      'action_value': actionValue,
-      'display_order': displayOrder,
-      'is_active': isActive,
-    };
-  }
-
-  BannerEntity toEntity() => this;
+extension BannerModelX on BannerModel {
+  String get bannerId => id ?? mongoId ?? '';
 }

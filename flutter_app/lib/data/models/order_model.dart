@@ -1,76 +1,66 @@
-import 'package:khurpi_fresh/domain/entities/order_entity.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class OrderModel extends OrderEntity {
-  const OrderModel({
-    required super.id,
-    required super.userId,
-    super.userName,
-    super.userPhone,
-    required super.items,
-    required super.subtotal,
-    required super.deliveryFee,
-    required super.total,
-    required super.status,
-    super.deliveryAddress,
-    super.deliverySlot,
-    super.deliveryDate,
-    super.paymentMethod,
-    super.paymentStatus,
-    super.notes,
-    required super.createdAt,
-  });
+part 'order_model.freezed.dart';
+part 'order_model.g.dart';
 
-  factory OrderModel.fromJson(Map<String, dynamic> json) {
+@freezed
+abstract class OrderModel with _$OrderModel {
+  const factory OrderModel({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: '_id') String? mongoId,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'user_name') String? userName,
+    @JsonKey(name: 'user_phone') String? userPhone,
+    @Default([]) List<OrderItemModel> items,
+    @Default(0) double subtotal,
+    @JsonKey(name: 'delivery_fee') @Default(0) double deliveryFee,
+    @Default(0) double total,
+    @Default('pending') String status,
+    @JsonKey(name: 'delivery_address') String? deliveryAddress,
+    @JsonKey(name: 'delivery_slot') String? deliverySlot,
+    @JsonKey(name: 'delivery_date') DateTime? deliveryDate,
+    @JsonKey(name: 'payment_method') String? paymentMethod,
+    @JsonKey(name: 'payment_status') String? paymentStatus,
+    String? notes,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+  }) = _OrderModel;
+
+  factory OrderModel.fromJson(Map<String, dynamic> json) =>
+      _$OrderModelFromJson(json);
+
+  static OrderModel initial() {
     return OrderModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      userId: json['user_id'] ?? '',
-      userName: json['user_name'],
-      userPhone: json['user_phone'],
-      items: (json['items'] as List<dynamic>?)
-              ?.map((item) => OrderItemModel.fromJson(item))
-              .toList() ??
-          [],
-      subtotal: (json['subtotal'] ?? 0).toDouble(),
-      deliveryFee: (json['delivery_fee'] ?? 0).toDouble(),
-      total: (json['total'] ?? 0).toDouble(),
-      status: json['status'] ?? 'pending',
-      deliveryAddress: json['delivery_address'],
-      deliverySlot: json['delivery_slot'],
-      deliveryDate: json['delivery_date'] != null
-          ? DateTime.tryParse(json['delivery_date'])
-          : null,
-      paymentMethod: json['payment_method'],
-      paymentStatus: json['payment_status'],
-      notes: json['notes'],
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
+      userId: '',
+      createdAt: DateTime.now(),
     );
   }
-
-  OrderEntity toEntity() => this;
 }
 
-class OrderItemModel extends OrderItemEntity {
-  const OrderItemModel({
-    required super.productId,
-    required super.productName,
-    required super.price,
-    required super.quantity,
-    required super.unit,
-    required super.total,
-  });
+extension OrderModelX on OrderModel {
+  String get orderId => id ?? mongoId ?? '';
+}
 
-  factory OrderItemModel.fromJson(Map<String, dynamic> json) {
-    return OrderItemModel(
-      productId: json['product_id'] ?? '',
-      productName: json['product_name'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
-      quantity: (json['quantity'] ?? 0).toDouble(),
-      unit: json['unit'] ?? 'kg',
-      total: (json['total'] ?? 0).toDouble(),
+@freezed
+abstract class OrderItemModel with _$OrderItemModel {
+  const factory OrderItemModel({
+    @JsonKey(name: 'product_id') required String productId,
+    @JsonKey(name: 'product_name') required String productName,
+    required double price,
+    required double quantity,
+    @Default('kg') String unit,
+    required double total,
+  }) = _OrderItemModel;
+
+  factory OrderItemModel.fromJson(Map<String, dynamic> json) =>
+      _$OrderItemModelFromJson(json);
+
+  static OrderItemModel initial() {
+    return const OrderItemModel(
+      productId: '',
+      productName: '',
+      price: 0,
+      quantity: 0,
+      total: 0,
     );
   }
-
-  OrderItemEntity toEntity() => this;
 }
