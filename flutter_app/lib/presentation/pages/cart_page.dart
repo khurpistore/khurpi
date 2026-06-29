@@ -19,6 +19,7 @@ class CartPage extends ConsumerWidget {
         title: const Text('My Cart'),
         backgroundColor: AppColors.surface,
         elevation: 0,
+        automaticallyImplyLeading: false,
         actions: [
           if (cartState.items.isNotEmpty)
             TextButton(

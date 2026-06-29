@@ -14,7 +14,6 @@ import 'package:khurpi_fresh/presentation/widgets/category_card.dart';
 import 'package:khurpi_fresh/presentation/widgets/banner_carousel.dart';
 import 'package:khurpi_fresh/presentation/pages/products_page.dart';
 import 'package:khurpi_fresh/presentation/pages/product_detail_page.dart';
-import 'package:khurpi_fresh/presentation/pages/cart_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -46,74 +45,42 @@ class _HomePageState extends ConsumerState<HomePage> {
     final productsState = ref.watch(productsViewModelProvider);
     final bannersState = ref.watch(bannersViewModelProvider);
     final authState = ref.watch(authViewModelProvider);
-    final cartState = ref.watch(cartViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadData,
-          child: CustomScrollView(
-            slivers: [
-              // App Bar
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.eco, color: AppColors.primary, size: 32),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Khurpi Fresh', style: AppTextStyles.h3),
-                            Text('Fresh Vegetables & Fruits', style: AppTextStyles.caption),
-                          ],
-                        ),
-                      ),
-                      // Cart Icon
-                      Stack(
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: CustomScrollView(
+          slivers: [
+            // App Bar
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.eco, color: AppColors.primary, size: 32),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IconButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const CartPage()),
-                            ),
-                            icon: const Icon(Icons.shopping_cart_outlined, size: 28),
-                          ),
-                          if (cartState.items.isNotEmpty)
-                            Positioned(
-                              right: 4,
-                              top: 4,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  '${cartState.items.length}',
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                                ),
-                              ),
-                            ),
+                          Text('Khurpi Fresh', style: AppTextStyles.h3),
+                          Text('Fresh Vegetables & Fruits', style: AppTextStyles.caption),
                         ],
                       ),
-                      // Profile
-                      CircleAvatar(
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                        child: Text(
-                          authState.isAuthenticated 
-                              ? (authState.user?.name?.substring(0, 1).toUpperCase() ?? 'U')
-                              : 'G',
-                          style: const TextStyle(color: AppColors.primary),
-                        ),
+                    ),
+                    // Search Icon
+                    IconButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ProductsPage()),
                       ),
-                    ],
-                  ),
+                      icon: const Icon(Icons.search, size: 28),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
               // Banners
               if (bannersState.banners.isNotEmpty)

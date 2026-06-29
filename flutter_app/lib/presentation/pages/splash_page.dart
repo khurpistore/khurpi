@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:khurpi_fresh/presentation/viewmodels/cart_viewmodel.dart';
-import 'package:khurpi_fresh/presentation/pages/home_page.dart';
+import 'package:khurpi_fresh/presentation/pages/main_navigation_page.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -58,7 +58,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const HomePage(),
+          pageBuilder: (_, __, ___) => const MainNavigationPage(),
           transitionsBuilder: (_, animation, __, child) {
             return FadeTransition(opacity: animation, child: child);
           },

@@ -16,6 +16,10 @@ sealed class AuthState with _$AuthState {
   }) = _AuthState;
 }
 
+extension AuthStateX on AuthState {
+  String? get error => errorMessage;
+}
+
 @Riverpod(keepAlive: true)
 class AuthViewModel extends _$AuthViewModel {
   @override
@@ -68,12 +72,7 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
-  Future<bool> register({
-    required String phone,
-    required String password,
-    String? name,
-    String? email,
-  }) async {
+  Future<bool> register(String name, String phone, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     
     try {
@@ -81,7 +80,6 @@ class AuthViewModel extends _$AuthViewModel {
         phone: phone,
         password: password,
         name: name,
-        email: email,
       );
       await ref.read(authLocalDataSourceProvider).saveAuthData(response.token, response.user);
       
@@ -151,5 +149,17 @@ class AuthViewModel extends _$AuthViewModel {
 
   void clearError() {
     state = state.copyWith(errorMessage: null);
+  }
+
+  Future<void> updateAddress({
+    required String address,
+    required String city,
+    required String pincode,
+  }) async {
+    await updateProfile(
+      address: address,
+      city: city,
+      pincode: pincode,
+    );
   }
 }

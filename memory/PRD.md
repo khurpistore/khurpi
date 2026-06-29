@@ -18,11 +18,10 @@ Build a Veg & Fruit Shop e-commerce application with:
 
 ### Customer Mobile App (Flutter)
 - Location: `/app/flutter_app/`
-- Architecture: Clean Architecture with 3 layers:
-  - **Domain**: Entities, Repositories (interfaces), UseCases
-  - **Data**: Models, DataSources (remote/local), Repository implementations
-  - **Presentation**: Pages, Widgets, ViewModels, Riverpod Providers
-- State Management: Riverpod
+- Architecture: Clean Architecture (simplified - removed Entity layer, models used directly)
+- State Management: Riverpod Annotations (@riverpod)
+- Data Models: Freezed (@freezed)
+- Networking: Retrofit + Dio
 - Package name: `khurpi_fresh`
 
 ## What's Been Implemented
@@ -37,28 +36,28 @@ Build a Veg & Fruit Shop e-commerce application with:
 - ✅ User management with wholesale access toggle
 - ✅ 50gm unit standardization
 
-### Flutter Customer App (Structure Complete - Mar 2026)
-- ✅ Clean Architecture folder structure
-- ✅ All Entities (Product, Category, User, Order, Cart, Banner)
-- ✅ All Models with JSON serialization
-- ✅ All Repositories (interfaces and implementations)
-- ✅ All UseCases (Products, Auth, Orders)
-- ✅ Riverpod Providers for dependency injection
-- ✅ ViewModels for each screen
-- ✅ UI Pages (Splash, Home, Products, Product Detail, Cart, Checkout)
-- ✅ Reusable Widgets (ProductCard, CategoryCard, BannerCarousel, etc.)
-- ✅ Fixed import errors (Jun 29, 2026)
+### Flutter Customer App (Jun 29, 2026)
+- ✅ Clean Architecture folder structure (simplified - no Entity layer)
+- ✅ Freezed Models (Product, Category, User, Order, Cart, Banner)
+- ✅ Retrofit API Services for networking
+- ✅ Riverpod Annotated ViewModels
+- ✅ **Bottom Navigation Bar** (Home, Categories, Cart, Profile)
+- ✅ **Address bar at top** of main navigation
+- ✅ UI Pages: Splash, Main Navigation, Home, Products, Product Detail, Cart, Checkout, Categories, Profile, Login, Orders
+- ✅ Reusable Widgets (ProductCard, CategoryCard, BannerCarousel, CartItemCard)
+- ✅ Fixed Riverpod "modifying provider while building" errors with WidgetsBinding.addPostFrameCallback
+- ✅ Backend returns `image_url` field for Flutter compatibility
 
 ## Prioritized Backlog
 
 ### P0 (Immediate)
-- [ ] Verify Flutter app compiles locally (user testing)
-- [ ] Connect Flutter app to FastAPI backend endpoints
+- [ ] User verification: Run `flutter pub run build_runner build --delete-conflicting-outputs` locally
+- [ ] Test Flutter app end-to-end with live backend
 
 ### P1 (Next Sprint)
-- [ ] Fix Web frontend "No product found" bug
+- [ ] Fix Web frontend "No product found" bug (recurring issue)
 - [ ] Refactor `server.py` into modular routers
-- [ ] Add authentication screens to Flutter app
+- [ ] Complete authentication flow in Flutter
 
 ### P2 (Future)
 - [ ] Product Quick View modal (Web)
@@ -68,7 +67,8 @@ Build a Veg & Fruit Shop e-commerce application with:
 - [ ] Order tracking (Flutter)
 
 ## Key API Endpoints
-- `GET /api/products` - List products
+- `GET /api/products` - List products (includes `image_url` field)
+- `GET /api/products/{id}` - Single product (includes `image_url` field)
 - `GET /api/categories/{id}/products` - Products by category
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - User registration
@@ -85,3 +85,4 @@ Build a Veg & Fruit Shop e-commerce application with:
 - All imports use `package:khurpi_fresh/...` format
 - Backend runs on port 8001, frontend on port 3000
 - MongoDB connection via MONGO_URL environment variable
+- All StatefulWidgets use `WidgetsBinding.instance.addPostFrameCallback` to avoid Riverpod build errors

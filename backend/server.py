@@ -259,6 +259,7 @@ class Product(BaseModel):
     id: str
     name: str
     image: str
+    image_url: Optional[str] = None  # Flutter app compatibility field
     benefit: str
     nutrients: Optional[str] = None
     price: float
@@ -2469,6 +2470,10 @@ async def get_products(active_only: bool = True):
         # Resolve category name
         if product.get("category_id"):
             product["category_name"] = category_map.get(product["category_id"])
+        
+        # Map 'image' to 'image_url' for Flutter app compatibility
+        if product.get("image") and not product.get("image_url"):
+            product["image_url"] = product["image"]
     
     return products
 
@@ -2516,6 +2521,9 @@ async def get_product(product_id: str):
     product = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    # Map 'image' to 'image_url' for Flutter app compatibility
+    if product.get("image") and not product.get("image_url"):
+        product["image_url"] = product["image"]
     return Product(**product)
 
 @api_router.post("/products", response_model=Product)
@@ -6675,9 +6683,12 @@ async def get_products_by_category(category_id: str, active_only: bool = True):
     
     products = await db.products.find(query, {"_id": 0}).sort("display_order", 1).to_list(200)
     
-    # Add category name to each product
+    # Add category name and image_url to each product
     for product in products:
         product["category_name"] = category_name
+        # Map 'image' to 'image_url' for Flutter app compatibility
+        if product.get("image") and not product.get("image_url"):
+            product["image_url"] = product["image"]
     
     return products
 
@@ -6688,6 +6699,10 @@ async def get_featured_products():
         {"active": True, "featured": True}, 
         {"_id": 0}
     ).sort("display_order", 1).to_list(20)
+    # Map 'image' to 'image_url' for Flutter app compatibility
+    for product in products:
+        if product.get("image") and not product.get("image_url"):
+            product["image_url"] = product["image"]
     return products
 
 app.include_router(api_router)
