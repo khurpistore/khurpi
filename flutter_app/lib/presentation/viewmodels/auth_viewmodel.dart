@@ -1,10 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:khurpi_fresh/data/datasources/remote/auth_remote_datasource.dart';
 import 'package:khurpi_fresh/data/datasources/local/auth_local_datasource.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 part 'auth_viewmodel.freezed.dart';
+part 'auth_viewmodel.g.dart';
 
 @freezed
 sealed class AuthState with _$AuthState {
@@ -20,16 +22,23 @@ extension AuthStateX on AuthState {
   String? get error => errorMessage;
 }
 
-class AuthViewModel extends StateNotifier<AuthState> {
-  final AuthRemoteDataSource _authRemoteDataSource;
-  final AuthLocalDataSource _authLocalDataSource;
+@Riverpod(keepAlive: true)
+class AuthViewModel extends _$AuthViewModel {
+  late final AuthRemoteDataSource _authRemoteDataSource;
+  late final AuthLocalDataSource _authLocalDataSource;
 
-  AuthViewModel({
-    required AuthRemoteDataSource authRemoteDataSource,
-    required AuthLocalDataSource authLocalDataSource,
-  })  : _authRemoteDataSource = authRemoteDataSource,
-        _authLocalDataSource = authLocalDataSource,
-        super(const AuthState());
+  @override
+  AuthState build() {
+    final remoteDS = ref.watch(provideAuthRemoteDataSourceProvider);
+    final localDS = ref.watch(provideAuthLocalDataSourceProvider);
+    
+    if (remoteDS != null && localDS != null) {
+      _authRemoteDataSource = remoteDS;
+      _authLocalDataSource = localDS;
+    }
+    
+    return const AuthState();
+  }
 
   Future<void> initialize() async {
     state = state.copyWith(isLoading: true);

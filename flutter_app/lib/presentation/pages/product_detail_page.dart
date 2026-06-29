@@ -19,30 +19,17 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(productDetailViewModelProvider)?.loadProduct(widget.productId);
+      ref.read(productDetailViewModelProvider.notifier).loadProduct(widget.productId);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final productDetailVM = ref.watch(productDetailViewModelProvider);
-    final cartVM = ref.watch(cartViewModelProvider);
-
-    if (productDetailVM == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final state = productDetailVM.state;
+    final state = ref.watch(productDetailViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(state.product?.name ?? 'Product Details'),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: Text(state.product?.name ?? 'Product Details'), backgroundColor: AppColors.surface, elevation: 0),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : state.product == null
@@ -51,141 +38,66 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product Image
                       AspectRatio(
                         aspectRatio: 1,
                         child: state.product!.imageUrl != null
                             ? CachedNetworkImage(
                                 imageUrl: state.product!.imageUrl!,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: AppColors.background,
-                                  child: const Center(child: CircularProgressIndicator()),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: AppColors.background,
-                                  child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint),
-                                ),
+                                placeholder: (context, url) => Container(color: AppColors.background, child: const Center(child: CircularProgressIndicator())),
+                                errorWidget: (context, url, error) => Container(color: AppColors.background, child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint)),
                               )
-                            : Container(
-                                color: AppColors.background,
-                                child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint),
-                              ),
+                            : Container(color: AppColors.background, child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint)),
                       ),
-
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Name & Price
                             Text(state.product!.name, style: AppTextStyles.h2),
                             const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Text(
-                                  '₹${state.product!.price.toStringAsFixed(0)}',
-                                  style: AppTextStyles.h3.copyWith(color: AppColors.primary),
-                                ),
-                                const Text(' / 100g', style: AppTextStyles.body),
-                              ],
-                            ),
+                            Row(children: [Text('₹${state.product!.price.toStringAsFixed(0)}', style: AppTextStyles.h3.copyWith(color: AppColors.primary)), const Text(' / 100g', style: AppTextStyles.body)]),
                             const SizedBox(height: 16),
-
-                            // Stock Status
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: _getStockColor(state.product!.stockStatus).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                state.product!.stockStatus.toUpperCase(),
-                                style: TextStyle(
-                                  color: _getStockColor(state.product!.stockStatus),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
-                                ),
-                              ),
+                              decoration: BoxDecoration(color: _getStockColor(state.product!.stockStatus).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                              child: Text(state.product!.stockStatus.toUpperCase(), style: TextStyle(color: _getStockColor(state.product!.stockStatus), fontWeight: FontWeight.w600, fontSize: 12)),
                             ),
                             const SizedBox(height: 24),
-
-                            // Description
                             const Text('Description', style: AppTextStyles.h4),
                             const SizedBox(height: 8),
-                            Text(
-                              state.product!.benefit,
-                              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-                            ),
+                            Text(state.product!.benefit, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                             const SizedBox(height: 24),
-
-                            // Quantity Selector
                             const Text('Quantity', style: AppTextStyles.h4),
                             const SizedBox(height: 12),
                             Row(
                               children: [
                                 Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: AppColors.border),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
+                                  decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
                                   child: Row(
                                     children: [
-                                      IconButton(
-                                        onPressed: productDetailVM.decrementQuantity,
-                                        icon: const Icon(Icons.remove),
-                                      ),
-                                      Text(
-                                        '${state.quantity} ${state.selectedUnit}',
-                                        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-                                      ),
-                                      IconButton(
-                                        onPressed: productDetailVM.incrementQuantity,
-                                        icon: const Icon(Icons.add),
-                                      ),
+                                      IconButton(onPressed: () => ref.read(productDetailViewModelProvider.notifier).decrementQuantity(), icon: const Icon(Icons.remove)),
+                                      Text('${state.quantity} ${state.selectedUnit}', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+                                      IconButton(onPressed: () => ref.read(productDetailViewModelProvider.notifier).incrementQuantity(), icon: const Icon(Icons.add)),
                                     ],
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                Text(
-                                  state.formattedTotal,
-                                  style: AppTextStyles.h4.copyWith(color: AppColors.primary),
-                                ),
+                                Text(state.formattedTotal, style: AppTextStyles.h4.copyWith(color: AppColors.primary)),
                               ],
                             ),
                             const SizedBox(height: 32),
-
-                            // Add to Cart Button
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: state.product!.stockStatus == 'in_stock'
                                     ? () {
-                                        cartVM?.addToCart(
-                                          state.product!,
-                                          quantity: state.quantity,
-                                          unit: state.selectedUnit,
-                                        );
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('${state.product!.name} added to cart')),
-                                        );
+                                        ref.read(cartViewModelProvider.notifier).addToCart(state.product!, quantity: state.quantity, unit: state.selectedUnit);
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${state.product!.name} added to cart')));
                                       }
                                     : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Add to Cart',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                                child: const Text('Add to Cart', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
                               ),
                             ),
                           ],

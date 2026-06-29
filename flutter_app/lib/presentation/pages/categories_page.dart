@@ -19,21 +19,13 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(productsViewModelProvider)?.loadCategories();
+      ref.read(productsViewModelProvider.notifier).loadCategories();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsVM = ref.watch(productsViewModelProvider);
-
-    if (productsVM == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final productsState = productsVM.state;
+    final productsState = ref.watch(productsViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -68,12 +60,7 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
   }
 
   void _navigateToProducts(CategoryModel category) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProductsPage(initialCategoryId: category.categoryId),
-      ),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProductsPage(initialCategoryId: category.categoryId)));
   }
 }
 
@@ -81,10 +68,7 @@ class _CategoryTile extends StatelessWidget {
   final CategoryModel category;
   final VoidCallback onTap;
 
-  const _CategoryTile({
-    required this.category,
-    required this.onTap,
-  });
+  const _CategoryTile({required this.category, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -94,13 +78,7 @@ class _CategoryTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -113,42 +91,25 @@ class _CategoryTile extends StatelessWidget {
                       width: 80,
                       height: 80,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: 80,
-                        height: 80,
-                        color: AppColors.background,
-                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                      ),
+                      placeholder: (context, url) => Container(width: 80, height: 80, color: AppColors.background, child: const Center(child: CircularProgressIndicator(strokeWidth: 2))),
                       errorWidget: (context, url, error) => Container(
                         width: 80,
                         height: 80,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
                         child: const Icon(Icons.category, color: AppColors.primary, size: 40),
                       ),
                     )
                   : Container(
                       width: 80,
                       height: 80,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
                       child: const Icon(Icons.category, color: AppColors.primary, size: 40),
                     ),
             ),
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                category.name,
-                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(category.name, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
             ),
           ],
         ),

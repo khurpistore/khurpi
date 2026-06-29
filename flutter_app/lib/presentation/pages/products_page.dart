@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
-import 'package:khurpi_fresh/data/models/category_model.dart';
 import 'package:khurpi_fresh/presentation/providers/providers.dart';
 import 'package:khurpi_fresh/presentation/widgets/product_card.dart';
 import 'package:khurpi_fresh/presentation/pages/product_detail_page.dart';
@@ -24,14 +23,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final productsVM = ref.read(productsViewModelProvider);
-      if (productsVM != null) {
-        if (widget.initialCategoryId != null) {
-          productsVM.setSelectedCategory(widget.initialCategoryId);
-        }
-        productsVM.loadProducts();
-        productsVM.loadCategories();
+      if (widget.initialCategoryId != null) {
+        ref.read(productsViewModelProvider.notifier).setSelectedCategory(widget.initialCategoryId);
       }
+      ref.read(productsViewModelProvider.notifier).loadProducts();
+      ref.read(productsViewModelProvider.notifier).loadCategories();
     });
   }
 
@@ -43,24 +39,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final productsVM = ref.watch(productsViewModelProvider);
-    final cartVM = ref.watch(cartViewModelProvider);
-
-    if (productsVM == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final productsState = productsVM.state;
+    final productsState = ref.watch(productsViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Products'),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Products'), backgroundColor: AppColors.surface, elevation: 0),
       body: Column(
         children: [
           // Search Bar
@@ -76,18 +59,15 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          productsVM.setSearchQuery('');
+                          ref.read(productsViewModelProvider.notifier).setSearchQuery('');
                         },
                       )
                     : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 filled: true,
                 fillColor: AppColors.surface,
               ),
-              onChanged: (value) => productsVM.setSearchQuery(value),
+              onChanged: (value) => ref.read(productsViewModelProvider.notifier).setSearchQuery(value),
             ),
           ),
 
@@ -106,7 +86,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                       child: FilterChip(
                         label: const Text('All'),
                         selected: productsState.selectedCategoryId == null,
-                        onSelected: (_) => productsVM.setSelectedCategory(null),
+                        onSelected: (_) => ref.read(productsViewModelProvider.notifier).setSelectedCategory(null),
                         selectedColor: AppColors.primary.withValues(alpha: 0.2),
                       ),
                     );
@@ -117,7 +97,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                     child: FilterChip(
                       label: Text(category.name),
                       selected: productsState.selectedCategoryId == category.categoryId,
-                      onSelected: (_) => productsVM.setSelectedCategory(category.categoryId),
+                      onSelected: (_) => ref.read(productsViewModelProvider.notifier).setSelectedCategory(category.categoryId),
                       selectedColor: AppColors.primary.withValues(alpha: 0.2),
                     ),
                   );
@@ -135,19 +115,14 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                     ? const Center(child: Text('No products found'))
                     : GridView.builder(
                         padding: const EdgeInsets.all(16),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.7, crossAxisSpacing: 12, mainAxisSpacing: 12),
                         itemCount: productsState.filteredProducts.length,
                         itemBuilder: (context, index) {
                           final product = productsState.filteredProducts[index];
                           return ProductCard(
                             product: product,
                             onTap: () => _navigateToProductDetail(product),
-                            onAddToCart: () => _addToCart(product, cartVM),
+                            onAddToCart: () => _addToCart(product),
                           );
                         },
                       ),
@@ -158,18 +133,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   }
 
   void _navigateToProductDetail(ProductModel product) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProductDetailPage(productId: product.productId),
-      ),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailPage(productId: product.productId)));
   }
 
-  void _addToCart(ProductModel product, CartViewModel? cartVM) {
-    cartVM?.addToCart(product);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${product.name} added to cart')),
-    );
+  void _addToCart(ProductModel product) {
+    ref.read(cartViewModelProvider.notifier).addToCart(product);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${product.name} added to cart')));
   }
 }

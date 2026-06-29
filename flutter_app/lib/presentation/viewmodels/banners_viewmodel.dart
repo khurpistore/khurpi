@@ -1,9 +1,11 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/banner_model.dart';
 import 'package:khurpi_fresh/data/datasources/remote/banner_remote_datasource.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 part 'banners_viewmodel.freezed.dart';
+part 'banners_viewmodel.g.dart';
 
 @freezed
 sealed class BannersState with _$BannersState {
@@ -14,13 +16,20 @@ sealed class BannersState with _$BannersState {
   }) = _BannersState;
 }
 
-class BannersViewModel extends StateNotifier<BannersState> {
-  final BannerRemoteDataSource _bannerRemoteDataSource;
+@Riverpod(keepAlive: true)
+class BannersViewModel extends _$BannersViewModel {
+  late final BannerRemoteDataSource _bannerRemoteDataSource;
 
-  BannersViewModel({
-    required BannerRemoteDataSource bannerRemoteDataSource,
-  })  : _bannerRemoteDataSource = bannerRemoteDataSource,
-        super(const BannersState());
+  @override
+  BannersState build() {
+    final remoteDS = ref.watch(provideBannerRemoteDataSourceProvider);
+    
+    if (remoteDS != null) {
+      _bannerRemoteDataSource = remoteDS;
+    }
+    
+    return const BannersState();
+  }
 
   Future<void> loadBanners() async {
     state = state.copyWith(isLoading: true, errorMessage: null);

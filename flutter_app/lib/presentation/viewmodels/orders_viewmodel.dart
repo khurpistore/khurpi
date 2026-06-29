@@ -1,10 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
 import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 import 'package:khurpi_fresh/data/datasources/remote/order_remote_datasource.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 part 'orders_viewmodel.freezed.dart';
+part 'orders_viewmodel.g.dart';
 
 @freezed
 sealed class OrdersState with _$OrdersState {
@@ -16,13 +18,20 @@ sealed class OrdersState with _$OrdersState {
   }) = _OrdersState;
 }
 
-class OrdersViewModel extends StateNotifier<OrdersState> {
-  final OrderRemoteDataSource _orderRemoteDataSource;
+@Riverpod(keepAlive: true)
+class OrdersViewModel extends _$OrdersViewModel {
+  late final OrderRemoteDataSource _orderRemoteDataSource;
 
-  OrdersViewModel({
-    required OrderRemoteDataSource orderRemoteDataSource,
-  })  : _orderRemoteDataSource = orderRemoteDataSource,
-        super(const OrdersState());
+  @override
+  OrdersState build() {
+    final remoteDS = ref.watch(provideOrderRemoteDataSourceProvider);
+    
+    if (remoteDS != null) {
+      _orderRemoteDataSource = remoteDS;
+    }
+    
+    return const OrdersState();
+  }
 
   Future<void> loadOrders() async {
     state = state.copyWith(isLoading: true, errorMessage: null);

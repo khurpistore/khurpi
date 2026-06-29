@@ -18,42 +18,27 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(ordersViewModelProvider)?.loadOrders();
+      ref.read(ordersViewModelProvider.notifier).loadOrders();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final ordersVM = ref.watch(ordersViewModelProvider);
-
-    if (ordersVM == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final ordersState = ordersVM.state;
+    final ordersState = ref.watch(ordersViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('My Orders'),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('My Orders'), backgroundColor: AppColors.surface, elevation: 0),
       body: ordersState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ordersState.orders.isEmpty
               ? _buildEmptyState()
               : RefreshIndicator(
-                  onRefresh: () => ordersVM.loadOrders(),
+                  onRefresh: () => ref.read(ordersViewModelProvider.notifier).loadOrders(),
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: ordersState.orders.length,
-                    itemBuilder: (context, index) {
-                      final order = ordersState.orders[index];
-                      return _OrderCard(order: order);
-                    },
+                    itemBuilder: (context, index) => _OrderCard(order: ordersState.orders[index]),
                   ),
                 ),
     );
@@ -84,11 +69,7 @@ class _OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -127,8 +108,7 @@ class _OrderCard extends StatelessWidget {
                         ],
                       ),
                     )),
-                if (order.items.length > 3)
-                  Text('+${order.items.length - 3} more items', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
+                if (order.items.length > 3) Text('+${order.items.length - 3} more items', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
               ],
             ),
           ),
@@ -137,10 +117,7 @@ class _OrderCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Total', style: AppTextStyles.body),
-                Text('₹${order.total.toStringAsFixed(0)}', style: AppTextStyles.h4.copyWith(color: AppColors.primary)),
-              ],
+              children: [const Text('Total', style: AppTextStyles.body), Text('₹${order.total.toStringAsFixed(0)}', style: AppTextStyles.h4.copyWith(color: AppColors.primary))],
             ),
           ),
         ],
@@ -151,7 +128,6 @@ class _OrderCard extends StatelessWidget {
   Widget _buildStatusBadge(String status) {
     Color backgroundColor;
     Color textColor;
-
     switch (status.toLowerCase()) {
       case 'delivered':
         backgroundColor = AppColors.success.withValues(alpha: 0.1);
@@ -165,7 +141,6 @@ class _OrderCard extends StatelessWidget {
         backgroundColor = AppColors.warning.withValues(alpha: 0.1);
         textColor = AppColors.warning;
     }
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(20)),

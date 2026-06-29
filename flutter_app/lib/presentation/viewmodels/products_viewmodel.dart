@@ -1,10 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/data/models/category_model.dart';
 import 'package:khurpi_fresh/data/datasources/remote/product_remote_datasource.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 part 'products_viewmodel.freezed.dart';
+part 'products_viewmodel.g.dart';
 
 @freezed
 sealed class ProductsState with _$ProductsState {
@@ -19,13 +21,20 @@ sealed class ProductsState with _$ProductsState {
   }) = _ProductsState;
 }
 
-class ProductsViewModel extends StateNotifier<ProductsState> {
-  final ProductRemoteDataSource _productRemoteDataSource;
+@Riverpod(keepAlive: true)
+class ProductsViewModel extends _$ProductsViewModel {
+  late final ProductRemoteDataSource _productRemoteDataSource;
 
-  ProductsViewModel({
-    required ProductRemoteDataSource productRemoteDataSource,
-  })  : _productRemoteDataSource = productRemoteDataSource,
-        super(const ProductsState());
+  @override
+  ProductsState build() {
+    final remoteDS = ref.watch(provideProductRemoteDataSourceProvider);
+    
+    if (remoteDS != null) {
+      _productRemoteDataSource = remoteDS;
+    }
+    
+    return const ProductsState();
+  }
 
   Future<void> loadProducts() async {
     state = state.copyWith(isLoading: true, errorMessage: null);

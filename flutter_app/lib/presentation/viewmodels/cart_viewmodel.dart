@@ -1,10 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/data/datasources/local/cart_local_datasource.dart';
+import 'package:khurpi_fresh/presentation/providers/providers.dart';
 
 part 'cart_viewmodel.freezed.dart';
+part 'cart_viewmodel.g.dart';
 
 @freezed
 sealed class CartState with _$CartState {
@@ -26,13 +28,20 @@ extension CartStateX on CartState {
   String get formattedTotal => '₹${total.toStringAsFixed(0)}';
 }
 
-class CartViewModel extends StateNotifier<CartState> {
-  final CartLocalDataSource _cartLocalDataSource;
+@Riverpod(keepAlive: true)
+class CartViewModel extends _$CartViewModel {
+  late final CartLocalDataSource _cartLocalDataSource;
 
-  CartViewModel({
-    required CartLocalDataSource cartLocalDataSource,
-  })  : _cartLocalDataSource = cartLocalDataSource,
-        super(const CartState());
+  @override
+  CartState build() {
+    final localDS = ref.watch(provideCartLocalDataSourceProvider);
+    
+    if (localDS != null) {
+      _cartLocalDataSource = localDS;
+    }
+    
+    return const CartState();
+  }
 
   Future<void> loadCart() async {
     state = state.copyWith(isLoading: true);

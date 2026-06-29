@@ -29,32 +29,17 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _loadData() async {
-    final productsVM = ref.read(productsViewModelProvider);
-    final bannersVM = ref.read(bannersViewModelProvider);
-    
-    if (productsVM != null && bannersVM != null) {
-      await Future.wait([
-        productsVM.loadProducts(),
-        productsVM.loadCategories(),
-        bannersVM.loadBanners(),
-      ]);
-    }
+    await Future.wait([
+      ref.read(productsViewModelProvider.notifier).loadProducts(),
+      ref.read(productsViewModelProvider.notifier).loadCategories(),
+      ref.read(bannersViewModelProvider.notifier).loadBanners(),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsVM = ref.watch(productsViewModelProvider);
-    final bannersVM = ref.watch(bannersViewModelProvider);
-    final authVM = ref.watch(authViewModelProvider);
-
-    if (productsVM == null || bannersVM == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final productsState = productsVM.state;
-    final bannersState = bannersVM.state;
+    final productsState = ref.watch(productsViewModelProvider);
+    final bannersState = ref.watch(bannersViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -79,7 +64,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ],
                       ),
                     ),
-                    // Search Icon
                     IconButton(
                       onPressed: () => Navigator.push(
                         context,
@@ -103,12 +87,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Categories', style: AppTextStyles.h4),
-                    ],
-                  ),
+                  child: Text('Categories', style: AppTextStyles.h4),
                 ),
               ),
               SliverToBoxAdapter(
@@ -137,12 +116,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Featured Products', style: AppTextStyles.h4),
-                  ],
-                ),
+                child: Text('Featured Products', style: AppTextStyles.h4),
               ),
             ),
 
@@ -184,9 +158,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         onAddToCart: () => _addToCart(product),
                       );
                     },
-                    childCount: productsState.products.length > 6 
-                        ? 6 
-                        : productsState.products.length,
+                    childCount: productsState.products.length > 6 ? 6 : productsState.products.length,
                   ),
                 ),
               ),
@@ -235,8 +207,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _addToCart(ProductModel product) {
-    final cartVM = ref.read(cartViewModelProvider);
-    cartVM?.addToCart(product);
+    ref.read(cartViewModelProvider.notifier).addToCart(product);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${product.name} added to cart')),
     );
