@@ -13,21 +13,11 @@ import { useNavigate } from 'react-router-dom';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Format quantity with appropriate unit label
-const formatQtyLabel = (qty, unit) => {
-  if (unit === 'piece') return `${qty} pc`;
-  if (unit === 'dozen') return `${qty} dz`;
-  if (unit === 'bunch') return `${qty} bunch`;
-  return `${qty} kg`;
-};
-
-// Format price per unit
-const formatPricePerUnit = (price, unit) => {
-  if (unit === 'piece') return `₹${price}/pc`;
-  if (unit === 'dozen') return `₹${price}/dz`;
-  if (unit === 'bunch') return `₹${price}/bunch`;
-  return `₹${price}/kg`;
-};
+// Import from core module - Single source of truth
+import {
+  formatQuantity,
+  formatPricePerUnit
+} from '../core';
 
 const AdminOrders = () => {
   const navigate = useNavigate();
@@ -444,7 +434,7 @@ const AdminOrders = () => {
                             )}
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{item.product?.name || item.product_name_at_order || `Product ${idx + 1}`}</p>
-                              <p className="text-xs text-muted-foreground">{formatQtyLabel(qty, unit)} • {formatPricePerUnit(price, unit)}</p>
+                              <p className="text-xs text-muted-foreground">{formatQuantity(qty, unit)} • {formatPricePerUnit(price, unit)}</p>
                             </div>
                             <p className="text-sm font-medium">₹{(qty * price).toFixed(0)}</p>
                           </div>
@@ -485,7 +475,7 @@ const AdminOrders = () => {
                             )}
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{item.product?.name || item.product_name_at_order}</p>
-                              <p className="text-xs text-muted-foreground">{formatQtyLabel(qty, unit)} • {formatPricePerUnit(price, unit)}</p>
+                              <p className="text-xs text-muted-foreground">{formatQuantity(qty, unit)} • {formatPricePerUnit(price, unit)}</p>
                             </div>
                             <p className="text-sm font-medium">₹{(qty * price).toFixed(0)}</p>
                           </div>

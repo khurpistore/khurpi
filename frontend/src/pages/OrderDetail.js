@@ -10,21 +10,12 @@ import { format } from 'date-fns';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Format quantity with appropriate unit label
-const formatQtyLabel = (qty, unit) => {
-  if (unit === 'piece') return `${qty} pc`;
-  if (unit === 'dozen') return `${qty} dz`;
-  if (unit === 'bunch') return `${qty} bunch`;
-  return `${qty} kg`;
-};
-
-// Format price per unit
-const formatPricePerUnit = (price, unit) => {
-  if (unit === 'piece') return `₹${price}/pc`;
-  if (unit === 'dozen') return `₹${price}/dz`;
-  if (unit === 'bunch') return `₹${price}/bunch`;
-  return `₹${price}/kg`;
-};
+// Import from core module - Single source of truth
+import {
+  OrderItem,
+  formatQuantity,
+  formatPricePerUnit
+} from '../core';
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -221,7 +212,7 @@ const OrderDetail = () => {
                           <div className="flex-1">
                             <p className="font-medium">{item.product?.name || item.product_name_at_order}</p>
                             <p className="text-sm text-muted-foreground">
-                              {formatQtyLabel(quantity, unit)} × {formatPricePerUnit(pricePerUnit, unit)}
+                              {formatQuantity(quantity, unit)} × {formatPricePerUnit(pricePerUnit, unit)}
                             </p>
                           </div>
                           <div className="text-right">
@@ -299,7 +290,7 @@ const OrderDetail = () => {
                           <div className="flex-1">
                             <p className="font-medium">{item.product?.name || item.product_name_at_order || 'Product'}</p>
                             <p className="text-sm text-muted-foreground">
-                              {formatQtyLabel(quantity, unit)} × {formatPricePerUnit(pricePerUnit, unit)}
+                              {formatQuantity(quantity, unit)} × {formatPricePerUnit(pricePerUnit, unit)}
                             </p>
                           </div>
                           <p className="font-bold text-primary">₹{totalPrice.toFixed(0)}</p>

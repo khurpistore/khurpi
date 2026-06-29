@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useWholesale } from '@/hooks/useWholesale';
@@ -11,41 +10,14 @@ import { Trash2, ShoppingBag, ArrowRight, Repeat, Package, Clock, Sprout, Edit2,
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
-// Generate quantity options based on product unit type
-const getQtyOptions = (product) => {
-  const unit = product.unit || 'kg';
-  const minQty = product.min_quantity || 0.25;
-  const stepQty = product.step_quantity || 0.25;
-  const maxQty = product.stock_quantity || 10;
-  
-  if (unit === 'piece' || unit === 'dozen' || unit === 'bunch') {
-    // For countable items: 1, 2, 3, 4, 5, 6, 10, 12
-    return [1, 2, 3, 4, 5, 6, 10, 12].filter(q => q <= Math.max(maxQty, 12));
-  }
-  
-  // For weight-based items (kg)
-  const options = [];
-  for (let qty = minQty; qty <= Math.min(maxQty, 5); qty += stepQty) {
-    options.push(parseFloat(qty.toFixed(2)));
-  }
-  return options.length > 0 ? options : [0.25, 0.5, 1, 2];
-};
-
-// Format quantity with appropriate unit label
-const formatQtyLabel = (qty, unit) => {
-  if (unit === 'piece') return `${qty} pc`;
-  if (unit === 'dozen') return `${qty} dz`;
-  if (unit === 'bunch') return `${qty} bunch`;
-  return `${qty} kg`;
-};
-
-// Format price per unit
-const formatPricePerUnit = (price, unit) => {
-  if (unit === 'piece') return `₹${price}/pc`;
-  if (unit === 'dozen') return `₹${price}/dz`;
-  if (unit === 'bunch') return `₹${price}/bunch`;
-  return `₹${price}/kg`;
-};
+// Import from core module - Single source of truth
+import {
+  QuantitySelector,
+  CartItem,
+  formatQuantity,
+  formatPricePerUnit,
+  getQuantityOptions
+} from '../core';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -154,7 +126,7 @@ const Cart = () => {
                                 <BadgePercent className="w-3 h-3 text-orange-500 flex-shrink-0" />
                               )}
                             </div>
-                            <span className="text-xs text-muted-foreground">{formatPricePerUnit(displayPrice, unit)} • {formatQtyLabel(qty, unit)} - ₹{price.toFixed(0)}</span>
+                            <span className="text-xs text-muted-foreground">{formatPricePerUnit(displayPrice, unit)} • {formatQuantity(qty, unit)} - ₹{price.toFixed(0)}</span>
                           </div>
                         </div>
                       );
@@ -214,21 +186,12 @@ const Cart = () => {
                         </div>
                         {/* Quantity Dropdown */}
                         <div className="flex items-center gap-1">
-                          <Select
-                            value={String(selectedQty)}
-                            onValueChange={(value) => updateSelectedQty(item.product.id, parseFloat(value))}
-                          >
-                            <SelectTrigger className="w-20 h-7 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {getQtyOptions(item.product).map((qty) => (
-                                <SelectItem key={qty} value={String(qty)}>
-                                  {formatQtyLabel(qty, unit)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <QuantitySelector
+                            product={item.product}
+                            value={selectedQty}
+                            onChange={(value) => updateSelectedQty(item.product.id, value)}
+                            size="sm"
+                          />
                         </div>
                         <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>
                         <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product.id)} className="text-red-500 hover:text-red-600 h-6 px-1">

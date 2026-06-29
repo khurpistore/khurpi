@@ -4,7 +4,6 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Clock, Sprout, Heart, ShieldCheck, ShoppingCart, Sparkles, Truck, Tag, Zap, BadgePercent } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
@@ -12,49 +11,24 @@ import { useCart } from '@/context/CartContext';
 import { useWholesale } from '@/hooks/useWholesale';
 import { format, addDays } from 'date-fns';
 
+// Import from core module - Single source of truth
+import { 
+  QuantitySelector,
+  formatQuantity, 
+  formatPricePerUnit,
+  getQuantityOptions,
+  getDefaultQuantity,
+  getStockStatus,
+  canOrderProduct
+} from '../core';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-// Generate quantity options based on product unit type
-const getQtyOptions = (product) => {
-  const unit = product?.unit || 'kg';
-  const minQty = product?.min_quantity || 0.25;
-  const stepQty = product?.step_quantity || 0.25;
-  const maxQty = product?.stock_quantity || 10;
-  
-  if (unit === 'piece' || unit === 'dozen' || unit === 'bunch') {
-    // For countable items: 1, 2, 3, 4, 5, 6, 10, 12
-    return [1, 2, 3, 4, 5, 6, 10, 12].filter(q => q <= Math.max(maxQty, 12));
-  }
-  
-  // For weight-based items (kg)
-  const options = [];
-  for (let qty = minQty; qty <= Math.min(maxQty, 5); qty += stepQty) {
-    options.push(parseFloat(qty.toFixed(2)));
-  }
-  return options.length > 0 ? options : [0.25, 0.5, 1, 2];
-};
-
-// Format quantity with appropriate unit label
-const formatQtyLabel = (qty, unit) => {
-  if (unit === 'piece') return `${qty} pc`;
-  if (unit === 'dozen') return `${qty} dz`;
-  if (unit === 'bunch') return `${qty} bunch`;
-  return `${qty} kg`;
-};
-
-// Format price per unit
-const formatPricePerUnit = (price, unit) => {
-  if (unit === 'piece') return `₹${price}/pc`;
-  if (unit === 'dozen') return `₹${price}/dz`;
-  if (unit === 'bunch') return `₹${price}/bunch`;
-  return `₹${price}/kg`;
-};
 
 const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedQty, setSelectedQty] = useState(0.5); // Default to 0.5 kg
+  const [selectedQty, setSelectedQty] = useState(0.5);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -78,7 +52,7 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    const stockInfo = getStockStatus();
+    const stockInfo = getStockStatus(product);
     if (stockInfo.status === 'out_of_stock') {
       toast.error('This product is currently out of stock');
       return;
@@ -101,22 +75,15 @@ const ProductDetail = () => {
     };
     
     addToCart(productWithDetails, 1);
-    toast.success(`${product.name} (${formatQtyLabel(selectedQty, unit)}) added to cart`, {
+    toast.success(`${product.name} (${formatQuantity(selectedQty, unit)}) added to cart`, {
       description: `₹${totalPrice.toFixed(0)}${showingWholesale ? ' (Wholesale)' : ''}`
     });
   };
 
-  const getStockStatus = () => {
+  // Use local function to avoid conflict with imported getStockStatus
+  const getProductStockStatus = () => {
     if (!product) return { status: 'loading' };
-    const status = product.stock_status || 'in_stock';
-    const availableQty = product.weight || 0;
-    if (status === 'out_of_stock' || availableQty <= 0) {
-      return { status: 'out_of_stock' };
-    }
-    if (status === 'growing') {
-      return { status: 'growing', readyInDays: product.ready_in_days };
-    }
-    return { status: 'in_stock' };
+    return getStockStatus(product);
   };
 
   if (loading) {
@@ -161,7 +128,7 @@ const ProductDetail = () => {
               
               {/* Stock Status with Delivery Date */}
               {(() => {
-                const status = getStockStatus().status;
+                const status = getStockStatus(product).status;
                 let deliveryDate;
                 let deliveryText;
                 
@@ -245,21 +212,13 @@ const ProductDetail = () => {
               {/* Quantity Selector */}
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">Qty:</span>
-                <Select
-                  value={String(selectedQty)}
-                  onValueChange={(value) => setSelectedQty(parseFloat(value))}
-                >
-                  <SelectTrigger className="w-28 h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getQtyOptions(product).map((qty) => (
-                      <SelectItem key={qty} value={String(qty)}>
-                        {formatQtyLabel(qty, product.unit || 'kg')}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <QuantitySelector
+                  product={product}
+                  value={selectedQty}
+                  onChange={setSelectedQty}
+                  size="lg"
+                  className="w-28"
+                />
                 <div className="ml-auto flex items-center gap-2">
                   <span className="text-2xl font-bold text-primary">
                     ₹{calculatePrice(product, selectedQty).toFixed(0)}
@@ -274,7 +233,7 @@ const ProductDetail = () => {
                 data-testid="add-to-cart-detail-button"
                 size="lg"
                 onClick={handleAddToCart}
-                disabled={getStockStatus().status === 'out_of_stock'}
+                disabled={getStockStatus(product).status === 'out_of_stock'}
                 className="w-full bg-primary hover:bg-primary/90 text-white rounded-full py-5 text-lg font-medium"
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />

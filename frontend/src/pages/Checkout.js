@@ -14,24 +14,16 @@ import { toast } from 'sonner';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { format, addDays } from 'date-fns';
 
+// Import from core module - Single source of truth
+import {
+  CartItemReadOnly,
+  formatQuantity,
+  formatPricePerUnit
+} from '../core';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Format quantity with appropriate unit label
-const formatQtyLabel = (qty, unit) => {
-  if (unit === 'piece') return `${qty} pc`;
-  if (unit === 'dozen') return `${qty} dz`;
-  if (unit === 'bunch') return `${qty} bunch`;
-  return `${qty} kg`;
-};
-
-// Format price per unit
-const formatPricePerUnit = (price, unit) => {
-  if (unit === 'piece') return `₹${price}/pc`;
-  if (unit === 'dozen') return `₹${price}/dz`;
-  if (unit === 'bunch') return `₹${price}/bunch`;
-  return `₹${price}/kg`;
-};
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -706,7 +698,7 @@ const Checkout = () => {
                           <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
                           <div className="flex-1 min-w-0">
                             <span className="text-xs font-medium truncate block">{product.name}</span>
-                            <span className="text-xs text-muted-foreground">{formatPricePerUnit(product.price, unit)} • {formatQtyLabel(qty, unit)} - ₹{price.toFixed(0)}</span>
+                            <span className="text-xs text-muted-foreground">{formatPricePerUnit(product.price, unit)} • {formatQuantity(qty, unit)} - ₹{price.toFixed(0)}</span>
                           </div>
                         </div>
                       );
@@ -778,7 +770,7 @@ const Checkout = () => {
                           </div>
                           <p className="text-xs text-muted-foreground">{formatPricePerUnit(displayPrice, unit)}</p>
                         </div>
-                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium">{formatQtyLabel(selectedQty, unit)}</span>
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium">{formatQuantity(selectedQty, unit)}</span>
                         <span className="text-sm font-medium">₹{unitPrice.toFixed(0)}</span>
                       </div>
                     );
