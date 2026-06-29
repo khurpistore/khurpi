@@ -18,6 +18,9 @@ import { Plus, Pencil, Trash2, Package, Sprout, XCircle, Clock, CalendarIcon } f
 import { format, differenceInDays, addDays } from 'date-fns';
 import AdminLayout from '@/components/AdminLayout';
 
+// Import from core module - Single source of truth
+import { StockBadge, getStockStatus } from '../core';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
@@ -284,30 +287,9 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
   );
 };
 
+// Use core module's StockBadge component for consistency
 const getStockStatusBadge = (product) => {
-  const status = product.stock_status || 'in_stock';
-  const availableQty = product.weight || 0;
-  
-  if (status === 'in_stock' && availableQty > 0) {
-    return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">In Stock</Badge>;
-  }
-  if (status === 'growing') {
-    return (
-      <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
-        <Sprout className="w-3 h-3 mr-1" />
-        Growing {product.ready_in_days ? `(${product.ready_in_days}d)` : ''}
-      </Badge>
-    );
-  }
-  if (status === 'out_of_stock' || availableQty <= 0) {
-    return (
-      <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-        <XCircle className="w-3 h-3 mr-1" />
-        Out of Stock
-      </Badge>
-    );
-  }
-  return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">In Stock</Badge>;
+  return <StockBadge product={product} size="default" />;
 };
 
 const AdminProducts = () => {

@@ -198,17 +198,21 @@ test.describe('Wholesale Pricing Feature', () => {
     test('should show wholesale price and badge on Product Detail page for wholesale users', async ({ page }) => {
       await loginAsCustomer(page);
       
-      // Navigate directly to the Turnip product detail page
-      await page.goto(`/products/${TURNIP_PRODUCT_ID}`, { waitUntil: 'domcontentloaded' });
+      // Navigate directly to the Turnip product detail page (use /product/ singular route)
+      await page.goto(`/product/${TURNIP_PRODUCT_ID}`, { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
       
-      // Verify WP badge is visible (use first to avoid strict mode)
+      // Verify "Wholesale Price Applied" text is visible
+      const wholesaleApplied = page.locator('text=Wholesale Price Applied');
+      await expect(wholesaleApplied).toBeVisible();
+      
+      // Verify WP badge is visible
       const wpBadge = page.locator('text=WP').first();
       await expect(wpBadge).toBeVisible();
       
-      // Verify price shows wholesale price (150 for kg)
-      const wholesalePrice = page.locator('text=/₹150/').first();
+      // Verify price shows wholesale price (₹75 for 0.5kg - wholesale price is 150/kg)
+      const wholesalePrice = page.locator('text=/₹75/').first();
       await expect(wholesalePrice).toBeVisible();
       
       await page.screenshot({ path: '/app/test_reports/wholesale-product-detail.jpeg', quality: 20 });
@@ -313,8 +317,8 @@ test.describe('Wholesale Pricing Feature', () => {
       const wpBadge = turnipCard.locator('text=WP').first();
       await expect(wpBadge).toBeVisible();
       
-      // Verify wholesale price is shown (₹150 for 100gm)
-      const wholesalePrice = turnipCard.locator('text=/₹150/').first();
+      // Verify wholesale price is shown (₹75 for 0.5gm unit - wholesale price is 150/kg, so 0.5kg = ₹75)
+      const wholesalePrice = turnipCard.locator('text=/₹75/').first();
       await expect(wholesalePrice).toBeVisible();
       
       await page.screenshot({ path: '/app/test_reports/wholesale-subscription-create.jpeg', quality: 20 });

@@ -17,18 +17,18 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useWholesale } from '@/hooks/useWholesale';
 
+// Import from core module - Single source of truth
+import {
+  QuantitySelector,
+  getQuantityOptions,
+  getStockStatus,
+  formatQuantity,
+  formatPricePerUnit,
+  getDefaultQuantity
+} from '../core';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-// Generate quantity options: 25g, 50g, then 100-1000 (step 100), 1500-5000 (step 500)
-const getQtyOptions = (maxQty) => {
-  const options = [
-    25, 50,  // Small quantities
-    ...Array.from({ length: 10 }, (_, i) => (i + 1) * 100),  // 100-1000
-    ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
-  ];
-  return options.filter(q => q <= maxQty);
-};
 
 const STEPS = [
   { id: 1, title: 'Select Products' },
@@ -610,9 +610,10 @@ const SubscriptionCreate = () => {
     selectedProducts.forEach(item => {
       const product = products.find(p => p.id === item.product_id);
       if (product) {
-        const qty = item.selectedQty || 100;
+        const qty = item.selectedQty || getDefaultQuantity(product);
         const displayPrice = getDisplayPrice(product);
-        total += (displayPrice / 100) * qty;
+        // Price is per unit (kg, piece, etc.), multiply by quantity
+        total += displayPrice * qty;
       }
     });
     return total;
@@ -626,7 +627,7 @@ const SubscriptionCreate = () => {
     return perDelivery * deliveriesPerWeek * weeksPerMonth;
   };
 
-  // Calculate discount on monthly subtotal
+  // Calculate discount on monthly subtotal (discount is a percentage)
   const calculateDiscount = () => {
     if (!selectedPlan) return 0;
     return (calculateMonthlySubtotal() * selectedPlan.discount) / 100;
@@ -868,9 +869,9 @@ const SubscriptionCreate = () => {
                   }
                 }
                 
-                const selectedQty = selectedItem?.selectedQty || 100;
+                const selectedQty = selectedItem?.selectedQty || getDefaultQuantity(product);
                 const displayPrice = getDisplayPrice(product);
-                const totalPrice = (displayPrice / 100) * selectedQty;
+                const totalPrice = displayPrice * selectedQty;
                 const showingWholesale = isShowingWholesale(product);
 
                 return (
@@ -938,7 +939,7 @@ const SubscriptionCreate = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {getQtyOptions(product.weight || 5000).map((qty) => (
+                              {getQuantityOptions(product.weight || 5000).map((qty) => (
                                 <SelectItem key={qty} value={String(qty)}>
                                   {qty}
                                 </SelectItem>

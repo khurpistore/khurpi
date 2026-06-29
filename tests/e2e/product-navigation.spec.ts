@@ -68,13 +68,14 @@ test.describe('Product Navigation Bug Fix Verification', () => {
       // Switch to list view
       const listViewButton = page.locator('button').filter({ has: page.locator('svg.lucide-list') });
       await listViewButton.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
       
-      // Get the first product in list view - find the clickable image container
-      const firstProductImage = page.locator('.cursor-pointer').filter({ has: page.locator('img') }).first();
+      // In list view, products are displayed in Card components
+      // Find the first product image in list view - it's inside a Card with a relative div containing the image
+      const firstProductImage = page.locator('.relative.cursor-pointer').filter({ has: page.locator('img') }).first();
       await expect(firstProductImage).toBeVisible();
       
-      // Get the product ID from the URL after clicking
+      // Click on the product image
       await firstProductImage.click();
       
       // Verify navigation to product detail page with correct route /product/:id (singular)

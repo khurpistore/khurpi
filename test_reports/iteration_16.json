@@ -1,0 +1,57 @@
+{
+  "summary": "Core Module Clean Architecture Testing Complete - All tests pass. Verified core module utilities (formatQuantity, formatPricePerUnit, getStockStatus, getQuantityOptions) work correctly across Products, ProductDetail, Cart, Checkout, AdminProducts, and SubscriptionCreate pages. All pages use kg-based quantity display consistently.",
+  "mode": "generate",
+  "baseline_commit": "a8674bbc7fdaac95b815725eb5fc9f1b797a74a3",
+  "head_commit": "0af8fcfccd7a6e5c118664904586f334dd9daf72",
+  "specs_created": [],
+  "specs_updated": [
+    "/app/tests/e2e/product-navigation.spec.ts",
+    "/app/tests/e2e/wholesale-feature.spec.ts"
+  ],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/tests/e2e/core-module.spec.ts",
+    "/app/tests/e2e/product-navigation.spec.ts",
+    "/app/tests/e2e/product-catalog.spec.ts",
+    "/app/tests/e2e/wholesale-feature.spec.ts",
+    "/app/backend/tests/test_product_catalog.py",
+    "/app/backend/tests/test_wholesale.py"
+  ],
+  "regression_results": {
+    "total_specs": 48,
+    "passed": 48,
+    "failed": 0,
+    "skipped": 0,
+    "notes": "All frontend E2E tests pass. Backend product catalog and wholesale tests pass (32/32)."
+  },
+  "issues": [],
+  "action_items": [],
+  "updated_files": [
+    "/app/tests/e2e/product-navigation.spec.ts",
+    "/app/tests/e2e/wholesale-feature.spec.ts"
+  ],
+  "test_results": {
+    "backend": "100% (32/32 product catalog + wholesale tests passed)",
+    "frontend": "100% (48/48 E2E tests passed)"
+  },
+  "seed_data_creation": "None - tested existing seeded data",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Core module clean architecture is fully implemented and tested. All pages (Products, ProductDetail, Cart, Checkout, AdminProducts, SubscriptionCreate) correctly use core module utilities for quantity formatting (kg-based), price calculations, and stock status display. The QuantitySelector and StockBadge components from core module are used consistently across the app.",
+  "features_verified": {
+    "Core_Module_Utilities": "PASS - formatQuantity, formatPricePerUnit, getStockStatus, getQuantityOptions work correctly",
+    "Products_Page": "PASS - Uses core module for quantity options, price display, stock status badges",
+    "ProductDetail_Page": "PASS - Uses core QuantitySelector component, formatQuantity for display",
+    "Cart_Page": "PASS - Uses core module for calculations, QuantitySelector for quantity updates",
+    "Checkout_Page": "PASS - Uses core formatQuantity and formatPricePerUnit for display",
+    "AdminProducts_Page": "PASS - Uses core StockBadge component for stock status display",
+    "SubscriptionCreate_Page": "PASS - Uses core module utilities for quantity and price display",
+    "Wholesale_Integration": "PASS - Core module correctly handles wholesale pricing across all pages",
+    "Navigation": "PASS - Products to ProductDetail navigation works correctly",
+    "Consistent_Quantity_Display": "PASS - All pages show kg-based quantities consistently"
+  },
+  "test_credentials_used": {
+    "admin_username": "admin",
+    "admin_password": "Khurpi2026Secure"
+  }
+}

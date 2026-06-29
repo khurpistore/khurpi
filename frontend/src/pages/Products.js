@@ -14,28 +14,19 @@ import { useWholesale } from '@/hooks/useWholesale';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { format, addDays } from 'date-fns';
 
+// Import from core module - Single source of truth
+import {
+  QuantitySelector,
+  StockBadge,
+  getQuantityOptions,
+  getStockStatus,
+  formatQuantity,
+  formatPricePerUnit,
+  getDefaultQuantity
+} from '../core';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-// Generate quantity options based on unit type
-const getQtyOptions = (product) => {
-  const unit = product.unit || 'kg';
-  const minQty = product.min_quantity || 0.25;
-  const stepQty = product.step_quantity || 0.25;
-  const maxQty = product.stock_quantity || 10;
-  
-  if (unit === 'piece' || unit === 'dozen' || unit === 'bunch') {
-    // For non-weight items: 1, 2, 3, 4, 5, 6, 10, 12
-    return [1, 2, 3, 4, 5, 6, 10, 12].filter(q => q <= maxQty);
-  }
-  
-  // For weight-based items (kg)
-  const options = [];
-  for (let qty = minQty; qty <= Math.min(maxQty, 5); qty += stepQty) {
-    options.push(parseFloat(qty.toFixed(2)));
-  }
-  return options.length > 0 ? options : [0.25, 0.5, 1];
-};
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -96,7 +87,7 @@ const Products = () => {
       // Initialize quantities
       const initialQty = {};
       sortedProducts.forEach(p => {
-        const options = getQtyOptions(p);
+        const options = getQuantityOptions(p);
         initialQty[p.id] = options[1] || options[0] || 1; // Default to second option or first
       });
       setSelectedQty(initialQty);
@@ -145,42 +136,17 @@ const Products = () => {
     return result;
   }, [products, searchQuery, selectedCategory, sortBy, wholesaleEnabled]);
 
-  const getStockStatus = (product) => {
-    const status = product.stock_status || 'in_stock';
-    if (status === 'out_of_stock') {
-      return { status: 'out_of_stock', label: 'Out of Stock', color: 'bg-red-100 text-red-700' };
-    }
-    if (status === 'growing') {
-      const readyDate = product.availability_date 
-        ? new Date(product.availability_date) 
-        : addDays(new Date(), product.ready_in_days || product.growth_days || 7);
-      return { 
-        status: 'growing', 
-        label: `Ready ${format(readyDate, 'MMM d')}`, 
-        color: 'bg-amber-100 text-amber-700',
-        date: readyDate
-      };
-    }
-    return { status: 'in_stock', label: 'In Stock', color: 'bg-green-100 text-green-700' };
-  };
-
-  const formatPrice = (product, qty) => {
-    const price = getDisplayPrice(product);
-    const unit = product.unit || 'kg';
-    
-    if (unit === 'piece' || unit === 'dozen' || unit === 'bunch') {
-      return `₹${(price * qty).toFixed(0)}`;
-    }
-    // Price per kg, qty in kg
-    return `₹${(price * qty).toFixed(0)}`;
-  };
-
+  // Use core module's formatPricePerUnit for consistent price display
   const formatUnitPrice = (product) => {
     const price = getDisplayPrice(product);
     const unit = product.unit || 'kg';
-    const priceUnit = product.price_per || unit;
-    
-    return `₹${price}/${priceUnit}`;
+    return formatPricePerUnit(price, unit);
+  };
+
+  // Calculate total price for product with quantity
+  const calculateTotalPrice = (product, qty) => {
+    const price = getDisplayPrice(product);
+    return `₹${(price * qty).toFixed(0)}`;
   };
 
   const handleAddToCart = (product) => {
@@ -190,7 +156,7 @@ const Products = () => {
       return;
     }
 
-    const qty = selectedQty[product.id] || 1;
+    const qty = selectedQty[product.id] || getDefaultQuantity(product);
     const unit = product.unit || 'kg';
     
     const productWithDetails = {
@@ -438,7 +404,7 @@ const Products = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {getQtyOptions(product).map(q => (
+                            {getQuantityOptions(product).map(q => (
                               <SelectItem key={q} value={String(q)}>
                                 {unit === 'kg' ? `${q} kg` : `${q} ${unit}`}
                               </SelectItem>
@@ -521,7 +487,7 @@ const Products = () => {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {getQtyOptions(product).map(q => (
+                                {getQuantityOptions(product).map(q => (
                                   <SelectItem key={q} value={String(q)}>
                                     {unit === 'kg' ? `${q} kg` : `${q} ${unit}`}
                                   </SelectItem>
