@@ -26,7 +26,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Profile'), backgroundColor: AppColors.surface, elevation: 0, automaticallyImplyLeading: false),
       body: authState.isAuthenticated ? _buildAuthenticatedView(authState) : _buildGuestView(),
     );
   }

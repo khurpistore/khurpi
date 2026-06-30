@@ -29,12 +29,6 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Categories'),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
       body: productsState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : productsState.categories.isEmpty

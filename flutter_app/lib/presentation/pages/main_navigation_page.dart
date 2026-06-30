@@ -6,6 +6,9 @@ import 'package:khurpi_fresh/presentation/pages/home_page.dart';
 import 'package:khurpi_fresh/presentation/pages/categories_page.dart';
 import 'package:khurpi_fresh/presentation/pages/cart_page.dart';
 import 'package:khurpi_fresh/presentation/pages/profile_page.dart';
+import 'package:khurpi_fresh/presentation/pages/products_page.dart';
+import 'package:khurpi_fresh/presentation/pages/login_page.dart';
+import 'package:khurpi_fresh/presentation/widgets/app_header.dart';
 
 class MainNavigationPage extends ConsumerStatefulWidget {
   const MainNavigationPage({super.key});
@@ -17,51 +20,46 @@ class MainNavigationPage extends ConsumerStatefulWidget {
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [HomePage(), CategoriesPage(), CartPage(), ProfilePage()];
+  final List<Widget> _pages = const [
+    HomePage(),
+    CategoriesPage(),
+    CartPage(),
+    ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartViewModelProvider);
-    final authState = ref.watch(authViewModelProvider);
-    final userAddress = authState.user?.address ?? 'Set your delivery address';
 
     return Scaffold(
       body: Column(
         children: [
-          // Address Bar at top
-          Container(
-            color: AppColors.primary,
-            child: SafeArea(
-              bottom: false,
-              child: InkWell(
-                onTap: () => _showAddressBottomSheet(context),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Deliver to', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                            Text(userAddress, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-                    ],
-                  ),
-                ),
-              ),
+          // App Header with Location + Search
+          AppHeader(
+            onSearchTap: _navigateToSearch,
+            onAddressTap: _showAddressBottomSheet,
+            onAccountTap: _handleAccountTap,
+          ),
+          
+          // Page Content
+          Expanded(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _pages,
             ),
           ),
-          Expanded(child: IndexedStack(index: _currentIndex, children: _pages)),
         ],
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -5))]),
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
@@ -72,53 +70,84 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontSize: 12),
           items: [
-            const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-            const BottomNavigationBarItem(icon: Icon(Icons.category_outlined), activeIcon: Icon(Icons.category), label: 'Categories'),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.category_outlined),
+              activeIcon: Icon(Icons.category),
+              label: 'Categories',
+            ),
             BottomNavigationBarItem(
-              icon: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const Icon(Icons.shopping_cart_outlined),
-                  if (cartState.items.isNotEmpty)
-                    Positioned(
-                      right: -6,
-                      top: -6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                        child: Text('${cartState.items.length}', style: const TextStyle(color: Colors.white, fontSize: 10), textAlign: TextAlign.center),
-                      ),
-                    ),
-                ],
-              ),
-              activeIcon: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const Icon(Icons.shopping_cart),
-                  if (cartState.items.isNotEmpty)
-                    Positioned(
-                      right: -6,
-                      top: -6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                        child: Text('${cartState.items.length}', style: const TextStyle(color: Colors.white, fontSize: 10), textAlign: TextAlign.center),
-                      ),
-                    ),
-                ],
-              ),
+              icon: _buildCartIcon(cartState.items.length, false),
+              activeIcon: _buildCartIcon(cartState.items.length, true),
               label: 'Cart',
             ),
-            const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _showAddressBottomSheet(BuildContext context) {
+  Widget _buildCartIcon(int itemCount, bool isActive) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(isActive ? Icons.shopping_cart : Icons.shopping_cart_outlined),
+        if (itemCount > 0)
+          Positioned(
+            right: -6,
+            top: -6,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: AppColors.error,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+              child: Text(
+                '$itemCount',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _navigateToSearch() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProductsPage()),
+    );
+  }
+
+  void _handleAccountTap() {
+    final authState = ref.read(authViewModelProvider);
+    if (authState.user != null) {
+      // Go to profile tab
+      setState(() => _currentIndex = 3);
+    } else {
+      // Navigate to login
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    }
+  }
+
+  void _showAddressBottomSheet() {
     final authState = ref.read(authViewModelProvider);
     final addressController = TextEditingController(text: authState.user?.address ?? '');
     final cityController = TextEditingController(text: authState.user?.city ?? '');
@@ -127,37 +156,128 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 16, right: 16, top: 16),
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Delivery Address', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Address', border: OutlineInputBorder()), maxLines: 2),
-            const SizedBox(height: 12),
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Title
             Row(
               children: [
-                Expanded(child: TextField(controller: cityController, decoration: const InputDecoration(labelText: 'City', border: OutlineInputBorder()))),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.location_on, color: AppColors.primary, size: 24),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: TextField(controller: pincodeController, decoration: const InputDecoration(labelText: 'Pincode', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
+                const Text(
+                  'Delivery Address',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
+            const SizedBox(height: 24),
+            
+            // Address field
+            TextField(
+              controller: addressController,
+              decoration: InputDecoration(
+                labelText: 'Street Address',
+                hintText: 'Enter your full address',
+                prefixIcon: const Icon(Icons.home_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+              maxLines: 2,
+            ),
             const SizedBox(height: 16),
+            
+            // City and Pincode
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: cityController,
+                    decoration: InputDecoration(
+                      labelText: 'City',
+                      prefixIcon: const Icon(Icons.location_city_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: pincodeController,
+                    decoration: InputDecoration(
+                      labelText: 'Pincode',
+                      prefixIcon: const Icon(Icons.pin_drop_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            
+            // Save button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  ref.read(authViewModelProvider.notifier).updateAddress(address: addressController.text, city: cityController.text, pincode: pincodeController.text);
+                  ref.read(authViewModelProvider.notifier).updateAddress(
+                    address: addressController.text,
+                    city: cityController.text,
+                    pincode: pincodeController.text,
+                  );
                   Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: const Text('Save Address', style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Save Address',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
           ],
         ),
       ),

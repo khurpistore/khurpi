@@ -15,26 +15,34 @@ class CartPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('My Cart'),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          if (cartState.items.isNotEmpty)
-            TextButton(
-              onPressed: () => ref.read(cartViewModelProvider.notifier).clearCart(),
-              child: const Text('Clear All', style: TextStyle(color: AppColors.error)),
-            ),
-        ],
-      ),
       body: cartState.items.isEmpty
           ? _buildEmptyCart()
           : Column(
               children: [
+                // Cart header with clear button
+                if (cartState.items.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${cartState.items.length} item${cartState.items.length > 1 ? 's' : ''} in cart',
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => ref.read(cartViewModelProvider.notifier).clearCart(),
+                          icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                          label: const Text('Clear All', style: TextStyle(color: AppColors.error)),
+                        ),
+                      ],
+                    ),
+                  ),
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: cartState.items.length,
                     itemBuilder: (context, index) {
                       final item = cartState.items[index];

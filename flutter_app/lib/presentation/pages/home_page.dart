@@ -45,35 +45,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         onRefresh: _loadData,
         child: CustomScrollView(
           slivers: [
-            // App Bar
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.eco, color: AppColors.primary, size: 32),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Khurpi Fresh', style: AppTextStyles.h3),
-                          Text('Fresh Vegetables & Fruits', style: AppTextStyles.caption),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const ProductsPage()),
-                      ),
-                      icon: const Icon(Icons.search, size: 28),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
             // Banner Carousel
             if (bannersState.banners.isNotEmpty)
               SliverToBoxAdapter(
@@ -158,7 +129,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
 
-            // New Arrivals Section (showing first 4 products)
+            // New Arrivals Section (showing first 6 products)
             if (productsState.products.isNotEmpty) ...[
               const SliverToBoxAdapter(
                 child: Padding(
@@ -349,13 +320,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       MaterialPageRoute(
         builder: (_) => ProductDetailPage(productId: product.productId),
       ),
-    );
-  }
-
-  void _addToCart(ProductModel product) {
-    ref.read(cartViewModelProvider.notifier).addToCart(product);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${product.name} added to cart')),
     );
   }
 }
