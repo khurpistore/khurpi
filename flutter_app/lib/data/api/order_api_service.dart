@@ -3,7 +3,7 @@ import 'package:retrofit/retrofit.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
 import 'package:khurpi_fresh/data/models/create_order_request.dart';
 
-part 'order_api_service.g.dart';
+part '../../generated/data/api/order_api_service.g.dart';
 
 @RestApi()
 abstract class OrderApiService {

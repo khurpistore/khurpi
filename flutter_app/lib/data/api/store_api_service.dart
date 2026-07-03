@@ -3,7 +3,7 @@ import 'package:retrofit/retrofit.dart';
 import 'package:khurpi_fresh/data/models/store_settings_model.dart';
 import 'package:khurpi_fresh/data/models/delivery_slot_model.dart';
 
-part 'store_api_service.g.dart';
+part '../../generated/data/api/store_api_service.g.dart';
 
 @RestApi()
 abstract class StoreApiService {

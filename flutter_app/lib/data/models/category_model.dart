@@ -1,12 +1,13 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'category_model.freezed.dart';
-part 'category_model.g.dart';
+part '../../generated/data/models/category_model.freezed.dart';
+part '../../generated/data/models/category_model.g.dart';
+
 
 @freezed
 abstract class CategoryModel with _$CategoryModel {
   const CategoryModel._(); // Add private constructor for extensions
-  
+
   const factory CategoryModel({
     @JsonKey(name: 'id') String? id,
     @JsonKey(name: '_id') String? mongoId,
@@ -29,6 +30,9 @@ abstract class CategoryModel with _$CategoryModel {
   // Getter for categoryId
   String get categoryId => id ?? mongoId ?? '';
   
+  // Getter for imageUrl (for backward compatibility)
+  String? get imageUrl => image;
+
   // Getter for imageUrl (for backward compatibility)
   String? get imageUrl => image;
 
