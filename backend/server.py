@@ -2334,6 +2334,50 @@ async def resend_otp(data: OTPSendRequest):
     """Resend OTP - same as send_otp"""
     return await send_otp(data)
 
+# MSG91 verified OTP endpoint (called after MSG91 widget verification)
+class MSG91VerifiedRequest(BaseModel):
+    phone: str
+    name: Optional[str] = None
+
+@api_router.post("/auth/otp-verified")
+async def otp_verified_login(data: MSG91VerifiedRequest):
+    """
+    Handle login after MSG91 OTP verification.
+    Creates user if not exists, returns user data.
+    """
+    phone = data.phone.strip()
+    
+    # Check if user exists
+    user = await db.users.find_one({"phone": phone}, {"_id": 0, "password": 0})
+    
+    if user:
+        # Existing user - return
+        return {"success": True, "user": user, "is_new_user": False}
+    
+    # New user - check if name provided
+    if not data.name or not data.name.strip():
+        return {"success": True, "is_new_user": True, "message": "Please provide your name"}
+    
+    # Create new user
+    user_doc = {
+        "id": str(uuid.uuid4()),
+        "phone": phone,
+        "name": data.name.strip(),
+        "password": pwd_context.hash(str(uuid.uuid4())),  # Random password for OTP users
+        "address": None,
+        "city": None,
+        "pincode": None,
+        "role": "customer",
+        "verified": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    user_doc.pop("password", None)
+    user_doc.pop("_id", None)
+    
+    return {"success": True, "user": user_doc, "is_new_user": True}
+
 # ============ Razorpay Payment Integration ============
 
 class PaymentOrderRequest(BaseModel):

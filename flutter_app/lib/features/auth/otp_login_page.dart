@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
+import 'package:sendotp_flutter_sdk/sendotp_flutter_sdk.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
-import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/main_navigation_page.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:dio/dio.dart';
+import 'package:khurpi_fresh/core/constants/app_constants.dart';
 
 class OTPLoginPage extends ConsumerStatefulWidget {
   const OTPLoginPage({super.key});
@@ -21,11 +22,31 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
   final _nameController = TextEditingController();
   final _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
   
+  // MSG91 Widget Configuration
+  static const String _widgetId = '366179704b55353730393234';
+  static const String _authToken = 'YOUR_AUTH_TOKEN_HERE'; // Replace with your MSG91 authToken
+  
   bool _isLoading = false;
   bool _otpSent = false;
   bool _isNewUser = false;
   String? _errorMessage;
-  String? _debugOtp; // For testing
+  String? _reqId; // MSG91 request ID for verification
+  int _resendTimer = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeMSG91();
+  }
+
+  void _initializeMSG91() {
+    try {
+      OTPWidget.initializeWidget(_widgetId, _authToken);
+      debugPrint('MSG91 Widget initialized');
+    } catch (e) {
+      debugPrint('MSG91 initialization error: $e');
+    }
+  }
 
   Future<void> _sendOtp() async {
     final phone = _phoneController.text.trim();
@@ -41,42 +62,50 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
     });
 
     try {
-      final response = await _dio.post('/auth/send-otp', data: {'phone': phone});
+      // Send OTP via MSG91 Widget SDK
+      final data = {
+        'identifier': '91$phone', // Country code + phone without +
+      };
       
-      if (response.data['success'] == true) {
+      final response = await OTPWidget.sendOTP(data);
+      debugPrint('MSG91 sendOTP response: $response');
+      
+      if (response != null && response['type'] == 'success') {
         setState(() {
           _otpSent = true;
-          _debugOtp = response.data['debug_otp']; // For testing
+          _reqId = response['message']; // reqId is returned in message field
+          _startResendTimer();
         });
         
-        // Show debug OTP in snackbar for testing
-        if (_debugOtp != null && mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Test OTP: $_debugOtp'),
-              duration: const Duration(seconds: 10),
-              backgroundColor: AppColors.primary,
+            const SnackBar(
+              content: Text('OTP sent successfully!'),
+              backgroundColor: AppColors.success,
             ),
           );
         }
       } else {
-        setState(() => _errorMessage = response.data['message'] ?? 'Failed to send OTP');
+        setState(() => _errorMessage = response?['message'] ?? 'Failed to send OTP');
       }
-    } on DioException catch (e) {
-      setState(() => _errorMessage = e.response?.data?['detail'] ?? 'Network error');
     } catch (e) {
-      setState(() => _errorMessage = 'Something went wrong');
+      debugPrint('Send OTP error: $e');
+      setState(() => _errorMessage = 'Failed to send OTP. Please try again.');
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _verifyOtp() async {
-    final phone = _phoneController.text.trim();
     final otp = _otpController.text.trim();
     
     if (otp.length != 6) {
       setState(() => _errorMessage = 'Please enter the 6-digit OTP');
+      return;
+    }
+
+    if (_reqId == null) {
+      setState(() => _errorMessage = 'Session expired. Please request OTP again.');
       return;
     }
 
@@ -86,18 +115,44 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
     });
 
     try {
+      // Verify OTP via MSG91 Widget SDK
       final data = {
-        'phone': phone,
+        'reqId': _reqId,
         'otp': otp,
-        'name': _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : null,
       };
       
-      final response = await _dio.post('/auth/verify-otp', data: data);
+      final response = await OTPWidget.verifyOTP(data);
+      debugPrint('MSG91 verifyOTP response: $response');
+      
+      if (response != null && response['type'] == 'success') {
+        // OTP verified, now create/login user in our backend
+        await _handleSuccessfulVerification();
+      } else {
+        setState(() => _errorMessage = response?['message'] ?? 'Invalid OTP. Please try again.');
+      }
+    } catch (e) {
+      debugPrint('Verify OTP error: $e');
+      setState(() => _errorMessage = 'Verification failed. Please try again.');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleSuccessfulVerification() async {
+    final phone = _phoneController.text.trim();
+    final name = _nameController.text.trim();
+    
+    try {
+      // Call our backend to create/fetch user after MSG91 verification
+      final response = await _dio.post('/auth/otp-verified', data: {
+        'phone': phone,
+        'name': name.isNotEmpty ? name : null,
+      });
       
       if (response.data['success'] == true) {
         final isNew = response.data['is_new_user'] == true;
         
-        if (isNew && _nameController.text.trim().isEmpty) {
+        if (isNew && name.isEmpty) {
           // Ask for name
           setState(() => _isNewUser = true);
         } else {
@@ -114,20 +169,61 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
           }
         }
       } else {
-        setState(() => _errorMessage = response.data['message'] ?? 'Verification failed');
+        setState(() => _errorMessage = response.data['message'] ?? 'Login failed');
       }
-    } on DioException catch (e) {
-      setState(() => _errorMessage = e.response?.data?['detail'] ?? 'Network error');
     } catch (e) {
-      setState(() => _errorMessage = 'Something went wrong');
+      debugPrint('Backend auth error: $e');
+      setState(() => _errorMessage = 'Server error. Please try again.');
+    }
+  }
+
+  Future<void> _retryOtp({int? channel}) async {
+    if (_reqId == null || _resendTimer > 0) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final data = {
+        'reqId': _reqId,
+        if (channel != null) 'retryChannel': channel,
+      };
+      
+      final response = await OTPWidget.retryOTP(data);
+      debugPrint('MSG91 retryOTP response: $response');
+      
+      if (response != null && response['type'] == 'success') {
+        _startResendTimer();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('OTP resent successfully!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      } else {
+        setState(() => _errorMessage = response?['message'] ?? 'Failed to resend OTP');
+      }
+    } catch (e) {
+      setState(() => _errorMessage = 'Failed to resend OTP');
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  void _resendOtp() {
-    _otpController.clear();
-    _sendOtp();
+  void _startResendTimer() {
+    _resendTimer = 30;
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted && _resendTimer > 0) {
+        setState(() => _resendTimer--);
+        return true;
+      }
+      return false;
+    });
   }
 
   void _changeNumber() {
@@ -137,7 +233,8 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
       _otpController.clear();
       _nameController.clear();
       _errorMessage = null;
-      _debugOtp = null;
+      _reqId = null;
+      _resendTimer = 0;
     });
   }
 
@@ -172,11 +269,16 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.secondary.withOpacity(0.1),
+                      ],
+                    ),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    _otpSent ? Icons.sms : Icons.phone_android,
+                    _otpSent ? Icons.sms_outlined : Icons.phone_android,
                     size: 48,
                     color: AppColors.primary,
                   ),
@@ -205,7 +307,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                     ? 'Please enter your name to complete registration'
                     : _otpSent
                         ? 'Enter the 6-digit code sent to\n+91 ${_phoneController.text}'
-                        : 'We will send you a verification code',
+                        : 'We will send you a verification code via SMS',
                 style: TextStyle(
                   fontSize: 15,
                   color: AppColors.textSecondary,
@@ -236,24 +338,38 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                         decoration: BoxDecoration(
-                          border: Border(
-                            right: BorderSide(color: AppColors.border),
+                          color: AppColors.primary.withOpacity(0.05),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(13),
+                            bottomLeft: Radius.circular(13),
                           ),
                         ),
-                        child: const Text(
-                          '+91',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        child: Row(
+                          children: [
+                            Image.network(
+                              'https://flagcdn.com/w20/in.png',
+                              width: 20,
+                              height: 15,
+                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              '+91',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      Container(width: 1, height: 50, color: AppColors.border),
                       Expanded(
                         child: TextField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           maxLength: 10,
-                          style: const TextStyle(fontSize: 16, letterSpacing: 1),
+                          style: const TextStyle(fontSize: 16, letterSpacing: 1.5),
                           decoration: const InputDecoration(
                             hintText: 'Enter phone number',
                             border: InputBorder.none,
@@ -292,26 +408,49 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                   onCompleted: (_) => _verifyOtp(),
                   onChanged: (_) {},
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Didn't receive code? ",
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                    TextButton(
-                      onPressed: _isLoading ? null : _resendOtp,
-                      child: const Text(
-                        'Resend',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 20),
+                
+                // Resend Options
+                Center(
+                  child: Column(
+                    children: [
+                      if (_resendTimer > 0)
+                        Text(
+                          'Resend OTP in ${_resendTimer}s',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        )
+                      else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () => _retryOtp(channel: 11),
+                              icon: const Icon(Icons.sms, size: 18),
+                              label: const Text('SMS'),
+                            ),
+                            const Text('|', style: TextStyle(color: AppColors.border)),
+                            TextButton.icon(
+                              onPressed: () => _retryOtp(channel: 4),
+                              icon: const Icon(Icons.call, size: 18),
+                              label: const Text('Call'),
+                            ),
+                            const Text('|', style: TextStyle(color: AppColors.border)),
+                            TextButton.icon(
+                              onPressed: () => _retryOtp(channel: 12),
+                              icon: const Icon(Icons.chat, size: 18),
+                              label: const Text('WhatsApp'),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
-                TextButton(
-                  onPressed: _changeNumber,
-                  child: const Text('Change phone number'),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton(
+                    onPressed: _changeNumber,
+                    child: const Text('Change phone number'),
+                  ),
                 ),
               ],
 
@@ -354,6 +493,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                   decoration: BoxDecoration(
                     color: AppColors.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
                   ),
                   child: Row(
                     children: [
@@ -379,7 +519,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                   onPressed: _isLoading
                       ? null
                       : _isNewUser
-                          ? _verifyOtp
+                          ? _handleSuccessfulVerification
                           : _otpSent
                               ? _verifyOtp
                               : _sendOtp,

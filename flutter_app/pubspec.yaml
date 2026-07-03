@@ -47,6 +47,9 @@ dependencies:
   
   # OTP Input
   pin_code_fields: ^8.0.1
+  
+  # MSG91 OTP SDK
+  sendotp_flutter_sdk: ^1.0.0
 
   # Internationalization
   flutter_localizations:
