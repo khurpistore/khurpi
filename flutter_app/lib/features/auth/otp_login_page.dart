@@ -24,7 +24,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
   
   // MSG91 Widget Configuration
   static const String _widgetId = '366179704b55353730393234';
-  static const String _authToken = 'YOUR_AUTH_TOKEN_HERE'; // Replace with your MSG91 authToken
+  static const String _authToken = '490446Ty29Y53gM69764e27P1';
   
   bool _isLoading = false;
   bool _otpSent = false;
