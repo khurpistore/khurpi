@@ -8,3 +8,7 @@ export 'auth_response_model.dart';
 export 'create_order_request.dart';
 export 'store_settings_model.dart';
 export 'delivery_slot_model.dart';
+export 'app_config_model.dart';
+export 'address_model.dart';
+export 'subcategory_model.dart';
+export 'recent_search_model.dart';

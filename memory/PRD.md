@@ -94,21 +94,28 @@ final provideProductsViewModelProvider = Provider((ref) {
 
 ## Prioritized Backlog
 
-### P0 (Immediate)
-- [ ] User verification: Run `flutter pub run build_runner build --delete-conflicting-outputs` locally
-- [ ] Test Flutter checkout with delivery options end-to-end
+### P0 (Completed This Session)
+- ✅ App Configuration API & Admin Page (colors, fonts, service areas, feature flags)
+- ✅ Subcategory CRUD API & Admin Page
+- ✅ Address CRUD API for users
+- ✅ Search API with recent searches
+- ✅ Flutter Search Page with recent searches
+- ✅ Improved Floating Cart Button (goes to Checkout)
+- ✅ New Flutter Models (AppConfig, Address, Subcategory, RecentSearch)
 
 ### P1 (Next Sprint)
 - [ ] Fix Web frontend "No product found" bug (recurring issue - 3x)
-- [ ] Refactor `server.py` into modular routers
-- [ ] Complete authentication flow in Flutter
+- [ ] Product Listing page with subcategory sidebar
+- [ ] Product Detail Bottom Sheet instead of full page
+- [ ] Address management page in Profile
+- [ ] Load app config on Flutter app start
 
 ### P2 (Future)
+- [ ] Refactor `server.py` into modular routers
 - [ ] Product Quick View modal (Web)
 - [ ] Recently Viewed Products
 - [ ] Wholesale Tier Levels
-- [ ] Push notifications (Flutter)
-- [ ] Order tracking (Flutter)
+- [ ] Order tracking & push notifications for Flutter
 
 ## Key API Endpoints
 - `GET /api/products` - List products (includes `image_url` field)
@@ -119,8 +126,17 @@ final provideProductsViewModelProvider = Provider((ref) {
 - `GET /api/auth/me` - Current user (includes wholesale_enabled)
 - `POST /api/orders` - Create order (supports delivery_type, delivery_date, delivery_slot_id)
 - `GET /api/orders/my-orders` - User's orders
-- **`GET /api/store/settings` - Store settings (delivery options, fees)**
-- **`GET /api/delivery-slots?date=YYYY-MM-DD` - Available delivery slots for date**
+- `GET /api/store/settings` - Store settings (delivery options, fees)
+- `GET /api/delivery-slots?date=YYYY-MM-DD` - Available delivery slots for date
+- `GET /api/banners` - Get active banners
+- `GET/POST /api/admin/banners` - Banner CRUD
+- **`GET /api/config` - App configuration (colors, fonts, service areas)**
+- **`GET/POST /api/admin/config` - Admin app configuration**
+- **`GET /api/subcategories?category_id=X` - Get subcategories**
+- **`GET/POST/PUT/DELETE /api/admin/subcategories` - Subcategory CRUD**
+- **`GET /api/search?q=query` - Search products**
+- **`GET/POST/DELETE /api/search/recent?user_id=X` - Recent searches**
+- **`GET/POST/PUT/DELETE /api/addresses?user_id=X` - Address CRUD**
 
 ## Test Credentials
 - **Admin**: username `admin`, password `Khurpi2026Secure`

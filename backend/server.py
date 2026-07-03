@@ -6831,6 +6831,412 @@ async def reorder_banners(banner_ids: List[str]):
         )
     return {"message": "Banners reordered successfully"}
 
+# ==========================================
+# APP CONFIGURATION ENDPOINTS
+# ==========================================
+
+class AppConfigCreate(BaseModel):
+    # Branding
+    app_name: str = "Khurpi Fresh"
+    app_tagline: str = "Fresh from Farm to Table"
+    logo_url: Optional[str] = None
+    
+    # Colors (hex format)
+    primary_color: str = "#4CAF50"
+    primary_dark_color: str = "#388E3C"
+    secondary_color: str = "#FFC107"
+    accent_color: str = "#FF5722"
+    background_color: str = "#F5F5F5"
+    surface_color: str = "#FFFFFF"
+    error_color: str = "#F44336"
+    success_color: str = "#4CAF50"
+    
+    # Typography
+    font_family: str = "Poppins"
+    heading_font_size: int = 24
+    body_font_size: int = 14
+    caption_font_size: int = 12
+    
+    # Supported Service Areas
+    supported_countries: List[str] = ["India"]
+    supported_states: List[str] = []
+    supported_cities: List[str] = []
+    supported_pincodes: List[str] = []
+    supported_societies: List[str] = []
+    
+    # Delivery Settings
+    min_order_value: float = 100
+    free_delivery_threshold: float = 500
+    default_delivery_fee: float = 40
+    
+    # Feature Flags
+    enable_cod: bool = True
+    enable_online_payment: bool = True
+    enable_subscriptions: bool = True
+    enable_referrals: bool = True
+    enable_spin_wheel: bool = True
+    
+    # Contact Info
+    support_phone: Optional[str] = None
+    support_email: Optional[str] = None
+    support_whatsapp: Optional[str] = None
+
+@api_router.get("/config")
+async def get_app_config():
+    """Get app configuration (public endpoint for mobile app)"""
+    config = await db.app_config.find_one({"type": "app_config"}, {"_id": 0})
+    if not config:
+        # Return default config if none exists
+        return AppConfigCreate().model_dump()
+    return config
+
+@api_router.get("/admin/config")
+async def get_admin_config():
+    """Get full app configuration (admin)"""
+    config = await db.app_config.find_one({"type": "app_config"}, {"_id": 0})
+    if not config:
+        return AppConfigCreate().model_dump()
+    return config
+
+@api_router.post("/admin/config")
+async def save_app_config(config: AppConfigCreate):
+    """Save/Update app configuration"""
+    config_dict = config.model_dump()
+    config_dict["type"] = "app_config"
+    config_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.app_config.update_one(
+        {"type": "app_config"},
+        {"$set": config_dict},
+        upsert=True
+    )
+    return {"message": "Configuration saved successfully", "config": config_dict}
+
+# ==========================================
+# USER ADDRESS ENDPOINTS
+# ==========================================
+
+class AddressCreate(BaseModel):
+    label: str = "Home"  # Home, Work, Other
+    full_name: str
+    phone: str
+    address_line1: str
+    address_line2: Optional[str] = None
+    landmark: Optional[str] = None
+    city: str
+    state: str
+    pincode: str
+    country: str = "India"
+    society: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_default: bool = False
+
+class AddressUpdate(BaseModel):
+    label: Optional[str] = None
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    landmark: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    country: Optional[str] = None
+    society: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_default: Optional[bool] = None
+
+@api_router.get("/addresses")
+async def get_user_addresses(user_id: str):
+    """Get all addresses for a user"""
+    addresses = await db.addresses.find(
+        {"user_id": user_id, "deleted": {"$ne": True}},
+        {"_id": 0}
+    ).sort("is_default", -1).to_list(50)
+    return addresses
+
+@api_router.get("/addresses/default")
+async def get_default_address(user_id: str):
+    """Get user's default address"""
+    address = await db.addresses.find_one(
+        {"user_id": user_id, "is_default": True, "deleted": {"$ne": True}},
+        {"_id": 0}
+    )
+    if not address:
+        # Return first address if no default
+        address = await db.addresses.find_one(
+            {"user_id": user_id, "deleted": {"$ne": True}},
+            {"_id": 0}
+        )
+    return address
+
+@api_router.post("/addresses")
+async def create_address(user_id: str, address: AddressCreate):
+    """Create a new address"""
+    # Validate pincode against supported areas
+    config = await db.app_config.find_one({"type": "app_config"})
+    if config and config.get("supported_pincodes"):
+        if address.pincode not in config["supported_pincodes"]:
+            raise HTTPException(status_code=400, detail="Delivery not available in this area")
+    
+    # If this is default, unset other defaults
+    if address.is_default:
+        await db.addresses.update_many(
+            {"user_id": user_id},
+            {"$set": {"is_default": False}}
+        )
+    
+    doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        **address.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.addresses.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/addresses/{address_id}")
+async def update_address(address_id: str, user_id: str, address: AddressUpdate):
+    """Update an address"""
+    update_data = {k: v for k, v in address.model_dump().items() if v is not None}
+    
+    if address.is_default:
+        await db.addresses.update_many(
+            {"user_id": user_id},
+            {"$set": {"is_default": False}}
+        )
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.addresses.update_one(
+        {"id": address_id, "user_id": user_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    updated = await db.addresses.find_one({"id": address_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/addresses/{address_id}")
+async def delete_address(address_id: str, user_id: str):
+    """Soft delete an address"""
+    result = await db.addresses.update_one(
+        {"id": address_id, "user_id": user_id},
+        {"$set": {"deleted": True, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    return {"message": "Address deleted successfully"}
+
+@api_router.post("/addresses/{address_id}/set-default")
+async def set_default_address(address_id: str, user_id: str):
+    """Set an address as default"""
+    # Unset all defaults
+    await db.addresses.update_many(
+        {"user_id": user_id},
+        {"$set": {"is_default": False}}
+    )
+    
+    # Set this as default
+    result = await db.addresses.update_one(
+        {"id": address_id, "user_id": user_id},
+        {"$set": {"is_default": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    return {"message": "Default address updated"}
+
+# ==========================================
+# SEARCH ENDPOINTS
+# ==========================================
+
+class SearchQuery(BaseModel):
+    query: str
+    limit: int = 20
+
+@api_router.get("/search")
+async def search_products(q: str, limit: int = 20):
+    """Search products by name or description"""
+    if not q or len(q) < 2:
+        return {"products": [], "query": q}
+    
+    # Text search on name and description
+    products = await db.products.find(
+        {
+            "active": True,
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"description": {"$regex": q, "$options": "i"}},
+                {"tags": {"$regex": q, "$options": "i"}}
+            ]
+        },
+        {"_id": 0}
+    ).limit(limit).to_list(limit)
+    
+    # Map image to image_url for Flutter compatibility
+    for product in products:
+        if product.get("image") and not product.get("image_url"):
+            product["image_url"] = product["image"]
+    
+    return {"products": products, "query": q, "count": len(products)}
+
+@api_router.get("/search/recent")
+async def get_recent_searches(user_id: str, limit: int = 5):
+    """Get recent searches for a user"""
+    searches = await db.recent_searches.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("searched_at", -1).limit(limit).to_list(limit)
+    return searches
+
+@api_router.post("/search/recent")
+async def save_recent_search(user_id: str, query: str):
+    """Save a recent search"""
+    # Remove if already exists
+    await db.recent_searches.delete_one({"user_id": user_id, "query": query})
+    
+    # Add new search
+    await db.recent_searches.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "query": query,
+        "searched_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Keep only last 10 searches
+    all_searches = await db.recent_searches.find(
+        {"user_id": user_id}
+    ).sort("searched_at", -1).to_list(100)
+    
+    if len(all_searches) > 10:
+        ids_to_delete = [s["id"] for s in all_searches[10:]]
+        await db.recent_searches.delete_many({"id": {"$in": ids_to_delete}})
+    
+    return {"message": "Search saved"}
+
+@api_router.delete("/search/recent")
+async def clear_recent_searches(user_id: str):
+    """Clear all recent searches for a user"""
+    await db.recent_searches.delete_many({"user_id": user_id})
+    return {"message": "Recent searches cleared"}
+
+# ==========================================
+# SUBCATEGORY ENDPOINTS
+# ==========================================
+
+class SubcategoryCreate(BaseModel):
+    name: str
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    image: Optional[str] = None
+    parent_category_id: str
+    display_order: int = 0
+    active: bool = True
+
+class SubcategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    image: Optional[str] = None
+    parent_category_id: Optional[str] = None
+    display_order: Optional[int] = None
+    active: Optional[bool] = None
+
+@api_router.get("/subcategories")
+async def get_subcategories(category_id: Optional[str] = None):
+    """Get subcategories, optionally filtered by parent category"""
+    query = {"active": True}
+    if category_id:
+        query["parent_category_id"] = category_id
+    
+    subcategories = await db.subcategories.find(
+        query, {"_id": 0}
+    ).sort("display_order", 1).to_list(100)
+    return subcategories
+
+@api_router.get("/admin/subcategories")
+async def get_admin_subcategories(category_id: Optional[str] = None):
+    """Get all subcategories (admin - includes inactive)"""
+    query = {}
+    if category_id:
+        query["parent_category_id"] = category_id
+    
+    subcategories = await db.subcategories.find(
+        query, {"_id": 0}
+    ).sort("display_order", 1).to_list(100)
+    return subcategories
+
+@api_router.post("/admin/subcategories")
+async def create_subcategory(subcategory: SubcategoryCreate):
+    """Create a new subcategory"""
+    doc = {
+        "id": str(uuid.uuid4()),
+        **subcategory.model_dump(),
+        "slug": subcategory.slug or subcategory.name.lower().replace(" ", "-"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.subcategories.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/admin/subcategories/{subcategory_id}")
+async def update_subcategory(subcategory_id: str, subcategory: SubcategoryUpdate):
+    """Update a subcategory"""
+    update_data = {k: v for k, v in subcategory.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.subcategories.update_one(
+        {"id": subcategory_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    
+    updated = await db.subcategories.find_one({"id": subcategory_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/admin/subcategories/{subcategory_id}")
+async def delete_subcategory(subcategory_id: str):
+    """Delete a subcategory"""
+    result = await db.subcategories.delete_one({"id": subcategory_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    
+    return {"message": "Subcategory deleted successfully"}
+
+# Update products endpoint to support subcategory filtering
+@api_router.get("/products/by-subcategory/{subcategory_id}")
+async def get_products_by_subcategory(subcategory_id: str):
+    """Get products by subcategory"""
+    products = await db.products.find(
+        {"subcategory_id": subcategory_id, "active": True},
+        {"_id": 0}
+    ).sort("display_order", 1).to_list(100)
+    
+    for product in products:
+        if product.get("image") and not product.get("image_url"):
+            product["image_url"] = product["image"]
+    
+    return products
+
 app.include_router(api_router)
 
 app.add_middleware(

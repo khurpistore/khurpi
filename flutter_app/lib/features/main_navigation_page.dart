@@ -4,9 +4,10 @@ import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/features/home/home_page.dart';
 import 'package:khurpi_fresh/features/cart/cart_page.dart';
 import 'package:khurpi_fresh/features/address/address_form_page.dart';
-import 'package:khurpi_fresh/features/products/products_page.dart';
+import 'package:khurpi_fresh/features/search/search_page.dart';
 import 'package:khurpi_fresh/features/profile/profile_page.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
+import 'package:khurpi_fresh/features/checkout/checkout_page.dart';
 
 import 'app_header.dart';
 
@@ -48,11 +49,20 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
                     left: 16,
                     right: 16,
                     child: GestureDetector(
-                      onTap: _openCart,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CheckoutPage()),
+                        );
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          gradient: LinearGradient(
+                            colors: [AppColors.primary, AppColors.primaryDark],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
@@ -64,43 +74,91 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '$itemCount item${itemCount > 1 ? 's' : ''}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
+                            // Cart icon with badge
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.shopping_cart,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
-                              ),
+                                Positioned(
+                                  right: -4,
+                                  top: -4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                                    child: Text(
+                                      '$itemCount',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(width: 12),
-                            const Expanded(
-                              child: Text(
-                                'View Cart',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                ),
-                                textAlign: TextAlign.center,
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '$itemCount ${itemCount == 1 ? 'item' : 'items'}',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.8),
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  Text(
+                                    total,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Text(
-                              total,
-                              style: const TextStyle(
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Checkout',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward, color: AppColors.primary, size: 16),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 14),
                           ],
                         ),
                       ),
@@ -124,7 +182,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
   void _navigateToSearch() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ProductsPage()),
+      MaterialPageRoute(builder: (_) => const SearchPage()),
     );
   }
 
