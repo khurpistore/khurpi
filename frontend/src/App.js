@@ -52,6 +52,7 @@ import AdminCostCalculator from '@/pages/AdminCostCalculator';
 import AdminStoreSettings from '@/pages/AdminStoreSettings';
 import AdminCategories from '@/pages/AdminCategories';
 import AdminDeliverySlots from '@/pages/AdminDeliverySlots';
+import AdminBanners from '@/pages/AdminBanners';
 import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
 
@@ -135,6 +136,7 @@ function App() {
               <Route path="/admin/store-settings" element={<ProtectedRoute requireAdmin><AdminStoreSettings /></ProtectedRoute>} />
               <Route path="/admin/categories" element={<ProtectedRoute requireAdmin><AdminCategories /></ProtectedRoute>} />
               <Route path="/admin/delivery-slots" element={<ProtectedRoute requireAdmin><AdminDeliverySlots /></ProtectedRoute>} />
+              <Route path="/admin/banners" element={<ProtectedRoute requireAdmin><AdminBanners /></ProtectedRoute>} />
               
               {/* Delivery Boy Routes - No header/footer */}
               <Route path="/delivery/login" element={<DeliveryBoyLogin />} />

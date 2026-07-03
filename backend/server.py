@@ -6705,6 +6705,132 @@ async def get_featured_products():
             product["image_url"] = product["image"]
     return products
 
+# ==========================================
+# BANNER ENDPOINTS
+# ==========================================
+
+class BannerCreate(BaseModel):
+    title: str
+    subtitle: Optional[str] = None
+    image_url: str
+    link_type: Optional[str] = None  # 'product', 'category', 'url', 'none'
+    link_value: Optional[str] = None  # product_id, category_id, or external URL
+    display_order: int = 0
+    active: bool = True
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+
+class BannerUpdate(BaseModel):
+    title: Optional[str] = None
+    subtitle: Optional[str] = None
+    image_url: Optional[str] = None
+    link_type: Optional[str] = None
+    link_value: Optional[str] = None
+    display_order: Optional[int] = None
+    active: Optional[bool] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+
+@api_router.get("/banners")
+async def get_banners():
+    """Get active banners (public endpoint)"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Get active banners, optionally filter by date range
+    banners = await db.banners.find(
+        {"active": True},
+        {"_id": 0}
+    ).sort("display_order", 1).to_list(20)
+    
+    # Filter by date if start_date/end_date are set
+    active_banners = []
+    for banner in banners:
+        start = banner.get("start_date")
+        end = banner.get("end_date")
+        
+        # If no dates set, include banner
+        if not start and not end:
+            active_banners.append(banner)
+            continue
+        
+        # Check date range
+        if start and now < start:
+            continue
+        if end and now > end:
+            continue
+        
+        active_banners.append(banner)
+    
+    return active_banners
+
+@api_router.get("/admin/banners")
+async def get_admin_banners():
+    """Get all banners (admin - includes inactive)"""
+    banners = await db.banners.find({}, {"_id": 0}).sort("display_order", 1).to_list(100)
+    return banners
+
+@api_router.post("/admin/banners")
+async def create_banner(banner: BannerCreate):
+    """Create a new banner"""
+    doc = {
+        "id": str(uuid.uuid4()),
+        "title": banner.title,
+        "subtitle": banner.subtitle,
+        "image_url": banner.image_url,
+        "link_type": banner.link_type,
+        "link_value": banner.link_value,
+        "display_order": banner.display_order,
+        "active": banner.active,
+        "start_date": banner.start_date,
+        "end_date": banner.end_date,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.banners.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/admin/banners/{banner_id}")
+async def update_banner(banner_id: str, banner: BannerUpdate):
+    """Update a banner"""
+    update_data = {k: v for k, v in banner.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.banners.update_one(
+        {"id": banner_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    
+    updated = await db.banners.find_one({"id": banner_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/admin/banners/{banner_id}")
+async def delete_banner(banner_id: str):
+    """Delete a banner"""
+    result = await db.banners.delete_one({"id": banner_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    
+    return {"message": "Banner deleted successfully"}
+
+@api_router.post("/admin/banners/reorder")
+async def reorder_banners(banner_ids: List[str]):
+    """Reorder banners"""
+    for index, banner_id in enumerate(banner_ids):
+        await db.banners.update_one(
+            {"id": banner_id},
+            {"$set": {"display_order": index}}
+        )
+    return {"message": "Banners reordered successfully"}
+
 app.include_router(api_router)
 
 app.add_middleware(
