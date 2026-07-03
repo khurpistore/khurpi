@@ -107,6 +107,31 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
+  /// Login with user data from OTP verification (no password needed)
+  Future<bool> loginWithUserData(Map<String, dynamic> userData) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final user = UserModel.fromJson(userData);
+      // Generate a session token for OTP login
+      final token = 'otp_${user.id}_${DateTime.now().millisecondsSinceEpoch}';
+      await _authLocalDataSource.saveAuthData(token, user);
+
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     state = state.copyWith(isLoading: true);
 

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
-import 'package:khurpi_fresh/features/auth/login_page.dart';
+import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
 import 'package:khurpi_fresh/features/address/address_form_page.dart';
 import 'package:khurpi_fresh/features/earn/earn_page.dart';
 import 'package:khurpi_fresh/features/orders/orders_page.dart';
@@ -48,9 +48,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           _buildMenuSection([
             _MenuItem(
               icon: Icons.login,
-              title: 'Login',
-              subtitle: 'Sign in to your account',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage())),
+              title: 'Login with Phone',
+              subtitle: 'Quick OTP login',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OTPLoginPage())),
             ),
             _MenuItem(
               icon: Icons.stars_rounded,
