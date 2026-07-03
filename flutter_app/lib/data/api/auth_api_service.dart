@@ -3,7 +3,7 @@ import 'package:retrofit/retrofit.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:khurpi_fresh/data/models/auth_response_model.dart';
 
-part 'auth_api_service.g.dart';
+part '../../generated/data/api/auth_api_service.g.dart';
 
 @RestApi()
 abstract class AuthApiService {

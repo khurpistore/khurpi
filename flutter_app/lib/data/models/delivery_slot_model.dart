@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'delivery_slot_model.freezed.dart';
-part 'delivery_slot_model.g.dart';
+part '../../generated/data/models/delivery_slot_model.freezed.dart';
+part '../../generated/data/models/delivery_slot_model.g.dart';
 
 @freezed
 abstract class DeliverySlotModel with _$DeliverySlotModel {

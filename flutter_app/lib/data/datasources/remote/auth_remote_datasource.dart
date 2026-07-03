@@ -17,8 +17,16 @@ abstract class AuthRemoteDataSource {
     String? name,
     String? email,
     String? address,
+    String? addressLine1,
+    String? addressLine2,
+    String? landmark,
     String? city,
+    String? state,
+    String? country,
     String? pincode,
+    double? latitude,
+    double? longitude,
+    String? formattedAddress,
   });
 }
 
@@ -77,8 +85,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? name,
     String? email,
     String? address,
+    String? addressLine1,
+    String? addressLine2,
+    String? landmark,
     String? city,
+    String? state,
+    String? country,
     String? pincode,
+    double? latitude,
+    double? longitude,
+    String? formattedAddress,
   }) async {
     try {
       return await _apiService.updateProfile(
@@ -86,8 +102,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           name: name,
           email: email,
           address: address,
+          addressLine1: addressLine1,
+          addressLine2: addressLine2,
+          landmark: landmark,
           city: city,
+          state: state,
+          country: country,
           pincode: pincode,
+          latitude: latitude,
+          longitude: longitude,
+          formattedAddress: formattedAddress,
         ),
       );
     } catch (e) {

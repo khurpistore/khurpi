@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'store_settings_model.freezed.dart';
-part 'store_settings_model.g.dart';
+part '../../generated/data/models/store_settings_model.freezed.dart';
+part '../../generated/data/models/store_settings_model.g.dart';
 
 @freezed
 abstract class StoreSettingsModel with _$StoreSettingsModel {

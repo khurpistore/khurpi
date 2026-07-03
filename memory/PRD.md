@@ -18,27 +18,52 @@ Build a Veg & Fruit Shop e-commerce application with:
 
 ### Customer Mobile App (Flutter)
 - Location: `/app/flutter_app/`
-- Architecture: Clean Architecture (simplified - removed Entity/UseCase layers, models used directly)
-- State Management: **Riverpod Class Annotations** (`@riverpod class ViewModel extends _$ViewModel`)
-- Data Models: Freezed (@freezed)
+- Architecture: **Feature-based Clean Architecture** with generated files in separate `generated/` folder
+- State Management: **Riverpod Family Providers** with code generation
+- Data Models: Freezed (@freezed) with `part` directives pointing to `generated/`
 - Networking: Retrofit + Dio
 - Package name: `khurpi_fresh`
 
-#### Provider Pattern (Updated - Using Annotations)
+#### Project Structure (Updated Jul 3, 2026)
+```
+flutter_app/lib/
+├── core/                    # Constants, Network, Error handling
+├── data/
+│   ├── api/                 # Retrofit API services
+│   ├── datasources/         # Remote & Local data sources
+│   └── models/              # Freezed models (part files in generated/)
+├── features/                # Feature-based modules
+│   ├── auth/                # Login, auth_viewmodel, auth_providers
+│   ├── cart/                # Cart page, viewmodel, providers
+│   ├── checkout/            # Checkout page
+│   ├── home/                # Home, banners, store viewmodels
+│   ├── orders/              # Orders page, viewmodel, providers
+│   ├── products/            # Products list, detail, viewmodels
+│   ├── profile/             # Profile page
+│   ├── splash/              # Splash screen
+│   ├── providers.dart       # Core data source providers
+│   └── main_navigation_page.dart
+├── generated/               # All .g.dart and .freezed.dart files
+└── main.dart
+```
+
+#### Provider Pattern (Family Providers)
 ```dart
-// ViewModel with Riverpod annotations
-@Riverpod(keepAlive: true)
-class CartViewModel extends _$CartViewModel {
+// ViewModels use family providers with datasource injection
+@riverpod
+class ProductsViewModel extends _$ProductsViewModel {
   @override
-  CartState build() {
-    // Initialize state
-    return const CartState();
+  ProductsState build({required ProductRemoteDataSource productRemoteDataSource}) {
+    return const ProductsState();
   }
 }
 
-// Usage in UI
-final cartState = ref.watch(cartViewModelProvider);
-ref.read(cartViewModelProvider.notifier).addToCart(product);
+// Feature providers wrap family providers
+final provideProductsViewModelProvider = Provider((ref) {
+  final productDS = ref.watch(provideProductRemoteDataSourceProvider);
+  if (productDS == null) return null;
+  return ref.watch(productsViewModelProvider(productRemoteDataSource: productDS));
+});
 ```
 
 ## What's Been Implemented
@@ -53,20 +78,19 @@ ref.read(cartViewModelProvider.notifier).addToCart(product);
 - ✅ User management with wholesale access toggle
 - ✅ 50gm unit standardization
 
-### Flutter Customer App (Jun 30, 2026)
-- ✅ Clean Architecture folder structure (simplified - no Entity layer)
-- ✅ Freezed Models (Product, Category, User, Order, Cart, Banner, **StoreSettings, DeliverySlot**)
-- ✅ Retrofit API Services for networking (Product, Auth, Order, Banner, **Store**)
-- ✅ **Riverpod Class Annotated ViewModels** (@riverpod class pattern)
+### Flutter Customer App (Jul 3, 2026)
+- ✅ **Feature-based Clean Architecture** with `features/` and `generated/` folders
+- ✅ Freezed Models with `part '../../generated/...'` directives
+- ✅ Retrofit API Services for networking (Product, Auth, Order, Banner, Store)
+- ✅ **Riverpod Family Providers** with datasource injection
 - ✅ **Bottom Navigation Bar** (Home, Categories, Cart, Profile)
-- ✅ **Address bar at top** of main navigation
-- ✅ UI Pages: Splash, Main Navigation, Home, Products, Product Detail, Cart, Checkout, Categories, Profile, Login, Orders
-- ✅ Reusable Widgets (ProductCard, CategoryCard, BannerCarousel, CartItemCard, **SpinWheelWidget**, **AppHeader**)
-- ✅ Fixed Riverpod "modifying provider while building" errors with WidgetsBinding.addPostFrameCallback
-- ✅ Backend returns `image_url` field for Flutter compatibility
-- ✅ **Delivery Options in Checkout** (Instant & Slotted delivery with date/time slot picker)
-- ✅ **Spin the Wheel Game** on Home Page (6 sections: 5 vegetables + 1 "Better Luck", free item added to cart, once per order)
-- ✅ **Global App Header** on main pages (Delivery Location + Account button + Search bar)
+- ✅ **Global App Header** (Delivery Location + Account + Search Bar)
+- ✅ UI Pages: Splash, Main Navigation, Home, Products, Product Detail, Cart, Checkout, Categories, Profile, Login, Orders, Earn
+- ✅ Reusable Widgets (BannerCarousel, SpinWheelWidget, AppHeader, QuantitySelector)
+- ✅ Fixed Riverpod build errors with `WidgetsBinding.instance.addPostFrameCallback`
+- ✅ **Delivery Options in Checkout** (Instant & Slotted delivery)
+- ✅ **Spin the Wheel Game** on Home Page
+- ✅ **Banner Management** added to Admin Portal
 
 ## Prioritized Backlog
 
