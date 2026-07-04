@@ -292,13 +292,13 @@ class OrderDetailPage extends ConsumerWidget {
                   size: 20, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
-                'Items (${order.items.length})',
+                'Items (${order.allItems.length})',
                 style: AppTextStyles.h4,
               ),
             ],
           ),
           const SizedBox(height: 16),
-          ...order.items.map((item) => Padding(
+          ...order.allItems.map((item) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
@@ -311,7 +311,7 @@ class OrderDetailPage extends ConsumerWidget {
                       ),
                       child: Center(
                         child: Text(
-                          '${item.quantity}x',
+                          '${item.quantity.toInt()}x',
                           style: AppTextStyles.body.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,
@@ -325,12 +325,12 @@ class OrderDetailPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item.productName,
+                            item.displayName,
                             style: AppTextStyles.body
                                 .copyWith(fontWeight: FontWeight.w500),
                           ),
                           Text(
-                            '₹${item.price.toStringAsFixed(0)} each',
+                            '₹${item.displayPrice.toStringAsFixed(0)} each',
                             style: AppTextStyles.bodySmall
                                 .copyWith(color: AppColors.textHint),
                           ),
@@ -338,7 +338,7 @@ class OrderDetailPage extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      '₹${(item.price * item.quantity).toStringAsFixed(0)}',
+                      '₹${(item.displayPrice * item.quantity).toStringAsFixed(0)}',
                       style: AppTextStyles.body.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
