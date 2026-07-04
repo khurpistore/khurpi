@@ -88,7 +88,23 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
 
     try {
       await _dio.delete('/users/${user.userId}/addresses/$addressId');
-      _loadAddresses();
+      
+      // If deleted address was selected, reset selection
+      if (_selectedId == addressId) {
+        _selectedId = null;
+      }
+      
+      await _loadAddresses();
+      
+      // After reload, if selectedId is still null, select default address
+      if (_selectedId == null && _addresses.isNotEmpty) {
+        final defaultAddr = _addresses.firstWhere(
+          (a) => a['is_default'] == true,
+          orElse: () => _addresses.first,
+        );
+        setState(() => _selectedId = defaultAddr['id']);
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Address deleted')),
@@ -156,12 +172,7 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
         title: Text(widget.isSelecting ? 'Select Address' : 'My Addresses'),
         backgroundColor: AppColors.surface,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _addNewAddress,
-          ),
-        ],
+        // Removed add button from action bar - it's at bottom now
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -280,6 +291,8 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
                                   style: AppTextStyles.body.copyWith(
                                     color: AppColors.textSecondary,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 if (address['phone'] != null) ...[
                                   const SizedBox(height: 8),
@@ -324,14 +337,25 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
 
   String _formatAddress(Map<String, dynamic> address) {
     final parts = <String>[];
-    if (address['address_line'] != null) parts.add(address['address_line']);
-    if (address['address_line_1'] != null) parts.add(address['address_line_1']);
-    if (address['address_line_2'] != null) parts.add(address['address_line_2']);
-    if (address['landmark'] != null) parts.add('Near ${address['landmark']}');
-    if (address['area'] != null) parts.add(address['area']);
-    if (address['city'] != null) parts.add(address['city']);
-    if (address['state'] != null) parts.add(address['state']);
-    if (address['pincode'] != null) parts.add(address['pincode']);
+    // Use address_line_1 first, fallback to address_line
+    final line1 = address['address_line_1'] ?? address['address_line'];
+    if (line1 != null && line1.toString().isNotEmpty) parts.add(line1.toString());
+    // Add area if present
+    if (address['area'] != null && address['area'].toString().isNotEmpty) {
+      parts.add(address['area'].toString());
+    }
+    // Add city with pincode
+    final city = address['city'];
+    final pincode = address['pincode'];
+    if (city != null && city.toString().isNotEmpty) {
+      if (pincode != null && pincode.toString().isNotEmpty) {
+        parts.add('$city - $pincode');
+      } else {
+        parts.add(city.toString());
+      }
+    } else if (pincode != null && pincode.toString().isNotEmpty) {
+      parts.add(pincode.toString());
+    }
     return parts.join(', ');
   }
 
