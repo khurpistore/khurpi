@@ -12,6 +12,10 @@ class OrderDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final orderId = order.orderId;
+    final orderDate = order.orderDate;
+    final orderItems = order.allItems;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -25,7 +29,7 @@ class OrderDetailPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Order Header
-            _buildOrderHeader(),
+            _buildOrderHeader(orderId, orderDate),
             const SizedBox(height: 20),
 
             // Order Tracking Timeline
@@ -33,7 +37,7 @@ class OrderDetailPage extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Order Items
-            _buildOrderItems(),
+            _buildOrderItems(orderItems),
             const SizedBox(height: 20),
 
             // Delivery Address
@@ -54,7 +58,8 @@ class OrderDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildOrderHeader() {
+  Widget _buildOrderHeader(String orderId, DateTime orderDate) {
+    final displayId = orderId.length >= 8 ? orderId.substring(0, 8).toUpperCase() : orderId.toUpperCase();
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -75,7 +80,7 @@ class OrderDetailPage extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Order #${order.orderId.substring(0, 8).toUpperCase()}',
+                'Order #$displayId',
                 style: AppTextStyles.h4,
               ),
               _buildStatusBadge(order.status),
@@ -87,7 +92,7 @@ class OrderDetailPage extends ConsumerWidget {
               Icon(Icons.calendar_today, size: 16, color: AppColors.textHint),
               const SizedBox(width: 8),
               Text(
-                DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt),
+                DateFormat('dd MMM yyyy, hh:mm a').format(orderDate),
                 style:
                     AppTextStyles.body.copyWith(color: AppColors.textSecondary),
               ),
@@ -269,7 +274,7 @@ class OrderDetailPage extends ConsumerWidget {
     }
   }
 
-  Widget _buildOrderItems() {
+  Widget _buildOrderItems(List<OrderItemModel> orderItems) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -292,60 +297,64 @@ class OrderDetailPage extends ConsumerWidget {
                   size: 20, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
-                'Items (${order.allItems.length})',
+                'Items (${orderItems.length})',
                 style: AppTextStyles.h4,
               ),
             ],
           ),
           const SizedBox(height: 16),
-          ...order.allItems.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${item.quantity.toInt()}x',
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+          ...orderItems.map((item) {
+            final itemName = item.displayName;
+            final itemPrice = item.displayPrice;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${item.quantity.toInt()}x',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.displayName,
-                            style: AppTextStyles.body
-                                .copyWith(fontWeight: FontWeight.w500),
-                          ),
-                          Text(
-                            '₹${item.displayPrice.toStringAsFixed(0)} each',
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: AppColors.textHint),
-                          ),
-                        ],
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          itemName,
+                          style: AppTextStyles.body
+                              .copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          '₹${itemPrice.toStringAsFixed(0)} each',
+                          style: AppTextStyles.bodySmall
+                              .copyWith(color: AppColors.textHint),
+                        ),
+                      ],
                     ),
-                    Text(
-                      '₹${(item.displayPrice * item.quantity).toStringAsFixed(0)}',
-                      style: AppTextStyles.body.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  ),
+                  Text(
+                    '₹${(itemPrice * item.quantity).toStringAsFixed(0)}',
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

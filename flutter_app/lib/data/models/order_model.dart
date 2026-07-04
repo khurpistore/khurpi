@@ -4,11 +4,11 @@ part '../../generated/data/models/order_model.freezed.dart';
 part '../../generated/data/models/order_model.g.dart';
 
 @freezed
-abstract class OrderModel with _$OrderModel {
+class OrderModel with _$OrderModel {
   const factory OrderModel({
     @JsonKey(name: 'id') String? id,
     @JsonKey(name: '_id') String? mongoId,
-    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'user_id') @Default('') String userId,
     @JsonKey(name: 'user_name') String? userName,
     @JsonKey(name: 'user_phone') String? userPhone,
     @Default([]) List<OrderItemModel> items,
@@ -29,24 +29,18 @@ abstract class OrderModel with _$OrderModel {
     @JsonKey(name: 'payment_method') @Default('cod') String paymentMethod,
     @JsonKey(name: 'payment_status') String? paymentStatus,
     String? notes,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _OrderModel;
 
   factory OrderModel.fromJson(Map<String, dynamic> json) =>
       _$OrderModelFromJson(json);
-
-  static OrderModel initial() {
-    return OrderModel(
-      userId: '',
-      createdAt: DateTime.now(),
-    );
-  }
 }
 
 extension OrderModelX on OrderModel {
   String get orderId => id ?? mongoId ?? '';
   
-  /// Get all order items (combines items and oneTimeItems)
+  DateTime get orderDate => createdAt ?? DateTime.now();
+  
   List<OrderItemModel> get allItems {
     if (items.isNotEmpty) return items;
     if (oneTimeItems.isNotEmpty) return oneTimeItems;
@@ -55,9 +49,9 @@ extension OrderModelX on OrderModel {
 }
 
 @freezed
-abstract class OrderItemModel with _$OrderItemModel {
+class OrderItemModel with _$OrderItemModel {
   const factory OrderItemModel({
-    @JsonKey(name: 'product_id') required String productId,
+    @JsonKey(name: 'product_id') @Default('') String productId,
     @JsonKey(name: 'product_name') @Default('') String productName,
     @Default(0.0) double price,
     @Default(1.0) double quantity,
@@ -68,22 +62,14 @@ abstract class OrderItemModel with _$OrderItemModel {
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) =>
       _$OrderItemModelFromJson(json);
-
-  static OrderItemModel initial() {
-    return const OrderItemModel(
-      productId: '',
-    );
-  }
 }
 
 extension OrderItemModelX on OrderItemModel {
-  /// Get the display name (from product or productName field)
   String get displayName {
     if (productName.isNotEmpty) return productName;
     if (product != null && product!['name'] != null) return product!['name'];
     return 'Unknown Product';
   }
   
-  /// Get the display price
-  double get displayPrice => price > 0 ? price : (product?['price'] ?? 0.0);
+  double get displayPrice => price > 0 ? price : (product?['price']?.toDouble() ?? 0.0);
 }
