@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -13,6 +13,7 @@ const menuItems = [
   { id: 'customer-view', label: 'Customer View', icon: UserSearch, path: '/admin/customer-view' },
   { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
   { id: 'categories', label: 'Categories', icon: FolderTree, path: '/admin/categories' },
+  { id: 'subcategories', label: 'Subcategories', icon: Layers, path: '/admin/subcategories' },
   { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
   { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
   { id: 'delivery-slots', label: 'Delivery Slots', icon: Clock, path: '/admin/delivery-slots' },
@@ -20,12 +21,14 @@ const menuItems = [
   { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/admin/expenses' },
   { id: 'cost-calculator', label: 'Cost Calculator', icon: Calculator, path: '/admin/cost-calculator' },
   { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' },
+  { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
   { id: 'coupons', label: 'Discount Coupons', icon: Tag, path: '/admin/coupons' },
   { id: 'discount-tiers', label: 'Order Discounts', icon: Percent, path: '/admin/discount-tiers' },
   { id: 'referrals', label: 'Referral Program', icon: Gift, path: '/admin/referrals' },
   { id: 'pages', label: 'Page Content', icon: FileText, path: '/admin/pages' },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
   { id: 'store-settings', label: 'Store Settings', icon: Store, path: '/admin/store-settings' },
+  { id: 'app-config', label: 'App Config', icon: Smartphone, path: '/admin/app-config' },
   { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' }
 ];
 
