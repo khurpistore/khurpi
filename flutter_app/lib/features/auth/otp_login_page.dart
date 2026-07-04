@@ -165,6 +165,11 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
     final phone = _phoneController.text.trim();
     final name = _nameController.text.trim();
     
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    
     try {
       // Call our backend to create/fetch user after MSG91 verification
       final response = await _dio.post('/auth/otp-verified', data: {
@@ -177,14 +182,22 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
       
       if (response.data['success'] == true) {
         final isNew = response.data['is_new_user'] == true;
+        final user = response.data['user'];
+        final token = response.data['token'];  // JWT token from backend
         
-        if (isNew && name.isEmpty) {
-          // New user needs to provide name
-          setState(() => _isNewUser = true);
-        } else {
-          // Save user and navigate to home
-          final user = response.data['user'];
-          await ref.read(provideAuthViewModelNotifierProvider)?.loginWithUserData(user);
+        if (isNew && user == null) {
+          // New user needs to provide name first
+          setState(() {
+            _isNewUser = true;
+            _isLoading = false;
+          });
+          return;
+        }
+        
+        // User exists or was just created - save token and navigate
+        if (user != null && token != null) {
+          // Use loginWithToken which saves the actual JWT from backend
+          await ref.read(provideAuthViewModelNotifierProvider)?.loginWithToken(token, user);
           
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -200,6 +213,8 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
               (route) => false,
             );
           }
+        } else {
+          setState(() => _errorMessage = 'Failed to create account. Please try again.');
         }
       } else {
         setState(() => _errorMessage = response.data['message'] ?? 'Login failed');
@@ -210,6 +225,10 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
     } catch (e) {
       debugPrint('Backend auth exception: $e');
       setState(() => _errorMessage = 'Something went wrong. Please try again.');
+    } finally {
+      if (mounted && !_isNewUser) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

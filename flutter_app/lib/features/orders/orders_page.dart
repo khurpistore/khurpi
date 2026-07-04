@@ -4,6 +4,7 @@ import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
 import 'package:khurpi_fresh/features/orders/orders_providers.dart';
+import 'package:khurpi_fresh/features/orders/order_detail_page.dart';
 import 'package:intl/intl.dart';
 
 class OrdersPage extends ConsumerStatefulWidget {
@@ -38,7 +39,15 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: ordersState!.orders.length,
-                    itemBuilder: (context, index) => _OrderCard(order: ordersState.orders[index]),
+                    itemBuilder: (context, index) => _OrderCard(
+                      order: ordersState.orders[index],
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => OrderDetailPage(order: ordersState.orders[index]),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
     );
@@ -62,15 +71,18 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
 
 class _OrderCard extends StatelessWidget {
   final OrderModel order;
+  final VoidCallback? onTap;
 
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
-      child: Column(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -121,6 +133,7 @@ class _OrderCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

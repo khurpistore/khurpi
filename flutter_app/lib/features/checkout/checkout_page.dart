@@ -5,6 +5,7 @@ import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/home/home_providers.dart';
 import 'package:khurpi_fresh/features/orders/orders_providers.dart';
+import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 
@@ -24,6 +25,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _notesController = TextEditingController();
   String _selectedPaymentMethod = 'cod';
   bool _isPlacingOrder = false;
+  Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
@@ -43,6 +45,38 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       _pincodeController.text = user.pincode ?? '';
       _phoneController.text = user.phone;
     }
+  }
+
+  void _selectAddress() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddressListPage(
+          isSelecting: true,
+          selectedAddressId: _selectedAddress?['id'],
+        ),
+      ),
+    );
+    
+    if (result != null) {
+      setState(() {
+        _selectedAddress = result;
+        _addressController.text = _formatAddress(result);
+        _cityController.text = result['city'] ?? '';
+        _pincodeController.text = result['pincode'] ?? '';
+        _phoneController.text = result['phone'] ?? _phoneController.text;
+      });
+    }
+  }
+
+  String _formatAddress(Map<String, dynamic> address) {
+    final parts = <String>[];
+    if (address['address_line'] != null) parts.add(address['address_line']);
+    if (address['address_line_1'] != null) parts.add(address['address_line_1']);
+    if (address['address_line_2'] != null) parts.add(address['address_line_2']);
+    if (address['landmark'] != null) parts.add('Near ${address['landmark']}');
+    if (address['area'] != null) parts.add(address['area']);
+    return parts.join(', ');
   }
 
   void _loadStoreSettings() async {
@@ -90,7 +124,17 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             const SizedBox(height: 24),
             
             // Delivery Address
-            const Text('Delivery Address', style: AppTextStyles.h4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Delivery Address', style: AppTextStyles.h4),
+                TextButton.icon(
+                  onPressed: _selectAddress,
+                  icon: Icon(Icons.bookmark_outlined, size: 18, color: AppColors.primary),
+                  label: Text('Saved Addresses', style: TextStyle(color: AppColors.primary)),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: _addressController,

@@ -19,9 +19,36 @@ import io
 import csv
 from passlib.context import CryptContext
 import razorpay
+import jwt
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# JWT Configuration
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'khurpi-fresh-secret-key-2026-secure')
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24 * 30  # 30 days
+
+def create_jwt_token(user_id: str, phone: str, role: str = "customer") -> str:
+    """Create a JWT token for the user"""
+    payload = {
+        "user_id": user_id,
+        "phone": phone,
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS),
+        "iat": datetime.now(timezone.utc)
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+def decode_jwt_token(token: str) -> dict:
+    """Decode and validate a JWT token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        return {"valid": True, "payload": payload}
+    except jwt.ExpiredSignatureError:
+        return {"valid": False, "error": "Token has expired"}
+    except jwt.InvalidTokenError as e:
+        return {"valid": False, "error": str(e)}
 
 # Environment Mode
 ENV = os.environ.get('ENV', 'development')
@@ -1497,7 +1524,7 @@ async def get_traffic_sources(days: int = 30):
         "channels": sorted(channels_list, key=lambda x: x["sessions"], reverse=True)
     }
 
-@api_router.post("/auth/signup", response_model=User)
+@api_router.post("/auth/signup")
 async def signup(user_data: UserCreate):
     # Allow same phone to have different roles (customer vs delivery_boy)
     existing = await db.users.find_one({"phone": user_data.phone, "role": "customer"}, {"_id": 0})
@@ -1520,10 +1547,52 @@ async def signup(user_data: UserCreate):
     }
     
     await db.users.insert_one(user_doc)
-    user_doc.pop("password")
-    return User(**user_doc)
+    user_doc.pop("password", None)
+    user_doc.pop("_id", None)
+    
+    # Generate JWT token
+    token = create_jwt_token(user_doc["id"], user_doc["phone"], "customer")
+    
+    return {"token": token, "user": user_doc}
 
-@api_router.post("/auth/login", response_model=User)
+# Register endpoint (alias for signup - Flutter compatibility)
+class RegisterRequest(BaseModel):
+    phone: str
+    password: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+
+@api_router.post("/auth/register")
+async def register(data: RegisterRequest):
+    """Register a new user (Flutter app compatibility)"""
+    # Check if user already exists
+    existing = await db.users.find_one({"phone": data.phone, "role": "customer"}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Phone already registered")
+    
+    hashed_password = pwd_context.hash(data.password)
+    
+    user_doc = {
+        "id": str(uuid.uuid4()),
+        "phone": data.phone,
+        "name": data.name or f"User_{data.phone[-4:]}",
+        "email": data.email,
+        "password": hashed_password,
+        "address": None,
+        "role": "customer",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    user_doc.pop("password", None)
+    user_doc.pop("_id", None)
+    
+    # Generate JWT token
+    token = create_jwt_token(user_doc["id"], user_doc["phone"], "customer")
+    
+    return {"token": token, "user": user_doc}
+
+@api_router.post("/auth/login")
 async def login(login_data: UserLogin):
     # Login only for customers (not delivery boys or admin)
     user = await db.users.find_one({"phone": login_data.phone, "role": "customer"}, {"_id": 0})
@@ -1533,8 +1602,12 @@ async def login(login_data: UserLogin):
     if not pwd_context.verify(login_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    user.pop("password")
-    return User(**user)
+    user.pop("password", None)
+    
+    # Generate JWT token
+    token = create_jwt_token(user["id"], user["phone"], user.get("role", "customer"))
+    
+    return {"token": token, "user": user}
 
 # ============ Password Change & Reset ============
 
@@ -2373,7 +2446,7 @@ async def otp_verified_login(data: MSG91VerifiedRequest):
     """
     Handle login after MSG91 OTP verification.
     Optionally verifies access token server-side.
-    Creates user if not exists, returns user data.
+    Creates user if not exists, returns user data with JWT token.
     """
     phone = data.phone.strip()
     
@@ -2388,8 +2461,9 @@ async def otp_verified_login(data: MSG91VerifiedRequest):
     user = await db.users.find_one({"phone": phone}, {"_id": 0, "password": 0})
     
     if user:
-        # Existing user - return
-        return {"success": True, "user": user, "is_new_user": False}
+        # Existing user - generate JWT token and return
+        token = create_jwt_token(user["id"], user["phone"], user.get("role", "customer"))
+        return {"success": True, "user": user, "token": token, "is_new_user": False}
     
     # New user - check if name provided
     if not data.name or not data.name.strip():
@@ -2413,7 +2487,10 @@ async def otp_verified_login(data: MSG91VerifiedRequest):
     user_doc.pop("password", None)
     user_doc.pop("_id", None)
     
-    return {"success": True, "user": user_doc, "is_new_user": True}
+    # Generate JWT token for new user
+    token = create_jwt_token(user_doc["id"], user_doc["phone"], "customer")
+    
+    return {"success": True, "user": user_doc, "token": token, "is_new_user": True}
 
 # ============ Razorpay Payment Integration ============
 
@@ -7030,8 +7107,8 @@ class AddressUpdate(BaseModel):
     is_default: Optional[bool] = None
 
 @api_router.get("/addresses")
-async def get_user_addresses(user_id: str):
-    """Get all addresses for a user"""
+async def get_user_addresses_alt(user_id: str):
+    """Get all addresses for a user (alternative endpoint)"""
     addresses = await db.addresses.find(
         {"user_id": user_id, "deleted": {"$ne": True}},
         {"_id": 0}
@@ -7119,8 +7196,8 @@ async def delete_address(address_id: str, user_id: str):
     return {"message": "Address deleted successfully"}
 
 @api_router.post("/addresses/{address_id}/set-default")
-async def set_default_address(address_id: str, user_id: str):
-    """Set an address as default"""
+async def set_default_address_alt(address_id: str, user_id: str):
+    """Set an address as default (alternative endpoint)"""
     # Unset all defaults
     await db.addresses.update_many(
         {"user_id": user_id},

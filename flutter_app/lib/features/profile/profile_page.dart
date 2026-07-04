@@ -4,7 +4,7 @@ import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
-import 'package:khurpi_fresh/features/address/address_form_page.dart';
+import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/features/earn/earn_page.dart';
 import 'package:khurpi_fresh/features/orders/orders_page.dart';
 
@@ -169,7 +169,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   void _showAddressDialog() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const AddressFormPage()),
+      MaterialPageRoute(builder: (_) => const AddressListPage()),
     );
   }
 

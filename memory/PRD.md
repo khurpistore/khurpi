@@ -10,7 +10,7 @@ Build a Veg & Fruit Shop e-commerce application with:
 ### Backend (FastAPI + MongoDB)
 - Single `server.py` monolith (needs refactoring into modular routers)
 - MongoDB Atlas for database
-- RESTful API with JWT authentication
+- RESTful API with JWT authentication (added Jul 4, 2026)
 
 ### Admin Frontend (React + Tailwind)
 - Location: `/app/frontend/`
@@ -24,7 +24,7 @@ Build a Veg & Fruit Shop e-commerce application with:
 - Networking: Retrofit + Dio
 - Package name: `khurpi_fresh`
 
-#### Project Structure (Updated Jul 3, 2026)
+#### Project Structure (Updated Jul 4, 2026)
 ```
 flutter_app/lib/
 ├── core/                    # Constants, Network, Error handling
@@ -33,13 +33,14 @@ flutter_app/lib/
 │   ├── datasources/         # Remote & Local data sources
 │   └── models/              # Freezed models (part files in generated/)
 ├── features/                # Feature-based modules
+│   ├── address/             # Address list, form, CRUD (NEW)
 │   ├── auth/                # Login, auth_viewmodel, auth_providers
 │   ├── cart/                # Cart page, viewmodel, providers
-│   ├── checkout/            # Checkout page
+│   ├── checkout/            # Checkout page with address selection
 │   ├── home/                # Home, banners, store viewmodels
-│   ├── orders/              # Orders page, viewmodel, providers
+│   ├── orders/              # Orders page, order detail with tracking (NEW)
 │   ├── products/            # Products list, detail, viewmodels
-│   ├── profile/             # Profile page
+│   ├── profile/             # Profile page with address management
 │   ├── splash/              # Splash screen
 │   ├── providers.dart       # Core data source providers
 │   └── main_navigation_page.dart
@@ -47,26 +48,32 @@ flutter_app/lib/
 └── main.dart
 ```
 
-#### Provider Pattern (Family Providers)
-```dart
-// ViewModels use family providers with datasource injection
-@riverpod
-class ProductsViewModel extends _$ProductsViewModel {
-  @override
-  ProductsState build({required ProductRemoteDataSource productRemoteDataSource}) {
-    return const ProductsState();
-  }
-}
-
-// Feature providers wrap family providers
-final provideProductsViewModelProvider = Provider((ref) {
-  final productDS = ref.watch(provideProductRemoteDataSourceProvider);
-  if (productDS == null) return null;
-  return ref.watch(productsViewModelProvider(productRemoteDataSource: productDS));
-});
-```
-
 ## What's Been Implemented
+
+### Backend Auth Updates (Jul 4, 2026)
+- ✅ **JWT Token Authentication** added to backend
+  - `/api/auth/login` now returns `{token, user}` format
+  - `/api/auth/register` endpoint added for Flutter app
+  - `/api/auth/otp-verified` returns JWT token after MSG91 OTP verification
+- ✅ JWT functions: `create_jwt_token()`, `decode_jwt_token()`
+- ✅ 30-day token expiration
+
+### Flutter Customer App (Jul 4, 2026)
+- ✅ **Address Management CRUD**
+  - New `AddressListPage` for managing multiple addresses
+  - New `AddAddressPage` for adding/editing addresses
+  - Address selection in checkout flow
+  - Set default address functionality
+- ✅ **Order Detail with Tracking**
+  - New `OrderDetailPage` with order timeline
+  - Shows order status progression
+  - Displays items, address, payment summary
+- ✅ **MSG91 OTP Session Management**
+  - `loginWithToken()` method in auth_viewmodel
+  - Proper JWT token handling from backend
+- ✅ **Checkout Improvements**
+  - "Saved Addresses" button to select from address list
+  - Address selection pre-fills form fields
 
 ### Admin Dashboard (Complete)
 - ✅ Product CRUD with wholesale pricing
@@ -78,36 +85,19 @@ final provideProductsViewModelProvider = Provider((ref) {
 - ✅ User management with wholesale access toggle
 - ✅ 50gm unit standardization
 
-### Flutter Customer App (Jul 3, 2026)
-- ✅ **Feature-based Clean Architecture** with `features/` and `generated/` folders
-- ✅ Freezed Models with `part '../../generated/...'` directives
-- ✅ Retrofit API Services for networking (Product, Auth, Order, Banner, Store)
-- ✅ **Riverpod Family Providers** with datasource injection
-- ✅ **Bottom Navigation Bar** (Home, Categories, Cart, Profile)
-- ✅ **Global App Header** (Delivery Location + Account + Search Bar)
-- ✅ UI Pages: Splash, Main Navigation, Home, Products, Product Detail, Cart, Checkout, Categories, Profile, Login, Orders, Earn
-- ✅ Reusable Widgets (BannerCarousel, SpinWheelWidget, AppHeader, QuantitySelector)
-- ✅ Fixed Riverpod build errors with `WidgetsBinding.instance.addPostFrameCallback`
-- ✅ **Delivery Options in Checkout** (Instant & Slotted delivery)
-- ✅ **Spin the Wheel Game** on Home Page
-- ✅ **Banner Management** added to Admin Portal
-
 ## Prioritized Backlog
 
-### P0 (Completed This Session)
-- ✅ App Configuration API & Admin Page (colors, fonts, service areas, feature flags)
-- ✅ Subcategory CRUD API & Admin Page
-- ✅ Address CRUD API for users
-- ✅ Search API with recent searches
-- ✅ Flutter Search Page with recent searches
-- ✅ Improved Floating Cart Button (goes to Checkout)
-- ✅ New Flutter Models (AppConfig, Address, Subcategory, RecentSearch)
+### P0 (Completed This Session - Jul 4, 2026)
+- ✅ JWT Token generation for auth endpoints
+- ✅ MSG91 OTP session management with JWT
+- ✅ Address Management CRUD in Flutter
+- ✅ Order Detail page with tracking timeline
+- ✅ Checkout address selection improvements
 
 ### P1 (Next Sprint)
-- [ ] Fix Web frontend "No product found" bug (recurring issue - 3x)
+- ✅ Web Frontend "/products" page verified working (106 products displayed)
 - [ ] Product Listing page with subcategory sidebar
 - [ ] Product Detail Bottom Sheet instead of full page
-- [ ] Address management page in Profile
 - [ ] Load app config on Flutter app start
 
 ### P2 (Future)
@@ -115,36 +105,33 @@ final provideProductsViewModelProvider = Provider((ref) {
 - [ ] Product Quick View modal (Web)
 - [ ] Recently Viewed Products
 - [ ] Wholesale Tier Levels
-- [ ] Order tracking & push notifications for Flutter
+- [ ] Order tracking push notifications for Flutter
+- [ ] Combo Offers section on Home Page
 
 ## Key API Endpoints
-- `GET /api/products` - List products (includes `image_url` field)
-- `GET /api/products/{id}` - Single product (includes `image_url` field)
-- `GET /api/categories/{id}/products` - Products by category
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/auth/me` - Current user (includes wholesale_enabled)
-- `POST /api/orders` - Create order (supports delivery_type, delivery_date, delivery_slot_id)
+- `GET /api/products` - List products
+- `POST /api/auth/login` - User login (returns JWT token)
+- `POST /api/auth/register` - User registration (returns JWT token)
+- `POST /api/auth/otp-verified` - MSG91 OTP verification (returns JWT token)
+- `GET /api/users/{user_id}/addresses` - Get user's addresses
+- `POST /api/users/{user_id}/addresses` - Add new address
+- `PUT /api/users/{user_id}/addresses/{address_id}` - Update address
+- `DELETE /api/users/{user_id}/addresses/{address_id}` - Delete address
+- `PUT /api/users/{user_id}/addresses/{address_id}/set-default` - Set default address
 - `GET /api/orders/my-orders` - User's orders
-- `GET /api/store/settings` - Store settings (delivery options, fees)
-- `GET /api/delivery-slots?date=YYYY-MM-DD` - Available delivery slots for date
+- `GET /api/store/settings` - Store settings (delivery options)
 - `GET /api/banners` - Get active banners
-- `GET/POST /api/admin/banners` - Banner CRUD
-- **`GET /api/config` - App configuration (colors, fonts, service areas)**
-- **`GET/POST /api/admin/config` - Admin app configuration**
-- **`GET /api/subcategories?category_id=X` - Get subcategories**
-- **`GET/POST/PUT/DELETE /api/admin/subcategories` - Subcategory CRUD**
-- **`GET /api/search?q=query` - Search products**
-- **`GET/POST/DELETE /api/search/recent?user_id=X` - Recent searches**
-- **`GET/POST/PUT/DELETE /api/addresses?user_id=X` - Address CRUD**
+- `GET /api/config` - App configuration
 
 ## Test Credentials
 - **Admin**: username `admin`, password `Khurpi2026Secure`
 - **Customer**: phone `9971818259`, password `test1234`
+- **MSG91 Widget ID**: 366179704b55353730393234
 
 ## Technical Notes
 - Flutter package name is `khurpi_fresh` (not `flutter_app`)
 - All imports use `package:khurpi_fresh/...` format
 - Backend runs on port 8001, frontend on port 3000
 - MongoDB connection via MONGO_URL environment variable
-- All StatefulWidgets use `WidgetsBinding.instance.addPostFrameCallback` to avoid Riverpod build errors
+- JWT tokens expire after 30 days
+- Flutter commands (`flutter pub get`, `build_runner`) cannot run in container - user must run locally
