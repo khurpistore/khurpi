@@ -7,8 +7,6 @@ import 'package:khurpi_fresh/features/products/products_providers.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/products/widgets/product_card.dart';
 import 'package:khurpi_fresh/features/products/product_detail_page.dart';
-import 'package:khurpi_fresh/features/products/widgets/product_card.dart';
-import 'package:khurpi_fresh/features/products/product_detail_page.dart';
 
 class ProductsPage extends ConsumerStatefulWidget {
   final String? initialCategoryId;
@@ -140,7 +138,12 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   }
 
   void _addToCart(ProductModel product) {
-    ref.read(provideCartViewModelNotifierProvider)!.addToCart(product);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${product.name} added to cart')));
+    final cartNotifier = ref.read(provideCartViewModelNotifierProvider);
+    if (cartNotifier != null) {
+      cartNotifier.addToCart(product);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${product.name} added to cart')));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to add to cart. Please try again.')));
+    }
   }
 }

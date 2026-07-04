@@ -710,7 +710,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       );
 
       if (order != null) {
-        await ref.read(provideCartViewModelNotifierProvider)!.clearCart();
+        await ref.read(provideCartViewModelNotifierProvider)?.clearCart();
         
         if (mounted) {
           // If online payment, redirect to payment page

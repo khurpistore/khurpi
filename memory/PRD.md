@@ -93,6 +93,7 @@ flutter_app/lib/
 - ✅ Address Management CRUD in Flutter
 - ✅ Order Detail page with tracking timeline
 - ✅ Checkout address selection improvements
+- ✅ **Fixed "Add to Cart" bug** (Jul 4, 2026) - Null-safe handling for cart provider in product_detail_page.dart, products_page.dart, cart_page.dart, checkout_page.dart
 
 ### P1 (Next Sprint)
 - ✅ Web Frontend "/products" page verified working (106 products displayed)

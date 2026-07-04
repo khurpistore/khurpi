@@ -38,7 +38,7 @@ class CartPage extends ConsumerWidget {
                           ),
                         ),
                         TextButton.icon(
-                          onPressed: () => ref.read(provideCartViewModelNotifierProvider)!.clearCart(),
+                          onPressed: () => ref.read(provideCartViewModelNotifierProvider)?.clearCart(),
                           icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
                           label: const Text('Clear All', style: TextStyle(color: AppColors.error)),
                         ),
@@ -53,9 +53,9 @@ class CartPage extends ConsumerWidget {
                       final item = cartState.items[index];
                       return CartItemCard(
                         item: item,
-                        onIncrement: () => ref.read(provideCartViewModelNotifierProvider)!.incrementQuantity(item.productId),
-                        onDecrement: () => ref.read(provideCartViewModelNotifierProvider)!.decrementQuantity(item.productId),
-                        onRemove: () => ref.read(provideCartViewModelNotifierProvider)!.removeFromCart(item.productId),
+                        onIncrement: () => ref.read(provideCartViewModelNotifierProvider)?.incrementQuantity(item.productId),
+                        onDecrement: () => ref.read(provideCartViewModelNotifierProvider)?.decrementQuantity(item.productId),
+                        onRemove: () => ref.read(provideCartViewModelNotifierProvider)?.removeFromCart(item.productId),
                       );
                     },
                   ),

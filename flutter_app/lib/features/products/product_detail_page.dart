@@ -93,8 +93,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               child: ElevatedButton(
                                 onPressed: state.product!.stockStatus == 'in_stock'
                                     ? () {
-                                        ref.read(provideCartViewModelNotifierProvider)!.addToCart(state.product!, quantity: state.quantity, unit: state.selectedUnit);
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${state.product!.name} added to cart')));
+                                        final cartNotifier = ref.read(provideCartViewModelNotifierProvider);
+                                        if (cartNotifier != null) {
+                                          cartNotifier.addToCart(state.product!, quantity: state.quantity, unit: state.selectedUnit);
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${state.product!.name} added to cart')));
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to add to cart. Please try again.')));
+                                        }
                                       }
                                     : null,
                                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
