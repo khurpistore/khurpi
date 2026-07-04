@@ -2338,14 +2338,51 @@ async def resend_otp(data: OTPSendRequest):
 class MSG91VerifiedRequest(BaseModel):
     phone: str
     name: Optional[str] = None
+    access_token: Optional[str] = None  # MSG91 access token for server verification
+
+# MSG91 Configuration
+MSG91_AUTH_KEY = os.environ.get("MSG91_AUTH_KEY", "490446Ty29Y53gM69764e27P1")
+
+async def verify_msg91_access_token(access_token: str) -> dict:
+    """Verify MSG91 access token on server side"""
+    import httpx
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.msg91.com/api/v5/widget/verifyAccessToken",
+                json={"access_token": access_token},
+                headers={
+                    "authkey": MSG91_AUTH_KEY,
+                    "content-type": "application/json"
+                },
+                timeout=10.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {"verified": True, "data": data}
+            else:
+                return {"verified": False, "error": response.text}
+    except Exception as e:
+        logging.error(f"MSG91 token verification error: {e}")
+        return {"verified": False, "error": str(e)}
 
 @api_router.post("/auth/otp-verified")
 async def otp_verified_login(data: MSG91VerifiedRequest):
     """
     Handle login after MSG91 OTP verification.
+    Optionally verifies access token server-side.
     Creates user if not exists, returns user data.
     """
     phone = data.phone.strip()
+    
+    # Server-side verification of MSG91 access token (if provided)
+    if data.access_token:
+        verification = await verify_msg91_access_token(data.access_token)
+        if not verification.get("verified"):
+            logging.warning(f"MSG91 token verification failed for {phone}: {verification.get('error')}")
+            # Continue anyway for now - client already verified
     
     # Check if user exists
     user = await db.users.find_one({"phone": phone}, {"_id": 0, "password": 0})

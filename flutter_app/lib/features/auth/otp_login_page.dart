@@ -125,8 +125,11 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
       debugPrint('MSG91 verifyOTP response: $response');
       
       if (response != null && response['type'] == 'success') {
+        // Get access token from response for server-side verification
+        final accessToken = response['accessToken'] ?? response['access_token'];
+        
         // OTP verified, now create/login user in our backend
-        await _handleSuccessfulVerification();
+        await _handleSuccessfulVerification(accessToken: accessToken);
       } else {
         setState(() => _errorMessage = response?['message'] ?? 'Invalid OTP. Please try again.');
       }
@@ -138,7 +141,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
     }
   }
 
-  Future<void> _handleSuccessfulVerification() async {
+  Future<void> _handleSuccessfulVerification({String? accessToken}) async {
     final phone = _phoneController.text.trim();
     final name = _nameController.text.trim();
     
@@ -147,6 +150,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
       final response = await _dio.post('/auth/otp-verified', data: {
         'phone': phone,
         'name': name.isNotEmpty ? name : null,
+        'access_token': accessToken, // For server-side verification
       });
       
       if (response.data['success'] == true) {
