@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/home/home_providers.dart';
@@ -8,7 +9,8 @@ import 'package:khurpi_fresh/features/orders/orders_providers.dart';
 import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
-
+import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/data/models/user_model.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
@@ -18,33 +20,45 @@ class CheckoutPage extends ConsumerStatefulWidget {
 }
 
 class _CheckoutPageState extends ConsumerState<CheckoutPage> {
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _pincodeController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
+  final _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  
   String _selectedPaymentMethod = 'cod';
   bool _isPlacingOrder = false;
   Map<String, dynamic>? _selectedAddress;
+  String _deliveryTime = 'tomorrow'; // 'instant' or 'tomorrow'
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _prefillUserData();
+      _loadDefaultAddress();
       _loadStoreSettings();
     });
   }
 
-  void _prefillUserData() {
-    final authState = ref.read(provideAuthViewModelProvider);
-    final user = authState?.user;
-    if (user != null) {
-      _addressController.text = user.address ?? '';
-      _cityController.text = user.city ?? '';
-      _pincodeController.text = user.pincode ?? '';
-      _phoneController.text = user.phone;
+  Future<void> _loadDefaultAddress() async {
+    final user = ref.read(provideAuthViewModelProvider)?.user;
+    if (user == null) return;
+
+    try {
+      final response = await _dio.get('/users/${user.userId}/addresses');
+      final addresses = List<Map<String, dynamic>>.from(response.data);
+      if (addresses.isNotEmpty) {
+        // Find default address or use first one
+        final defaultAddr = addresses.firstWhere(
+          (a) => a['is_default'] == true,
+          orElse: () => addresses.first,
+        );
+        setState(() => _selectedAddress = defaultAddr);
+      }
+    } catch (e) {
+      debugPrint('Error loading addresses: $e');
     }
+  }
+
+  void _loadStoreSettings() async {
+    await ref.read(provideStoreViewModelNotifierProvider)?.loadStoreSettings();
   }
 
   void _selectAddress() async {
@@ -59,41 +73,12 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
     
     if (result != null) {
-      setState(() {
-        _selectedAddress = result;
-        _addressController.text = _formatAddress(result);
-        _cityController.text = result['city'] ?? '';
-        _pincodeController.text = result['pincode'] ?? '';
-        _phoneController.text = result['phone'] ?? _phoneController.text;
-      });
+      setState(() => _selectedAddress = result);
     }
-  }
-
-  String _formatAddress(Map<String, dynamic> address) {
-    final parts = <String>[];
-    if (address['address_line'] != null) parts.add(address['address_line']);
-    if (address['address_line_1'] != null) parts.add(address['address_line_1']);
-    if (address['address_line_2'] != null) parts.add(address['address_line_2']);
-    if (address['landmark'] != null) parts.add('Near ${address['landmark']}');
-    if (address['area'] != null) parts.add(address['area']);
-    return parts.join(', ');
-  }
-
-  void _loadStoreSettings() async {
-    await ref.read(provideStoreViewModelNotifierProvider)?.loadStoreSettings();
-    
-    // Load delivery slots for tomorrow by default
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
-    final dateStr = DateFormat('yyyy-MM-dd').format(tomorrow);
-    ref.read(provideStoreViewModelNotifierProvider)?.setSelectedDate(dateStr);
   }
 
   @override
   void dispose() {
-    _addressController.dispose();
-    _cityController.dispose();
-    _pincodeController.dispose();
-    _phoneController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -103,6 +88,16 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     final cartState = ref.watch(provideCartViewModelProvider);
     final storeState = ref.watch(provideStoreViewModelProvider);
 
+    if (cartState == null || cartState.items.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Checkout')),
+        body: const Center(child: Text('Your cart is empty')),
+      );
+    }
+
+    final deliveryFee = _getDeliveryFee(storeState);
+    final total = cartState.subtotal + deliveryFee;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -110,166 +105,46 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         backgroundColor: AppColors.surface,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Order Summary
-            _buildOrderSummary(cartState, storeState),
-            const SizedBox(height: 24),
-            
-            // Delivery Time Selection
-            if (storeState?.settings != null) _buildDeliveryTimeSection(storeState!),
-            const SizedBox(height: 24),
-            
-            // Delivery Address
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Delivery Address', style: AppTextStyles.h4),
-                TextButton.icon(
-                  onPressed: _selectAddress,
-                  icon: Icon(Icons.bookmark_outlined, size: 18, color: AppColors.primary),
-                  label: Text('Saved Addresses', style: TextStyle(color: AppColors.primary)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _addressController,
-              decoration: const InputDecoration(
-                labelText: 'Street Address *',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _cityController,
-                    decoration: const InputDecoration(
-                      labelText: 'City *',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: _pincodeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Pincode *',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number *',
-                border: OutlineInputBorder(),
-                prefixText: '+91 ',
-              ),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 24),
-            
-            // Payment Method
-            const Text('Payment Method', style: AppTextStyles.h4),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
+      body: Column(
+        children: [
+          // Scrollable Content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RadioListTile<String>(
-                    title: const Text('Cash on Delivery'),
-                    subtitle: const Text('Pay when you receive'),
-                    value: 'cod',
-                    groupValue: _selectedPaymentMethod,
-                    onChanged: (v) => setState(() => _selectedPaymentMethod = v!),
-                    activeColor: AppColors.primary,
-                  ),
-                  const Divider(height: 1),
-                  RadioListTile<String>(
-                    title: const Text('Online Payment'),
-                    subtitle: const Text('UPI / Card / Net Banking'),
-                    value: 'online',
-                    groupValue: _selectedPaymentMethod,
-                    onChanged: (v) => setState(() => _selectedPaymentMethod = v!),
-                    activeColor: AppColors.primary,
-                  ),
+                  // Order Items with Images
+                  _buildOrderItemsSection(cartState),
+                  const SizedBox(height: 20),
+
+                  // Delivery Time Selection
+                  _buildDeliveryTimeSection(storeState),
+                  const SizedBox(height: 20),
+
+                  // Payment Method
+                  _buildPaymentMethodSection(),
+                  const SizedBox(height: 20),
+
+                  // Order Notes
+                  _buildNotesSection(),
+                  const SizedBox(height: 20),
+
+                  // Price Summary
+                  _buildPriceSummary(cartState, deliveryFee, total),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            
-            // Order Notes
-            TextField(
-              controller: _notesController,
-              decoration: const InputDecoration(
-                labelText: 'Order Notes (Optional)',
-                border: OutlineInputBorder(),
-                hintText: 'Any special instructions...',
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 32),
-            
-            // Place Order Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isPlacingOrder ? null : _placeOrder,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isPlacingOrder
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Place Order',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+
+          // Bottom Fixed Section: Address + Place Order
+          _buildBottomSection(total),
+        ],
       ),
     );
   }
 
-  Widget _buildOrderSummary(CartState? cartState, StoreState? storeState) {
-    if (cartState == null) return const SizedBox.shrink();
-    final deliveryFee = storeState?.settings != null
-        ? ref.read(provideStoreViewModelNotifierProvider)!.getDeliveryFee(cartState.subtotal)
-        : 0.0;
-    final total = cartState.subtotal + deliveryFee;
-
+  Widget _buildOrderItemsSection(CartState cartState) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -279,54 +154,76 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Order Summary', style: AppTextStyles.h4),
-          const Divider(height: 24),
+          Row(
+            children: [
+              Icon(Icons.shopping_bag_outlined, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text('Order Items (${cartState.items.length})', style: AppTextStyles.h4),
+            ],
+          ),
+          const SizedBox(height: 12),
           ...cartState.items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Product Image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          item.imageUrl!,
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                        )
+                      : _buildImagePlaceholder(),
+                ),
+                const SizedBox(width: 12),
+                // Product Details
                 Expanded(
-                  child: Text(
-                    '${item.productName} x ${item.quantity}',
-                    style: AppTextStyles.body,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.productName,
+                        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
+                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
                   ),
                 ),
                 Text(
                   '₹${(item.price * item.quantity).toStringAsFixed(0)}',
-                  style: AppTextStyles.body,
+                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           )),
-          const Divider(height: 24),
-          _buildSummaryRow('Subtotal', '₹${cartState.subtotal.toStringAsFixed(0)}'),
-          _buildSummaryRow(
-            'Delivery${storeState?.deliveryType == 'instant' ? ' (Instant)' : ''}',
-            deliveryFee > 0 ? '₹${deliveryFee.toStringAsFixed(0)}' : 'FREE',
-          ),
-          const Divider(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Total', style: AppTextStyles.h4),
-              Text(
-                '₹${total.toStringAsFixed(0)}',
-                style: AppTextStyles.h4.copyWith(color: AppColors.primary),
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildDeliveryTimeSection(StoreState storeState) {    final settings = storeState.settings!;
-    final showInstant = settings.instantDeliveryEnabled;
-    final showSlotted = settings.slottedDeliveryEnabled;
+  Widget _buildImagePlaceholder() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(Icons.eco, color: AppColors.primary.withOpacity(0.5)),
+    );
+  }
 
-    if (!showInstant && !showSlotted) return const SizedBox.shrink();
-
+  Widget _buildDeliveryTimeSection(StoreState? storeState) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -344,79 +241,69 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             ],
           ),
           const SizedBox(height: 16),
-
-          // Delivery Type Selection
           Row(
             children: [
-              if (showInstant)
-                Expanded(
-                  child: _buildDeliveryTypeCard(
-                    title: 'Instant Delivery',
-                    subtitle: 'Within ${settings.instantDeliveryTimeMinutes} mins${settings.instantDeliveryFee > 0 ? ' • +₹${settings.instantDeliveryFee.toStringAsFixed(0)}' : ''}',
-                    icon: Icons.bolt,
-                    isSelected: storeState.deliveryType == 'instant',
-                    onTap: () {
-                      ref.read(provideStoreViewModelNotifierProvider)?.setDeliveryType('instant');
-                    },
-                  ),
+              // Instant Delivery Option
+              Expanded(
+                child: _buildDeliveryOption(
+                  title: 'Instant',
+                  subtitle: 'Within 30 mins',
+                  icon: Icons.bolt,
+                  isSelected: _deliveryTime == 'instant',
+                  onTap: () => setState(() => _deliveryTime = 'instant'),
                 ),
-              if (showInstant && showSlotted) const SizedBox(width: 12),
-              if (showSlotted)
-                Expanded(
-                  child: _buildDeliveryTypeCard(
-                    title: 'Scheduled',
-                    subtitle: 'Choose date & time',
-                    icon: Icons.calendar_today,
-                    isSelected: storeState.deliveryType == 'slotted',
-                    onTap: () {
-                      ref.read(provideStoreViewModelNotifierProvider)?.setDeliveryType('slotted');
-                    },
-                  ),
+              ),
+              const SizedBox(width: 12),
+              // Tomorrow Delivery Option
+              Expanded(
+                child: _buildDeliveryOption(
+                  title: 'Tomorrow',
+                  subtitle: 'By 8:00 AM',
+                  icon: Icons.wb_sunny_outlined,
+                  isSelected: _deliveryTime == 'tomorrow',
+                  onTap: () => setState(() => _deliveryTime = 'tomorrow'),
                 ),
+              ),
             ],
           ),
-
-          // Slotted Delivery Options
-          if (storeState.deliveryType == 'slotted') ...[
-            const SizedBox(height: 20),
-            _buildDatePicker(storeState),
-            const SizedBox(height: 16),
-            _buildSlotPicker(storeState),
-          ],
-
-          // Instant Delivery Info
-          if (storeState.deliveryType == 'instant') ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.warning.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.bolt, size: 18, color: AppColors.warning),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Your order will be delivered within ${settings.instantDeliveryTimeMinutes} minutes',
-                      style: AppTextStyles.body.copyWith(
-                        color: Colors.orange.shade800,
-                        fontSize: 13,
-                      ),
+          const SizedBox(height: 12),
+          // Info Banner
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _deliveryTime == 'instant' 
+                  ? AppColors.warning.withOpacity(0.1) 
+                  : AppColors.success.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _deliveryTime == 'instant' ? Icons.bolt : Icons.schedule,
+                  size: 18,
+                  color: _deliveryTime == 'instant' ? Colors.orange.shade700 : AppColors.success,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _deliveryTime == 'instant'
+                        ? 'Your order will be delivered within 30 minutes'
+                        : 'Your order will be delivered tomorrow by 8:00 AM',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _deliveryTime == 'instant' ? Colors.orange.shade800 : Colors.green.shade800,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDeliveryTypeCard({
+  Widget _buildDeliveryOption({
     required String title,
     required String subtitle,
     required IconData icon,
@@ -426,7 +313,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -436,27 +323,25 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.transparent,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               icon,
-              size: 24,
+              size: 28,
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
             ),
             const SizedBox(height: 8),
             Text(
               title,
-              style: AppTextStyles.body.copyWith(
+              style: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                color: isSelected ? AppColors.primary : AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 2),
             Text(
               subtitle,
-              style: AppTextStyles.body.copyWith(
-                color: AppColors.textSecondary,
+              style: TextStyle(
                 fontSize: 12,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -465,229 +350,180 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  Widget _buildDatePicker(StoreState storeState) {
-    final now = DateTime.now();
-    final dates = List.generate(7, (i) => now.add(Duration(days: i)));
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Select Date',
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
+  Widget _buildPaymentMethodSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.payment, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+              const Text('Payment Method', style: AppTextStyles.h4),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 80,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: dates.length,
-            itemBuilder: (context, index) {
-              final date = dates[index];
-              final dateStr = DateFormat('yyyy-MM-dd').format(date);
-              final isSelected = storeState.selectedDate == dateStr;
-              final isToday = index == 0;
-
-              return GestureDetector(
-                onTap: () {
-                    ref.read(provideStoreViewModelNotifierProvider)?.setSelectedDate(dateStr);
-                  },
-                child: Container(
-                  width: 70,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primary : AppColors.border,
-                      width: isSelected ? 2 : 1,
-                    ),
-                    color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.transparent,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        DateFormat('EEE').format(date),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        DateFormat('d').format(date),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        DateFormat('MMM').format(date),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      if (isToday)
-                        Text(
-                          'Today',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
+          const SizedBox(height: 12),
+          _buildPaymentOption(
+            title: 'Cash on Delivery',
+            subtitle: 'Pay when you receive',
+            icon: Icons.money,
+            value: 'cod',
           ),
-        ),
-      ],
+          const Divider(height: 1),
+          _buildPaymentOption(
+            title: 'Online Payment',
+            subtitle: 'UPI / Card / Net Banking',
+            icon: Icons.credit_card,
+            value: 'online',
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSlotPicker(StoreState storeState) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Select Time Slot',
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (storeState.isSlotsLoading)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
+  Widget _buildPaymentOption({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String value,
+  }) {
+    final isSelected = _selectedPaymentMethod == value;
+    return InkWell(
+      onTap: () => setState(() => _selectedPaymentMethod = value),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : AppColors.textHint,
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? Center(
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    )
+                  : null,
             ),
-          )
-        else if (storeState.deliverySlots.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Center(
-              child: Text(
-                'No delivery slots available for this date',
-                style: TextStyle(color: AppColors.textSecondary),
+            const SizedBox(width: 12),
+            Icon(icon, color: AppColors.textSecondary, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTextStyles.body),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
+                  ),
+                ],
               ),
             ),
-          )
-        else
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: storeState.deliverySlots.map((slot) {
-              final isSelected = storeState.selectedSlotId == slot.id;
-              final isAvailable = slot.available;
-
-              return GestureDetector(
-                onTap: isAvailable
-                    ? () {
-                        ref.read(provideStoreViewModelNotifierProvider)?.setSelectedSlotId(slot.id);
-                      }
-                    : null,
-                child: Container(
-                  width: (MediaQuery.of(context).size.width - 64) / 2,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: !isAvailable
-                          ? AppColors.border.withOpacity(0.5)
-                          : isSelected
-                              ? AppColors.primary
-                              : AppColors.border,
-                      width: isSelected ? 2 : 1,
-                    ),
-                    color: !isAvailable
-                        ? AppColors.background.withOpacity(0.5)
-                        : isSelected
-                            ? AppColors.primary.withOpacity(0.05)
-                            : Colors.transparent,
-                  ),
-                  child: Opacity(
-                    opacity: isAvailable ? 1.0 : 0.5,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          slot.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          slot.displayText ?? '${slot.startTime} - ${slot.endTime}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        if (slot.deliveryFee > 0)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              '+₹${slot.deliveryFee.toStringAsFixed(0)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        if (!isAvailable)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              'Full',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.error,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
+  Widget _buildNotesSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.note_outlined, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+              const Text('Order Notes', style: AppTextStyles.h4),
+              const Text(' (Optional)', style: TextStyle(color: AppColors.textHint, fontSize: 14)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _notesController,
+            decoration: InputDecoration(
+              hintText: 'Any special instructions...',
+              hintStyle: TextStyle(color: AppColors.textHint),
+              filled: true,
+              fillColor: AppColors.background,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            maxLines: 2,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceSummary(CartState cartState, double deliveryFee, double total) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          _buildSummaryRow('Subtotal', '₹${cartState.subtotal.toStringAsFixed(0)}'),
+          _buildSummaryRow(
+            'Delivery${_deliveryTime == 'instant' ? ' (Instant)' : ''}',
+            deliveryFee > 0 ? '₹${deliveryFee.toStringAsFixed(0)}' : 'FREE',
+            isHighlight: deliveryFee == 0,
+          ),
+          const Divider(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Total', style: AppTextStyles.h4),
+              Text(
+                '₹${total.toStringAsFixed(0)}',
+                style: AppTextStyles.h3.copyWith(color: AppColors.primary),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, {bool isHighlight = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-          ),
+          Text(label, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
           Text(
             value,
             style: AppTextStyles.body.copyWith(
-              color: value == 'FREE' ? AppColors.success : null,
-              fontWeight: value == 'FREE' ? FontWeight.w600 : null,
+              color: isHighlight ? AppColors.success : null,
+              fontWeight: isHighlight ? FontWeight.w600 : null,
             ),
           ),
         ],
@@ -695,52 +531,204 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
+  Widget _buildBottomSection(double total) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Selected Address Display
+            GestureDetector(
+              onTap: _selectAddress,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.location_on, size: 20, color: AppColors.primary),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _selectedAddress != null
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Deliver to: ${_selectedAddress!['name'] ?? 'Home'}',
+                                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  _formatAddressShort(_selectedAddress!),
+                                  style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            )
+                          : Text(
+                              'Select delivery address',
+                              style: AppTextStyles.body.copyWith(color: AppColors.textHint),
+                            ),
+                    ),
+                    Icon(Icons.chevron_right, color: AppColors.textHint),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Place Order Button
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isPlacingOrder ? null : _placeOrder,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                ),
+                child: _isPlacingOrder
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Place Order',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '• ₹${total.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatAddressShort(Map<String, dynamic> address) {
+    final parts = <String>[];
+    if (address['address_line_1'] != null) parts.add(address['address_line_1'].toString());
+    if (address['city'] != null) parts.add(address['city'].toString());
+    if (address['pincode'] != null) parts.add(address['pincode'].toString());
+    return parts.join(', ');
+  }
+
+  double _getDeliveryFee(StoreState? storeState) {
+    if (storeState?.settings == null) return 0;
+    final cartState = ref.read(provideCartViewModelProvider);
+    final subtotal = cartState?.subtotal ?? 0;
+    
+    // Free delivery above threshold
+    if (subtotal >= storeState!.settings!.minOrderForFreeDelivery) {
+      return 0;
+    }
+    
+    // Instant delivery has extra fee
+    if (_deliveryTime == 'instant') {
+      return storeState.settings!.instantDeliveryFee;
+    }
+    
+    return storeState.settings!.defaultDeliveryFee;
+  }
+
   Future<void> _placeOrder() async {
-    if (_addressController.text.isEmpty ||
-        _cityController.text.isEmpty ||
-        _pincodeController.text.isEmpty ||
-        _phoneController.text.isEmpty) {
+    if (_selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields')),
+        const SnackBar(content: Text('Please select a delivery address')),
       );
       return;
-    }
-
-    final storeState = ref.read(provideStoreViewModelProvider);
-    
-    // Validate slotted delivery selection
-    if (storeState?.deliveryType == 'slotted') {
-      if (storeState?.selectedDate == null || storeState?.selectedSlotId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a delivery date and time slot')),
-        );
-        return;
-      }
     }
 
     setState(() => _isPlacingOrder = true);
 
     try {
       final cartState = ref.read(provideCartViewModelProvider);
+      
+      // Prepare delivery date for tomorrow option
+      String? deliveryDate;
+      if (_deliveryTime == 'tomorrow') {
+        final tomorrow = DateTime.now().add(const Duration(days: 1));
+        deliveryDate = DateFormat('yyyy-MM-dd').format(tomorrow);
+      }
+      
       final order = await ref.read(provideOrdersViewModelNotifierProvider)!.createOrder(
         items: cartState?.items ?? [],
-        deliveryAddress: _addressController.text,
-        city: _cityController.text,
-        pincode: _pincodeController.text,
-        phone: _phoneController.text,
+        deliveryAddress: _selectedAddress!['address_line'] ?? _formatAddressShort(_selectedAddress!),
+        city: _selectedAddress!['city'] ?? '',
+        pincode: _selectedAddress!['pincode'] ?? '',
+        phone: _selectedAddress!['phone'] ?? '',
         paymentMethod: _selectedPaymentMethod,
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-        deliveryType: storeState?.deliveryType,
-        deliveryDate: storeState?.deliveryType == 'slotted' ? storeState?.selectedDate : null,
-        deliverySlotId: storeState?.deliveryType == 'slotted' ? storeState?.selectedSlotId : null,
+        deliveryType: _deliveryTime,
+        deliveryDate: deliveryDate,
+        deliverySlotId: null,
       );
 
       if (order != null) {
         await ref.read(provideCartViewModelNotifierProvider)!.clearCart();
+        
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Order placed successfully!')),
-          );
+          // If online payment, redirect to payment page
+          if (_selectedPaymentMethod == 'online') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Redirecting to payment...')),
+            );
+            // TODO: Navigate to payment page
+            // For now, just go back
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Order placed successfully!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
           Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
