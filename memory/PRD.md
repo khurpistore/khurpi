@@ -94,11 +94,14 @@ flutter_app/lib/
 - ✅ Order Detail page with tracking timeline
 - ✅ Checkout address selection improvements
 - ✅ **Fixed "Add to Cart" bug** (Jul 4, 2026) - Null-safe handling for cart provider in product_detail_page.dart, products_page.dart, cart_page.dart, checkout_page.dart
+- ✅ **Checkout Page Enhancements** - Added +/- quantity controls and remove button for cart items, removed Order Notes section
+- ✅ **Product Detail Bottom Sheet** - Converted full-page ProductDetailPage to a modal bottom sheet (`product_detail_bottom_sheet.dart`)
+- ✅ **Global Floating Cart Button** - Added FloatingCartButton to: Products Page (PLP), Profile Page, Search Page, Categories Page
 
 ### P1 (Next Sprint)
 - ✅ Web Frontend "/products" page verified working (106 products displayed)
+- ✅ Product Detail Bottom Sheet instead of full page
 - [ ] Product Listing page with subcategory sidebar
-- [ ] Product Detail Bottom Sheet instead of full page
 - [ ] Load app config on Flutter app start
 
 ### P2 (Future)

@@ -6,7 +6,7 @@ import 'package:khurpi_fresh/data/models/banner_model.dart';
 import 'package:khurpi_fresh/data/models/category_model.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/features/products/products_page.dart';
-import 'package:khurpi_fresh/features/products/product_detail_page.dart';
+import 'package:khurpi_fresh/features/products/product_detail_bottom_sheet.dart';
 import 'package:khurpi_fresh/features/home/home_providers.dart';
 import 'package:khurpi_fresh/features/products/products_providers.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
@@ -373,11 +373,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _navigateToProductDetail(ProductModel product) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProductDetailPage(productId: product.productId),
-      ),
-    );
+    showProductDetailBottomSheet(context, product.productId);
   }
 }

@@ -6,6 +6,7 @@ import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/data/models/category_model.dart';
 import 'package:khurpi_fresh/features/products/products_providers.dart';
 import 'package:khurpi_fresh/features/products/products_page.dart';
+import 'package:khurpi_fresh/features/cart/floating_cart_button.dart';
 
 class CategoriesPage extends ConsumerStatefulWidget {
   const CategoriesPage({super.key});
@@ -29,27 +30,32 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: productsState?.isLoading == true
-          ? const Center(child: CircularProgressIndicator())
-          : productsState?.categories.isEmpty != false
-              ? const Center(child: Text('No categories available'))
-              : GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 1.0,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: productsState!.categories.length,
-                  itemBuilder: (context, index) {
-                    final category = productsState.categories[index];
-                    return _CategoryTile(
-                      category: category,
-                      onTap: () => _navigateToProducts(category),
-                    );
-                  },
-                ),
+      body: Stack(
+        children: [
+          productsState?.isLoading == true
+              ? const Center(child: CircularProgressIndicator())
+              : productsState?.categories.isEmpty != false
+                  ? const Center(child: Text('No categories available'))
+                  : GridView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 1.0,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: productsState!.categories.length,
+                      itemBuilder: (context, index) {
+                        final category = productsState.categories[index];
+                        return _CategoryTile(
+                          category: category,
+                          onTap: () => _navigateToProducts(category),
+                        );
+                      },
+                    ),
+          const FloatingCartButton(),
+        ],
+      ),
     );
   }
 

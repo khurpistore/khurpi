@@ -9,7 +9,6 @@ import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
-import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:dio/dio.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
@@ -20,7 +19,6 @@ class CheckoutPage extends ConsumerStatefulWidget {
 }
 
 class _CheckoutPageState extends ConsumerState<CheckoutPage> {
-  final _notesController = TextEditingController();
   final _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
   
   String _selectedPaymentMethod = 'cod';
@@ -78,7 +76,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   @override
   void dispose() {
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -125,10 +122,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                   _buildPaymentMethodSection(),
                   const SizedBox(height: 20),
 
-                  // Order Notes
-                  _buildNotesSection(),
-                  const SizedBox(height: 20),
-
                   // Price Summary
                   _buildPriceSummary(cartState, deliveryFee, total),
                 ],
@@ -162,8 +155,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           ),
           const SizedBox(height: 12),
           ...cartState.items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Product Image
                 ClipRRect(
@@ -171,36 +165,91 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                   child: item.imageUrl != null && item.imageUrl!.isNotEmpty
                       ? Image.network(
                           item.imageUrl!,
-                          width: 56,
-                          height: 56,
+                          width: 60,
+                          height: 60,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
                         )
                       : _buildImagePlaceholder(),
                 ),
                 const SizedBox(width: 12),
-                // Product Details
+                // Product Details + Controls
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        item.productName,
-                        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.productName,
+                              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          // Remove button
+                          GestureDetector(
+                            onTap: () => ref.read(provideCartViewModelNotifierProvider)?.removeFromCart(item.productId),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(Icons.close, size: 18, color: AppColors.textHint),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
-                        '${item.quantity.toInt()} x ₹${item.price.toStringAsFixed(0)}',
-                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                        '₹${item.price.toStringAsFixed(0)} per ${item.unit}',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: 8),
+                      // Quantity controls and total
+                      Row(
+                        children: [
+                          // Quantity controls
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColors.border),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => ref.read(provideCartViewModelNotifierProvider)?.decrementQuantity(item.productId),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Icon(Icons.remove, size: 18, color: AppColors.primary),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text(
+                                    '${item.quantity.toStringAsFixed(item.quantity == item.quantity.toInt() ? 0 : 1)} ${item.unit}',
+                                    style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => ref.read(provideCartViewModelNotifierProvider)?.incrementQuantity(item.productId),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Icon(Icons.add, size: 18, color: AppColors.primary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          // Item total
+                          Text(
+                            '₹${(item.price * item.quantity).toStringAsFixed(0)}',
+                            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ),
-                Text(
-                  '₹${(item.price * item.quantity).toStringAsFixed(0)}',
-                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -442,44 +491,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  Widget _buildNotesSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.note_outlined, size: 20, color: AppColors.primary),
-              const SizedBox(width: 8),
-              const Text('Order Notes', style: AppTextStyles.h4),
-              Text(' (Optional)', style: TextStyle(color: AppColors.textHint, fontSize: 14)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _notesController,
-            decoration: InputDecoration(
-              hintText: 'Any special instructions...',
-              hintStyle: TextStyle(color: AppColors.textHint),
-              filled: true,
-              fillColor: AppColors.background,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            maxLines: 2,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPriceSummary(CartState cartState, double deliveryFee, double total) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -703,7 +714,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         pincode: _selectedAddress!['pincode'] ?? '',
         phone: _selectedAddress!['phone'] ?? '',
         paymentMethod: _selectedPaymentMethod,
-        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        notes: null,
         deliveryType: _deliveryTime,
         deliveryDate: deliveryDate,
         deliverySlotId: null,

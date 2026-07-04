@@ -4,7 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
-import 'package:khurpi_fresh/features/products/product_detail_page.dart';
+import 'package:khurpi_fresh/features/products/product_detail_bottom_sheet.dart';
+import 'package:khurpi_fresh/features/cart/floating_cart_button.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
@@ -170,9 +171,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildContent(),
+      body: Stack(
+        children: [
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _buildContent(),
+          const FloatingCartButton(),
+        ],
+      ),
     );
   }
 
@@ -307,12 +313,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _buildProductTile(ProductModel product) {
     return ListTile(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProductDetailPage(productId: product.productId),
-          ),
-        );
+        showProductDetailBottomSheet(context, product.productId);
       },
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),

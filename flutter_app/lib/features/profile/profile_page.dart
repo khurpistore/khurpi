@@ -7,6 +7,7 @@ import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
 import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/features/earn/earn_page.dart';
 import 'package:khurpi_fresh/features/orders/orders_page.dart';
+import 'package:khurpi_fresh/features/cart/floating_cart_button.dart';
 
 
 class ProfilePage extends ConsumerStatefulWidget {
@@ -34,7 +35,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         backgroundColor: AppColors.surface,
         elevation: 0,
       ),
-      body: authState?.isAuthenticated == true ? _buildAuthenticatedView(authState!) : _buildGuestView(),
+      body: Stack(
+        children: [
+          authState?.isAuthenticated == true ? _buildAuthenticatedView(authState!) : _buildGuestView(),
+          const FloatingCartButton(),
+        ],
+      ),
     );
   }
 
