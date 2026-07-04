@@ -77,6 +77,11 @@ class _OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final orderId = order.orderId;
+    final orderDate = order.orderDate;
+    final orderItems = order.allItems;
+    final displayId = orderId.length >= 8 ? orderId.substring(0, 8).toUpperCase() : orderId.toUpperCase();
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -93,9 +98,9 @@ class _OrderCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Order #${order.orderId.substring(0, 8).toUpperCase()}', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+                    Text('Order #$displayId', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
-                    Text(DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt), style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
+                    Text(DateFormat('dd MMM yyyy, hh:mm a').format(orderDate), style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
                   ],
                 ),
                 _buildStatusBadge(order.status),
@@ -108,19 +113,22 @@ class _OrderCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${order.items.length} item${order.items.length > 1 ? 's' : ''}', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                Text('${orderItems.length} item${orderItems.length > 1 ? 's' : ''}', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
-                ...order.items.take(3).map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Row(
-                        children: [
-                          Text('${item.quantity}x', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(item.productName, style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
-                        ],
-                      ),
-                    )),
-                if (order.items.length > 3) Text('+${order.items.length - 3} more items', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
+                ...orderItems.take(3).map((item) {
+                  final itemName = item.displayName;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        Text('${item.quantity.toInt()}x', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(itemName, style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      ],
+                    ),
+                  );
+                }),
+                if (orderItems.length > 3) Text('+${orderItems.length - 3} more items', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
               ],
             ),
           ),
