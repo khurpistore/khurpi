@@ -6,6 +6,7 @@ import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/address/address_form_page.dart';
+import 'package:khurpi_fresh/data/models/user_model.dart';
 
 class AddressListPage extends ConsumerStatefulWidget {
   final bool isSelecting;
