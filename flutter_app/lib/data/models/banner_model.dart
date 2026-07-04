@@ -4,7 +4,7 @@ part '../../generated/data/models/banner_model.freezed.dart';
 part '../../generated/data/models/banner_model.g.dart';
 
 @freezed
-class BannerModel with _$BannerModel {
+abstract class BannerModel with _$BannerModel {
   const factory BannerModel({
     String? id,
     @JsonKey(name: 'image_url') @Default('') String imageUrl,
@@ -12,6 +12,8 @@ class BannerModel with _$BannerModel {
     String? subtitle,
     @JsonKey(name: 'link_type') String? linkType,
     @JsonKey(name: 'link_value') String? linkValue,
+    @JsonKey(name: 'action_type') String? actionType,
+    @JsonKey(name: 'action_value') String? actionValue,
     @JsonKey(name: 'display_order') @Default(0) int displayOrder,
     @Default(true) bool active,
     @JsonKey(name: 'start_date') String? startDate,

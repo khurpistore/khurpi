@@ -4,7 +4,7 @@ part '../../generated/data/models/order_model.freezed.dart';
 part '../../generated/data/models/order_model.g.dart';
 
 @freezed
-class OrderModel with _$OrderModel {
+abstract class OrderModel with _$OrderModel {
   const factory OrderModel({
     @JsonKey(name: 'id') String? id,
     @JsonKey(name: '_id') String? mongoId,
@@ -49,7 +49,7 @@ extension OrderModelX on OrderModel {
 }
 
 @freezed
-class OrderItemModel with _$OrderItemModel {
+abstract class OrderItemModel with _$OrderItemModel {
   const factory OrderItemModel({
     @JsonKey(name: 'product_id') @Default('') String productId,
     @JsonKey(name: 'product_name') @Default('') String productName,
