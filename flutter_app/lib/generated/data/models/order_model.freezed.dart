@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderModel {
 
-@JsonKey(name: 'id') String? get id;@JsonKey(name: '_id') String? get mongoId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'user_name') String? get userName;@JsonKey(name: 'user_phone') String? get userPhone; List<OrderItemModel> get items; double get subtotal;@JsonKey(name: 'delivery_fee') double get deliveryFee; double get total; String get status;@JsonKey(name: 'delivery_address') String? get deliveryAddress;@JsonKey(name: 'delivery_slot') String? get deliverySlot;@JsonKey(name: 'delivery_date') DateTime? get deliveryDate;@JsonKey(name: 'payment_method') String? get paymentMethod;@JsonKey(name: 'payment_status') String? get paymentStatus; String? get notes;@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'id') String? get id;@JsonKey(name: '_id') String? get mongoId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'user_name') String? get userName;@JsonKey(name: 'user_phone') String? get userPhone; List<OrderItemModel> get items;@JsonKey(name: 'one_time_items') List<OrderItemModel> get oneTimeItems; double get subtotal;@JsonKey(name: 'delivery_fee') double get deliveryFee; double get discount; double get total; String get status;@JsonKey(name: 'delivery_address') String get deliveryAddress; String? get city; String? get pincode; String get phone;@JsonKey(name: 'delivery_slot') String? get deliverySlot;@JsonKey(name: 'delivery_date') DateTime? get deliveryDate;@JsonKey(name: 'delivery_type') String? get deliveryType;@JsonKey(name: 'delivery_slot_id') String? get deliverySlotId;@JsonKey(name: 'payment_method') String get paymentMethod;@JsonKey(name: 'payment_status') String? get paymentStatus; String? get notes;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of OrderModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OrderModelCopyWith<OrderModel> get copyWith => _$OrderModelCopyWithImpl<OrderMo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderModel&&(identical(other.id, id) || other.id == id)&&(identical(other.mongoId, mongoId) || other.mongoId == mongoId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userPhone, userPhone) || other.userPhone == userPhone)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.deliveryFee, deliveryFee) || other.deliveryFee == deliveryFee)&&(identical(other.total, total) || other.total == total)&&(identical(other.status, status) || other.status == status)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.deliverySlot, deliverySlot) || other.deliverySlot == deliverySlot)&&(identical(other.deliveryDate, deliveryDate) || other.deliveryDate == deliveryDate)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderModel&&(identical(other.id, id) || other.id == id)&&(identical(other.mongoId, mongoId) || other.mongoId == mongoId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userPhone, userPhone) || other.userPhone == userPhone)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.oneTimeItems, oneTimeItems)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.deliveryFee, deliveryFee) || other.deliveryFee == deliveryFee)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.total, total) || other.total == total)&&(identical(other.status, status) || other.status == status)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.city, city) || other.city == city)&&(identical(other.pincode, pincode) || other.pincode == pincode)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.deliverySlot, deliverySlot) || other.deliverySlot == deliverySlot)&&(identical(other.deliveryDate, deliveryDate) || other.deliveryDate == deliveryDate)&&(identical(other.deliveryType, deliveryType) || other.deliveryType == deliveryType)&&(identical(other.deliverySlotId, deliverySlotId) || other.deliverySlotId == deliverySlotId)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mongoId,userId,userName,userPhone,const DeepCollectionEquality().hash(items),subtotal,deliveryFee,total,status,deliveryAddress,deliverySlot,deliveryDate,paymentMethod,paymentStatus,notes,createdAt);
+int get hashCode => Object.hashAll([runtimeType,id,mongoId,userId,userName,userPhone,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(oneTimeItems),subtotal,deliveryFee,discount,total,status,deliveryAddress,city,pincode,phone,deliverySlot,deliveryDate,deliveryType,deliverySlotId,paymentMethod,paymentStatus,notes,createdAt]);
 
 @override
 String toString() {
-  return 'OrderModel(id: $id, mongoId: $mongoId, userId: $userId, userName: $userName, userPhone: $userPhone, items: $items, subtotal: $subtotal, deliveryFee: $deliveryFee, total: $total, status: $status, deliveryAddress: $deliveryAddress, deliverySlot: $deliverySlot, deliveryDate: $deliveryDate, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, notes: $notes, createdAt: $createdAt)';
+  return 'OrderModel(id: $id, mongoId: $mongoId, userId: $userId, userName: $userName, userPhone: $userPhone, items: $items, oneTimeItems: $oneTimeItems, subtotal: $subtotal, deliveryFee: $deliveryFee, discount: $discount, total: $total, status: $status, deliveryAddress: $deliveryAddress, city: $city, pincode: $pincode, phone: $phone, deliverySlot: $deliverySlot, deliveryDate: $deliveryDate, deliveryType: $deliveryType, deliverySlotId: $deliverySlotId, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, notes: $notes, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OrderModelCopyWith<$Res>  {
   factory $OrderModelCopyWith(OrderModel value, $Res Function(OrderModel) _then) = _$OrderModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'id') String? id,@JsonKey(name: '_id') String? mongoId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'user_name') String? userName,@JsonKey(name: 'user_phone') String? userPhone, List<OrderItemModel> items, double subtotal,@JsonKey(name: 'delivery_fee') double deliveryFee, double total, String status,@JsonKey(name: 'delivery_address') String? deliveryAddress,@JsonKey(name: 'delivery_slot') String? deliverySlot,@JsonKey(name: 'delivery_date') DateTime? deliveryDate,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'payment_status') String? paymentStatus, String? notes,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'id') String? id,@JsonKey(name: '_id') String? mongoId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'user_name') String? userName,@JsonKey(name: 'user_phone') String? userPhone, List<OrderItemModel> items,@JsonKey(name: 'one_time_items') List<OrderItemModel> oneTimeItems, double subtotal,@JsonKey(name: 'delivery_fee') double deliveryFee, double discount, double total, String status,@JsonKey(name: 'delivery_address') String deliveryAddress, String? city, String? pincode, String phone,@JsonKey(name: 'delivery_slot') String? deliverySlot,@JsonKey(name: 'delivery_date') DateTime? deliveryDate,@JsonKey(name: 'delivery_type') String? deliveryType,@JsonKey(name: 'delivery_slot_id') String? deliverySlotId,@JsonKey(name: 'payment_method') String paymentMethod,@JsonKey(name: 'payment_status') String? paymentStatus, String? notes,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -65,7 +65,7 @@ class _$OrderModelCopyWithImpl<$Res>
 
 /// Create a copy of OrderModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? mongoId = freezed,Object? userId = null,Object? userName = freezed,Object? userPhone = freezed,Object? items = null,Object? subtotal = null,Object? deliveryFee = null,Object? total = null,Object? status = null,Object? deliveryAddress = freezed,Object? deliverySlot = freezed,Object? deliveryDate = freezed,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? notes = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? mongoId = freezed,Object? userId = null,Object? userName = freezed,Object? userPhone = freezed,Object? items = null,Object? oneTimeItems = null,Object? subtotal = null,Object? deliveryFee = null,Object? discount = null,Object? total = null,Object? status = null,Object? deliveryAddress = null,Object? city = freezed,Object? pincode = freezed,Object? phone = null,Object? deliverySlot = freezed,Object? deliveryDate = freezed,Object? deliveryType = freezed,Object? deliverySlotId = freezed,Object? paymentMethod = null,Object? paymentStatus = freezed,Object? notes = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,mongoId: freezed == mongoId ? _self.mongoId : mongoId // ignore: cast_nullable_to_non_nullable
@@ -73,18 +73,25 @@ as String?,userId: null == userId ? _self.userId : userId // ignore: cast_nullab
 as String,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String?,userPhone: freezed == userPhone ? _self.userPhone : userPhone // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<OrderItemModel>,oneTimeItems: null == oneTimeItems ? _self.oneTimeItems : oneTimeItems // ignore: cast_nullable_to_non_nullable
 as List<OrderItemModel>,subtotal: null == subtotal ? _self.subtotal : subtotal // ignore: cast_nullable_to_non_nullable
 as double,deliveryFee: null == deliveryFee ? _self.deliveryFee : deliveryFee // ignore: cast_nullable_to_non_nullable
+as double,discount: null == discount ? _self.discount : discount // ignore: cast_nullable_to_non_nullable
 as double,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as double,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,deliveryAddress: freezed == deliveryAddress ? _self.deliveryAddress : deliveryAddress // ignore: cast_nullable_to_non_nullable
-as String?,deliverySlot: freezed == deliverySlot ? _self.deliverySlot : deliverySlot // ignore: cast_nullable_to_non_nullable
+as String,deliveryAddress: null == deliveryAddress ? _self.deliveryAddress : deliveryAddress // ignore: cast_nullable_to_non_nullable
+as String,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,pincode: freezed == pincode ? _self.pincode : pincode // ignore: cast_nullable_to_non_nullable
+as String?,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String,deliverySlot: freezed == deliverySlot ? _self.deliverySlot : deliverySlot // ignore: cast_nullable_to_non_nullable
 as String?,deliveryDate: freezed == deliveryDate ? _self.deliveryDate : deliveryDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
-as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
+as DateTime?,deliveryType: freezed == deliveryType ? _self.deliveryType : deliveryType // ignore: cast_nullable_to_non_nullable
+as String?,deliverySlotId: freezed == deliverySlotId ? _self.deliverySlotId : deliverySlotId // ignore: cast_nullable_to_non_nullable
+as String?,paymentMethod: null == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as String,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -169,10 +176,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'user_name')  String? userName, @JsonKey(name: 'user_phone')  String? userPhone,  List<OrderItemModel> items,  double subtotal, @JsonKey(name: 'delivery_fee')  double deliveryFee,  double total,  String status, @JsonKey(name: 'delivery_address')  String? deliveryAddress, @JsonKey(name: 'delivery_slot')  String? deliverySlot, @JsonKey(name: 'delivery_date')  DateTime? deliveryDate, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'payment_status')  String? paymentStatus,  String? notes, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'user_name')  String? userName, @JsonKey(name: 'user_phone')  String? userPhone,  List<OrderItemModel> items, @JsonKey(name: 'one_time_items')  List<OrderItemModel> oneTimeItems,  double subtotal, @JsonKey(name: 'delivery_fee')  double deliveryFee,  double discount,  double total,  String status, @JsonKey(name: 'delivery_address')  String deliveryAddress,  String? city,  String? pincode,  String phone, @JsonKey(name: 'delivery_slot')  String? deliverySlot, @JsonKey(name: 'delivery_date')  DateTime? deliveryDate, @JsonKey(name: 'delivery_type')  String? deliveryType, @JsonKey(name: 'delivery_slot_id')  String? deliverySlotId, @JsonKey(name: 'payment_method')  String paymentMethod, @JsonKey(name: 'payment_status')  String? paymentStatus,  String? notes, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderModel() when $default != null:
-return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPhone,_that.items,_that.subtotal,_that.deliveryFee,_that.total,_that.status,_that.deliveryAddress,_that.deliverySlot,_that.deliveryDate,_that.paymentMethod,_that.paymentStatus,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPhone,_that.items,_that.oneTimeItems,_that.subtotal,_that.deliveryFee,_that.discount,_that.total,_that.status,_that.deliveryAddress,_that.city,_that.pincode,_that.phone,_that.deliverySlot,_that.deliveryDate,_that.deliveryType,_that.deliverySlotId,_that.paymentMethod,_that.paymentStatus,_that.notes,_that.createdAt);case _:
   return orElse();
 
 }
@@ -190,10 +197,10 @@ return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPho
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'user_name')  String? userName, @JsonKey(name: 'user_phone')  String? userPhone,  List<OrderItemModel> items,  double subtotal, @JsonKey(name: 'delivery_fee')  double deliveryFee,  double total,  String status, @JsonKey(name: 'delivery_address')  String? deliveryAddress, @JsonKey(name: 'delivery_slot')  String? deliverySlot, @JsonKey(name: 'delivery_date')  DateTime? deliveryDate, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'payment_status')  String? paymentStatus,  String? notes, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'user_name')  String? userName, @JsonKey(name: 'user_phone')  String? userPhone,  List<OrderItemModel> items, @JsonKey(name: 'one_time_items')  List<OrderItemModel> oneTimeItems,  double subtotal, @JsonKey(name: 'delivery_fee')  double deliveryFee,  double discount,  double total,  String status, @JsonKey(name: 'delivery_address')  String deliveryAddress,  String? city,  String? pincode,  String phone, @JsonKey(name: 'delivery_slot')  String? deliverySlot, @JsonKey(name: 'delivery_date')  DateTime? deliveryDate, @JsonKey(name: 'delivery_type')  String? deliveryType, @JsonKey(name: 'delivery_slot_id')  String? deliverySlotId, @JsonKey(name: 'payment_method')  String paymentMethod, @JsonKey(name: 'payment_status')  String? paymentStatus,  String? notes, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _OrderModel():
-return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPhone,_that.items,_that.subtotal,_that.deliveryFee,_that.total,_that.status,_that.deliveryAddress,_that.deliverySlot,_that.deliveryDate,_that.paymentMethod,_that.paymentStatus,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPhone,_that.items,_that.oneTimeItems,_that.subtotal,_that.deliveryFee,_that.discount,_that.total,_that.status,_that.deliveryAddress,_that.city,_that.pincode,_that.phone,_that.deliverySlot,_that.deliveryDate,_that.deliveryType,_that.deliverySlotId,_that.paymentMethod,_that.paymentStatus,_that.notes,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +217,10 @@ return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPho
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'user_name')  String? userName, @JsonKey(name: 'user_phone')  String? userPhone,  List<OrderItemModel> items,  double subtotal, @JsonKey(name: 'delivery_fee')  double deliveryFee,  double total,  String status, @JsonKey(name: 'delivery_address')  String? deliveryAddress, @JsonKey(name: 'delivery_slot')  String? deliverySlot, @JsonKey(name: 'delivery_date')  DateTime? deliveryDate, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'payment_status')  String? paymentStatus,  String? notes, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'user_name')  String? userName, @JsonKey(name: 'user_phone')  String? userPhone,  List<OrderItemModel> items, @JsonKey(name: 'one_time_items')  List<OrderItemModel> oneTimeItems,  double subtotal, @JsonKey(name: 'delivery_fee')  double deliveryFee,  double discount,  double total,  String status, @JsonKey(name: 'delivery_address')  String deliveryAddress,  String? city,  String? pincode,  String phone, @JsonKey(name: 'delivery_slot')  String? deliverySlot, @JsonKey(name: 'delivery_date')  DateTime? deliveryDate, @JsonKey(name: 'delivery_type')  String? deliveryType, @JsonKey(name: 'delivery_slot_id')  String? deliverySlotId, @JsonKey(name: 'payment_method')  String paymentMethod, @JsonKey(name: 'payment_status')  String? paymentStatus,  String? notes, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderModel() when $default != null:
-return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPhone,_that.items,_that.subtotal,_that.deliveryFee,_that.total,_that.status,_that.deliveryAddress,_that.deliverySlot,_that.deliveryDate,_that.paymentMethod,_that.paymentStatus,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPhone,_that.items,_that.oneTimeItems,_that.subtotal,_that.deliveryFee,_that.discount,_that.total,_that.status,_that.deliveryAddress,_that.city,_that.pincode,_that.phone,_that.deliverySlot,_that.deliveryDate,_that.deliveryType,_that.deliverySlotId,_that.paymentMethod,_that.paymentStatus,_that.notes,_that.createdAt);case _:
   return null;
 
 }
@@ -225,7 +232,7 @@ return $default(_that.id,_that.mongoId,_that.userId,_that.userName,_that.userPho
 @JsonSerializable()
 
 class _OrderModel implements OrderModel {
-  const _OrderModel({@JsonKey(name: 'id') this.id, @JsonKey(name: '_id') this.mongoId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'user_name') this.userName, @JsonKey(name: 'user_phone') this.userPhone, final  List<OrderItemModel> items = const [], this.subtotal = 0, @JsonKey(name: 'delivery_fee') this.deliveryFee = 0, this.total = 0, this.status = 'pending', @JsonKey(name: 'delivery_address') this.deliveryAddress, @JsonKey(name: 'delivery_slot') this.deliverySlot, @JsonKey(name: 'delivery_date') this.deliveryDate, @JsonKey(name: 'payment_method') this.paymentMethod, @JsonKey(name: 'payment_status') this.paymentStatus, this.notes, @JsonKey(name: 'created_at') required this.createdAt}): _items = items;
+  const _OrderModel({@JsonKey(name: 'id') this.id, @JsonKey(name: '_id') this.mongoId, @JsonKey(name: 'user_id') this.userId = '', @JsonKey(name: 'user_name') this.userName, @JsonKey(name: 'user_phone') this.userPhone, final  List<OrderItemModel> items = const [], @JsonKey(name: 'one_time_items') final  List<OrderItemModel> oneTimeItems = const [], this.subtotal = 0.0, @JsonKey(name: 'delivery_fee') this.deliveryFee = 0.0, this.discount = 0.0, this.total = 0.0, this.status = 'pending', @JsonKey(name: 'delivery_address') this.deliveryAddress = '', this.city, this.pincode, this.phone = '', @JsonKey(name: 'delivery_slot') this.deliverySlot, @JsonKey(name: 'delivery_date') this.deliveryDate, @JsonKey(name: 'delivery_type') this.deliveryType, @JsonKey(name: 'delivery_slot_id') this.deliverySlotId, @JsonKey(name: 'payment_method') this.paymentMethod = 'cod', @JsonKey(name: 'payment_status') this.paymentStatus, this.notes, @JsonKey(name: 'created_at') this.createdAt}): _items = items,_oneTimeItems = oneTimeItems;
   factory _OrderModel.fromJson(Map<String, dynamic> json) => _$OrderModelFromJson(json);
 
 @override@JsonKey(name: 'id') final  String? id;
@@ -240,17 +247,30 @@ class _OrderModel implements OrderModel {
   return EqualUnmodifiableListView(_items);
 }
 
+ final  List<OrderItemModel> _oneTimeItems;
+@override@JsonKey(name: 'one_time_items') List<OrderItemModel> get oneTimeItems {
+  if (_oneTimeItems is EqualUnmodifiableListView) return _oneTimeItems;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_oneTimeItems);
+}
+
 @override@JsonKey() final  double subtotal;
 @override@JsonKey(name: 'delivery_fee') final  double deliveryFee;
+@override@JsonKey() final  double discount;
 @override@JsonKey() final  double total;
 @override@JsonKey() final  String status;
-@override@JsonKey(name: 'delivery_address') final  String? deliveryAddress;
+@override@JsonKey(name: 'delivery_address') final  String deliveryAddress;
+@override final  String? city;
+@override final  String? pincode;
+@override@JsonKey() final  String phone;
 @override@JsonKey(name: 'delivery_slot') final  String? deliverySlot;
 @override@JsonKey(name: 'delivery_date') final  DateTime? deliveryDate;
-@override@JsonKey(name: 'payment_method') final  String? paymentMethod;
+@override@JsonKey(name: 'delivery_type') final  String? deliveryType;
+@override@JsonKey(name: 'delivery_slot_id') final  String? deliverySlotId;
+@override@JsonKey(name: 'payment_method') final  String paymentMethod;
 @override@JsonKey(name: 'payment_status') final  String? paymentStatus;
 @override final  String? notes;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of OrderModel
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +285,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderModel&&(identical(other.id, id) || other.id == id)&&(identical(other.mongoId, mongoId) || other.mongoId == mongoId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userPhone, userPhone) || other.userPhone == userPhone)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.deliveryFee, deliveryFee) || other.deliveryFee == deliveryFee)&&(identical(other.total, total) || other.total == total)&&(identical(other.status, status) || other.status == status)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.deliverySlot, deliverySlot) || other.deliverySlot == deliverySlot)&&(identical(other.deliveryDate, deliveryDate) || other.deliveryDate == deliveryDate)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderModel&&(identical(other.id, id) || other.id == id)&&(identical(other.mongoId, mongoId) || other.mongoId == mongoId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userPhone, userPhone) || other.userPhone == userPhone)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._oneTimeItems, _oneTimeItems)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.deliveryFee, deliveryFee) || other.deliveryFee == deliveryFee)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.total, total) || other.total == total)&&(identical(other.status, status) || other.status == status)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.city, city) || other.city == city)&&(identical(other.pincode, pincode) || other.pincode == pincode)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.deliverySlot, deliverySlot) || other.deliverySlot == deliverySlot)&&(identical(other.deliveryDate, deliveryDate) || other.deliveryDate == deliveryDate)&&(identical(other.deliveryType, deliveryType) || other.deliveryType == deliveryType)&&(identical(other.deliverySlotId, deliverySlotId) || other.deliverySlotId == deliverySlotId)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mongoId,userId,userName,userPhone,const DeepCollectionEquality().hash(_items),subtotal,deliveryFee,total,status,deliveryAddress,deliverySlot,deliveryDate,paymentMethod,paymentStatus,notes,createdAt);
+int get hashCode => Object.hashAll([runtimeType,id,mongoId,userId,userName,userPhone,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_oneTimeItems),subtotal,deliveryFee,discount,total,status,deliveryAddress,city,pincode,phone,deliverySlot,deliveryDate,deliveryType,deliverySlotId,paymentMethod,paymentStatus,notes,createdAt]);
 
 @override
 String toString() {
-  return 'OrderModel(id: $id, mongoId: $mongoId, userId: $userId, userName: $userName, userPhone: $userPhone, items: $items, subtotal: $subtotal, deliveryFee: $deliveryFee, total: $total, status: $status, deliveryAddress: $deliveryAddress, deliverySlot: $deliverySlot, deliveryDate: $deliveryDate, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, notes: $notes, createdAt: $createdAt)';
+  return 'OrderModel(id: $id, mongoId: $mongoId, userId: $userId, userName: $userName, userPhone: $userPhone, items: $items, oneTimeItems: $oneTimeItems, subtotal: $subtotal, deliveryFee: $deliveryFee, discount: $discount, total: $total, status: $status, deliveryAddress: $deliveryAddress, city: $city, pincode: $pincode, phone: $phone, deliverySlot: $deliverySlot, deliveryDate: $deliveryDate, deliveryType: $deliveryType, deliverySlotId: $deliverySlotId, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, notes: $notes, createdAt: $createdAt)';
 }
 
 
@@ -285,7 +305,7 @@ abstract mixin class _$OrderModelCopyWith<$Res> implements $OrderModelCopyWith<$
   factory _$OrderModelCopyWith(_OrderModel value, $Res Function(_OrderModel) _then) = __$OrderModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'id') String? id,@JsonKey(name: '_id') String? mongoId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'user_name') String? userName,@JsonKey(name: 'user_phone') String? userPhone, List<OrderItemModel> items, double subtotal,@JsonKey(name: 'delivery_fee') double deliveryFee, double total, String status,@JsonKey(name: 'delivery_address') String? deliveryAddress,@JsonKey(name: 'delivery_slot') String? deliverySlot,@JsonKey(name: 'delivery_date') DateTime? deliveryDate,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'payment_status') String? paymentStatus, String? notes,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'id') String? id,@JsonKey(name: '_id') String? mongoId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'user_name') String? userName,@JsonKey(name: 'user_phone') String? userPhone, List<OrderItemModel> items,@JsonKey(name: 'one_time_items') List<OrderItemModel> oneTimeItems, double subtotal,@JsonKey(name: 'delivery_fee') double deliveryFee, double discount, double total, String status,@JsonKey(name: 'delivery_address') String deliveryAddress, String? city, String? pincode, String phone,@JsonKey(name: 'delivery_slot') String? deliverySlot,@JsonKey(name: 'delivery_date') DateTime? deliveryDate,@JsonKey(name: 'delivery_type') String? deliveryType,@JsonKey(name: 'delivery_slot_id') String? deliverySlotId,@JsonKey(name: 'payment_method') String paymentMethod,@JsonKey(name: 'payment_status') String? paymentStatus, String? notes,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -302,7 +322,7 @@ class __$OrderModelCopyWithImpl<$Res>
 
 /// Create a copy of OrderModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? mongoId = freezed,Object? userId = null,Object? userName = freezed,Object? userPhone = freezed,Object? items = null,Object? subtotal = null,Object? deliveryFee = null,Object? total = null,Object? status = null,Object? deliveryAddress = freezed,Object? deliverySlot = freezed,Object? deliveryDate = freezed,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? notes = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? mongoId = freezed,Object? userId = null,Object? userName = freezed,Object? userPhone = freezed,Object? items = null,Object? oneTimeItems = null,Object? subtotal = null,Object? deliveryFee = null,Object? discount = null,Object? total = null,Object? status = null,Object? deliveryAddress = null,Object? city = freezed,Object? pincode = freezed,Object? phone = null,Object? deliverySlot = freezed,Object? deliveryDate = freezed,Object? deliveryType = freezed,Object? deliverySlotId = freezed,Object? paymentMethod = null,Object? paymentStatus = freezed,Object? notes = freezed,Object? createdAt = freezed,}) {
   return _then(_OrderModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,mongoId: freezed == mongoId ? _self.mongoId : mongoId // ignore: cast_nullable_to_non_nullable
@@ -310,18 +330,25 @@ as String?,userId: null == userId ? _self.userId : userId // ignore: cast_nullab
 as String,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String?,userPhone: freezed == userPhone ? _self.userPhone : userPhone // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<OrderItemModel>,oneTimeItems: null == oneTimeItems ? _self._oneTimeItems : oneTimeItems // ignore: cast_nullable_to_non_nullable
 as List<OrderItemModel>,subtotal: null == subtotal ? _self.subtotal : subtotal // ignore: cast_nullable_to_non_nullable
 as double,deliveryFee: null == deliveryFee ? _self.deliveryFee : deliveryFee // ignore: cast_nullable_to_non_nullable
+as double,discount: null == discount ? _self.discount : discount // ignore: cast_nullable_to_non_nullable
 as double,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as double,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,deliveryAddress: freezed == deliveryAddress ? _self.deliveryAddress : deliveryAddress // ignore: cast_nullable_to_non_nullable
-as String?,deliverySlot: freezed == deliverySlot ? _self.deliverySlot : deliverySlot // ignore: cast_nullable_to_non_nullable
+as String,deliveryAddress: null == deliveryAddress ? _self.deliveryAddress : deliveryAddress // ignore: cast_nullable_to_non_nullable
+as String,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,pincode: freezed == pincode ? _self.pincode : pincode // ignore: cast_nullable_to_non_nullable
+as String?,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String,deliverySlot: freezed == deliverySlot ? _self.deliverySlot : deliverySlot // ignore: cast_nullable_to_non_nullable
 as String?,deliveryDate: freezed == deliveryDate ? _self.deliveryDate : deliveryDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
-as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
+as DateTime?,deliveryType: freezed == deliveryType ? _self.deliveryType : deliveryType // ignore: cast_nullable_to_non_nullable
+as String?,deliverySlotId: freezed == deliverySlotId ? _self.deliverySlotId : deliverySlotId // ignore: cast_nullable_to_non_nullable
+as String?,paymentMethod: null == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as String,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -332,7 +359,7 @@ as DateTime,
 /// @nodoc
 mixin _$OrderItemModel {
 
-@JsonKey(name: 'product_id') String get productId;@JsonKey(name: 'product_name') String get productName; double get price; double get quantity; String get unit; double get total;
+@JsonKey(name: 'product_id') String get productId;@JsonKey(name: 'product_name') String get productName; double get price; double get quantity; String get unit; double get total; Map<String, dynamic>? get product;
 /// Create a copy of OrderItemModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -345,16 +372,16 @@ $OrderItemModelCopyWith<OrderItemModel> get copyWith => _$OrderItemModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemModel&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.total, total) || other.total == total));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemModel&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.total, total) || other.total == total)&&const DeepCollectionEquality().equals(other.product, product));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,productId,productName,price,quantity,unit,total);
+int get hashCode => Object.hash(runtimeType,productId,productName,price,quantity,unit,total,const DeepCollectionEquality().hash(product));
 
 @override
 String toString() {
-  return 'OrderItemModel(productId: $productId, productName: $productName, price: $price, quantity: $quantity, unit: $unit, total: $total)';
+  return 'OrderItemModel(productId: $productId, productName: $productName, price: $price, quantity: $quantity, unit: $unit, total: $total, product: $product)';
 }
 
 
@@ -365,7 +392,7 @@ abstract mixin class $OrderItemModelCopyWith<$Res>  {
   factory $OrderItemModelCopyWith(OrderItemModel value, $Res Function(OrderItemModel) _then) = _$OrderItemModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'product_id') String productId,@JsonKey(name: 'product_name') String productName, double price, double quantity, String unit, double total
+@JsonKey(name: 'product_id') String productId,@JsonKey(name: 'product_name') String productName, double price, double quantity, String unit, double total, Map<String, dynamic>? product
 });
 
 
@@ -382,7 +409,7 @@ class _$OrderItemModelCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? productId = null,Object? productName = null,Object? price = null,Object? quantity = null,Object? unit = null,Object? total = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? productId = null,Object? productName = null,Object? price = null,Object? quantity = null,Object? unit = null,Object? total = null,Object? product = freezed,}) {
   return _then(_self.copyWith(
 productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
@@ -390,7 +417,8 @@ as String,price: null == price ? _self.price : price // ignore: cast_nullable_to
 as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as double,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
 as String,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
-as double,
+as double,product: freezed == product ? _self.product : product // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
   ));
 }
 
@@ -475,10 +503,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'product_id')  String productId, @JsonKey(name: 'product_name')  String productName,  double price,  double quantity,  String unit,  double total)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'product_id')  String productId, @JsonKey(name: 'product_name')  String productName,  double price,  double quantity,  String unit,  double total,  Map<String, dynamic>? product)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderItemModel() when $default != null:
-return $default(_that.productId,_that.productName,_that.price,_that.quantity,_that.unit,_that.total);case _:
+return $default(_that.productId,_that.productName,_that.price,_that.quantity,_that.unit,_that.total,_that.product);case _:
   return orElse();
 
 }
@@ -496,10 +524,10 @@ return $default(_that.productId,_that.productName,_that.price,_that.quantity,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'product_id')  String productId, @JsonKey(name: 'product_name')  String productName,  double price,  double quantity,  String unit,  double total)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'product_id')  String productId, @JsonKey(name: 'product_name')  String productName,  double price,  double quantity,  String unit,  double total,  Map<String, dynamic>? product)  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemModel():
-return $default(_that.productId,_that.productName,_that.price,_that.quantity,_that.unit,_that.total);case _:
+return $default(_that.productId,_that.productName,_that.price,_that.quantity,_that.unit,_that.total,_that.product);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -516,10 +544,10 @@ return $default(_that.productId,_that.productName,_that.price,_that.quantity,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'product_id')  String productId, @JsonKey(name: 'product_name')  String productName,  double price,  double quantity,  String unit,  double total)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'product_id')  String productId, @JsonKey(name: 'product_name')  String productName,  double price,  double quantity,  String unit,  double total,  Map<String, dynamic>? product)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemModel() when $default != null:
-return $default(_that.productId,_that.productName,_that.price,_that.quantity,_that.unit,_that.total);case _:
+return $default(_that.productId,_that.productName,_that.price,_that.quantity,_that.unit,_that.total,_that.product);case _:
   return null;
 
 }
@@ -531,15 +559,24 @@ return $default(_that.productId,_that.productName,_that.price,_that.quantity,_th
 @JsonSerializable()
 
 class _OrderItemModel implements OrderItemModel {
-  const _OrderItemModel({@JsonKey(name: 'product_id') required this.productId, @JsonKey(name: 'product_name') required this.productName, required this.price, required this.quantity, this.unit = 'kg', required this.total});
+  const _OrderItemModel({@JsonKey(name: 'product_id') this.productId = '', @JsonKey(name: 'product_name') this.productName = '', this.price = 0.0, this.quantity = 1.0, this.unit = 'kg', this.total = 0.0, final  Map<String, dynamic>? product}): _product = product;
   factory _OrderItemModel.fromJson(Map<String, dynamic> json) => _$OrderItemModelFromJson(json);
 
 @override@JsonKey(name: 'product_id') final  String productId;
 @override@JsonKey(name: 'product_name') final  String productName;
-@override final  double price;
-@override final  double quantity;
+@override@JsonKey() final  double price;
+@override@JsonKey() final  double quantity;
 @override@JsonKey() final  String unit;
-@override final  double total;
+@override@JsonKey() final  double total;
+ final  Map<String, dynamic>? _product;
+@override Map<String, dynamic>? get product {
+  final value = _product;
+  if (value == null) return null;
+  if (_product is EqualUnmodifiableMapView) return _product;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
 
 /// Create a copy of OrderItemModel
 /// with the given fields replaced by the non-null parameter values.
@@ -554,16 +591,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemModel&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.total, total) || other.total == total));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemModel&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.total, total) || other.total == total)&&const DeepCollectionEquality().equals(other._product, _product));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,productId,productName,price,quantity,unit,total);
+int get hashCode => Object.hash(runtimeType,productId,productName,price,quantity,unit,total,const DeepCollectionEquality().hash(_product));
 
 @override
 String toString() {
-  return 'OrderItemModel(productId: $productId, productName: $productName, price: $price, quantity: $quantity, unit: $unit, total: $total)';
+  return 'OrderItemModel(productId: $productId, productName: $productName, price: $price, quantity: $quantity, unit: $unit, total: $total, product: $product)';
 }
 
 
@@ -574,7 +611,7 @@ abstract mixin class _$OrderItemModelCopyWith<$Res> implements $OrderItemModelCo
   factory _$OrderItemModelCopyWith(_OrderItemModel value, $Res Function(_OrderItemModel) _then) = __$OrderItemModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'product_id') String productId,@JsonKey(name: 'product_name') String productName, double price, double quantity, String unit, double total
+@JsonKey(name: 'product_id') String productId,@JsonKey(name: 'product_name') String productName, double price, double quantity, String unit, double total, Map<String, dynamic>? product
 });
 
 
@@ -591,7 +628,7 @@ class __$OrderItemModelCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? productId = null,Object? productName = null,Object? price = null,Object? quantity = null,Object? unit = null,Object? total = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? productId = null,Object? productName = null,Object? price = null,Object? quantity = null,Object? unit = null,Object? total = null,Object? product = freezed,}) {
   return _then(_OrderItemModel(
 productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
@@ -599,7 +636,8 @@ as String,price: null == price ? _self.price : price // ignore: cast_nullable_to
 as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as double,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
 as String,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
-as double,
+as double,product: freezed == product ? _self._product : product // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
   ));
 }
 

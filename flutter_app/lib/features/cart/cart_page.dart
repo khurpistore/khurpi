@@ -15,6 +15,11 @@ class CartPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Cart'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+      ),
       body: cartState?.items.isEmpty != false
           ? _buildEmptyCart()
           : Column(

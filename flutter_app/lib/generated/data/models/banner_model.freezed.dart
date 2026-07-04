@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BannerModel {
 
-@JsonKey(name: 'id') String? get id;@JsonKey(name: '_id') String? get mongoId;@JsonKey(name: 'image_url') String get imageUrl; String? get title; String? get subtitle;@JsonKey(name: 'action_type') String? get actionType;@JsonKey(name: 'action_value') String? get actionValue;@JsonKey(name: 'display_order') int get displayOrder;@JsonKey(name: 'is_active') bool get isActive;
+ String? get id;@JsonKey(name: 'image_url') String get imageUrl; String? get title; String? get subtitle;@JsonKey(name: 'link_type') String? get linkType;@JsonKey(name: 'link_value') String? get linkValue;@JsonKey(name: 'action_type') String? get actionType;@JsonKey(name: 'action_value') String? get actionValue;@JsonKey(name: 'display_order') int get displayOrder; bool get active;@JsonKey(name: 'start_date') String? get startDate;@JsonKey(name: 'end_date') String? get endDate;@JsonKey(name: 'created_at') String? get createdAt;
 /// Create a copy of BannerModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $BannerModelCopyWith<BannerModel> get copyWith => _$BannerModelCopyWithImpl<Bann
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BannerModel&&(identical(other.id, id) || other.id == id)&&(identical(other.mongoId, mongoId) || other.mongoId == mongoId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.actionType, actionType) || other.actionType == actionType)&&(identical(other.actionValue, actionValue) || other.actionValue == actionValue)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BannerModel&&(identical(other.id, id) || other.id == id)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.linkType, linkType) || other.linkType == linkType)&&(identical(other.linkValue, linkValue) || other.linkValue == linkValue)&&(identical(other.actionType, actionType) || other.actionType == actionType)&&(identical(other.actionValue, actionValue) || other.actionValue == actionValue)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.active, active) || other.active == active)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mongoId,imageUrl,title,subtitle,actionType,actionValue,displayOrder,isActive);
+int get hashCode => Object.hash(runtimeType,id,imageUrl,title,subtitle,linkType,linkValue,actionType,actionValue,displayOrder,active,startDate,endDate,createdAt);
 
 @override
 String toString() {
-  return 'BannerModel(id: $id, mongoId: $mongoId, imageUrl: $imageUrl, title: $title, subtitle: $subtitle, actionType: $actionType, actionValue: $actionValue, displayOrder: $displayOrder, isActive: $isActive)';
+  return 'BannerModel(id: $id, imageUrl: $imageUrl, title: $title, subtitle: $subtitle, linkType: $linkType, linkValue: $linkValue, actionType: $actionType, actionValue: $actionValue, displayOrder: $displayOrder, active: $active, startDate: $startDate, endDate: $endDate, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $BannerModelCopyWith<$Res>  {
   factory $BannerModelCopyWith(BannerModel value, $Res Function(BannerModel) _then) = _$BannerModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'id') String? id,@JsonKey(name: '_id') String? mongoId,@JsonKey(name: 'image_url') String imageUrl, String? title, String? subtitle,@JsonKey(name: 'action_type') String? actionType,@JsonKey(name: 'action_value') String? actionValue,@JsonKey(name: 'display_order') int displayOrder,@JsonKey(name: 'is_active') bool isActive
+ String? id,@JsonKey(name: 'image_url') String imageUrl, String? title, String? subtitle,@JsonKey(name: 'link_type') String? linkType,@JsonKey(name: 'link_value') String? linkValue,@JsonKey(name: 'action_type') String? actionType,@JsonKey(name: 'action_value') String? actionValue,@JsonKey(name: 'display_order') int displayOrder, bool active,@JsonKey(name: 'start_date') String? startDate,@JsonKey(name: 'end_date') String? endDate,@JsonKey(name: 'created_at') String? createdAt
 });
 
 
@@ -65,18 +65,22 @@ class _$BannerModelCopyWithImpl<$Res>
 
 /// Create a copy of BannerModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? mongoId = freezed,Object? imageUrl = null,Object? title = freezed,Object? subtitle = freezed,Object? actionType = freezed,Object? actionValue = freezed,Object? displayOrder = null,Object? isActive = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? imageUrl = null,Object? title = freezed,Object? subtitle = freezed,Object? linkType = freezed,Object? linkValue = freezed,Object? actionType = freezed,Object? actionValue = freezed,Object? displayOrder = null,Object? active = null,Object? startDate = freezed,Object? endDate = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,mongoId: freezed == mongoId ? _self.mongoId : mongoId // ignore: cast_nullable_to_non_nullable
 as String?,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,subtitle: freezed == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
+as String?,linkType: freezed == linkType ? _self.linkType : linkType // ignore: cast_nullable_to_non_nullable
+as String?,linkValue: freezed == linkValue ? _self.linkValue : linkValue // ignore: cast_nullable_to_non_nullable
 as String?,actionType: freezed == actionType ? _self.actionType : actionType // ignore: cast_nullable_to_non_nullable
 as String?,actionValue: freezed == actionValue ? _self.actionValue : actionValue // ignore: cast_nullable_to_non_nullable
 as String?,displayOrder: null == displayOrder ? _self.displayOrder : displayOrder // ignore: cast_nullable_to_non_nullable
-as int,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,
+as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
+as bool,startDate: freezed == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
+as String?,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -161,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'image_url')  String imageUrl,  String? title,  String? subtitle, @JsonKey(name: 'action_type')  String? actionType, @JsonKey(name: 'action_value')  String? actionValue, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'is_active')  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'image_url')  String imageUrl,  String? title,  String? subtitle, @JsonKey(name: 'link_type')  String? linkType, @JsonKey(name: 'link_value')  String? linkValue, @JsonKey(name: 'action_type')  String? actionType, @JsonKey(name: 'action_value')  String? actionValue, @JsonKey(name: 'display_order')  int displayOrder,  bool active, @JsonKey(name: 'start_date')  String? startDate, @JsonKey(name: 'end_date')  String? endDate, @JsonKey(name: 'created_at')  String? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BannerModel() when $default != null:
-return $default(_that.id,_that.mongoId,_that.imageUrl,_that.title,_that.subtitle,_that.actionType,_that.actionValue,_that.displayOrder,_that.isActive);case _:
+return $default(_that.id,_that.imageUrl,_that.title,_that.subtitle,_that.linkType,_that.linkValue,_that.actionType,_that.actionValue,_that.displayOrder,_that.active,_that.startDate,_that.endDate,_that.createdAt);case _:
   return orElse();
 
 }
@@ -182,10 +186,10 @@ return $default(_that.id,_that.mongoId,_that.imageUrl,_that.title,_that.subtitle
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'image_url')  String imageUrl,  String? title,  String? subtitle, @JsonKey(name: 'action_type')  String? actionType, @JsonKey(name: 'action_value')  String? actionValue, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'is_active')  bool isActive)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'image_url')  String imageUrl,  String? title,  String? subtitle, @JsonKey(name: 'link_type')  String? linkType, @JsonKey(name: 'link_value')  String? linkValue, @JsonKey(name: 'action_type')  String? actionType, @JsonKey(name: 'action_value')  String? actionValue, @JsonKey(name: 'display_order')  int displayOrder,  bool active, @JsonKey(name: 'start_date')  String? startDate, @JsonKey(name: 'end_date')  String? endDate, @JsonKey(name: 'created_at')  String? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _BannerModel():
-return $default(_that.id,_that.mongoId,_that.imageUrl,_that.title,_that.subtitle,_that.actionType,_that.actionValue,_that.displayOrder,_that.isActive);case _:
+return $default(_that.id,_that.imageUrl,_that.title,_that.subtitle,_that.linkType,_that.linkValue,_that.actionType,_that.actionValue,_that.displayOrder,_that.active,_that.startDate,_that.endDate,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +206,10 @@ return $default(_that.id,_that.mongoId,_that.imageUrl,_that.title,_that.subtitle
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: '_id')  String? mongoId, @JsonKey(name: 'image_url')  String imageUrl,  String? title,  String? subtitle, @JsonKey(name: 'action_type')  String? actionType, @JsonKey(name: 'action_value')  String? actionValue, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'is_active')  bool isActive)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id, @JsonKey(name: 'image_url')  String imageUrl,  String? title,  String? subtitle, @JsonKey(name: 'link_type')  String? linkType, @JsonKey(name: 'link_value')  String? linkValue, @JsonKey(name: 'action_type')  String? actionType, @JsonKey(name: 'action_value')  String? actionValue, @JsonKey(name: 'display_order')  int displayOrder,  bool active, @JsonKey(name: 'start_date')  String? startDate, @JsonKey(name: 'end_date')  String? endDate, @JsonKey(name: 'created_at')  String? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _BannerModel() when $default != null:
-return $default(_that.id,_that.mongoId,_that.imageUrl,_that.title,_that.subtitle,_that.actionType,_that.actionValue,_that.displayOrder,_that.isActive);case _:
+return $default(_that.id,_that.imageUrl,_that.title,_that.subtitle,_that.linkType,_that.linkValue,_that.actionType,_that.actionValue,_that.displayOrder,_that.active,_that.startDate,_that.endDate,_that.createdAt);case _:
   return null;
 
 }
@@ -217,18 +221,22 @@ return $default(_that.id,_that.mongoId,_that.imageUrl,_that.title,_that.subtitle
 @JsonSerializable()
 
 class _BannerModel implements BannerModel {
-  const _BannerModel({@JsonKey(name: 'id') this.id, @JsonKey(name: '_id') this.mongoId, @JsonKey(name: 'image_url') required this.imageUrl, this.title, this.subtitle, @JsonKey(name: 'action_type') this.actionType, @JsonKey(name: 'action_value') this.actionValue, @JsonKey(name: 'display_order') this.displayOrder = 0, @JsonKey(name: 'is_active') this.isActive = true});
+  const _BannerModel({this.id, @JsonKey(name: 'image_url') this.imageUrl = '', this.title, this.subtitle, @JsonKey(name: 'link_type') this.linkType, @JsonKey(name: 'link_value') this.linkValue, @JsonKey(name: 'action_type') this.actionType, @JsonKey(name: 'action_value') this.actionValue, @JsonKey(name: 'display_order') this.displayOrder = 0, this.active = true, @JsonKey(name: 'start_date') this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'created_at') this.createdAt});
   factory _BannerModel.fromJson(Map<String, dynamic> json) => _$BannerModelFromJson(json);
 
-@override@JsonKey(name: 'id') final  String? id;
-@override@JsonKey(name: '_id') final  String? mongoId;
+@override final  String? id;
 @override@JsonKey(name: 'image_url') final  String imageUrl;
 @override final  String? title;
 @override final  String? subtitle;
+@override@JsonKey(name: 'link_type') final  String? linkType;
+@override@JsonKey(name: 'link_value') final  String? linkValue;
 @override@JsonKey(name: 'action_type') final  String? actionType;
 @override@JsonKey(name: 'action_value') final  String? actionValue;
 @override@JsonKey(name: 'display_order') final  int displayOrder;
-@override@JsonKey(name: 'is_active') final  bool isActive;
+@override@JsonKey() final  bool active;
+@override@JsonKey(name: 'start_date') final  String? startDate;
+@override@JsonKey(name: 'end_date') final  String? endDate;
+@override@JsonKey(name: 'created_at') final  String? createdAt;
 
 /// Create a copy of BannerModel
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BannerModel&&(identical(other.id, id) || other.id == id)&&(identical(other.mongoId, mongoId) || other.mongoId == mongoId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.actionType, actionType) || other.actionType == actionType)&&(identical(other.actionValue, actionValue) || other.actionValue == actionValue)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BannerModel&&(identical(other.id, id) || other.id == id)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.linkType, linkType) || other.linkType == linkType)&&(identical(other.linkValue, linkValue) || other.linkValue == linkValue)&&(identical(other.actionType, actionType) || other.actionType == actionType)&&(identical(other.actionValue, actionValue) || other.actionValue == actionValue)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.active, active) || other.active == active)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mongoId,imageUrl,title,subtitle,actionType,actionValue,displayOrder,isActive);
+int get hashCode => Object.hash(runtimeType,id,imageUrl,title,subtitle,linkType,linkValue,actionType,actionValue,displayOrder,active,startDate,endDate,createdAt);
 
 @override
 String toString() {
-  return 'BannerModel(id: $id, mongoId: $mongoId, imageUrl: $imageUrl, title: $title, subtitle: $subtitle, actionType: $actionType, actionValue: $actionValue, displayOrder: $displayOrder, isActive: $isActive)';
+  return 'BannerModel(id: $id, imageUrl: $imageUrl, title: $title, subtitle: $subtitle, linkType: $linkType, linkValue: $linkValue, actionType: $actionType, actionValue: $actionValue, displayOrder: $displayOrder, active: $active, startDate: $startDate, endDate: $endDate, createdAt: $createdAt)';
 }
 
 
@@ -263,7 +271,7 @@ abstract mixin class _$BannerModelCopyWith<$Res> implements $BannerModelCopyWith
   factory _$BannerModelCopyWith(_BannerModel value, $Res Function(_BannerModel) _then) = __$BannerModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'id') String? id,@JsonKey(name: '_id') String? mongoId,@JsonKey(name: 'image_url') String imageUrl, String? title, String? subtitle,@JsonKey(name: 'action_type') String? actionType,@JsonKey(name: 'action_value') String? actionValue,@JsonKey(name: 'display_order') int displayOrder,@JsonKey(name: 'is_active') bool isActive
+ String? id,@JsonKey(name: 'image_url') String imageUrl, String? title, String? subtitle,@JsonKey(name: 'link_type') String? linkType,@JsonKey(name: 'link_value') String? linkValue,@JsonKey(name: 'action_type') String? actionType,@JsonKey(name: 'action_value') String? actionValue,@JsonKey(name: 'display_order') int displayOrder, bool active,@JsonKey(name: 'start_date') String? startDate,@JsonKey(name: 'end_date') String? endDate,@JsonKey(name: 'created_at') String? createdAt
 });
 
 
@@ -280,18 +288,22 @@ class __$BannerModelCopyWithImpl<$Res>
 
 /// Create a copy of BannerModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? mongoId = freezed,Object? imageUrl = null,Object? title = freezed,Object? subtitle = freezed,Object? actionType = freezed,Object? actionValue = freezed,Object? displayOrder = null,Object? isActive = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? imageUrl = null,Object? title = freezed,Object? subtitle = freezed,Object? linkType = freezed,Object? linkValue = freezed,Object? actionType = freezed,Object? actionValue = freezed,Object? displayOrder = null,Object? active = null,Object? startDate = freezed,Object? endDate = freezed,Object? createdAt = freezed,}) {
   return _then(_BannerModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,mongoId: freezed == mongoId ? _self.mongoId : mongoId // ignore: cast_nullable_to_non_nullable
 as String?,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,subtitle: freezed == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
+as String?,linkType: freezed == linkType ? _self.linkType : linkType // ignore: cast_nullable_to_non_nullable
+as String?,linkValue: freezed == linkValue ? _self.linkValue : linkValue // ignore: cast_nullable_to_non_nullable
 as String?,actionType: freezed == actionType ? _self.actionType : actionType // ignore: cast_nullable_to_non_nullable
 as String?,actionValue: freezed == actionValue ? _self.actionValue : actionValue // ignore: cast_nullable_to_non_nullable
 as String?,displayOrder: null == displayOrder ? _self.displayOrder : displayOrder // ignore: cast_nullable_to_non_nullable
-as int,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,
+as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
+as bool,startDate: freezed == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
+as String?,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

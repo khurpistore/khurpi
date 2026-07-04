@@ -62,7 +62,7 @@ final class AuthViewModelProvider
   }
 }
 
-String _$authViewModelHash() => r'443df1ac916e96f9b0b53ac4cfddf9e78ffa1ef2';
+String _$authViewModelHash() => r'ae570de728a154bacca2f774d6bf5eb1911a5bec';
 
 final class AuthViewModelFamily extends $Family
     with

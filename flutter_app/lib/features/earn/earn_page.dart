@@ -10,6 +10,11 @@ class EarnPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Earn & Win'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(

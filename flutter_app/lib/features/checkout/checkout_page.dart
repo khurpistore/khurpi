@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/home/home_providers.dart';
@@ -11,6 +10,7 @@ import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
+import 'package:dio/dio.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
@@ -45,7 +45,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       final response = await _dio.get('/users/${user.userId}/addresses');
       final addresses = List<Map<String, dynamic>>.from(response.data);
       if (addresses.isNotEmpty) {
-        // Find default address or use first one
         final defaultAddr = addresses.firstWhere(
           (a) => a['is_default'] == true,
           orElse: () => addresses.first,
@@ -110,7 +109,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           // Scrollable Content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -118,8 +117,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                   _buildOrderItemsSection(cartState),
                   const SizedBox(height: 20),
 
-                  // Delivery Time Selection
-                  _buildDeliveryTimeSection(storeState),
+                  // Delivery Time Selection (Instant or Tomorrow)
+                  _buildDeliveryTimeSection(),
                   const SizedBox(height: 20),
 
                   // Payment Method
@@ -137,7 +136,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             ),
           ),
 
-          // Bottom Fixed Section: Address + Place Order
+          // Bottom Fixed Section: Address + Place Order Button
           _buildBottomSection(total),
         ],
       ),
@@ -193,7 +192,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
+                        '${item.quantity.toInt()} x ₹${item.price.toStringAsFixed(0)}',
                         style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                       ),
                     ],
@@ -223,7 +222,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  Widget _buildDeliveryTimeSection(StoreState? storeState) {
+  Widget _buildDeliveryTimeSection() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -272,7 +271,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: _deliveryTime == 'instant' 
-                  ? AppColors.warning.withOpacity(0.1) 
+                  ? Colors.orange.withOpacity(0.1) 
                   : AppColors.success.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -458,7 +457,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               Icon(Icons.note_outlined, size: 20, color: AppColors.primary),
               const SizedBox(width: 8),
               const Text('Order Notes', style: AppTextStyles.h4),
-              const Text(' (Optional)', style: TextStyle(color: AppColors.textHint, fontSize: 14)),
+              Text(' (Optional)', style: TextStyle(color: AppColors.textHint, fontSize: 14)),
             ],
           ),
           const SizedBox(height: 12),
@@ -720,11 +719,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               const SnackBar(content: Text('Redirecting to payment...')),
             );
             // TODO: Navigate to payment page
-            // For now, just go back
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Order placed successfully!'),
+              SnackBar(
+                content: const Text('Order placed successfully!'),
                 backgroundColor: AppColors.success,
               ),
             );

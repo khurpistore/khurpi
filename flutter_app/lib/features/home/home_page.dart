@@ -9,6 +9,8 @@ import 'package:khurpi_fresh/features/products/products_page.dart';
 import 'package:khurpi_fresh/features/products/product_detail_page.dart';
 import 'package:khurpi_fresh/features/home/home_providers.dart';
 import 'package:khurpi_fresh/features/products/products_providers.dart';
+import 'package:khurpi_fresh/features/auth/auth_providers.dart';
+import 'package:khurpi_fresh/features/address/address_providers.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -18,20 +20,35 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  int _currentBannerIndex = 0;
+  late final PageController _bannerPageController;
+
   @override
   void initState() {
     super.initState();
+    _bannerPageController = PageController(viewportFraction: 1.0);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
   }
 
+  @override
+  void dispose() {
+    _bannerPageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadData() async {
-    await Future.wait([
-      ref.read(provideProductsViewModelNotifierProvider)!.loadProducts(),
-      ref.read(provideProductsViewModelNotifierProvider)!.loadCategories(),
-      ref.read(provideBannersViewModelNotifierProvider)!.loadBanners(),
-    ]);
+    final userId = ref.read(provideAuthViewModelProvider)?.user?.id;
+
+    ref.read(provideProductsViewModelNotifierProvider)!.loadProducts();
+    ref.read(provideProductsViewModelNotifierProvider)!.loadCategories();
+    ref.read(provideBannersViewModelNotifierProvider)!.loadBanners();
+
+    // Load default address if user exists
+    if (userId != null && userId.trim().isNotEmpty) {
+      ref.read(addressNotifierProvider.notifier).loadDefaultAddress(userId);
+    }
   }
 
   @override
@@ -68,22 +85,48 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ],
 
-            // Banners Section (horizontal)
+            // Banners Section (slideshow with dots)
             if (bannersState?.banners.isNotEmpty == true) ...[
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 140,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: bannersState!.banners.length,
-                    itemBuilder: (context, index) {
-                      final banner = bannersState.banners[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: _buildHorizontalBannerCard(banner),
-                      );
-                    },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Column(
+                  children: [
+                    SizedBox(
+                      height: 140,
+                      child: PageView.builder(
+                        clipBehavior: Clip.hardEdge,
+                        controller: _bannerPageController,
+                        itemCount: bannersState!.banners.length,
+                        onPageChanged: (index) {
+                          setState(() => _currentBannerIndex = index);
+                        },
+                        itemBuilder: (context, index) {
+                          final banner = bannersState.banners[index];
+                          return _buildHorizontalBannerCard(banner);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(bannersState.banners.length, (index) {
+                        final isActive = index == _currentBannerIndex;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: isActive ? 16 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? AppColors.primary
+                                : AppColors.textHint.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                   ),
                 ),
               ),
@@ -296,7 +339,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        width: 280,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.surface,
           boxShadow: [

@@ -1,30 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
+import 'package:khurpi_fresh/features/address/address_providers.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
+import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/splash/splash_page.dart';
 
 class AppHeader extends ConsumerWidget {
   final VoidCallback? onSearchTap;
   final VoidCallback? onAddressTap;
   final VoidCallback? onAccountTap;
+  final VoidCallback? onCartTap;
 
   const AppHeader({
     super.key,
     this.onSearchTap,
     this.onAddressTap,
     this.onAccountTap,
+    this.onCartTap,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(provideAuthViewModelProvider);
+    final cartState = ref.watch(provideCartViewModelProvider);
     final appConfig = ref.watch(appConfigProvider);
+    final addressState = ref.watch(addressNotifierProvider);
     
     final user = authState?.user;
-    final hasAddress = user?.address != null && user!.address!.isNotEmpty;
-    final userAddress = user?.formattedAddress ?? user?.addressLine1 ?? user?.address;
+    final userAddress = addressState.displayAddress ?? user?.formattedAddress ?? user?.addressLine1 ?? user?.address;
+    final hasAddress = userAddress != null && userAddress.trim().isNotEmpty;
+    final userName = user?.name ?? 'Guest';
     final isLoggedIn = user != null;
+    final cartItemCount = cartState?.items.length ?? 0;
     
     // App name from config or default
     final appName = appConfig?.appName ?? 'Khurpi Fresh';
@@ -49,7 +57,7 @@ class AppHeader extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Row 1: Location/App Name + Account (removed cart icon)
+            // Row 1: Location/App Name + Cart + Account
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
               child: Row(
@@ -149,15 +157,59 @@ class AppHeader extends ConsumerWidget {
                     ),
                   ),
 
-                  // Account Button (cart removed - shown at bottom)
+                  // Cart icon (show when items in cart)
+                  if (cartItemCount > 0)
+                    GestureDetector(
+                      onTap: onCartTap,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.shopping_cart_outlined,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                            Positioned(
+                              top: -4,
+                              right: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.secondary,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                                child: Text(
+                                  '$cartItemCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Account Button
                   GestureDetector(
                     onTap: onAccountTap,
                     child: Container(
                       padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+
                       child: Icon(
                         isLoggedIn ? Icons.person : Icons.person_outline,
                         color: Colors.white,

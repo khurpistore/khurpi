@@ -1,6 +1,6 @@
 class AppConstants {
   // API Base URL - Update this with your production URL
-  static const String baseUrl = 'https://admin-control-center-11.preview.emergentagent.com/api';
+  static const String baseUrl = 'https://khurpistore.in/api';
   
   // App Info
   static const String appName = 'Khurpi Fresh';
