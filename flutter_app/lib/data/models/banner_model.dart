@@ -5,8 +5,6 @@ part '../../generated/data/models/banner_model.g.dart';
 
 @freezed
 abstract class BannerModel with _$BannerModel {
-  const BannerModel._();
-  
   const factory BannerModel({
     String? id,
     @JsonKey(name: 'image_url') required String imageUrl,
@@ -24,12 +22,13 @@ abstract class BannerModel with _$BannerModel {
   factory BannerModel.fromJson(Map<String, dynamic> json) =>
       _$BannerModelFromJson(json);
 
-  // Getter for bannerId
-  String get bannerId => id ?? '';
-
   static BannerModel initial() {
     return const BannerModel(
       imageUrl: '',
     );
   }
+}
+
+extension BannerModelX on BannerModel {
+  String get bannerId => id ?? '';
 }
