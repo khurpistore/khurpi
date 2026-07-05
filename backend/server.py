@@ -50,6 +50,41 @@ def decode_jwt_token(token: str) -> dict:
     except jwt.InvalidTokenError as e:
         return {"valid": False, "error": str(e)}
 
+# FastAPI dependency to extract user_id from JWT token
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer(auto_error=False)
+
+async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    """Extract user_id from JWT token in Authorization header"""
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+    
+    token = credentials.credentials
+    result = decode_jwt_token(token)
+    
+    if not result["valid"]:
+        raise HTTPException(status_code=401, detail=result.get("error", "Invalid token"))
+    
+    user_id = result["payload"].get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token: user_id missing")
+    
+    return user_id
+
+async def get_optional_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Optional[str]:
+    """Extract user_id from JWT token, returns None if not authenticated"""
+    if credentials is None:
+        return None
+    
+    token = credentials.credentials
+    result = decode_jwt_token(token)
+    
+    if not result["valid"]:
+        return None
+    
+    return result["payload"].get("user_id")
+
 # Environment Mode
 ENV = os.environ.get('ENV', 'development')
 IS_PRODUCTION = ENV == 'production'
@@ -3865,6 +3900,55 @@ async def create_order(order_data: OrderCreate):
     await db.payments.insert_one(payment_doc)
     
     return Order(**order_doc)
+
+@api_router.get("/orders/my-orders")
+async def get_my_orders(user_id: str = Depends(get_current_user_id)):
+    """Get orders for the authenticated user using JWT token"""
+    orders = await db.orders.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich with product details
+    for order in orders:
+        # Enrich one_time_items
+        if order.get("one_time_items"):
+            enriched_items = []
+            for item in order.get("one_time_items", []):
+                product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+                enriched_items.append({
+                    **item,
+                    "product": product
+                })
+            order["one_time_items"] = enriched_items
+        
+        # Enrich subscription items
+        if order.get("subscription") and order["subscription"].get("items"):
+            enriched_sub_items = []
+            for item in order["subscription"]["items"]:
+                product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+                enriched_sub_items.append({
+                    **item,
+                    "product": product
+                })
+            order["subscription"]["items"] = enriched_sub_items
+        
+        # Enrich legacy items field
+        if order.get("items"):
+            enriched_items = []
+            for item in order.get("items", []):
+                product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
+                enriched_items.append({
+                    **item,
+                    "product": product
+                })
+            order["items"] = enriched_items
+        
+        # Use stored delivery_address (snapshot) if available, otherwise fetch current address
+        if order.get("delivery_address"):
+            order["address"] = order["delivery_address"]
+        else:
+            address = await db.addresses.find_one({"id": order.get("address_id")}, {"_id": 0})
+            order["address"] = address
+    
+    return orders
 
 @api_router.get("/orders")
 async def get_user_orders(user_id: str):

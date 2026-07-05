@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/core/error/exceptions.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/core/network/dio_client.dart';
 import 'package:khurpi_fresh/data/api/order_api_service.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
 import 'package:khurpi_fresh/data/models/cart_item_model.dart';
@@ -31,7 +32,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   final OrderApiService _apiService;
   final Dio _dio;
 
-  OrderRemoteDataSourceImpl(this._apiService) : _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  OrderRemoteDataSourceImpl(this._apiService) : _dio = DioClient.instance;
 
   /// Helper to transform order response data to match OrderModel
   Map<String, dynamic> _transformOrderResponse(Map<String, dynamic> data) {

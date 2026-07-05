@@ -10,6 +10,7 @@ import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/core/network/dio_client.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:khurpi_fresh/data/services/razorpay_service.dart';
 import 'package:dio/dio.dart';
@@ -23,7 +24,7 @@ class CheckoutPage extends ConsumerStatefulWidget {
 }
 
 class _CheckoutPageState extends ConsumerState<CheckoutPage> {
-  final _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  final _dio = DioClient.instance;
   final _razorpayService = RazorpayService();
   late Razorpay _razorpay;
   
