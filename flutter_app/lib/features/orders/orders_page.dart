@@ -19,7 +19,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(provideOrdersViewModelNotifierProvider)!.loadOrders();
+      ref.read(provideOrdersViewModelNotifierProvider)?.loadOrders();
     });
   }
 
@@ -28,144 +28,318 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     final ordersState = ref.watch(provideOrdersViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('My Orders'), backgroundColor: AppColors.surface, elevation: 0),
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: const Text(
+          'My Orders',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: Color(0xFF1A1A2E),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
       body: ordersState?.isLoading == true
           ? const Center(child: CircularProgressIndicator())
-          : ordersState?.orders.isEmpty != false
+          : ordersState?.orders.isEmpty ?? true
               ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: () => ref.read(provideOrdersViewModelNotifierProvider)!.loadOrders(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: ordersState!.orders.length,
-                    itemBuilder: (context, index) => _OrderCard(
-                      order: ordersState.orders[index],
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => OrderDetailPage(order: ordersState.orders[index]),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              : _buildOrdersList(ordersState!.orders),
     );
   }
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.receipt_long_outlined, size: 80, color: AppColors.textHint.withValues(alpha: 0.5)),
-          const SizedBox(height: 16),
-          const Text('No orders yet', style: AppTextStyles.h4),
-          const SizedBox(height: 8),
-          Text('Your order history will appear here', style: AppTextStyles.body.copyWith(color: AppColors.textHint)),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.shopping_bag_outlined,
+                size: 56,
+                color: Colors.grey.shade400,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'No orders yet',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1A1A2E),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your order history will appear here',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-class _OrderCard extends StatelessWidget {
-  final OrderModel order;
-  final VoidCallback? onTap;
+  Widget _buildOrdersList(List<OrderModel> orders) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        final order = orders[index];
+        return _buildOrderCard(order);
+      },
+    );
+  }
 
-  const _OrderCard({required this.order, this.onTap});
+  Widget _buildOrderCard(OrderModel order) {
+    final items = order.allItems;
+    final statusColor = _getStatusColor(order.status);
+    final formattedDate = _formatDate(order.createdAt);
 
-  @override
-  Widget build(BuildContext context) {
-    final orderId = order.orderId;
-    final orderDate = order.orderDate;
-    final orderItems = order.allItems;
-    final displayId = orderId.length >= 8 ? orderId.substring(0, 8).toUpperCase() : orderId.toUpperCase();
-    
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OrderDetailPage(orderId: order.orderId),
+          ),
+        );
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
-        child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Order #$displayId', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    Text(DateFormat('dd MMM yyyy, hh:mm a').format(orderDate), style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
-                  ],
-                ),
-                _buildStatusBadge(order.status),
-              ],
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-          ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${orderItems.length} item${orderItems.length > 1 ? 's' : ''}', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
-                const SizedBox(height: 8),
-                ...orderItems.take(3).map((item) {
-                  final itemName = item.displayName;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: statusColor.withOpacity(0.05),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Row(
+                children: [
+                  // Order ID & Date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${item.quantity.toInt()}x', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(itemName, style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        Text(
+                          'Order #${order.orderId.substring(0, 8).toUpperCase()}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formattedDate,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                       ],
                     ),
-                  );
-                }),
-                if (orderItems.length > 3) Text('+${orderItems.length - 3} more items', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint)),
-              ],
+                  ),
+                  // Status Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _formatStatus(order.status),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [const Text('Total', style: AppTextStyles.body), Text('₹${order.total.toStringAsFixed(0)}', style: AppTextStyles.h4.copyWith(color: AppColors.primary))],
+            
+            // Items Preview
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Show first 2-3 items
+                  ...items.take(3).map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            item.displayName,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF1A1A2E),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          '${item.quantity.toStringAsFixed(item.quantity == item.quantity.toInt() ? 0 : 1)} ${item.unit}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                  
+                  // Show "and X more items" if there are more
+                  if (items.length > 3) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '+ ${items.length - 3} more item${items.length - 3 > 1 ? 's' : ''}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+            
+            // Footer: Total & Payment
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Payment Method
+                  Row(
+                    children: [
+                      Icon(
+                        order.paymentMethod.toUpperCase() == 'COD'
+                            ? Icons.money_rounded
+                            : Icons.credit_card_rounded,
+                        size: 18,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        order.paymentMethod.toUpperCase() == 'COD'
+                            ? 'Cash on Delivery'
+                            : 'Paid Online',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Total
+                  Text(
+                    '₹${order.total.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatusBadge(String status) {
-    Color backgroundColor;
-    Color textColor;
+  Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return AppColors.primary;
+      case 'processing':
+        return Colors.blue;
+      case 'out_for_delivery':
+      case 'shipped':
+        return Colors.purple;
       case 'delivered':
-        backgroundColor = AppColors.success.withValues(alpha: 0.1);
-        textColor = AppColors.success;
-        break;
+        return AppColors.success;
       case 'cancelled':
-        backgroundColor = AppColors.error.withValues(alpha: 0.1);
-        textColor = AppColors.error;
-        break;
+        return AppColors.error;
       default:
-        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
-        textColor = AppColors.warning;
+        return Colors.grey;
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(20)),
-      child: Text(status.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor)),
-    );
+  }
+
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'out_for_delivery':
+        return 'Out for Delivery';
+      default:
+        return status.split('_').map((word) => 
+          word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : ''
+        ).join(' ');
+    }
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      return 'Today, ${DateFormat('h:mm a').format(date)}';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday, ${DateFormat('h:mm a').format(date)}';
+    } else if (difference.inDays < 7) {
+      return DateFormat('EEEE, h:mm a').format(date);
+    } else {
+      return DateFormat('MMM d, y').format(date);
+    }
   }
 }

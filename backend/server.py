@@ -515,6 +515,8 @@ class OrderItem(BaseModel):
     product_id: str
     quantity: int
     price: float
+    product_name: Optional[str] = None
+    unit: Optional[str] = None
 
 class SubscriptionItemInOrder(BaseModel):
     product_id: str

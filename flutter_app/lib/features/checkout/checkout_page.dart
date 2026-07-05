@@ -5,6 +5,7 @@ import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/home/home_providers.dart';
 import 'package:khurpi_fresh/features/orders/orders_providers.dart';
+import 'package:khurpi_fresh/features/orders/order_success_page.dart';
 import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
@@ -754,13 +755,13 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         await ref.read(provideCartViewModelNotifierProvider)?.clearCart();
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Order placed successfully!'),
-              backgroundColor: AppColors.success,
+          // Navigate to Order Success Page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OrderSuccessPage(order: order),
             ),
           );
-          Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
         // Check if there's an error message in the orders state
@@ -953,21 +954,25 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         await ref.read(provideCartViewModelNotifierProvider)?.clearCart();
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Payment successful! Order placed.'),
-              backgroundColor: AppColors.success,
+          // Navigate to Order Success Page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OrderSuccessPage(order: order),
             ),
           );
-          Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
         throw Exception('Failed to place order after payment');
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = e.toString();
+        if (errorMessage.startsWith('Exception: ')) {
+          errorMessage = errorMessage.substring(11);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Order creation failed: $e')),
+          SnackBar(content: Text('Order creation failed: $errorMessage')),
         );
       }
     } finally {

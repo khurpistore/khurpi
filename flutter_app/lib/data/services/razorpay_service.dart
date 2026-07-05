@@ -21,8 +21,22 @@ class RazorpayService {
           'notes': notes,
         },
       );
-      return response.data;
+      
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      }
+      throw Exception('Invalid response format');
+    } on DioException catch (e) {
+      final errorData = e.response?.data;
+      String errorMessage = 'Network error';
+      if (errorData is Map && errorData['detail'] != null) {
+        errorMessage = errorData['detail'].toString();
+      } else if (e.message != null) {
+        errorMessage = e.message!;
+      }
+      throw Exception('Failed to create payment order: $errorMessage');
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('Failed to create payment order: $e');
     }
   }
@@ -42,8 +56,22 @@ class RazorpayService {
           'razorpay_signature': razorpaySignature,
         },
       );
-      return response.data;
+      
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      }
+      throw Exception('Invalid response format');
+    } on DioException catch (e) {
+      final errorData = e.response?.data;
+      String errorMessage = 'Network error';
+      if (errorData is Map && errorData['detail'] != null) {
+        errorMessage = errorData['detail'].toString();
+      } else if (e.message != null) {
+        errorMessage = e.message!;
+      }
+      throw Exception('Failed to verify payment: $errorMessage');
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('Failed to verify payment: $e');
     }
   }

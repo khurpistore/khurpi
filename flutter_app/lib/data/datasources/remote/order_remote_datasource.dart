@@ -66,10 +66,21 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     return items.map((item) {
       if (item is Map) {
         final product = item['product'];
+        // Try multiple sources for product name
+        String productName = '';
+        if (item['product_name'] != null && item['product_name'].toString().isNotEmpty) {
+          productName = item['product_name'].toString();
+        } else if (item['product_name_at_order'] != null && item['product_name_at_order'].toString().isNotEmpty) {
+          productName = item['product_name_at_order'].toString();
+        } else if (product is Map && product['name'] != null) {
+          productName = product['name'].toString();
+        } else {
+          productName = 'Product';
+        }
+        
         return <String, dynamic>{
           'product_id': item['product_id']?.toString() ?? '',
-          'product_name': item['product_name']?.toString() ?? 
-              (product is Map ? product['name']?.toString() : null) ?? '',
+          'product_name': productName,
           'price': _toDouble(item['price'] ?? item['price_at_order']),
           'quantity': _toDouble(item['quantity'] ?? 1),
           'unit': item['unit']?.toString() ?? 'kg',
@@ -113,6 +124,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         'address_id': addressId,
         'one_time_items': items.map((item) => <String, dynamic>{
           'product_id': item.productId,
+          'product_name': item.productName, // Include product name for display
           'quantity': item.quantity.toInt(), // Backend expects integer
           'price': item.price, // Backend requires price field
           'unit': item.unit,
