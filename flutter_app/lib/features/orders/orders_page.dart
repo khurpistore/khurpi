@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
-import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
 import 'package:khurpi_fresh/features/orders/orders_providers.dart';
 import 'package:khurpi_fresh/features/orders/order_detail_page.dart';
@@ -59,8 +58,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F5),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -104,7 +103,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   }
 
   Widget _buildOrderCard(OrderModel order) {
-    final items = order.allItems;
+    // Use extension methods via local variables
+    final String orderId = order.orderId;
+    final List<OrderItemModel> items = order.allItems;
     final statusColor = _getStatusColor(order.status);
     final formattedDate = _formatDate(order.createdAt);
 
@@ -113,7 +114,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => OrderDetailPage(orderId: order.orderId),
+            builder: (_) => OrderDetailPage(orderId: orderId),
           ),
         );
       },
@@ -148,7 +149,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Order #${order.orderId.substring(0, 8).toUpperCase()}',
+                          'Order #${orderId.length >= 8 ? orderId.substring(0, 8).toUpperCase() : orderId.toUpperCase()}',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -192,44 +193,59 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Show first 2-3 items
-                  ...items.take(3).map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.5),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            item.displayName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF1A1A2E),
+                  if (items.isEmpty)
+                    Text(
+                      'No items',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    )
+                  else
+                    // Show first 3 items
+                    ...items.take(3).map((item) {
+                      final String itemName = item.displayName;
+                      final double qty = item.quantity;
+                      final String unit = item.unit;
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                itemName,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF1A1A2E),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              '${qty.toStringAsFixed(qty == qty.toInt() ? 0 : 1)} $unit',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${item.quantity.toStringAsFixed(item.quantity == item.quantity.toInt() ? 0 : 1)} ${item.unit}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
+                      );
+                    }),
                   
                   // Show "and X more items" if there are more
-                  if (items.length > 3) ...[
+                  if (items.length > 3)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
@@ -241,7 +257,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                         ),
                       ),
                     ),
-                  ],
                 ],
               ),
             ),
@@ -249,9 +264,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
             // Footer: Total & Payment
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FA),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
