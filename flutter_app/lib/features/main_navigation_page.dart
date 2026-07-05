@@ -38,7 +38,12 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
 
                 // Reusable Floating Cart Button - visible on every page when cart has items
                 // Uses SafeArea to avoid overlapping device navigation buttons
-                const FloatingCartButton(),
+                const Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: FloatingCartButton(),
+                ),
               ],
             ),
           ),

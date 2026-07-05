@@ -53,7 +53,12 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
                         );
                       },
                     ),
-          const FloatingCartButton(),
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: FloatingCartButton(),
+          ),
         ],
       ),
     );

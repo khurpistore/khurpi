@@ -9,6 +9,7 @@ import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
+import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:dio/dio.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
@@ -699,6 +700,17 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
     try {
       final cartState = ref.read(provideCartViewModelProvider);
+      final user = ref.read(provideAuthViewModelProvider)?.user;
+      final storeState = ref.read(provideStoreViewModelProvider);
+      
+      if (user == null) {
+        throw Exception('User not logged in');
+      }
+      
+      // Calculate totals
+      final subtotal = cartState?.subtotal ?? 0;
+      final deliveryFee = _getDeliveryFee(storeState);
+      final total = subtotal + deliveryFee;
       
       // Prepare delivery date for tomorrow option
       String? deliveryDate;
@@ -708,12 +720,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       }
       
       final order = await ref.read(provideOrdersViewModelNotifierProvider)!.createOrder(
+        userId: user.userId,
+        addressId: _selectedAddress!['id'] ?? '',
         items: cartState?.items ?? [],
-        deliveryAddress: _selectedAddress!['address_line'] ?? _formatAddressShort(_selectedAddress!),
-        city: _selectedAddress!['city'] ?? '',
-        pincode: _selectedAddress!['pincode'] ?? '',
-        phone: _selectedAddress!['phone'] ?? '',
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
+        total: total,
         paymentMethod: _selectedPaymentMethod,
+        paymentStatus: _selectedPaymentMethod == 'cod' ? 'pending' : 'pending',
         notes: null,
         deliveryType: _deliveryTime,
         deliveryDate: deliveryDate,
@@ -726,10 +740,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         if (mounted) {
           // If online payment, redirect to payment page
           if (_selectedPaymentMethod == 'online') {
+            // TODO: Implement Razorpay payment flow
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Redirecting to payment...')),
+              const SnackBar(content: Text('Online payment coming soon! Order placed as COD.')),
             );
-            // TODO: Navigate to payment page
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

@@ -36,9 +36,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         elevation: 0,
       ),
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          authState?.isAuthenticated == true ? _buildAuthenticatedView(authState!) : _buildGuestView(),
-          const FloatingCartButton(),
+          authState?.isAuthenticated == true 
+              ? _buildAuthenticatedView(authState!) 
+              : _buildGuestView(),
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: FloatingCartButton(),
+          ),
         ],
       ),
     );

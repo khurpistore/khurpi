@@ -176,7 +176,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _buildContent(),
-          const FloatingCartButton(),
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: FloatingCartButton(),
+          ),
         ],
       ),
     );

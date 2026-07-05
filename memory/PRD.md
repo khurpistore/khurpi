@@ -97,12 +97,17 @@ flutter_app/lib/
 - ✅ **Checkout Page Enhancements** - Added +/- quantity controls and remove button for cart items, removed Order Notes section
 - ✅ **Product Detail Bottom Sheet** - Converted full-page ProductDetailPage to a modal bottom sheet (`product_detail_bottom_sheet.dart`)
 - ✅ **Global Floating Cart Button** - Added FloatingCartButton to: Products Page (PLP), Profile Page, Search Page, Categories Page
+- ✅ **Fixed user.userId in checkout** - Added user_model.dart import to checkout_page.dart for extension method access
+- ✅ **Fixed Place Order API** - Updated CreateOrderRequest, OrderRemoteDataSource and OrdersViewModel to match backend's required fields (user_id, address_id, subtotal, total, delivery_fee)
+- ✅ **Redesigned Products Page (PLP)** - Categories in vertical scroll on left side (circles), products grid on right with ADD/+/- quantity controls
+- ✅ **Fixed FloatingCartButton positioning** - Properly positioned at bottom on all pages (Profile, Search, Categories, Home)
 
 ### P1 (Next Sprint)
 - ✅ Web Frontend "/products" page verified working (106 products displayed)
 - ✅ Product Detail Bottom Sheet instead of full page
-- [ ] Product Listing page with subcategory sidebar
+- ✅ Product Listing page with category sidebar
 - [ ] Load app config on Flutter app start
+- [ ] Razorpay payment gateway integration
 
 ### P2 (Future)
 - [ ] Refactor `server.py` into modular routers

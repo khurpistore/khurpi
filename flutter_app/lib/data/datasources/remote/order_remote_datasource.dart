@@ -6,12 +6,16 @@ import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 
 abstract class OrderRemoteDataSource {
   Future<OrderModel> createOrder({
+    required String userId,
+    required String addressId,
     required List<CartItemModel> items,
-    required String deliveryAddress,
-    required String city,
-    required String pincode,
-    required String phone,
+    required double subtotal,
+    required double deliveryFee,
+    required double total,
     required String paymentMethod,
+    String? paymentStatus,
+    String? paymentId,
+    String? razorpayOrderId,
     String? notes,
     String? deliveryType,
     String? deliveryDate,
@@ -29,12 +33,16 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
 
   @override
   Future<OrderModel> createOrder({
+    required String userId,
+    required String addressId,
     required List<CartItemModel> items,
-    required String deliveryAddress,
-    required String city,
-    required String pincode,
-    required String phone,
+    required double subtotal,
+    required double deliveryFee,
+    required double total,
     required String paymentMethod,
+    String? paymentStatus,
+    String? paymentId,
+    String? razorpayOrderId,
     String? notes,
     String? deliveryType,
     String? deliveryDate,
@@ -42,16 +50,20 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   }) async {
     try {
       final request = CreateOrderRequest(
-        items: items.map((item) => OrderItemRequest(
+        userId: userId,
+        addressId: addressId,
+        oneTimeItems: items.map((item) => OrderItemRequest(
           productId: item.productId,
           quantity: item.quantity,
           unit: item.unit,
         )).toList(),
-        deliveryAddress: deliveryAddress,
-        city: city,
-        pincode: pincode,
-        phone: phone,
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
+        total: total,
         paymentMethod: paymentMethod,
+        paymentStatus: paymentStatus ?? 'pending',
+        paymentId: paymentId,
+        razorpayOrderId: razorpayOrderId,
         notes: notes,
         deliveryType: deliveryType,
         deliveryDate: deliveryDate,

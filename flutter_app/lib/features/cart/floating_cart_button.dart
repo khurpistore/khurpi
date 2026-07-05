@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
-import 'package:khurpi_fresh/features/cart/cart_page.dart';
 import 'package:khurpi_fresh/features/checkout/checkout_page.dart';
 
 class FloatingCartButton extends ConsumerWidget {
@@ -23,10 +22,8 @@ class FloatingCartButton extends ConsumerWidget {
     final mediaQuery = MediaQuery.of(context);
     final safeBottomPadding = mediaQuery.viewPadding.bottom + 16;
 
-    return Positioned(
-      left: 16,
-      right: 16,
-      bottom: safeBottomPadding,
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 0, 16, safeBottomPadding),
       child: GestureDetector(
         onTap: () {
           Navigator.push(

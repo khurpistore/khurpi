@@ -6,12 +6,18 @@ part '../../generated/data/models/create_order_request.g.dart';
 @freezed
 abstract class CreateOrderRequest with _$CreateOrderRequest {
   const factory CreateOrderRequest({
-    required List<OrderItemRequest> items,
-    @JsonKey(name: 'delivery_address') required String deliveryAddress,
-    required String city,
-    required String pincode,
-    required String phone,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'address_id') required String addressId,
+    @JsonKey(name: 'one_time_items') required List<OrderItemRequest> oneTimeItems,
+    required double subtotal,
+    @JsonKey(name: 'delivery_fee') @Default(0) double deliveryFee,
+    @Default(0) double discount,
+    required double total,
+    @JsonKey(name: 'order_type') @Default('one_time') String orderType,
     @JsonKey(name: 'payment_method') required String paymentMethod,
+    @JsonKey(name: 'payment_status') @Default('pending') String paymentStatus,
+    @JsonKey(name: 'payment_id') String? paymentId,
+    @JsonKey(name: 'razorpay_order_id') String? razorpayOrderId,
     String? notes,
     // Delivery options
     @JsonKey(name: 'delivery_type') String? deliveryType,

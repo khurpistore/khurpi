@@ -64,12 +64,16 @@ class OrdersViewModel extends _$OrdersViewModel {
   }
 
   Future<OrderModel?> createOrder({
+    required String userId,
+    required String addressId,
     required List<CartItemModel> items,
-    required String deliveryAddress,
-    required String city,
-    required String pincode,
-    required String phone,
+    required double subtotal,
+    required double deliveryFee,
+    required double total,
     required String paymentMethod,
+    String? paymentStatus,
+    String? paymentId,
+    String? razorpayOrderId,
     String? notes,
     String? deliveryType,
     String? deliveryDate,
@@ -79,12 +83,16 @@ class OrdersViewModel extends _$OrdersViewModel {
 
     try {
       final order = await _orderRemoteDataSource.createOrder(
+        userId: userId,
+        addressId: addressId,
         items: items,
-        deliveryAddress: deliveryAddress,
-        city: city,
-        pincode: pincode,
-        phone: phone,
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
+        total: total,
         paymentMethod: paymentMethod,
+        paymentStatus: paymentStatus,
+        paymentId: paymentId,
+        razorpayOrderId: razorpayOrderId,
         notes: notes,
         deliveryType: deliveryType,
         deliveryDate: deliveryDate,
