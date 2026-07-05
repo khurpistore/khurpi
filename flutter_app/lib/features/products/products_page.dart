@@ -21,12 +21,10 @@ class ProductsPage extends ConsumerStatefulWidget {
 
 class _ProductsPageState extends ConsumerState<ProductsPage> {
   final _searchController = TextEditingController();
-  String? _selectedCategoryId;
 
   @override
   void initState() {
     super.initState();
-    _selectedCategoryId = widget.initialCategoryId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.initialCategoryId != null) {
         ref.read(provideProductsViewModelNotifierProvider)?.setSelectedCategory(widget.initialCategoryId);
@@ -125,6 +123,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
 
   Widget _buildCategorySidebar(dynamic productsState) {
     final categories = productsState?.categories ?? <CategoryModel>[];
+    final selectedCategoryId = productsState?.selectedCategoryId;
     
     return Container(
       width: 80,
@@ -135,27 +134,25 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         itemBuilder: (context, index) {
           if (index == 0) {
             // "All" category
-            final isSelected = _selectedCategoryId == null;
+            final isSelected = selectedCategoryId == null;
             return _buildCategoryItem(
               name: 'All',
               imageUrl: null,
               isSelected: isSelected,
               onTap: () {
-                setState(() => _selectedCategoryId = null);
                 ref.read(provideProductsViewModelNotifierProvider)?.setSelectedCategory(null);
               },
             );
           }
           
           final category = categories[index - 1];
-          final isSelected = _selectedCategoryId == category.categoryId;
+          final isSelected = selectedCategoryId == category.categoryId;
           
           return _buildCategoryItem(
             name: category.name,
             imageUrl: category.imageUrl,
             isSelected: isSelected,
             onTap: () {
-              setState(() => _selectedCategoryId = category.categoryId);
               ref.read(provideProductsViewModelNotifierProvider)?.setSelectedCategory(category.categoryId);
             },
           );
@@ -277,11 +274,13 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     
     // Get cart item quantity for this product
     final cartItems = cartState?.items ?? [];
-    final cartItem = cartItems.firstWhere(
-      (item) => item.productId == product.productId,
-      orElse: () => null,
-    );
-    final quantityInCart = cartItem?.quantity ?? 0.0;
+    double quantityInCart = 0.0;
+    for (final item in cartItems) {
+      if (item.productId == product.productId) {
+        quantityInCart = item.quantity;
+        break;
+      }
+    }
     final isInCart = quantityInCart > 0;
 
     return GestureDetector(

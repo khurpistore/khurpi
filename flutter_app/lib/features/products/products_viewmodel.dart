@@ -78,28 +78,28 @@ class ProductsViewModel extends _$ProductsViewModel {
 
   void setSelectedCategory(String? categoryId) {
     state = state.copyWith(selectedCategoryId: categoryId);
-
-    if (categoryId == null) {
-      state = state.copyWith(filteredProducts: state.products);
-    } else {
-      final filtered = state.products
-          .where((p) => p.categoryId == categoryId)
-          .toList();
-      state = state.copyWith(filteredProducts: filtered);
-    }
+    _applyFilters();
   }
 
   void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
+    _applyFilters();
+  }
 
-    if (query.isEmpty) {
-      state = state.copyWith(filteredProducts: state.products);
-    } else {
-      final filtered = state.products
-          .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-      state = state.copyWith(filteredProducts: filtered);
+  void _applyFilters() {
+    var filtered = state.products.toList();
+    
+    // Apply category filter
+    if (state.selectedCategoryId != null) {
+      filtered = filtered.where((p) => p.categoryId == state.selectedCategoryId).toList();
     }
+    
+    // Apply search filter
+    if (state.searchQuery != null && state.searchQuery!.isNotEmpty) {
+      filtered = filtered.where((p) => p.name.toLowerCase().contains(state.searchQuery!.toLowerCase())).toList();
+    }
+    
+    state = state.copyWith(filteredProducts: filtered);
   }
 
   void clearFilters() {
