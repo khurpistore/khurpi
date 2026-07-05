@@ -327,9 +327,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 120),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.68,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 14,
+        childAspectRatio: 0.62,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 12,
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
@@ -376,9 +376,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image
-            Expanded(
-              flex: 5,
+            // Product Image - Fixed height
+            AspectRatio(
+              aspectRatio: 1.1,
               child: Stack(
                 children: [
                   ClipRRect(
@@ -443,16 +443,17 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
               ),
             ),
             
-            // Product Details
-            Expanded(
-              flex: 4,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Product Name
-                    Text(
+            // Product Details - Fixed layout
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Product Name
+                  SizedBox(
+                    height: 34,
+                    child: Text(
                       product.name,
                       style: const TextStyle(
                         fontSize: 13,
@@ -463,43 +464,50 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    // Unit
-                    Text(
-                      'per ${product.unit}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
-                        fontWeight: FontWeight.w400,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Price
+                  Text(
+                    '₹${product.price.toStringAsFixed(0)}/${product.unit}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
                     ),
-                    const Spacer(),
-                    // Price Row
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '₹${product.price.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Add to Cart Button or Quantity Controls
-                    if (isInStock)
-                      isInCart
-                          ? _buildQuantityControls(product, quantityInCart)
-                          : _buildAddButton(product),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Add to Cart Button or Quantity Controls
+                  if (isInStock)
+                    isInCart
+                        ? _buildQuantityControls(product, quantityInCart)
+                        : _buildAddButton(product)
+                  else
+                    _buildOutOfStockButton(),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOutOfStockButton() {
+    return Container(
+      width: double.infinity,
+      height: 34,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Center(
+        child: Text(
+          'Unavailable',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade500,
+          ),
         ),
       ),
     );
