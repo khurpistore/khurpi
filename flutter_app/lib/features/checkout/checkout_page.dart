@@ -13,6 +13,7 @@ import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:khurpi_fresh/data/services/razorpay_service.dart';
 import 'package:dio/dio.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
@@ -24,19 +25,81 @@ class CheckoutPage extends ConsumerStatefulWidget {
 class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
   final _razorpayService = RazorpayService();
+  late Razorpay _razorpay;
   
   String _selectedPaymentMethod = 'cod';
   bool _isPlacingOrder = false;
   Map<String, dynamic>? _selectedAddress;
   String _deliveryTime = 'tomorrow'; // 'instant' or 'tomorrow'
+  
+  // Cached order data for payment callbacks
+  Map<String, dynamic>? _pendingOrderData;
 
   @override
   void initState() {
     super.initState();
+    _initRazorpay();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadDefaultAddress();
       _loadStoreSettings();
     });
+  }
+  
+  void _initRazorpay() {
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handleRazorpaySuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handleRazorpayError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+  
+  void _handleRazorpaySuccess(PaymentSuccessResponse response) async {
+    debugPrint('Payment Success: ${response.paymentId}');
+    
+    if (_pendingOrderData == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment successful but order data missing. Please contact support.')),
+        );
+        setState(() => _isPlacingOrder = false);
+      }
+      return;
+    }
+    
+    await _handlePaymentSuccess(
+      user: _pendingOrderData!['user'],
+      cartState: _pendingOrderData!['cartState'],
+      subtotal: _pendingOrderData!['subtotal'],
+      deliveryFee: _pendingOrderData!['deliveryFee'],
+      total: _pendingOrderData!['total'],
+      deliveryDate: _pendingOrderData!['deliveryDate'],
+      razorpayOrderId: response.orderId ?? _pendingOrderData!['razorpayOrderId'],
+      razorpayPaymentId: response.paymentId ?? '',
+      razorpaySignature: response.signature ?? '',
+    );
+  }
+  
+  void _handleRazorpayError(PaymentFailureResponse response) {
+    debugPrint('Payment Error: ${response.code} - ${response.message}');
+    _pendingOrderData = null;
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Payment failed: ${response.message ?? 'Unknown error'}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() => _isPlacingOrder = false);
+    }
+  }
+  
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint('External Wallet: ${response.walletName}');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('External Wallet selected: ${response.walletName}')),
+      );
+    }
   }
 
   Future<void> _loadDefaultAddress() async {
@@ -80,6 +143,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   @override
   void dispose() {
+    _razorpay.clear();
     super.dispose();
   }
 
@@ -814,100 +878,58 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
       final razorpayOrderId = orderResponse['order_id'];
       final keyId = orderResponse['key_id'];
+      final isTestMode = orderResponse['test_mode'] == true;
 
-      // Show payment dialog with instructions
-      if (mounted) {
-        final confirmed = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            title: const Text('Online Payment'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Amount: ₹${total.toStringAsFixed(0)}'),
-                const SizedBox(height: 12),
-                Text('Order ID: $razorpayOrderId', style: const TextStyle(fontSize: 12)),
-                const SizedBox(height: 16),
-                const Text(
-                  'Note: Razorpay payment gateway will open in your browser. Complete the payment to confirm your order.',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
-                ),
-                if (orderResponse['test_mode'] == true) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      '⚠️ TEST MODE: Payment will be simulated',
-                      style: TextStyle(fontSize: 12, color: Colors.orange),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                child: const Text('Proceed to Pay', style: TextStyle(color: Colors.white)),
-              ),
-            ],
-          ),
-        );
+      // Store order data for callback handlers
+      _pendingOrderData = {
+        'user': user,
+        'cartState': cartState,
+        'subtotal': subtotal,
+        'deliveryFee': deliveryFee,
+        'total': total,
+        'deliveryDate': deliveryDate,
+        'razorpayOrderId': razorpayOrderId,
+      };
 
-        if (confirmed != true) {
-          setState(() => _isPlacingOrder = false);
-          return;
-        }
+      // Build Razorpay checkout options
+      final options = {
+        'key': keyId,
+        'amount': (total * 100).toInt(), // Amount in paise
+        'name': 'Khurpi Fresh',
+        'description': 'Order Payment',
+        'order_id': razorpayOrderId,
+        'prefill': {
+          'contact': user.phone ?? '',
+          'email': user.email ?? 'customer@khurpifresh.com',
+        },
+        'theme': {
+          'color': '#4CAF50',
+        },
+        'notes': {
+          'user_id': user.userId,
+          'address_id': _selectedAddress!['id'] ?? '',
+        },
+      };
 
-        // For test mode, simulate successful payment
-        if (orderResponse['test_mode'] == true) {
-          await _handlePaymentSuccess(
-            user: user,
-            cartState: cartState,
-            subtotal: subtotal,
-            deliveryFee: deliveryFee,
-            total: total,
-            deliveryDate: deliveryDate,
-            razorpayOrderId: razorpayOrderId,
-            razorpayPaymentId: 'pay_test_${DateTime.now().millisecondsSinceEpoch}',
-          );
-          return;
-        }
-
-        // TODO: For production, open Razorpay checkout
-        // This requires razorpay_flutter package to be properly set up
-        // For now, show a message
+      // Show test mode warning if applicable
+      if (isTestMode && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Razorpay checkout requires native setup. Using test mode.'),
+            content: Text('⚠️ TEST MODE: Use Razorpay test credentials'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
           ),
         );
-        
-        await _handlePaymentSuccess(
-          user: user,
-          cartState: cartState,
-          subtotal: subtotal,
-          deliveryFee: deliveryFee,
-          total: total,
-          deliveryDate: deliveryDate,
-          razorpayOrderId: razorpayOrderId,
-          razorpayPaymentId: 'pay_${DateTime.now().millisecondsSinceEpoch}',
-        );
       }
+
+      // Open Razorpay checkout
+      _razorpay.open(options);
+      
     } catch (e) {
+      _pendingOrderData = null;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment error: $e')),
+          SnackBar(content: Text('Payment initialization error: $e')),
         );
         setState(() => _isPlacingOrder = false);
       }
@@ -923,13 +945,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     String? deliveryDate,
     required String razorpayOrderId,
     required String razorpayPaymentId,
+    String razorpaySignature = '',
   }) async {
     try {
-      // Verify payment on backend (for test mode, this auto-verifies)
+      // Verify payment on backend
       await _razorpayService.verifyPayment(
         razorpayOrderId: razorpayOrderId,
         razorpayPaymentId: razorpayPaymentId,
-        razorpaySignature: 'test_signature',
+        razorpaySignature: razorpaySignature,
       );
 
       // Create order with payment details
@@ -950,6 +973,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         deliverySlotId: null,
       );
 
+      _pendingOrderData = null;
+
       if (order != null) {
         await ref.read(provideCartViewModelNotifierProvider)?.clearCart();
         
@@ -966,6 +991,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         throw Exception('Failed to place order after payment');
       }
     } catch (e) {
+      _pendingOrderData = null;
       if (mounted) {
         String errorMessage = e.toString();
         if (errorMessage.startsWith('Exception: ')) {
