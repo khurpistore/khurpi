@@ -33,6 +33,62 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
 
   OrderRemoteDataSourceImpl(this._apiService) : _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
 
+  /// Helper to transform order response data to match OrderModel
+  Map<String, dynamic> _transformOrderResponse(Map<String, dynamic> data) {
+    final responseData = Map<String, dynamic>.from(data);
+    
+    // Convert delivery_address from Map to String if needed
+    if (responseData['delivery_address'] is Map) {
+      final addr = responseData['delivery_address'] as Map;
+      final parts = <String>[];
+      if (addr['address_line'] != null) parts.add(addr['address_line'].toString());
+      if (addr['city'] != null) parts.add(addr['city'].toString());
+      if (addr['pincode'] != null) parts.add(addr['pincode'].toString());
+      responseData['delivery_address'] = parts.isNotEmpty ? parts.join(', ') : '';
+    } else if (responseData['delivery_address'] == null) {
+      responseData['delivery_address'] = '';
+    }
+    
+    // Transform one_time_items
+    if (responseData['one_time_items'] is List) {
+      responseData['one_time_items'] = _transformItemsList(responseData['one_time_items'] as List);
+    }
+    
+    // Transform items
+    if (responseData['items'] is List) {
+      responseData['items'] = _transformItemsList(responseData['items'] as List);
+    }
+    
+    return responseData;
+  }
+  
+  List<Map<String, dynamic>> _transformItemsList(List items) {
+    return items.map((item) {
+      if (item is Map) {
+        final product = item['product'];
+        return <String, dynamic>{
+          'product_id': item['product_id']?.toString() ?? '',
+          'product_name': item['product_name']?.toString() ?? 
+              (product is Map ? product['name']?.toString() : null) ?? '',
+          'price': _toDouble(item['price'] ?? item['price_at_order']),
+          'quantity': _toDouble(item['quantity'] ?? 1),
+          'unit': item['unit']?.toString() ?? 'kg',
+          'total': _toDouble(item['price'] ?? 0) * _toDouble(item['quantity'] ?? 1),
+          'product': product is Map ? Map<String, dynamic>.from(product) : null,
+        };
+      }
+      return <String, dynamic>{};
+    }).toList();
+  }
+  
+  double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
   @override
   Future<OrderModel> createOrder({
     required String userId,
@@ -52,10 +108,10 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   }) async {
     try {
       // Build the request body that matches backend OrderCreate model
-      final requestBody = {
+      final requestBody = <String, dynamic>{
         'user_id': userId,
         'address_id': addressId,
-        'one_time_items': items.map((item) => {
+        'one_time_items': items.map((item) => <String, dynamic>{
           'product_id': item.productId,
           'quantity': item.quantity.toInt(), // Backend expects integer
           'price': item.price, // Backend requires price field
@@ -67,13 +123,14 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         'order_type': 'one_time',
         'payment_method': paymentMethod,
         'payment_status': paymentStatus ?? 'pending',
-        if (paymentId != null) 'payment_id': paymentId,
-        if (razorpayOrderId != null) 'razorpay_order_id': razorpayOrderId,
-        if (notes != null) 'notes': notes,
-        if (deliveryType != null) 'delivery_type': deliveryType,
-        if (deliveryDate != null) 'delivery_date': deliveryDate,
-        if (deliverySlotId != null) 'delivery_slot_id': deliverySlotId,
       };
+      
+      if (paymentId != null) requestBody['payment_id'] = paymentId;
+      if (razorpayOrderId != null) requestBody['razorpay_order_id'] = razorpayOrderId;
+      if (notes != null) requestBody['notes'] = notes;
+      if (deliveryType != null) requestBody['delivery_type'] = deliveryType;
+      if (deliveryDate != null) requestBody['delivery_date'] = deliveryDate;
+      if (deliverySlotId != null) requestBody['delivery_slot_id'] = deliverySlotId;
 
       // Use Dio directly to make the API call with the correct payload
       final response = await _dio.post(
@@ -86,13 +143,21 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
 
       // Check if response contains an error
       if (response.data is Map && response.data['detail'] != null) {
-        throw ServerException(message: response.data['detail']);
+        throw ServerException(message: response.data['detail'].toString());
       }
 
-      return OrderModel.fromJson(response.data);
+      // Transform response to match OrderModel expectations
+      final transformedData = _transformOrderResponse(Map<String, dynamic>.from(response.data));
+      return OrderModel.fromJson(transformedData);
     } on DioException catch (e) {
-      final errorMessage = e.response?.data?['detail'] ?? e.message ?? 'Network error';
-      throw ServerException(message: 'Failed to create order: $errorMessage');
+      final errorData = e.response?.data;
+      String errorMessage = 'Network error';
+      if (errorData is Map && errorData['detail'] != null) {
+        errorMessage = errorData['detail'].toString();
+      } else if (e.message != null) {
+        errorMessage = e.message!;
+      }
+      throw ServerException(message: errorMessage);
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to create order: $e');
@@ -102,8 +167,28 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<List<OrderModel>> getMyOrders() async {
     try {
-      return await _apiService.getMyOrders();
+      final response = await _dio.get('/orders/my-orders');
+      
+      if (response.data is List) {
+        return (response.data as List).map((order) {
+          if (order is Map<String, dynamic>) {
+            final transformedData = _transformOrderResponse(order);
+            return OrderModel.fromJson(transformedData);
+          }
+          throw ServerException(message: 'Invalid order data format');
+        }).toList();
+      }
+      
+      throw ServerException(message: 'Invalid response format');
+    } on DioException catch (e) {
+      final errorData = e.response?.data;
+      String errorMessage = 'Failed to fetch orders';
+      if (errorData is Map && errorData['detail'] != null) {
+        errorMessage = errorData['detail'].toString();
+      }
+      throw ServerException(message: errorMessage);
     } catch (e) {
+      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to fetch orders: $e');
     }
   }
@@ -111,8 +196,23 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<OrderModel> getOrderById(String id) async {
     try {
-      return await _apiService.getOrderById(id);
+      final response = await _dio.get('/orders/$id');
+      
+      if (response.data is Map<String, dynamic>) {
+        final transformedData = _transformOrderResponse(response.data);
+        return OrderModel.fromJson(transformedData);
+      }
+      
+      throw ServerException(message: 'Invalid response format');
+    } on DioException catch (e) {
+      final errorData = e.response?.data;
+      String errorMessage = 'Failed to fetch order';
+      if (errorData is Map && errorData['detail'] != null) {
+        errorMessage = errorData['detail'].toString();
+      }
+      throw ServerException(message: errorMessage);
     } catch (e) {
+      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to fetch order: $e');
     }
   }
@@ -120,8 +220,23 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<OrderModel> cancelOrder(String id) async {
     try {
-      return await _apiService.cancelOrder(id);
+      final response = await _dio.post('/orders/$id/cancel');
+      
+      if (response.data is Map<String, dynamic>) {
+        final transformedData = _transformOrderResponse(response.data);
+        return OrderModel.fromJson(transformedData);
+      }
+      
+      throw ServerException(message: 'Invalid response format');
+    } on DioException catch (e) {
+      final errorData = e.response?.data;
+      String errorMessage = 'Failed to cancel order';
+      if (errorData is Map && errorData['detail'] != null) {
+        errorMessage = errorData['detail'].toString();
+      }
+      throw ServerException(message: errorMessage);
     } catch (e) {
+      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to cancel order: $e');
     }
   }
