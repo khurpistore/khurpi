@@ -65,14 +65,17 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       return;
     }
     
+    final user = _pendingOrderData!['user'] as UserModel;
+    final cartState = _pendingOrderData!['cartState'] as CartState?;
+    
     await _handlePaymentSuccess(
-      user: _pendingOrderData!['user'],
-      cartState: _pendingOrderData!['cartState'],
-      subtotal: _pendingOrderData!['subtotal'],
-      deliveryFee: _pendingOrderData!['deliveryFee'],
-      total: _pendingOrderData!['total'],
-      deliveryDate: _pendingOrderData!['deliveryDate'],
-      razorpayOrderId: response.orderId ?? _pendingOrderData!['razorpayOrderId'],
+      user: user,
+      cartState: cartState,
+      subtotal: _pendingOrderData!['subtotal'] as double,
+      deliveryFee: _pendingOrderData!['deliveryFee'] as double,
+      total: _pendingOrderData!['total'] as double,
+      deliveryDate: _pendingOrderData!['deliveryDate'] as String?,
+      razorpayOrderId: response.orderId ?? _pendingOrderData!['razorpayOrderId'] as String,
       razorpayPaymentId: response.paymentId ?? '',
       razorpaySignature: response.signature ?? '',
     );
@@ -853,8 +856,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   }
 
   Future<void> _initiateRazorpayPayment({
-    required dynamic user,
-    required dynamic cartState,
+    required UserModel user,
+    required CartState? cartState,
     required double subtotal,
     required double deliveryFee,
     required double total,
@@ -899,7 +902,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         'description': 'Order Payment',
         'order_id': razorpayOrderId,
         'prefill': {
-          'contact': user.phone ?? '',
+          'contact': user.phone,
           'email': user.email ?? 'customer@khurpifresh.com',
         },
         'theme': {
@@ -937,8 +940,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   }
 
   Future<void> _handlePaymentSuccess({
-    required dynamic user,
-    required dynamic cartState,
+    required UserModel user,
+    required CartState? cartState,
     required double subtotal,
     required double deliveryFee,
     required double total,
