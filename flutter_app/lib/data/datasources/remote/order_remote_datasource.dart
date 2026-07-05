@@ -1,7 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/core/error/exceptions.dart';
+import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/data/api/order_api_service.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
-import 'package:khurpi_fresh/data/models/create_order_request.dart';
 import 'package:khurpi_fresh/data/models/cart_item_model.dart';
 
 abstract class OrderRemoteDataSource {
@@ -28,8 +29,9 @@ abstract class OrderRemoteDataSource {
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   final OrderApiService _apiService;
+  final Dio _dio;
 
-  OrderRemoteDataSourceImpl(this._apiService);
+  OrderRemoteDataSourceImpl(this._apiService) : _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
 
   @override
   Future<OrderModel> createOrder({
@@ -49,27 +51,39 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     String? deliverySlotId,
   }) async {
     try {
-      final request = CreateOrderRequest(
-        userId: userId,
-        addressId: addressId,
-        oneTimeItems: items.map((item) => OrderItemRequest(
-          productId: item.productId,
-          quantity: item.quantity,
-          unit: item.unit,
-        )).toList(),
-        subtotal: subtotal,
-        deliveryFee: deliveryFee,
-        total: total,
-        paymentMethod: paymentMethod,
-        paymentStatus: paymentStatus ?? 'pending',
-        paymentId: paymentId,
-        razorpayOrderId: razorpayOrderId,
-        notes: notes,
-        deliveryType: deliveryType,
-        deliveryDate: deliveryDate,
-        deliverySlotId: deliverySlotId,
+      // Build the request body that matches backend OrderCreate model
+      final requestBody = {
+        'user_id': userId,
+        'address_id': addressId,
+        'one_time_items': items.map((item) => {
+          'product_id': item.productId,
+          'quantity': item.quantity,
+          'unit': item.unit,
+        }).toList(),
+        'subtotal': subtotal,
+        'delivery_fee': deliveryFee,
+        'total': total,
+        'order_type': 'one_time',
+        'payment_method': paymentMethod,
+        'payment_status': paymentStatus ?? 'pending',
+        if (paymentId != null) 'payment_id': paymentId,
+        if (razorpayOrderId != null) 'razorpay_order_id': razorpayOrderId,
+        if (notes != null) 'notes': notes,
+        if (deliveryType != null) 'delivery_type': deliveryType,
+        if (deliveryDate != null) 'delivery_date': deliveryDate,
+        if (deliverySlotId != null) 'delivery_slot_id': deliverySlotId,
+      };
+
+      // Use Dio directly to make the API call with the correct payload
+      final response = await _dio.post(
+        '/orders',
+        data: requestBody,
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
       );
-      return await _apiService.createOrder(request);
+
+      return OrderModel.fromJson(response.data);
     } catch (e) {
       throw ServerException(message: 'Failed to create order: $e');
     }
