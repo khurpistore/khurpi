@@ -57,7 +57,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         'address_id': addressId,
         'one_time_items': items.map((item) => {
           'product_id': item.productId,
-          'quantity': item.quantity,
+          'quantity': item.quantity.toInt(), // Backend expects integer
+          'price': item.price, // Backend requires price field
           'unit': item.unit,
         }).toList(),
         'subtotal': subtotal,
