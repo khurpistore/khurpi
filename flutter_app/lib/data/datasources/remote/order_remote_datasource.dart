@@ -84,8 +84,17 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         ),
       );
 
+      // Check if response contains an error
+      if (response.data is Map && response.data['detail'] != null) {
+        throw ServerException(message: response.data['detail']);
+      }
+
       return OrderModel.fromJson(response.data);
+    } on DioException catch (e) {
+      final errorMessage = e.response?.data?['detail'] ?? e.message ?? 'Network error';
+      throw ServerException(message: 'Failed to create order: $errorMessage');
     } catch (e) {
+      if (e is ServerException) rethrow;
       throw ServerException(message: 'Failed to create order: $e');
     }
   }

@@ -763,12 +763,23 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
-        throw Exception('Failed to place order');
+        // Check if there's an error message in the orders state
+        final ordersState = ref.read(provideOrdersViewModelProvider);
+        final errorMsg = ordersState?.errorMessage ?? 'Failed to place order';
+        throw Exception(errorMsg);
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = e.toString();
+        // Clean up the error message
+        if (errorMessage.startsWith('Exception: ')) {
+          errorMessage = errorMessage.substring(11);
+        }
+        if (errorMessage.contains('ServerException')) {
+          errorMessage = errorMessage.replaceAll(RegExp(r'ServerException.*?message: '), '').replaceAll(')', '');
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Error: $errorMessage')),
         );
       }
     } finally {
