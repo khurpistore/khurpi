@@ -233,20 +233,29 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                   // Add to Cart Button
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: state.product!.stockStatus == 'in_stock'
-                          ? () {
+                      onPressed: state.product!.stockStatus.toLowerCase().trim() == 'in_stock' ||
+                              state.product!.stockStatus.toLowerCase().trim() == 'in stock' ||
+                              state.product!.stockStatus.toLowerCase().trim() == 'available'
+                          ? () async {
                               final cartNotifier = ref.read(provideCartViewModelNotifierProvider);
-                              if (cartNotifier != null) {
-                                cartNotifier.addToCart(state.product!, quantity: state.quantity, unit: state.selectedUnit);
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('${state.product!.name} added to cart')),
-                                );
-                              } else {
+                              if (cartNotifier == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Unable to add to cart. Please try again.')),
                                 );
+                                return;
                               }
+
+                              await cartNotifier.addToCart(
+                                state.product!,
+                                quantity: state.quantity,
+                                unit: state.selectedUnit,
+                              );
+
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('${state.product!.name} added to cart')),
+                              );
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
@@ -261,7 +270,11 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                           const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 20),
                           const SizedBox(width: 8),
                           Text(
-                            state.product!.stockStatus == 'in_stock' ? 'Add to Cart' : 'Out of Stock',
+                              state.product!.stockStatus.toLowerCase().trim() == 'in_stock' ||
+                                      state.product!.stockStatus.toLowerCase().trim() == 'in stock' ||
+                                      state.product!.stockStatus.toLowerCase().trim() == 'available'
+                                  ? 'Add to Cart'
+                                  : 'Out of Stock',
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
                           ),
                         ],

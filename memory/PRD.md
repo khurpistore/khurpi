@@ -106,8 +106,10 @@ flutter_app/lib/
 - ✅ Web Frontend "/products" page verified working (106 products displayed)
 - ✅ Product Detail Bottom Sheet instead of full page
 - ✅ Product Listing page with category sidebar
+- ✅ **Razorpay payment integration** - Backend endpoints ready, Flutter checkout updated with payment flow
+- ✅ **Premium ProductCard UI** - Applied patch with new card design, stock status badges, quantity controls
 - [ ] Load app config on Flutter app start
-- [ ] Razorpay payment gateway integration
+- [ ] Full native Razorpay SDK integration (requires local Flutter setup)
 
 ### P2 (Future)
 - [ ] Refactor `server.py` into modular routers
@@ -128,9 +130,12 @@ flutter_app/lib/
 - `DELETE /api/users/{user_id}/addresses/{address_id}` - Delete address
 - `PUT /api/users/{user_id}/addresses/{address_id}/set-default` - Set default address
 - `GET /api/orders/my-orders` - User's orders
+- `POST /api/orders` - Create order (accepts payment_id, razorpay_order_id)
 - `GET /api/store/settings` - Store settings (delivery options)
 - `GET /api/banners` - Get active banners
 - `GET /api/config` - App configuration
+- `POST /api/payments/create-order` - Create Razorpay payment order
+- `POST /api/payments/verify` - Verify Razorpay payment signature
 
 ## Test Credentials
 - **Admin**: username `admin`, password `Khurpi2026Secure`

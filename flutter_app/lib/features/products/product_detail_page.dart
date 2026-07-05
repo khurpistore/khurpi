@@ -27,6 +27,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(provideProductDetailViewModelProvider);
+    final stockStatus = state?.product?.stockStatus.toLowerCase().trim();
+    final canAddToCart = stockStatus == 'in_stock' ||
+        stockStatus == 'in stock' ||
+        stockStatus == 'available';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -91,19 +95,33 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: state.product!.stockStatus == 'in_stock'
-                                    ? () {
+                                onPressed: canAddToCart
+                                    ? () async {
                                         final cartNotifier = ref.read(provideCartViewModelNotifierProvider);
-                                        if (cartNotifier != null) {
-                                          cartNotifier.addToCart(state.product!, quantity: state.quantity, unit: state.selectedUnit);
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${state.product!.name} added to cart')));
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to add to cart. Please try again.')));
+                                        if (cartNotifier == null) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Unable to add to cart. Please try again.')),
+                                          );
+                                          return;
                                         }
+
+                                        await cartNotifier.addToCart(
+                                          state.product!,
+                                          quantity: state.quantity,
+                                          unit: state.selectedUnit,
+                                        );
+
+                                        if (!context.mounted) return;
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('${state.product!.name} added to cart')),
+                                        );
                                       }
                                     : null,
                                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                                child: const Text('Add to Cart', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                                child: Text(
+                                  canAddToCart ? 'Add to Cart' : 'Out of Stock',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                                ),
                               ),
                             ),
                           ],
