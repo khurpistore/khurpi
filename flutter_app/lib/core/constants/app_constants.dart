@@ -1,6 +1,10 @@
 class AppConstants {
-  // API Base URL - Update this with your production URL
-  static const String baseUrl = 'https://khurpistore.in/api';
+  // API Base URL - Uses production URL for mobile app
+  // For development, change this to your local/preview URL
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://khurpistore.in/api',
+  );
   
   // App Info
   static const String appName = 'Khurpi Fresh';
