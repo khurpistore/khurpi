@@ -96,3 +96,4 @@ tests/test-results/wholesale-feature-Wholesal-755ee-lection-for-wholesale-users-
 # Exclude Flutter mobile app from deployment
 flutter_app/
 flutter_app_backup/
+memory/test_credentials.md
