@@ -92,3 +92,7 @@ tests/test-results/product-catalog-Product-Ca-b19dd-oducts-by-price-low-to-high-
 tests/test-results/wholesale-feature-Wholesal-c8913--wholesale-users---BUG-TEST-chromium-retry1/trace.zip
 tests/test-results/product-catalog-Product-Ca-5a92a-all-products-in-admin-panel-chromium-retry1/trace.zip
 tests/test-results/wholesale-feature-Wholesal-755ee-lection-for-wholesale-users-chromium-retry1/trace.zip
+
+# Exclude Flutter mobile app from deployment
+flutter_app/
+flutter_app_backup/
