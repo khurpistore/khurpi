@@ -99,12 +99,7 @@ logging.info(f"Database: {db_name}")
 logging.info(f"Production Mode: {IS_PRODUCTION}")
 
 # Initialize MongoDB client with connection timeout settings
-client = AsyncIOMotorClient(
-    mongo_url,
-    serverSelectionTimeoutMS=5000,  # 5 second timeout for server selection
-    connectTimeoutMS=5000,  # 5 second connection timeout
-    socketTimeoutMS=10000,  # 10 second socket timeout
-)
+client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
 # Razorpay client initialization
@@ -140,12 +135,6 @@ async def health_check():
 async def api_health_check():
     """API prefixed health check"""
     return {"status": "healthy", "service": "khurpi-backend"}
-
-# Root endpoint for basic connectivity
-@app.get("/")
-async def root():
-    """Root endpoint - indicates service is running"""
-    return {"message": "Khurpi Fresh API", "status": "running"}
 
 # Environment info endpoint (useful for debugging)
 @app.get("/api/env-info")
