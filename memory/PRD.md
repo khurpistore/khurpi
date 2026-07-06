@@ -3,30 +3,29 @@
 ## Original Problem Statement
 Build a comprehensive e-commerce platform for selling microgreens with admin dashboard, customer-facing storefront, and Flutter mobile app.
 
-## Current State (After GitHub Sync - July 6, 2026)
-The codebase has been synced from the GitHub repository `https://github.com/khurpistore/khurpi`. This replaced the local codebase with the GitHub version (older, from July 3, 2026).
+## Current State (After feature/5july_deployed Sync - July 6, 2026)
+The codebase has been synced from the GitHub branch `feature/5july_deployed`. This is a more recent branch (July 5, 2026) with 66 commits ahead of main.
 
-### What Was Preserved After Sync:
-- `PyJWT==2.10.1` in requirements.txt (re-added for deployment)
-- JWT authentication functions in server.py (re-added)
-- `/api/orders/my-orders` endpoint (re-added)
-- Frontend `.env` with deployment fixes (`DISABLE_ESLINT_PLUGIN=true`, `CI=false`)
+### What Was Synced:
+- `backend/server.py` (7501 lines - includes JWT auth, all features)
+- `frontend/src/App.js` (160 lines)
+- Key admin pages: AdminProducts.js, AdminUsers.js, AdminCostCalculator.js, AdminSubscriptions.js, Products.js, AdminAppConfig.js
 
-### What Was Removed by GitHub Sync:
-- Spin & Earn wheel feature (AdminSpinWheel component and backend endpoints)
-- Some wholesale pricing UI enhancements in admin panel
-- 52 vegetable products that were added via script (now need re-run if not in production DB)
+### Critical Deployment Fixes Preserved:
+- Added `PyJWT==2.10.1` to requirements.txt (was missing in branch)
+- Kept frontend `.env` with `DISABLE_ESLINT_PLUGIN=true` and `CI=false`
+- Did NOT copy `.gitignore` from branch (it ignores .env files which breaks deployment)
 
 ## Architecture
 ```
 /app
 ├── backend/
-│   ├── server.py (FastAPI - 6968 lines after sync)
+│   ├── server.py (FastAPI - 7501 lines)
 │   └── requirements.txt (includes PyJWT)
 ├── frontend/ (React Admin Dashboard)
 │   ├── src/
-│   │   ├── App.js (156 lines - from GitHub)
-│   │   └── pages/ (Admin pages)
+│   │   ├── App.js (160 lines - from feature/5july_deployed)
+│   │   └── pages/ (Admin pages from feature/5july_deployed)
 │   └── .env (DISABLE_ESLINT_PLUGIN=true, CI=false)
 ├── flutter_app/ (Mobile App - excluded from K8s deployment)
 └── memory/
@@ -41,13 +40,14 @@ The codebase has been synced from the GitHub repository `https://github.com/khur
 - Categories and banners
 - Wholesale pricing toggle for users
 - JWT-based authentication
+- App config management (AdminAppConfig)
 
 ## API Endpoints
 - `GET /api/health` - Health check
 - `POST /api/auth/login` - Returns JWT token
 - `GET /api/orders/my-orders` - JWT-authenticated user orders
-- `GET /api/products` - Product listing
-- `GET /api/categories` - Category listing
+- `GET /api/products` - Product listing (158 products)
+- `GET /api/categories` - Category listing (6 categories)
 - Admin endpoints under `/api/admin/*`
 
 ## Test Credentials
@@ -58,8 +58,9 @@ The codebase has been synced from the GitHub repository `https://github.com/khur
 - Backend must have `PyJWT==2.10.1` in requirements.txt
 - Frontend needs `DISABLE_ESLINT_PLUGIN=true` and `CI=false` in .env
 - Flutter app is excluded from Kubernetes deployment
+- Do NOT use .gitignore from GitHub - it ignores .env files
 
-## Backlog
-- Re-implement Spin & Earn wheel feature if needed
-- Complete wholesale pricing UI in AdminUsers.js
-- Backend refactoring (server.py is monolithic)
+## Status
+- Preview environment: ✅ Working
+- Backend API: ✅ Working
+- Frontend: ✅ Working

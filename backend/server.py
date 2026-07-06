@@ -20,7 +20,6 @@ import csv
 from passlib.context import CryptContext
 import razorpay
 import jwt
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -52,6 +51,8 @@ def decode_jwt_token(token: str) -> dict:
         return {"valid": False, "error": str(e)}
 
 # FastAPI dependency to extract user_id from JWT token
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 security = HTTPBearer(auto_error=False)
 
 async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
@@ -549,6 +550,8 @@ class OrderItem(BaseModel):
     product_id: str
     quantity: int
     price: float
+    product_name: Optional[str] = None
+    unit: Optional[str] = None
 
 class SubscriptionItemInOrder(BaseModel):
     product_id: str
@@ -1558,7 +1561,7 @@ async def get_traffic_sources(days: int = 30):
         "channels": sorted(channels_list, key=lambda x: x["sessions"], reverse=True)
     }
 
-@api_router.post("/auth/signup", response_model=User)
+@api_router.post("/auth/signup")
 async def signup(user_data: UserCreate):
     # Allow same phone to have different roles (customer vs delivery_boy)
     existing = await db.users.find_one({"phone": user_data.phone, "role": "customer"}, {"_id": 0})
@@ -1581,8 +1584,50 @@ async def signup(user_data: UserCreate):
     }
     
     await db.users.insert_one(user_doc)
-    user_doc.pop("password")
-    return User(**user_doc)
+    user_doc.pop("password", None)
+    user_doc.pop("_id", None)
+    
+    # Generate JWT token
+    token = create_jwt_token(user_doc["id"], user_doc["phone"], "customer")
+    
+    return {"token": token, "user": user_doc}
+
+# Register endpoint (alias for signup - Flutter compatibility)
+class RegisterRequest(BaseModel):
+    phone: str
+    password: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+
+@api_router.post("/auth/register")
+async def register(data: RegisterRequest):
+    """Register a new user (Flutter app compatibility)"""
+    # Check if user already exists
+    existing = await db.users.find_one({"phone": data.phone, "role": "customer"}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Phone already registered")
+    
+    hashed_password = pwd_context.hash(data.password)
+    
+    user_doc = {
+        "id": str(uuid.uuid4()),
+        "phone": data.phone,
+        "name": data.name or f"User_{data.phone[-4:]}",
+        "email": data.email,
+        "password": hashed_password,
+        "address": None,
+        "role": "customer",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    user_doc.pop("password", None)
+    user_doc.pop("_id", None)
+    
+    # Generate JWT token
+    token = create_jwt_token(user_doc["id"], user_doc["phone"], "customer")
+    
+    return {"token": token, "user": user_doc}
 
 @api_router.post("/auth/login")
 async def login(login_data: UserLogin):
@@ -1594,15 +1639,12 @@ async def login(login_data: UserLogin):
     if not pwd_context.verify(login_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    user.pop("password", None)
+    
     # Generate JWT token
     token = create_jwt_token(user["id"], user["phone"], user.get("role", "customer"))
     
-    user.pop("password")
-    return {
-        **user,
-        "token": token,
-        "wholesale_enabled": user.get("wholesale_enabled", False)
-    }
+    return {"token": token, "user": user}
 
 # ============ Password Change & Reset ============
 
@@ -2401,6 +2443,91 @@ async def verify_otp(data: OTPVerifyRequest):
 async def resend_otp(data: OTPSendRequest):
     """Resend OTP - same as send_otp"""
     return await send_otp(data)
+
+# MSG91 verified OTP endpoint (called after MSG91 widget verification)
+class MSG91VerifiedRequest(BaseModel):
+    phone: str
+    name: Optional[str] = None
+    access_token: Optional[str] = None  # MSG91 access token for server verification
+
+# MSG91 Configuration
+MSG91_AUTH_KEY = os.environ.get("MSG91_AUTH_KEY", "490446Ty29Y53gM69764e27P1")
+
+async def verify_msg91_access_token(access_token: str) -> dict:
+    """Verify MSG91 access token on server side"""
+    import httpx
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.msg91.com/api/v5/widget/verifyAccessToken",
+                json={"access_token": access_token},
+                headers={
+                    "authkey": MSG91_AUTH_KEY,
+                    "content-type": "application/json"
+                },
+                timeout=10.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {"verified": True, "data": data}
+            else:
+                return {"verified": False, "error": response.text}
+    except Exception as e:
+        logging.error(f"MSG91 token verification error: {e}")
+        return {"verified": False, "error": str(e)}
+
+@api_router.post("/auth/otp-verified")
+async def otp_verified_login(data: MSG91VerifiedRequest):
+    """
+    Handle login after MSG91 OTP verification.
+    Optionally verifies access token server-side.
+    Creates user if not exists, returns user data with JWT token.
+    """
+    phone = data.phone.strip()
+    
+    # Server-side verification of MSG91 access token (if provided)
+    if data.access_token:
+        verification = await verify_msg91_access_token(data.access_token)
+        if not verification.get("verified"):
+            logging.warning(f"MSG91 token verification failed for {phone}: {verification.get('error')}")
+            # Continue anyway for now - client already verified
+    
+    # Check if user exists
+    user = await db.users.find_one({"phone": phone}, {"_id": 0, "password": 0})
+    
+    if user:
+        # Existing user - generate JWT token and return
+        token = create_jwt_token(user["id"], user["phone"], user.get("role", "customer"))
+        return {"success": True, "user": user, "token": token, "is_new_user": False}
+    
+    # New user - check if name provided
+    if not data.name or not data.name.strip():
+        return {"success": True, "is_new_user": True, "message": "Please provide your name"}
+    
+    # Create new user
+    user_doc = {
+        "id": str(uuid.uuid4()),
+        "phone": phone,
+        "name": data.name.strip(),
+        "password": pwd_context.hash(str(uuid.uuid4())),  # Random password for OTP users
+        "address": None,
+        "city": None,
+        "pincode": None,
+        "role": "customer",
+        "verified": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    user_doc.pop("password", None)
+    user_doc.pop("_id", None)
+    
+    # Generate JWT token for new user
+    token = create_jwt_token(user_doc["id"], user_doc["phone"], "customer")
+    
+    return {"success": True, "user": user_doc, "token": token, "is_new_user": True}
 
 # ============ Razorpay Payment Integration ============
 
@@ -3774,8 +3901,9 @@ async def create_order(order_data: OrderCreate):
     
     return Order(**order_doc)
 
-@api_router.get("/orders")
-async def get_user_orders(user_id: str):
+@api_router.get("/orders/my-orders")
+async def get_my_orders(user_id: str = Depends(get_current_user_id)):
+    """Get orders for the authenticated user using JWT token"""
     orders = await db.orders.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
     
     # Enrich with product details
@@ -3822,9 +3950,8 @@ async def get_user_orders(user_id: str):
     
     return orders
 
-@api_router.get("/orders/my-orders")
-async def get_my_orders(user_id: str = Depends(get_current_user_id)):
-    """Get orders for the currently authenticated user (JWT-based)"""
+@api_router.get("/orders")
+async def get_user_orders(user_id: str):
     orders = await db.orders.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
     
     # Enrich with product details
@@ -6947,6 +7074,412 @@ async def reorder_banners(banner_ids: List[str]):
             {"$set": {"display_order": index}}
         )
     return {"message": "Banners reordered successfully"}
+
+# ==========================================
+# APP CONFIGURATION ENDPOINTS
+# ==========================================
+
+class AppConfigCreate(BaseModel):
+    # Branding
+    app_name: str = "Khurpi Fresh"
+    app_tagline: str = "Fresh from Farm to Table"
+    logo_url: Optional[str] = None
+    
+    # Colors (hex format)
+    primary_color: str = "#4CAF50"
+    primary_dark_color: str = "#388E3C"
+    secondary_color: str = "#FFC107"
+    accent_color: str = "#FF5722"
+    background_color: str = "#F5F5F5"
+    surface_color: str = "#FFFFFF"
+    error_color: str = "#F44336"
+    success_color: str = "#4CAF50"
+    
+    # Typography
+    font_family: str = "Poppins"
+    heading_font_size: int = 24
+    body_font_size: int = 14
+    caption_font_size: int = 12
+    
+    # Supported Service Areas
+    supported_countries: List[str] = ["India"]
+    supported_states: List[str] = []
+    supported_cities: List[str] = []
+    supported_pincodes: List[str] = []
+    supported_societies: List[str] = []
+    
+    # Delivery Settings
+    min_order_value: float = 100
+    free_delivery_threshold: float = 500
+    default_delivery_fee: float = 40
+    
+    # Feature Flags
+    enable_cod: bool = True
+    enable_online_payment: bool = True
+    enable_subscriptions: bool = True
+    enable_referrals: bool = True
+    enable_spin_wheel: bool = True
+    
+    # Contact Info
+    support_phone: Optional[str] = None
+    support_email: Optional[str] = None
+    support_whatsapp: Optional[str] = None
+
+@api_router.get("/config")
+async def get_app_config():
+    """Get app configuration (public endpoint for mobile app)"""
+    config = await db.app_config.find_one({"type": "app_config"}, {"_id": 0})
+    if not config:
+        # Return default config if none exists
+        return AppConfigCreate().model_dump()
+    return config
+
+@api_router.get("/admin/config")
+async def get_admin_config():
+    """Get full app configuration (admin)"""
+    config = await db.app_config.find_one({"type": "app_config"}, {"_id": 0})
+    if not config:
+        return AppConfigCreate().model_dump()
+    return config
+
+@api_router.post("/admin/config")
+async def save_app_config(config: AppConfigCreate):
+    """Save/Update app configuration"""
+    config_dict = config.model_dump()
+    config_dict["type"] = "app_config"
+    config_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.app_config.update_one(
+        {"type": "app_config"},
+        {"$set": config_dict},
+        upsert=True
+    )
+    return {"message": "Configuration saved successfully", "config": config_dict}
+
+# ==========================================
+# USER ADDRESS ENDPOINTS
+# ==========================================
+
+class AddressCreate(BaseModel):
+    label: str = "Home"  # Home, Work, Other
+    full_name: str
+    phone: str
+    address_line1: str
+    address_line2: Optional[str] = None
+    landmark: Optional[str] = None
+    city: str
+    state: str
+    pincode: str
+    country: str = "India"
+    society: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_default: bool = False
+
+class AddressUpdate(BaseModel):
+    label: Optional[str] = None
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    landmark: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    country: Optional[str] = None
+    society: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_default: Optional[bool] = None
+
+@api_router.get("/addresses")
+async def get_user_addresses_alt(user_id: str):
+    """Get all addresses for a user (alternative endpoint)"""
+    addresses = await db.addresses.find(
+        {"user_id": user_id, "deleted": {"$ne": True}},
+        {"_id": 0}
+    ).sort("is_default", -1).to_list(50)
+    return addresses
+
+@api_router.get("/addresses/default")
+async def get_default_address(user_id: str):
+    """Get user's default address"""
+    address = await db.addresses.find_one(
+        {"user_id": user_id, "is_default": True, "deleted": {"$ne": True}},
+        {"_id": 0}
+    )
+    if not address:
+        # Return first address if no default
+        address = await db.addresses.find_one(
+            {"user_id": user_id, "deleted": {"$ne": True}},
+            {"_id": 0}
+        )
+    return address
+
+@api_router.post("/addresses")
+async def create_address(user_id: str, address: AddressCreate):
+    """Create a new address"""
+    # Validate pincode against supported areas
+    config = await db.app_config.find_one({"type": "app_config"})
+    if config and config.get("supported_pincodes"):
+        if address.pincode not in config["supported_pincodes"]:
+            raise HTTPException(status_code=400, detail="Delivery not available in this area")
+    
+    # If this is default, unset other defaults
+    if address.is_default:
+        await db.addresses.update_many(
+            {"user_id": user_id},
+            {"$set": {"is_default": False}}
+        )
+    
+    doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        **address.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.addresses.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/addresses/{address_id}")
+async def update_address(address_id: str, user_id: str, address: AddressUpdate):
+    """Update an address"""
+    update_data = {k: v for k, v in address.model_dump().items() if v is not None}
+    
+    if address.is_default:
+        await db.addresses.update_many(
+            {"user_id": user_id},
+            {"$set": {"is_default": False}}
+        )
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.addresses.update_one(
+        {"id": address_id, "user_id": user_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    updated = await db.addresses.find_one({"id": address_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/addresses/{address_id}")
+async def delete_address(address_id: str, user_id: str):
+    """Soft delete an address"""
+    result = await db.addresses.update_one(
+        {"id": address_id, "user_id": user_id},
+        {"$set": {"deleted": True, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    return {"message": "Address deleted successfully"}
+
+@api_router.post("/addresses/{address_id}/set-default")
+async def set_default_address_alt(address_id: str, user_id: str):
+    """Set an address as default (alternative endpoint)"""
+    # Unset all defaults
+    await db.addresses.update_many(
+        {"user_id": user_id},
+        {"$set": {"is_default": False}}
+    )
+    
+    # Set this as default
+    result = await db.addresses.update_one(
+        {"id": address_id, "user_id": user_id},
+        {"$set": {"is_default": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    return {"message": "Default address updated"}
+
+# ==========================================
+# SEARCH ENDPOINTS
+# ==========================================
+
+class SearchQuery(BaseModel):
+    query: str
+    limit: int = 20
+
+@api_router.get("/search")
+async def search_products(q: str, limit: int = 20):
+    """Search products by name or description"""
+    if not q or len(q) < 2:
+        return {"products": [], "query": q}
+    
+    # Text search on name and description
+    products = await db.products.find(
+        {
+            "active": True,
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"description": {"$regex": q, "$options": "i"}},
+                {"tags": {"$regex": q, "$options": "i"}}
+            ]
+        },
+        {"_id": 0}
+    ).limit(limit).to_list(limit)
+    
+    # Map image to image_url for Flutter compatibility
+    for product in products:
+        if product.get("image") and not product.get("image_url"):
+            product["image_url"] = product["image"]
+    
+    return {"products": products, "query": q, "count": len(products)}
+
+@api_router.get("/search/recent")
+async def get_recent_searches(user_id: str, limit: int = 5):
+    """Get recent searches for a user"""
+    searches = await db.recent_searches.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("searched_at", -1).limit(limit).to_list(limit)
+    return searches
+
+@api_router.post("/search/recent")
+async def save_recent_search(user_id: str, query: str):
+    """Save a recent search"""
+    # Remove if already exists
+    await db.recent_searches.delete_one({"user_id": user_id, "query": query})
+    
+    # Add new search
+    await db.recent_searches.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "query": query,
+        "searched_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Keep only last 10 searches
+    all_searches = await db.recent_searches.find(
+        {"user_id": user_id}
+    ).sort("searched_at", -1).to_list(100)
+    
+    if len(all_searches) > 10:
+        ids_to_delete = [s["id"] for s in all_searches[10:]]
+        await db.recent_searches.delete_many({"id": {"$in": ids_to_delete}})
+    
+    return {"message": "Search saved"}
+
+@api_router.delete("/search/recent")
+async def clear_recent_searches(user_id: str):
+    """Clear all recent searches for a user"""
+    await db.recent_searches.delete_many({"user_id": user_id})
+    return {"message": "Recent searches cleared"}
+
+# ==========================================
+# SUBCATEGORY ENDPOINTS
+# ==========================================
+
+class SubcategoryCreate(BaseModel):
+    name: str
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    image: Optional[str] = None
+    parent_category_id: str
+    display_order: int = 0
+    active: bool = True
+
+class SubcategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    image: Optional[str] = None
+    parent_category_id: Optional[str] = None
+    display_order: Optional[int] = None
+    active: Optional[bool] = None
+
+@api_router.get("/subcategories")
+async def get_subcategories(category_id: Optional[str] = None):
+    """Get subcategories, optionally filtered by parent category"""
+    query = {"active": True}
+    if category_id:
+        query["parent_category_id"] = category_id
+    
+    subcategories = await db.subcategories.find(
+        query, {"_id": 0}
+    ).sort("display_order", 1).to_list(100)
+    return subcategories
+
+@api_router.get("/admin/subcategories")
+async def get_admin_subcategories(category_id: Optional[str] = None):
+    """Get all subcategories (admin - includes inactive)"""
+    query = {}
+    if category_id:
+        query["parent_category_id"] = category_id
+    
+    subcategories = await db.subcategories.find(
+        query, {"_id": 0}
+    ).sort("display_order", 1).to_list(100)
+    return subcategories
+
+@api_router.post("/admin/subcategories")
+async def create_subcategory(subcategory: SubcategoryCreate):
+    """Create a new subcategory"""
+    doc = {
+        "id": str(uuid.uuid4()),
+        **subcategory.model_dump(),
+        "slug": subcategory.slug or subcategory.name.lower().replace(" ", "-"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.subcategories.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/admin/subcategories/{subcategory_id}")
+async def update_subcategory(subcategory_id: str, subcategory: SubcategoryUpdate):
+    """Update a subcategory"""
+    update_data = {k: v for k, v in subcategory.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.subcategories.update_one(
+        {"id": subcategory_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    
+    updated = await db.subcategories.find_one({"id": subcategory_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/admin/subcategories/{subcategory_id}")
+async def delete_subcategory(subcategory_id: str):
+    """Delete a subcategory"""
+    result = await db.subcategories.delete_one({"id": subcategory_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    
+    return {"message": "Subcategory deleted successfully"}
+
+# Update products endpoint to support subcategory filtering
+@api_router.get("/products/by-subcategory/{subcategory_id}")
+async def get_products_by_subcategory(subcategory_id: str):
+    """Get products by subcategory"""
+    products = await db.products.find(
+        {"subcategory_id": subcategory_id, "active": True},
+        {"_id": 0}
+    ).sort("display_order", 1).to_list(100)
+    
+    for product in products:
+        if product.get("image") and not product.get("image_url"):
+            product["image_url"] = product["image"]
+    
+    return products
 
 app.include_router(api_router)
 
