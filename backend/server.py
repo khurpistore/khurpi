@@ -98,7 +98,13 @@ logging.info(f"Environment: {ENV}")
 logging.info(f"Database: {db_name}")
 logging.info(f"Production Mode: {IS_PRODUCTION}")
 
-client = AsyncIOMotorClient(mongo_url)
+# Initialize MongoDB client with connection timeout settings
+client = AsyncIOMotorClient(
+    mongo_url,
+    serverSelectionTimeoutMS=5000,  # 5 second timeout for server selection
+    connectTimeoutMS=5000,  # 5 second connection timeout
+    socketTimeoutMS=10000,  # 10 second socket timeout
+)
 db = client[db_name]
 
 # Razorpay client initialization
@@ -123,15 +129,23 @@ MSG91_AUTH_KEY = os.environ.get('MSG91_AUTH_KEY', '')
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
-# Health check endpoint for Kubernetes deployment
+# Health check endpoint for Kubernetes deployment - MUST be fast and not depend on DB
 @app.get("/health")
 async def health_check():
+    """Simple health check - must respond quickly for K8s readiness probes"""
     return {"status": "healthy", "service": "khurpi-backend"}
 
 # Also add health check under /api prefix for production routing
 @app.get("/api/health")
 async def api_health_check():
+    """API prefixed health check"""
     return {"status": "healthy", "service": "khurpi-backend"}
+
+# Root endpoint for basic connectivity
+@app.get("/")
+async def root():
+    """Root endpoint - indicates service is running"""
+    return {"message": "Khurpi Fresh API", "status": "running"}
 
 # Environment info endpoint (useful for debugging)
 @app.get("/api/env-info")
