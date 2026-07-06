@@ -30,12 +30,10 @@ next-env.d.ts
 dist/
 dist
 
-# Sensitive credentials
+# Environment files (comprehensive coverage)
+
 *token.json*
 *credentials.json*
-credentials.json
-*.key
-.credentials
 
 # Logs and debug files
 npm-debug.log*
@@ -79,22 +77,137 @@ agenthub/agents/youtube/db
 .cache/
 
 # Mobile development
-android-sdk/
-
-# Test results
-tests/test-results/
-
-# Test credentials (sensitive)
-memory/test_credentials.md
+android-sdk/ frontend/node_modules/.cache/default-development/1.pack
+frontend/node_modules/.cache/default-development/0.pack
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/2.pack
 frontend/node_modules/.cache/default-development/3.pack
-tests/test-results/product-catalog-Product-Ca-fb145-ce-column-in-admin-products-chromium-retry1/trace.zip
+frontend/node_modules/.cache/default-development/5.pack
+frontend/node_modules/.cache/default-development/6.pack
+frontend/node_modules/.cache/default-development/7.pack
+frontend/node_modules/.cache/default-development/8.pack
+frontend/node_modules/.cache/default-development/10.pack
+frontend/node_modules/.cache/default-development/11.pack
+frontend/node_modules/.cache/default-development/13.pack
+frontend/node_modules/.cache/default-development/14.pack
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/4.pack
+frontend/node_modules/.cache/default-development/1.pack
+frontend/node_modules/.cache/default-development/9.pack
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/12.pack
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/16.pack
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/3.pack_
+frontend/node_modules/.cache/default-development/15.pack
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+tests/test-results/product-navigation-Product-3d578--product-image-in-list-view-chromium-retry1/trace.zip
+.env
+.env.*
+credentials.json
+*.key
+.credentials
 tests/test-results/wholesale-feature-Wholesal-db6f7--wholesale-users---BUG-TEST-chromium-retry1/trace.zip
 tests/test-results/wholesale-feature-Wholesal-a7377-il-page-for-wholesale-users-chromium-retry1/trace.zip
 tests/test-results/product-catalog-Product-Ca-07f38-ucts-by-Vegetables-category-chromium-retry1/trace.zip
 tests/test-results/product-catalog-Product-Ca-b19dd-oducts-by-price-low-to-high-chromium-retry1/trace.zip
 tests/test-results/wholesale-feature-Wholesal-c8913--wholesale-users---BUG-TEST-chromium-retry1/trace.zip
 tests/test-results/product-catalog-Product-Ca-5a92a-all-products-in-admin-panel-chromium-retry1/trace.zip
+tests/test-results/product-catalog-Product-Ca-fb145-ce-column-in-admin-products-chromium-retry1/trace.zip
 tests/test-results/wholesale-feature-Wholesal-755ee-lection-for-wholesale-users-chromium-retry1/trace.zip
-.env
-.env.*
-*.env
+frontend/node_modules/.cache/default-development/18.pack
