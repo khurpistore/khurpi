@@ -44,6 +44,16 @@ class ProductCard extends ConsumerWidget {
     final displayPrice = showWholesalePrice && product.wholesalePrice != null
         ? product.wholesalePrice!
         : product.price;
+    
+    // Calculate MRP (assume 20% markup for demo, or use wholesalePrice as MRP)
+    final mrpPrice = product.wholesalePrice != null 
+        ? product.price * 1.15 // 15% above sell price as MRP
+        : product.price * 1.2; // 20% above sell price as MRP
+    final hasDiscount = mrpPrice > displayPrice;
+    final discountPercent = hasDiscount 
+        ? ((mrpPrice - displayPrice) / mrpPrice * 100).round()
+        : 0;
+    
     final packLabel = _buildPackLabel();
 
     return GestureDetector(
@@ -52,7 +62,7 @@ class ProductCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── bordered card: image + weight/add row ──
+          // Product Image Card
           Stack(
             children: [
               Padding(
@@ -75,9 +85,9 @@ class ProductCard extends ConsumerWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // image — square-ish
+                        // Image
                         AspectRatio(
-                          aspectRatio: 0.8,
+                          aspectRatio: 0.85,
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
@@ -105,30 +115,49 @@ class ProductCard extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                left: 10,
-                                top: 10,
-                                child: _buildBadge(
-                                  isInCart
-                                      ? 'IN CART'
-                                      : (isGrowing ? 'GROWING' : 'FRESH'),
-                                  background: Colors.white.withOpacity(0.9),
-                                  foreground: isGrowing
-                                      ? const Color(0xFFF9A825)
-                                      : AppColors.primary,
+                              // Discount badge (top left)
+                              if (hasDiscount && discountPercent > 0)
+                                Positioned(
+                                  left: 8,
+                                  top: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.error,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '$discountPercent% OFF',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              // Growing/Out of stock overlay
                               if (!isAvailable)
                                 Positioned.fill(
                                   child: ColoredBox(
                                     color: Colors.black.withOpacity(0.32),
                                     child: Center(
-                                      child: _buildBadge(
-                                        isGrowing ? 'GROWING' : 'OUT OF STOCK',
-                                        background: isGrowing
-                                            ? const Color(0xFFFFA726)
-                                            : AppColors.error,
-                                        foreground: Colors.white,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: isGrowing
+                                              ? const Color(0xFFFFA726)
+                                              : AppColors.error,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          isGrowing ? 'GROWING' : 'OUT OF STOCK',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -136,7 +165,7 @@ class ProductCard extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        // weight + qty row (if in cart) or just weight
+                        // Weight + Add button row
                         Padding(
                           padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
                           child: Row(
@@ -156,13 +185,11 @@ class ProductCard extends ConsumerWidget {
                               if (!isAvailable) ...[
                                 const SizedBox(width: 8),
                                 Container(
-                                  height: 32,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
+                                  height: 28,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF3F3F3),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Center(
                                     child: Text(
@@ -170,6 +197,7 @@ class ProductCard extends ConsumerWidget {
                                       style: AppTextStyles.caption.copyWith(
                                         color: AppColors.textHint,
                                         fontWeight: FontWeight.w600,
+                                        fontSize: 10,
                                       ),
                                     ),
                                   ),
@@ -183,6 +211,7 @@ class ProductCard extends ConsumerWidget {
                   ),
                 ),
               ),
+              // Add/Quantity button (bottom right)
               if (isAvailable)
                 Positioned(
                   right: 0,
@@ -196,31 +225,21 @@ class ProductCard extends ConsumerWidget {
                           onTap: () async {
                             if (cartNotifier == null) return;
                             await cartNotifier.addToCart(product);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '${product.name} added to cart',
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: const EdgeInsets.all(16),
-                                ),
-                              );
-                            }
+                            // No toast - silently add to cart
                           },
                           child: Container(
-                            height: 42,
+                            height: 32,
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
                               color: AppColors.card,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(color: AppColors.primary),
                             ),
                             child: Center(
                               child: Text(
                                 'ADD',
                                 style: AppTextStyles.caption.copyWith(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.5,
@@ -232,7 +251,7 @@ class ProductCard extends ConsumerWidget {
                 ),
             ],
           ),
-          // ── price ──
+          // Price section (left aligned)
           const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -241,26 +260,28 @@ class ProductCard extends ConsumerWidget {
                 '₹${displayPrice.toStringAsFixed(0)}',
                 style: AppTextStyles.body.copyWith(
                   color: AppColors.primary,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              if (showWholesalePrice && product.wholesalePrice != null) ...[
+              if (hasDiscount) ...[
                 const SizedBox(width: 6),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
+                  padding: const EdgeInsets.only(bottom: 1),
                   child: Text(
-                    '₹${product.price.toStringAsFixed(0)}',
+                    '₹${mrpPrice.toStringAsFixed(0)}',
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.textHint,
+                      fontSize: 12,
                       decoration: TextDecoration.lineThrough,
+                      decorationColor: AppColors.textHint,
                     ),
                   ),
                 ),
               ],
             ],
           ),
-          // ── name ──
+          // Product name (left aligned)
           const SizedBox(height: 4),
           Text(
             product.name,
@@ -283,71 +304,45 @@ class ProductCard extends ConsumerWidget {
     required dynamic cartNotifier,
   }) {
     return Container(
-      height: 42,
-      width: 90,
+      height: 32,
+      width: 80,
       decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Row(
-          children: [
-            _StepperButton(
-              icon: Icons.remove_rounded,
-              isLeft: true,
-              onTap: () async {
-                if (cartNotifier == null) return;
-                await cartNotifier.decrementQuantity(product.productId);
-              },
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  quantityInCart.toStringAsFixed(
-                    quantityInCart == quantityInCart.toInt() ? 0 : 1,
-                  ),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
+      child: Row(
+        children: [
+          _StepperButton(
+            icon: Icons.remove_rounded,
+            isLeft: true,
+            onTap: () async {
+              if (cartNotifier == null) return;
+              await cartNotifier.decrementQuantity(product.productId);
+            },
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                quantityInCart.toStringAsFixed(
+                  quantityInCart == quantityInCart.toInt() ? 0 : 1,
+                ),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
                 ),
               ),
             ),
-            _StepperButton(
-              icon: Icons.add_rounded,
-              isLeft: false,
-              onTap: () async {
-                if (cartNotifier == null) return;
-                await cartNotifier.incrementQuantity(product.productId);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(
-    String label, {
-    required Color background,
-    required Color foreground,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.caption.copyWith(
-          color: foreground,
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.4,
-        ),
+          ),
+          _StepperButton(
+            icon: Icons.add_rounded,
+            isLeft: false,
+            onTap: () async {
+              if (cartNotifier == null) return;
+              await cartNotifier.incrementQuantity(product.productId);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -383,8 +378,8 @@ class _StepperButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Icon(icon, color: Colors.white, size: 18),
+        padding: const EdgeInsets.all(6.0),
+        child: Icon(icon, color: Colors.white, size: 16),
       ),
     );
   }

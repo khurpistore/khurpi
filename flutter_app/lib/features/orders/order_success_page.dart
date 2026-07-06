@@ -133,7 +133,7 @@ class OrderSuccessPage extends StatelessWidget {
               
               const SizedBox(height: 24),
               
-              // Delivery Address
+              // Full Delivery Address (no ellipsis)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -143,6 +143,7 @@ class OrderSuccessPage extends StatelessWidget {
                   border: Border.all(color: AppColors.primary.withOpacity(0.2)),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
@@ -177,9 +178,9 @@ class OrderSuccessPage extends StatelessWidget {
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF1A1A2E),
+                              height: 1.4,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            // No maxLines - show full address
                           ),
                         ],
                       ),
@@ -190,58 +191,30 @@ class OrderSuccessPage extends StatelessWidget {
               
               const Spacer(flex: 2),
               
-              // Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.popUntil(context, (route) => route.isFirst);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: BorderSide(color: AppColors.primary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        'Back to Home',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
-                      ),
+              // Only Back to Home Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Navigate to order tracking
-                        Navigator.popUntil(context, (route) => route.isFirst);
-                        // TODO: Navigate to orders page
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Track Order',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
+                  child: const Text(
+                    'Back to Home',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
-                ],
+                ),
               ),
             ],
           ),

@@ -79,7 +79,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                     controller: _searchController,
                     style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Search fresh products...',
+                      hintText: 'Search',
                       hintStyle: TextStyle(
                         color: Colors.grey.shade500,
                         fontSize: 15,

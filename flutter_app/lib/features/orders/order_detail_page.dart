@@ -108,10 +108,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
           _buildPaymentSummary(order),
           const SizedBox(height: 24),
 
-          // Action Buttons
-          if (order.status.toLowerCase() == 'pending' ||
-              order.status.toLowerCase() == 'confirmed')
-            _buildActionButtons(order),
+          // Action Buttons removed as per requirement
         ],
       ),
     );

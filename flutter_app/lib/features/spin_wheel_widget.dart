@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
+import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/providers.dart';
 
@@ -89,6 +91,10 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
   late AnimationController _controller;
   late Animation<double> _animation;
   
+  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  List<WheelPrize> _prizes = defaultPrizes;
+  bool _isLoadingPrizes = true;
+  
   double _currentRotation = 0;
   bool _isSpinning = false;
   bool _canSpin = true;
@@ -120,7 +126,40 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
       }
     });
     
+    _loadPrizes();
     _checkSpinEligibility();
+  }
+
+  Future<void> _loadPrizes() async {
+    try {
+      final response = await _dio.get('/spin-wheel/prizes');
+      if (response.data is List) {
+        final prizes = (response.data as List).map((json) {
+          return WheelPrize(
+            name: json['name'] ?? 'Prize',
+            productId: json['product_id'],
+            quantity: (json['quantity'] ?? 0).toDouble(),
+            unit: json['unit'] ?? 'g',
+            color: Color(int.parse((json['color'] ?? '#4CAF50').replaceFirst('#', '0xFF'))),
+            isEmpty: json['is_empty'] ?? false,
+          );
+        }).toList();
+        
+        if (prizes.isNotEmpty) {
+          setState(() {
+            _prizes = prizes;
+            _isLoadingPrizes = false;
+          });
+        } else {
+          setState(() => _isLoadingPrizes = false);
+        }
+      } else {
+        setState(() => _isLoadingPrizes = false);
+      }
+    } catch (e) {
+      debugPrint('Error loading prizes: $e');
+      setState(() => _isLoadingPrizes = false);
+    }
   }
 
   Future<void> _checkSpinEligibility() async {
@@ -169,14 +208,14 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
   void _onSpinComplete() async {
     // Calculate which prize was won based on final rotation
     final normalizedAngle = (_currentRotation % (2 * pi));
-    final sectionAngle = (2 * pi) / widget.prizes.length;
+    final sectionAngle = (2 * pi) / _prizes.length;
     
     // The pointer is at the top (12 o'clock), so we need to adjust
     // Add pi/2 to account for the pointer position and reverse direction
     final adjustedAngle = (2 * pi - normalizedAngle + pi / 2) % (2 * pi);
-    final prizeIndex = (adjustedAngle / sectionAngle).floor() % widget.prizes.length;
+    final prizeIndex = (adjustedAngle / sectionAngle).floor() % _prizes.length;
     
-    final prize = widget.prizes[prizeIndex];
+    final prize = _prizes[prizeIndex];
     
     setState(() {
       _isSpinning = false;
@@ -260,7 +299,7 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
                   angle: _animation.value * _currentRotation,
                   child: CustomPaint(
                     size: const Size(250, 250),
-                    painter: WheelPainter(prizes: widget.prizes),
+                    painter: WheelPainter(prizes: _prizes),
                   ),
                 ),
                 

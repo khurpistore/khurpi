@@ -1,151 +1,210 @@
 # Khurpi Fresh - Product Requirements Document
 
-## Original Problem Statement
-Build a Veg & Fruit Shop e-commerce application with:
-- **Admin Dashboard**: React web application for managing products, orders, subscriptions, expenses, and analytics
-- **Customer App**: Flutter mobile application (Android/iOS) using Clean Architecture, Riverpod, and MVVM pattern
+## Overview
+Khurpi Fresh is a microgreens and fresh vegetables delivery app with:
+- Flutter mobile app for customers
+- React web admin dashboard
+- FastAPI backend with MongoDB
 
-## Architecture
+## Completed Features (July 2026)
 
-### Backend (FastAPI + MongoDB)
-- Single `server.py` monolith (needs refactoring into modular routers)
-- MongoDB Atlas for database
-- RESTful API with JWT authentication (added Jul 4, 2026)
+### Flutter App UI/UX Overhaul
 
-### Admin Frontend (React + Tailwind)
-- Location: `/app/frontend/`
-- Features: Products, Orders, Subscriptions, Expenses, Analytics, Cost Calculator, User Management
+#### 1. Product Card Updates
+- ✅ Removed "FRESH" badge from product images
+- ✅ Smaller +/- quantity buttons (32px height, 80px width)
+- ✅ Added MRP with strikethrough + discounted price
+- ✅ Left-aligned price and product name
+- ✅ No toast on cart add (silent add)
+- ✅ Discount percentage badge on product images
 
-### Customer Mobile App (Flutter)
-- Location: `/app/flutter_app/`
-- Architecture: **Feature-based Clean Architecture** with generated files in separate `generated/` folder
-- State Management: **Riverpod Family Providers** with code generation
-- Data Models: Freezed (@freezed) with `part` directives pointing to `generated/`
-- Networking: Retrofit + Dio
-- Package name: `khurpi_fresh`
+#### 2. Floating Cart Button (Premium)
+- ✅ Shows product images (max 5 items stacked)
+- ✅ Shows +N badge for additional items
+- ✅ Gradient design with shadow
+- ✅ Shows item count and subtotal
+- ✅ Checkout button with arrow
 
-#### Project Structure (Updated Jul 4, 2026)
+#### 3. Search Page
+- ✅ Premium search bar with "Search" placeholder
+- ✅ Removed voice icon
+- ✅ Recent searches (max 5) saved to SharedPreferences
+- ✅ Clear all recent searches option
+- ✅ Product list with MRP/discount display
+- ✅ Floating cart button at bottom
+
+#### 4. Checkout Page
+- ✅ Payment method selector on LEFT side of Place Order button
+- ✅ Default payment: Online (changed from COD)
+- ✅ Bottom sheet for payment method selection
+- ✅ UPI/Card/Net Banking option
+- ✅ Cash on Delivery option
+
+#### 5. Order Success Page
+- ✅ Full delivery address (no ellipsis/truncation)
+- ✅ Only "Back to Home" button
+- ✅ Order details card with ID, items, total, payment, delivery
+
+#### 6. Order Detail Page
+- ✅ Removed Cancel Order button
+- ✅ Removed Get Help button
+- ✅ Clean order detail view
+
+#### 7. Profile Page
+- ✅ Added "Get Help" button
+- ✅ Help bottom sheet with admin-configured phone number
+- ✅ Call button to directly dial support
+- ✅ Profile image edit option (UI placeholder)
+- ✅ Spin & Earn menu item
+
+#### 8. Address List Page
+- ✅ FAB without text (icon only)
+- ✅ Hidden city/state/district from display
+- ✅ Shows: address line, area, landmark, pincode only
+
+#### 9. Spin & Earn Feature
+- ✅ Spin wheel with configurable prizes
+- ✅ Prizes loaded from backend API
+- ✅ Home page "Spin & Earn" button
+- ✅ Bottom sheet wheel display
+- ✅ Win tracking and eligibility
+
+#### 10. Home Page
+- ✅ Spin & Earn promotional banner/button
+- ✅ Opens spin wheel in bottom sheet
+
+### Backend API Updates
+
+#### New Endpoints
+- `GET /api/orders/my-orders` - Get orders using JWT token (auth required)
+- `GET /api/spin-wheel/prizes` - Get spin wheel prizes
+- `POST /api/admin/spin-wheel/prizes` - Save spin wheel prizes (admin)
+
+#### Authentication
+- Added `get_current_user_id` dependency for JWT-based auth
+- Added `get_optional_user_id` for optional auth
+
+### Admin Panel Updates
+
+#### New Page: Spin Wheel Prizes (`/admin/spin-wheel`)
+- Configure prizes for spin wheel
+- Add/remove prizes
+- Set prize name, product ID, quantity, unit, color
+- Mark prizes as "Better Luck" (empty)
+
+#### Sidebar Navigation
+- Added "Spin & Earn" menu item with disc icon
+
+### Native Setup (Android)
+- `minSdk = 21` for Razorpay compatibility
+- ProGuard rules for Razorpay
+- INTERNET permission in AndroidManifest
+
+## Technical Architecture
+
+### Flutter App Structure
 ```
 flutter_app/lib/
-├── core/                    # Constants, Network, Error handling
+├── core/
+│   ├── constants/
+│   └── network/
+│       └── dio_client.dart (shared auth-enabled Dio)
 ├── data/
-│   ├── api/                 # Retrofit API services
-│   ├── datasources/         # Remote & Local data sources
-│   └── models/              # Freezed models (part files in generated/)
-├── features/                # Feature-based modules
-│   ├── address/             # Address list, form, CRUD (NEW)
-│   ├── auth/                # Login, auth_viewmodel, auth_providers
-│   ├── cart/                # Cart page, viewmodel, providers
-│   ├── checkout/            # Checkout page with address selection
-│   ├── home/                # Home, banners, store viewmodels
-│   ├── orders/              # Orders page, order detail with tracking (NEW)
-│   ├── products/            # Products list, detail, viewmodels
-│   ├── profile/             # Profile page with address management
-│   ├── splash/              # Splash screen
-│   ├── providers.dart       # Core data source providers
-│   └── main_navigation_page.dart
-├── generated/               # All .g.dart and .freezed.dart files
-└── main.dart
+│   ├── models/
+│   ├── services/
+│   │   └── razorpay_service.dart
+│   └── datasources/remote/
+│       └── order_remote_datasource.dart (uses DioClient)
+├── features/
+│   ├── cart/
+│   │   └── floating_cart_button.dart
+│   ├── checkout/
+│   │   └── checkout_page.dart
+│   ├── earn/
+│   │   └── earn_page.dart
+│   ├── home/
+│   │   └── home_page.dart
+│   ├── orders/
+│   │   ├── order_detail_page.dart
+│   │   ├── order_success_page.dart
+│   │   └── orders_page.dart
+│   ├── products/
+│   │   ├── products_page.dart
+│   │   └── widgets/product_card.dart
+│   ├── profile/
+│   │   └── profile_page.dart
+│   ├── search/
+│   │   └── search_page.dart
+│   └── spin_wheel_widget.dart
 ```
 
-## What's Been Implemented
+### Backend Structure
+```
+backend/
+└── server.py (FastAPI monolith with all endpoints)
+```
 
-### Backend Auth Updates (Jul 4, 2026)
-- ✅ **JWT Token Authentication** added to backend
-  - `/api/auth/login` now returns `{token, user}` format
-  - `/api/auth/register` endpoint added for Flutter app
-  - `/api/auth/otp-verified` returns JWT token after MSG91 OTP verification
-- ✅ JWT functions: `create_jwt_token()`, `decode_jwt_token()`
-- ✅ 30-day token expiration
-
-### Flutter Customer App (Jul 4, 2026)
-- ✅ **Address Management CRUD**
-  - New `AddressListPage` for managing multiple addresses
-  - New `AddAddressPage` for adding/editing addresses
-  - Address selection in checkout flow
-  - Set default address functionality
-- ✅ **Order Detail with Tracking**
-  - New `OrderDetailPage` with order timeline
-  - Shows order status progression
-  - Displays items, address, payment summary
-- ✅ **MSG91 OTP Session Management**
-  - `loginWithToken()` method in auth_viewmodel
-  - Proper JWT token handling from backend
-- ✅ **Checkout Improvements**
-  - "Saved Addresses" button to select from address list
-  - Address selection pre-fills form fields
-
-### Admin Dashboard (Complete)
-- ✅ Product CRUD with wholesale pricing
-- ✅ Order management
-- ✅ Subscription management with renewal feature
-- ✅ Expense tracking
-- ✅ Location analytics with map
-- ✅ Cost Calculator (dynamic monthly production)
-- ✅ User management with wholesale access toggle
-- ✅ 50gm unit standardization
-
-## Prioritized Backlog
-
-### P0 (Completed This Session - Jul 4, 2026)
-- ✅ JWT Token generation for auth endpoints
-- ✅ MSG91 OTP session management with JWT
-- ✅ Address Management CRUD in Flutter
-- ✅ Order Detail page with tracking timeline
-- ✅ Checkout address selection improvements
-- ✅ **Fixed "Add to Cart" bug** (Jul 4, 2026) - Null-safe handling for cart provider in product_detail_page.dart, products_page.dart, cart_page.dart, checkout_page.dart
-- ✅ **Checkout Page Enhancements** - Added +/- quantity controls and remove button for cart items, removed Order Notes section
-- ✅ **Product Detail Bottom Sheet** - Converted full-page ProductDetailPage to a modal bottom sheet (`product_detail_bottom_sheet.dart`)
-- ✅ **Global Floating Cart Button** - Added FloatingCartButton to: Products Page (PLP), Profile Page, Search Page, Categories Page
-- ✅ **Fixed user.userId in checkout** - Added user_model.dart import to checkout_page.dart for extension method access
-- ✅ **Fixed Place Order API** - Updated CreateOrderRequest, OrderRemoteDataSource and OrdersViewModel to match backend's required fields (user_id, address_id, subtotal, total, delivery_fee)
-- ✅ **Redesigned Products Page (PLP)** - Categories in vertical scroll on left side (circles), products grid on right with ADD/+/- quantity controls
-- ✅ **Fixed FloatingCartButton positioning** - Properly positioned at bottom on all pages (Profile, Search, Categories, Home)
-
-### P1 (Next Sprint)
-- ✅ Web Frontend "/products" page verified working (106 products displayed)
-- ✅ Product Detail Bottom Sheet instead of full page
-- ✅ Product Listing page with category sidebar
-- ✅ **Razorpay payment integration** - Backend endpoints ready, Flutter checkout updated with payment flow
-- ✅ **Premium ProductCard UI** - Applied patch with new card design, stock status badges, quantity controls
-- [ ] Load app config on Flutter app start
-- [ ] Full native Razorpay SDK integration (requires local Flutter setup)
-
-### P2 (Future)
-- [ ] Refactor `server.py` into modular routers
-- [ ] Product Quick View modal (Web)
-- [ ] Recently Viewed Products
-- [ ] Wholesale Tier Levels
-- [ ] Order tracking push notifications for Flutter
-- [ ] Combo Offers section on Home Page
-
-## Key API Endpoints
-- `GET /api/products` - List products
-- `POST /api/auth/login` - User login (returns JWT token)
-- `POST /api/auth/register` - User registration (returns JWT token)
-- `POST /api/auth/otp-verified` - MSG91 OTP verification (returns JWT token)
-- `GET /api/users/{user_id}/addresses` - Get user's addresses
-- `POST /api/users/{user_id}/addresses` - Add new address
-- `PUT /api/users/{user_id}/addresses/{address_id}` - Update address
-- `DELETE /api/users/{user_id}/addresses/{address_id}` - Delete address
-- `PUT /api/users/{user_id}/addresses/{address_id}/set-default` - Set default address
-- `GET /api/orders/my-orders` - User's orders
-- `POST /api/orders` - Create order (accepts payment_id, razorpay_order_id)
-- `GET /api/store/settings` - Store settings (delivery options)
-- `GET /api/banners` - Get active banners
-- `GET /api/config` - App configuration
-- `POST /api/payments/create-order` - Create Razorpay payment order
-- `POST /api/payments/verify` - Verify Razorpay payment signature
+### Admin Panel Structure
+```
+frontend/src/
+├── pages/
+│   └── AdminSpinWheel.js
+└── components/
+    └── AdminLayout.js (sidebar with spin-wheel link)
+```
 
 ## Test Credentials
-- **Admin**: username `admin`, password `Khurpi2026Secure`
-- **Customer**: phone `9971818259`, password `test1234`
-- **MSG91 Widget ID**: 366179704b55353730393234
 
-## Technical Notes
-- Flutter package name is `khurpi_fresh` (not `flutter_app`)
-- All imports use `package:khurpi_fresh/...` format
-- Backend runs on port 8001, frontend on port 3000
-- MongoDB connection via MONGO_URL environment variable
-- JWT tokens expire after 30 days
-- Flutter commands (`flutter pub get`, `build_runner`) cannot run in container - user must run locally
+### Admin
+- Username: `admin`
+- Password: `Khurpi2026Secure`
+
+### Customer
+- Phone: `9971818259`
+- Password: `test1234`
+
+## Pending/Future Tasks
+
+### P1 - High Priority
+- Run `flutter pub run build_runner build` locally to sync Freezed models
+- Verify OrderDetailPage routing fix manually
+- Test Razorpay integration on physical device
+- Add actual profile image upload
+
+### P2 - Medium Priority
+- Refactor backend into modular routers
+- Order tracking push notifications
+- Product Quick View modal for Web
+
+### P3 - Low Priority
+- Wholesale tier levels
+- Advanced analytics
+
+## API Endpoints Reference
+
+### Authentication
+- `POST /api/auth/login` - Phone/password login
+- `GET /api/auth/me` - Get current user (auth required)
+
+### Orders
+- `GET /api/orders/my-orders` - Get user's orders (auth required)
+- `POST /api/orders` - Create order
+- `GET /api/orders/{id}` - Get order by ID
+
+### Products
+- `GET /api/products` - List products
+- `GET /api/products/{id}` - Get product detail
+- `GET /api/search?q=term` - Search products
+
+### Spin Wheel
+- `GET /api/spin-wheel/prizes` - Get prizes
+- `POST /api/admin/spin-wheel/prizes` - Save prizes
+
+### Store Config
+- `GET /api/store/settings` - Get store settings (includes support_phone)
+- `GET /api/config` - Get app config
+
+## Known Limitations
+- Freezed models require local `build_runner` execution
+- Flutter tests cannot run in container environment
+- Profile image upload is UI-only (backend storage not implemented)

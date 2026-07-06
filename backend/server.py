@@ -7157,6 +7157,52 @@ async def save_app_config(config: AppConfigCreate):
     return {"message": "Configuration saved successfully", "config": config_dict}
 
 # ==========================================
+# SPIN WHEEL PRIZES ENDPOINTS
+# ==========================================
+
+class SpinPrizeCreate(BaseModel):
+    name: str
+    product_id: Optional[str] = None
+    quantity: float = 0
+    unit: str = "g"
+    color: str = "#4CAF50"
+    is_empty: bool = False
+
+@api_router.get("/spin-wheel/prizes")
+async def get_spin_prizes():
+    """Get spin wheel prizes configuration"""
+    prizes = await db.spin_prizes.find({}, {"_id": 0}).to_list(20)
+    if not prizes:
+        # Return default prizes
+        return [
+            {"name": "Tomato", "product_id": "spin_tomato", "quantity": 250, "unit": "g", "color": "#E53935", "is_empty": False},
+            {"name": "Better Luck!", "product_id": None, "quantity": 0, "unit": "g", "color": "#9E9E9E", "is_empty": True},
+            {"name": "Spinach", "product_id": "spin_spinach", "quantity": 100, "unit": "g", "color": "#43A047", "is_empty": False},
+            {"name": "Carrot", "product_id": "spin_carrot", "quantity": 200, "unit": "g", "color": "#FF9800", "is_empty": False},
+            {"name": "Onion", "product_id": "spin_onion", "quantity": 250, "unit": "g", "color": "#8E24AA", "is_empty": False},
+            {"name": "Potato", "product_id": "spin_potato", "quantity": 500, "unit": "g", "color": "#795548", "is_empty": False},
+        ]
+    return prizes
+
+@api_router.post("/admin/spin-wheel/prizes")
+async def save_spin_prizes(prizes: List[SpinPrizeCreate]):
+    """Save spin wheel prizes (admin)"""
+    # Clear existing prizes
+    await db.spin_prizes.delete_many({})
+    
+    # Insert new prizes
+    if prizes:
+        prize_docs = []
+        for i, prize in enumerate(prizes):
+            prize_dict = prize.model_dump()
+            prize_dict["id"] = str(uuid.uuid4())
+            prize_dict["order"] = i
+            prize_docs.append(prize_dict)
+        await db.spin_prizes.insert_many(prize_docs)
+    
+    return {"message": "Spin prizes saved successfully", "count": len(prizes)}
+
+# ==========================================
 # USER ADDRESS ENDPOINTS
 # ==========================================
 

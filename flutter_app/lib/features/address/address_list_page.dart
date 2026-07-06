@@ -326,11 +326,10 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
                     },
                   ),
                 ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: _addNewAddress,
         backgroundColor: AppColors.primary,
-        label: const Text('Add Address', style: TextStyle(color: Colors.white)),
-        icon: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -344,16 +343,13 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
     if (address['area'] != null && address['area'].toString().isNotEmpty) {
       parts.add(address['area'].toString());
     }
-    // Add city with pincode
-    final city = address['city'];
+    // Add landmark if present
+    if (address['landmark'] != null && address['landmark'].toString().isNotEmpty) {
+      parts.add('Near ${address['landmark']}');
+    }
+    // Don't show city, state, district - only pincode
     final pincode = address['pincode'];
-    if (city != null && city.toString().isNotEmpty) {
-      if (pincode != null && pincode.toString().isNotEmpty) {
-        parts.add('$city - $pincode');
-      } else {
-        parts.add(city.toString());
-      }
-    } else if (pincode != null && pincode.toString().isNotEmpty) {
+    if (pincode != null && pincode.toString().isNotEmpty) {
       parts.add(pincode.toString());
     }
     return parts.join(', ');

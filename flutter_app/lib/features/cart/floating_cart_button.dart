@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/checkout/checkout_page.dart';
@@ -13,14 +14,18 @@ class FloatingCartButton extends ConsumerWidget {
     
     if (cartState == null) return const SizedBox.shrink();
     
-    final itemCount = cartState.items.length;
+    final items = cartState.items;
+    final itemCount = items.length;
     final subtotal = cartState.subtotal;
     
     if (itemCount == 0) return const SizedBox.shrink();
 
-    // Calculate safe bottom padding to avoid device navigation buttons
+    // Calculate safe bottom padding
     final mediaQuery = MediaQuery.of(context);
     final safeBottomPadding = mediaQuery.viewPadding.bottom + 16;
+
+    // Get first 5 items for display
+    final displayItems = items.take(5).toList();
 
     return Container(
       padding: EdgeInsets.fromLTRB(16, 0, 16, safeBottomPadding),
@@ -32,7 +37,7 @@ class FloatingCartButton extends ConsumerWidget {
           );
         },
         child: Container(
-          height: 60,
+          height: 68,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [AppColors.primary, AppColors.primaryDark],
@@ -43,53 +48,100 @@ class FloatingCartButton extends ConsumerWidget {
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withOpacity(0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
-                // Cart icon with badge
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.shopping_cart,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
-                    Positioned(
-                      right: -4,
-                      top: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                        child: Text(
-                          '$itemCount',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                // Product images stack
+                SizedBox(
+                  width: 80,
+                  height: 50,
+                  child: Stack(
+                    children: [
+                      for (int i = 0; i < displayItems.length && i < 5; i++)
+                        Positioned(
+                          left: i * 14.0,
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: displayItems[i].imageUrl != null && 
+                                     displayItems[i].imageUrl!.isNotEmpty
+                                  ? CachedNetworkImage(
+                                      imageUrl: displayItems[i].imageUrl!,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => Container(
+                                        color: const Color(0xFFF5F5F5),
+                                        child: Icon(
+                                          Icons.eco,
+                                          color: AppColors.primary.withOpacity(0.3),
+                                          size: 18,
+                                        ),
+                                      ),
+                                      errorWidget: (_, __, ___) => Container(
+                                        color: const Color(0xFFF5F5F5),
+                                        child: Icon(
+                                          Icons.eco,
+                                          color: AppColors.primary.withOpacity(0.3),
+                                          size: 18,
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: const Color(0xFFF5F5F5),
+                                      child: Icon(
+                                        Icons.eco,
+                                        color: AppColors.primary.withOpacity(0.3),
+                                        size: 18,
+                                      ),
+                                    ),
+                            ),
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                      ),
-                    ),
-                  ],
+                      // Show +N badge if more items
+                      if (itemCount > 5)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '+${itemCount - 5}',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 12),
                 
@@ -104,8 +156,10 @@ class FloatingCartButton extends ConsumerWidget {
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         '₹${subtotal.toStringAsFixed(0)}',
                         style: const TextStyle(
@@ -132,13 +186,13 @@ class FloatingCartButton extends ConsumerWidget {
                         'Checkout',
                         style: TextStyle(
                           color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
                       ),
                       const SizedBox(width: 4),
                       Icon(
-                        Icons.arrow_forward,
+                        Icons.arrow_forward_rounded,
                         color: AppColors.primary,
                         size: 18,
                       ),

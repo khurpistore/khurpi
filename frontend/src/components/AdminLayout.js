@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers, Disc } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -22,6 +22,7 @@ const menuItems = [
   { id: 'cost-calculator', label: 'Cost Calculator', icon: Calculator, path: '/admin/cost-calculator' },
   { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' },
   { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
+  { id: 'spin-wheel', label: 'Spin & Earn', icon: Disc, path: '/admin/spin-wheel' },
   { id: 'coupons', label: 'Discount Coupons', icon: Tag, path: '/admin/coupons' },
   { id: 'discount-tiers', label: 'Order Discounts', icon: Percent, path: '/admin/discount-tiers' },
   { id: 'referrals', label: 'Referral Program', icon: Gift, path: '/admin/referrals' },
