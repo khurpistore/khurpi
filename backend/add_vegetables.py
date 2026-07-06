@@ -6,7 +6,7 @@ import os
 import requests
 import json
 
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-control-center-11.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://july-branch.preview.emergentagent.com')
 VEGETABLES_CATEGORY_ID = "034c8aea-38f6-49d0-b21e-3aee1f8b1365"
 LEAFY_GREENS_CATEGORY_ID = "6900f756-4063-40f7-b158-c93a7d63508f"
 ROOT_VEGETABLES_CATEGORY_ID = "3a1f7ff8-71db-4494-be32-6df62693f3dc"

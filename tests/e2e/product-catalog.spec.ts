@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'https://admin-control-center-11.preview.emergentagent.com';
+const BASE_URL = 'https://july-branch.preview.emergentagent.com';
 
 // Admin credentials
 const ADMIN_USERNAME = 'admin';
@@ -94,7 +94,7 @@ test.describe('Product Catalog Feature', () => {
     
     test('should clear filters and show all products', async ({ page }) => {
       // Start with a category filter
-      await page.goto('/products?category=034c8aea-38f6-49d0-b21e-3aee1f8b1365', { waitUntil: 'domcontentloaded' });
+      await page.goto('/products?category=july-branch', { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('networkidle');
       
       // Click "All Products" to clear filter

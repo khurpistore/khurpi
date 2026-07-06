@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'https://admin-control-center-11.preview.emergentagent.com';
+const BASE_URL = 'https://july-branch.preview.emergentagent.com';
 
 test.describe('Product Navigation Bug Fix Verification', () => {
   

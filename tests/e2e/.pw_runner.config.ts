@@ -11,7 +11,7 @@ export default defineConfig({
     ['json', { outputFile: '/root/.emergent/automation_output/20260704_095010/results.json' }],
   ],
   use: {
-    baseURL: 'https://admin-control-center-11.preview.emergentagent.com',
+    baseURL: 'https://july-branch.preview.emergentagent.com',
     screenshot: 'only-on-failure',
     trace: 'off',
     headless: true,
