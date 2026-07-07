@@ -1,0 +1,41 @@
+{
+  "summary": "Backend + Frontend E2E testing of multi-project (multi-tenant) admin feature. Created /app/backend/tests/test_multi_tenant_projects.py with 12 pytest cases (all pass) covering project CRUD, default-project protection, X-Project-Id header scoping and cross-project isolation. Playwright verified the full UI flow: admin login -> project selection screen -> select Khurpi -> dashboard shows 158 products -> add project -> auto-select -> new project pages empty -> switch project persists across refresh -> delete non-default project works -> default project delete blocked (400) -> storefront (no header) returns default project's 158 products. Zero critical issues found for the multi-tenant feature.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Add Project dialog", "issues": ["Radix DialogContent warning: 'Missing Description or aria-describedby' - accessibility a11y warning, not blocking"]},
+      {"screen": "Storefront (/products)", "issues": ["Mixed-content error: page calls http://ip-api.com/json/... over HTTPS - browser blocks it. Unrelated to multi-tenancy but should be switched to https:// in code (geolocation lookup)"]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_multi_tenant_projects.py",
+    "/app/test_reports/pytest/multi_tenant_results.xml"
+  ],
+  "action_items": [
+    "(Optional, not multi-tenant) Fix mixed-content: replace http://ip-api.com/... with https://ip-api.com/... (or a paid endpoint) to stop console errors on customer storefront.",
+    "(Optional, not multi-tenant) Add aria-describedby / DialogDescription to the Add-Project dialog for a11y compliance."
+  ],
+  "critical_code_review_comments": [
+    "server.py is >7600 lines. Multi-tenant scoping is scattered as Depends(get_project_id) on each endpoint - correct, but the file badly needs splitting into routers per resource (projects, products, orders, etc.).",
+    "PROJECT_SCOPED_COLLECTIONS list is the single source of truth for isolation. Any new endpoint that queries these collections MUST also add project_id filter - risk of accidental leakage if a developer forgets. Consider a helper get_scoped_collection(name, project_id) or per-collection wrappers.",
+    "init_projects() runs at startup and backfills ALL scoped collections with default project_id every time - fine while it's idempotent, but on large collections this could slow startup. Consider indexing project_id on all scoped collections.",
+    "delete_project_endpoint hard-deletes all scoped rows. No undo. Consider soft-delete or confirmation token for safety.",
+    "get_project_id has no validation that the header value is a known project. A malicious/misconfigured client could pass a non-existent project id and see an empty view. Not a security bug per se, but validating against db.projects would be safer.",
+    "AdminProjects.js delete uses window.confirm (native) - inconsistent with the rest of the admin UI which uses shadcn dialogs."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_multi_tenant_projects.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin / Khurpi2026Secure (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created + auto-cleaned test projects (TEST_UI_*, TEST_Project_*, TEST_CRUD_*, TEST_DEL_*). Verified only 'default' Khurpi project remains after tests. TEST_PRODUCT_* product created inside a temp project which was itself deleted (cascade delete removed the product).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The multi-tenant feature is stable end-to-end. Regression test file: /app/backend/tests/test_multi_tenant_projects.py (pytest, 12 tests). Frontend uses ProjectContext + X-Project-Id header globally via axios.defaults. If future admin pages need scoping, add project_id: str = Depends(get_project_id) to backend endpoints and append the collection name to PROJECT_SCOPED_COLLECTIONS (backend/server.py line ~132). Currently only products/categories/subcategories/orders/coupons/banners/spin_prizes are scoped per requirement.",
+  "rca of the issue": "N/A - no bugs to RCA. All requested acceptance criteria pass."
+}

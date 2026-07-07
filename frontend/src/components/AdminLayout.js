@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers, Disc } from 'lucide-react';
+import { useProject } from '@/context/ProjectContext';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers, Disc, Building2, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -37,11 +38,25 @@ const AdminLayout = ({ children, active, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { currentProject, clearProject } = useProject();
+
+  // Guard: a project must be selected to use the admin panel
+  useEffect(() => {
+    if (!currentProject) {
+      navigate('/admin/projects');
+    }
+  }, [currentProject, navigate]);
 
   const handleLogout = () => {
+    clearProject();
     logout();
     toast.success('Logged out successfully');
     navigate('/admin/login');
+  };
+
+  const handleSwitchProject = () => {
+    clearProject();
+    navigate('/admin/projects');
   };
 
   const handleNavClick = (path) => {
@@ -53,10 +68,23 @@ const AdminLayout = ({ children, active, title }) => {
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block w-64 bg-primary text-white min-h-screen p-6 flex-shrink-0">
-        <div className="flex items-center gap-2 mb-8">
+        <div className="flex items-center gap-2 mb-3">
           <Leaf className="w-6 h-6" />
           <h2 className="text-xl font-bold heading-text">Khurpi Admin</h2>
         </div>
+        {currentProject && (
+          <button
+            data-testid="switch-project-button"
+            onClick={handleSwitchProject}
+            className="w-full flex items-center justify-between gap-2 mb-6 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-left"
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              <Building2 className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-medium truncate" data-testid="current-project-name">{currentProject.name}</span>
+            </span>
+            <ChevronsUpDown className="w-4 h-4 flex-shrink-0 opacity-70" />
+          </button>
+        )}
         <nav className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;

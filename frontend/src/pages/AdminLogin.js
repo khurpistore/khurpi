@@ -22,7 +22,7 @@ const AdminLogin = () => {
     try {
       await adminLogin(username, password);
       toast.success('Admin login successful!');
-      navigate('/admin/dashboard');
+      navigate('/admin/projects');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Invalid admin credentials');
     } finally {

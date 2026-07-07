@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -122,6 +122,102 @@ MSG91_AUTH_KEY = os.environ.get('MSG91_AUTH_KEY', '')
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# ==========================================
+# MULTI-PROJECT (MULTI-TENANCY) SUPPORT
+# ==========================================
+DEFAULT_PROJECT_ID = "default"
+
+# Collections whose documents belong to a specific project
+PROJECT_SCOPED_COLLECTIONS = [
+    "products", "categories", "subcategories", "orders", "coupons", "banners", "spin_prizes"
+]
+
+async def get_project_id(x_project_id: Optional[str] = Header(None)) -> str:
+    """Resolve the active project id from the X-Project-Id header (defaults to the primary project)."""
+    return x_project_id or DEFAULT_PROJECT_ID
+
+class ProjectCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    logo: Optional[str] = ""
+    color: Optional[str] = "#16a34a"
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    color: Optional[str] = None
+    active: Optional[bool] = None
+
+@api_router.get("/admin/projects")
+async def list_projects():
+    """List all projects (super admin)."""
+    projects = await db.projects.find({}, {"_id": 0}).sort("created_at", 1).to_list(200)
+    return projects
+
+@api_router.post("/admin/projects")
+async def create_project_endpoint(project: ProjectCreate):
+    """Create a new project (super admin)."""
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": project.name,
+        "slug": project.name.lower().replace(" ", "-"),
+        "description": project.description or "",
+        "logo": project.logo or "",
+        "color": project.color or "#16a34a",
+        "active": True,
+        "is_default": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.projects.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.put("/admin/projects/{project_id}")
+async def update_project_endpoint(project_id: str, project: ProjectUpdate):
+    update_data = {k: v for k, v in project.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    result = await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    updated = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/admin/projects/{project_id}")
+async def delete_project_endpoint(project_id: str):
+    proj = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if proj.get("is_default") or project_id == DEFAULT_PROJECT_ID:
+        raise HTTPException(status_code=400, detail="Cannot delete the default project")
+    for col in PROJECT_SCOPED_COLLECTIONS:
+        await db[col].delete_many({"project_id": project_id})
+    await db.projects.delete_one({"id": project_id})
+    return {"success": True}
+
+@app.on_event("startup")
+async def init_projects():
+    """Ensure a default project exists and backfill project_id on legacy documents."""
+    existing = await db.projects.find_one({"id": DEFAULT_PROJECT_ID})
+    if not existing:
+        await db.projects.insert_one({
+            "id": DEFAULT_PROJECT_ID,
+            "name": "Khurpi",
+            "slug": "khurpi",
+            "description": "Primary store",
+            "logo": "",
+            "color": "#16a34a",
+            "active": True,
+            "is_default": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    for col in PROJECT_SCOPED_COLLECTIONS:
+        await db[col].update_many(
+            {"project_id": {"$exists": False}},
+            {"$set": {"project_id": DEFAULT_PROJECT_ID}}
+        )
 
 # Health check endpoint for Kubernetes deployment
 @app.get("/health")
@@ -2644,12 +2740,13 @@ async def get_payment_config():
     }
 
 @api_router.get("/products", response_model=List[Product])
-async def get_products(active_only: bool = True):
+async def get_products(active_only: bool = True, project_id: str = Depends(get_project_id)):
     query = {"active": True} if active_only else {}
+    query["project_id"] = project_id
     products = await db.products.find(query, {"_id": 0}).to_list(200)
     
     # Build category lookup for resolving names
-    categories = await db.categories.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+    categories = await db.categories.find({"project_id": project_id}, {"_id": 0, "id": 1, "name": 1}).to_list(100)
     category_map = {c["id"]: c["name"] for c in categories}
     
     # Auto-sync: Update stock_status to out_of_stock for products with weight=0
@@ -2722,13 +2819,14 @@ async def get_product(product_id: str):
     return Product(**product)
 
 @api_router.post("/products", response_model=Product)
-async def create_product(product_data: ProductCreate):
+async def create_product(product_data: ProductCreate, project_id: str = Depends(get_project_id)):
     import uuid
     from datetime import datetime
     
     product_doc = {
         "id": str(uuid.uuid4()),
         **product_data.model_dump(),
+        "project_id": project_id,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -3704,7 +3802,7 @@ def calculate_estimated_delivery_date(items=None, products_cache=None):
 
 # Orders API (for single purchases)
 @api_router.post("/orders", response_model=Order)
-async def create_order(order_data: OrderCreate):
+async def create_order(order_data: OrderCreate, project_id: str = Depends(get_project_id)):
     import uuid
     
     # Verify user exists
@@ -3814,6 +3912,7 @@ async def create_order(order_data: OrderCreate):
     # Create order with address snapshot
     order_doc = {
         "id": str(uuid.uuid4()),
+        "project_id": project_id,
         "user_id": order_data.user_id,
         "address_id": order_data.address_id,
         "delivery_address": {
@@ -4953,10 +5052,10 @@ async def get_all_payments_admin():
     return result
 
 @api_router.get("/admin/orders")
-async def get_all_orders_admin():
+async def get_all_orders_admin(project_id: str = Depends(get_project_id)):
     """Get all orders for admin panel"""
     try:
-        orders = await db.orders.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+        orders = await db.orders.find({"project_id": project_id}, {"_id": 0}).sort("created_at", -1).to_list(1000)
         
         if not orders:
             return []
@@ -5412,21 +5511,22 @@ class CouponUpdate(BaseModel):
     description: Optional[str] = None
 
 @api_router.get("/admin/coupons")
-async def get_all_coupons():
-    coupons = await db.coupons.find({}, {"_id": 0}).to_list(1000)
+async def get_all_coupons(project_id: str = Depends(get_project_id)):
+    coupons = await db.coupons.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
     return coupons
 
 @api_router.post("/admin/coupons")
-async def create_coupon(coupon_data: CouponCreate):
+async def create_coupon(coupon_data: CouponCreate, project_id: str = Depends(get_project_id)):
     import uuid
     
-    # Check if code already exists
-    existing = await db.coupons.find_one({"code": coupon_data.code.upper()}, {"_id": 0})
+    # Check if code already exists within the project
+    existing = await db.coupons.find_one({"code": coupon_data.code.upper(), "project_id": project_id}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Coupon code already exists")
     
     coupon_doc = {
         "id": str(uuid.uuid4()),
+        "project_id": project_id,
         "code": coupon_data.code.upper(),
         "discount_type": coupon_data.discount_type,
         "discount_value": coupon_data.discount_value,
@@ -6620,9 +6720,10 @@ async def update_store_settings(settings_update: StoreSettingsUpdate):
 # ==========================================
 
 @api_router.get("/categories")
-async def get_categories(active_only: bool = True, include_subcategories: bool = True):
+async def get_categories(active_only: bool = True, include_subcategories: bool = True, project_id: str = Depends(get_project_id)):
     """Get all categories (public)"""
     query = {"active": True} if active_only else {}
+    query["project_id"] = project_id
     categories = await db.categories.find(query, {"_id": 0}).sort("display_order", 1).to_list(100)
     
     if include_subcategories:
@@ -6643,24 +6744,25 @@ async def get_category(category_id: str):
     return category
 
 @api_router.get("/admin/categories")
-async def get_admin_categories():
+async def get_admin_categories(project_id: str = Depends(get_project_id)):
     """Get all categories (admin - includes inactive)"""
-    categories = await db.categories.find({}, {"_id": 0}).sort("display_order", 1).to_list(100)
+    categories = await db.categories.find({"project_id": project_id}, {"_id": 0}).sort("display_order", 1).to_list(100)
     return categories
 
 @api_router.post("/admin/categories")
-async def create_category(category: CategoryCreate):
+async def create_category(category: CategoryCreate, project_id: str = Depends(get_project_id)):
     """Create a new category"""
     # Generate slug if not provided
     slug = category.slug or category.name.lower().replace(" ", "-").replace("&", "and")
     
-    # Check for duplicate slug
-    existing = await db.categories.find_one({"slug": slug})
+    # Check for duplicate slug within the project
+    existing = await db.categories.find_one({"slug": slug, "project_id": project_id})
     if existing:
         slug = f"{slug}-{str(uuid.uuid4())[:8]}"
     
     doc = {
         "id": str(uuid.uuid4()),
+        "project_id": project_id,
         "name": category.name,
         "slug": slug,
         "description": category.description,
@@ -6915,9 +7017,9 @@ async def delete_product_unit(unit_id: str):
 # ==========================================
 
 @api_router.get("/products/by-category/{category_id}")
-async def get_products_by_category(category_id: str, active_only: bool = True):
+async def get_products_by_category(category_id: str, active_only: bool = True, project_id: str = Depends(get_project_id)):
     """Get all products in a category"""
-    query = {"category_id": category_id}
+    query = {"category_id": category_id, "project_id": project_id}
     if active_only:
         query["active"] = True
     
@@ -6937,10 +7039,10 @@ async def get_products_by_category(category_id: str, active_only: bool = True):
     return products
 
 @api_router.get("/products/featured")
-async def get_featured_products():
+async def get_featured_products(project_id: str = Depends(get_project_id)):
     """Get featured products"""
     products = await db.products.find(
-        {"active": True, "featured": True}, 
+        {"active": True, "featured": True, "project_id": project_id}, 
         {"_id": 0}
     ).sort("display_order", 1).to_list(20)
     # Map 'image' to 'image_url' for Flutter app compatibility
@@ -6976,13 +7078,13 @@ class BannerUpdate(BaseModel):
     end_date: Optional[str] = None
 
 @api_router.get("/banners")
-async def get_banners():
+async def get_banners(project_id: str = Depends(get_project_id)):
     """Get active banners (public endpoint)"""
     now = datetime.now(timezone.utc).isoformat()
     
     # Get active banners, optionally filter by date range
     banners = await db.banners.find(
-        {"active": True},
+        {"active": True, "project_id": project_id},
         {"_id": 0}
     ).sort("display_order", 1).to_list(20)
     
@@ -7008,16 +7110,17 @@ async def get_banners():
     return active_banners
 
 @api_router.get("/admin/banners")
-async def get_admin_banners():
+async def get_admin_banners(project_id: str = Depends(get_project_id)):
     """Get all banners (admin - includes inactive)"""
-    banners = await db.banners.find({}, {"_id": 0}).sort("display_order", 1).to_list(100)
+    banners = await db.banners.find({"project_id": project_id}, {"_id": 0}).sort("display_order", 1).to_list(100)
     return banners
 
 @api_router.post("/admin/banners")
-async def create_banner(banner: BannerCreate):
+async def create_banner(banner: BannerCreate, project_id: str = Depends(get_project_id)):
     """Create a new banner"""
     doc = {
         "id": str(uuid.uuid4()),
+        "project_id": project_id,
         "title": banner.title,
         "subtitle": banner.subtitle,
         "image_url": banner.image_url,
@@ -7169,9 +7272,9 @@ class SpinPrizeCreate(BaseModel):
     is_empty: bool = False
 
 @api_router.get("/spin-wheel/prizes")
-async def get_spin_prizes():
+async def get_spin_prizes(project_id: str = Depends(get_project_id)):
     """Get spin wheel prizes configuration"""
-    prizes = await db.spin_prizes.find({}, {"_id": 0}).to_list(20)
+    prizes = await db.spin_prizes.find({"project_id": project_id}, {"_id": 0}).to_list(20)
     if not prizes:
         # Return default prizes
         return [
@@ -7185,10 +7288,10 @@ async def get_spin_prizes():
     return prizes
 
 @api_router.post("/admin/spin-wheel/prizes")
-async def save_spin_prizes(prizes: List[SpinPrizeCreate]):
+async def save_spin_prizes(prizes: List[SpinPrizeCreate], project_id: str = Depends(get_project_id)):
     """Save spin wheel prizes (admin)"""
-    # Clear existing prizes
-    await db.spin_prizes.delete_many({})
+    # Clear existing prizes for this project
+    await db.spin_prizes.delete_many({"project_id": project_id})
     
     # Insert new prizes
     if prizes:
@@ -7196,6 +7299,7 @@ async def save_spin_prizes(prizes: List[SpinPrizeCreate]):
         for i, prize in enumerate(prizes):
             prize_dict = prize.model_dump()
             prize_dict["id"] = str(uuid.uuid4())
+            prize_dict["project_id"] = project_id
             prize_dict["order"] = i
             prize_docs.append(prize_dict)
         await db.spin_prizes.insert_many(prize_docs)
@@ -7444,9 +7548,9 @@ class SubcategoryUpdate(BaseModel):
     active: Optional[bool] = None
 
 @api_router.get("/subcategories")
-async def get_subcategories(category_id: Optional[str] = None):
+async def get_subcategories(category_id: Optional[str] = None, project_id: str = Depends(get_project_id)):
     """Get subcategories, optionally filtered by parent category"""
-    query = {"active": True}
+    query = {"active": True, "project_id": project_id}
     if category_id:
         query["parent_category_id"] = category_id
     
@@ -7456,9 +7560,9 @@ async def get_subcategories(category_id: Optional[str] = None):
     return subcategories
 
 @api_router.get("/admin/subcategories")
-async def get_admin_subcategories(category_id: Optional[str] = None):
+async def get_admin_subcategories(category_id: Optional[str] = None, project_id: str = Depends(get_project_id)):
     """Get all subcategories (admin - includes inactive)"""
-    query = {}
+    query = {"project_id": project_id}
     if category_id:
         query["parent_category_id"] = category_id
     
@@ -7468,11 +7572,12 @@ async def get_admin_subcategories(category_id: Optional[str] = None):
     return subcategories
 
 @api_router.post("/admin/subcategories")
-async def create_subcategory(subcategory: SubcategoryCreate):
+async def create_subcategory(subcategory: SubcategoryCreate, project_id: str = Depends(get_project_id)):
     """Create a new subcategory"""
     doc = {
         "id": str(uuid.uuid4()),
         **subcategory.model_dump(),
+        "project_id": project_id,
         "slug": subcategory.slug or subcategory.name.lower().replace(" ", "-"),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()

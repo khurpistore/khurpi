@@ -56,6 +56,8 @@ import AdminBanners from '@/pages/AdminBanners';
 import AdminAppConfig from '@/pages/AdminAppConfig';
 import AdminSubcategories from '@/pages/AdminSubcategories';
 import AdminSpinWheel from '@/pages/AdminSpinWheel';
+import AdminProjects from '@/pages/AdminProjects';
+import { ProjectProvider } from '@/context/ProjectContext';
 import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
 
@@ -87,6 +89,7 @@ function App() {
 
   return (
     <AuthProvider>
+      <ProjectProvider>
       <CartProvider>
         <BrowserRouter>
           <ScrollToTop />
@@ -143,6 +146,7 @@ function App() {
               <Route path="/admin/app-config" element={<ProtectedRoute requireAdmin><AdminAppConfig /></ProtectedRoute>} />
               <Route path="/admin/subcategories" element={<ProtectedRoute requireAdmin><AdminSubcategories /></ProtectedRoute>} />
               <Route path="/admin/spin-wheel" element={<ProtectedRoute requireAdmin><AdminSpinWheel /></ProtectedRoute>} />
+              <Route path="/admin/projects" element={<ProtectedRoute requireAdmin><AdminProjects /></ProtectedRoute>} />
               
               {/* Delivery Boy Routes - No header/footer */}
               <Route path="/delivery/login" element={<DeliveryBoyLogin />} />
@@ -155,6 +159,7 @@ function App() {
           <Toaster position="top-center" />
         </BrowserRouter>
       </CartProvider>
+      </ProjectProvider>
     </AuthProvider>
   );
 }
