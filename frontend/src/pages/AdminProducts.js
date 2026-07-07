@@ -33,6 +33,16 @@ const WEIGHT_OPTIONS = [
   ...Array.from({ length: 8 }, (_, i) => 1500 + i * 500),   // 1500-5000
 ];
 
+// Unit type options for products
+const UNIT_TYPE_OPTIONS = [
+  { value: 'g', label: 'G' },
+  { value: 'kg', label: 'Kg' },
+  { value: 'piece', label: 'Piece' },
+  { value: 'pieces', label: 'Pieces' },
+  { value: 'bunch', label: 'Bunch' },
+  { value: 'dozen', label: 'Dozen' },
+];
+
 const ProductDialog = ({ product, onClose, onSuccess }) => {
   // Calculate initial availability date from ready_in_days if exists
   const getInitialAvailabilityDate = () => {
@@ -51,7 +61,8 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
     benefit: product?.benefit || '',
     nutrients: product?.nutrients || '',
     price: product?.price || '',
-    growth_days: product?.growth_days || '',
+    unit: product?.unit || 'kg',
+    unit_value: product?.unit_value ?? 1,
     weight: product?.weight || 100,
     active: product?.active !== false,
     stock_status: product?.stock_status || 'in_stock',
@@ -144,7 +155,7 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           className="mt-1 min-h-[60px]"
         />
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <div>
           <Label htmlFor="price" className="text-sm">Price (₹)</Label>
           <Input
@@ -159,16 +170,32 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           />
         </div>
         <div>
-          <Label htmlFor="growth_days" className="text-sm">Growth Days</Label>
+          <Label htmlFor="unit_value" className="text-sm">Unit</Label>
           <Input
-            id="growth_days"
-            data-testid="product-growth-days-input"
+            id="unit_value"
+            data-testid="product-unit-value-input"
             type="number"
-            value={formData.growth_days}
-            onChange={(e) => setFormData({ ...formData, growth_days: parseInt(e.target.value) })}
-            required
+            step="0.01"
+            value={formData.unit_value}
+            onChange={(e) => setFormData({ ...formData, unit_value: parseFloat(e.target.value) || 0 })}
             className="mt-1"
           />
+        </div>
+        <div>
+          <Label htmlFor="unit" className="text-sm">Unit Type</Label>
+          <Select
+            value={formData.unit}
+            onValueChange={(value) => setFormData({ ...formData, unit: value })}
+          >
+            <SelectTrigger className="mt-1" data-testid="product-unit-type-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {UNIT_TYPE_OPTIONS.map((u) => (
+                <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div>
@@ -207,12 +234,6 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-green-600" />
                   In Stock - Ready to ship
-                </div>
-              </SelectItem>
-              <SelectItem value="growing">
-                <div className="flex items-center gap-2">
-                  <Sprout className="w-4 h-4 text-amber-600" />
-                  Growing - Can be booked
                 </div>
               </SelectItem>
               <SelectItem value="out_of_stock">
@@ -505,39 +526,25 @@ const AdminProducts = () => {
         <>
           {/* Desktop Table View */}
           <Card className="hidden lg:block overflow-x-auto">
-            <CardContent className="p-0 min-w-[1400px]">
+            <CardContent className="p-0 min-w-[1100px]">
               {/* Header */}
               <div className="grid gap-1 p-2 bg-gray-100 text-xs font-medium text-gray-600 border-b" style={{gridTemplateColumns: 'repeat(16, minmax(0, 1fr))'}}>
-                <div className="col-span-2">Product</div>
-                <div className="col-span-1 text-center text-purple-600" title={`Based on ${monthlyTrays} trays/month`}>
-                  Cost/50g
-                  <span className="block text-[10px] text-purple-400 font-normal">({monthlyTrays} trays)</span>
-                </div>
-                <div className="col-span-1 text-center text-blue-600">Retail/50g</div>
-                <div className="col-span-1 text-center text-blue-700">Retail Profit</div>
-                <div className="col-span-1 text-center text-orange-600">WP/50g</div>
-                <div className="col-span-1 text-center text-orange-700">WP Profit</div>
-                <div className="col-span-1 text-center">Growth</div>
-                <div className="col-span-1 text-center">Qty(gm)</div>
+                <div className="col-span-3">Product</div>
+                <div className="col-span-2 text-center text-blue-600">Price</div>
+                <div className="col-span-1 text-center">Unit</div>
+                <div className="col-span-2 text-center">Unit Type</div>
+                <div className="col-span-2 text-center">Qty(gm)</div>
                 <div className="col-span-2">Status</div>
-                <div className="col-span-1">Avl Date</div>
                 <div className="col-span-1 text-center">Active</div>
-                <div className="col-span-2 text-center">Actions</div>
+                <div className="col-span-3 text-center">Actions</div>
               </div>
-              
+
               {/* Product Rows */}
               <div className="divide-y" data-testid="admin-products-list">
-                {products.map((product) => {
-                  const cost = costData[product.id]?.cost_per_50g || 0;
-                  const retailPrice = (getFieldValue(product, 'price') || product.price) / 2; // Retail price per 50g
-                  const retailProfit = retailPrice - cost;
-                  const wholesalePrice = (getFieldValue(product, 'wholesale_price') || product.wholesale_price || 0) / 2; // WP per 50g
-                  const wholesaleProfit = wholesalePrice - cost;
-                  
-                  return (
+                {products.map((product) => (
                   <div key={product.id} data-testid={`admin-product-row-${product.id}`} className={`grid gap-1 p-2 items-center hover:bg-gray-50 ${hasChanges(product.id) ? 'bg-yellow-50' : ''}`} style={{gridTemplateColumns: 'repeat(16, minmax(0, 1fr))'}}>
                     {/* Product Info */}
-                    <div className="col-span-2 flex items-center gap-2">
+                    <div className="col-span-3 flex items-center gap-2">
                       <img
                         src={product.image}
                         alt={product.name}
@@ -548,71 +555,50 @@ const AdminProducts = () => {
                         <p className="text-xs text-muted-foreground truncate">{product.benefit?.slice(0, 30)}...</p>
                       </div>
                     </div>
-                    
-                    {/* Cost Price per 50gm (from cost calculator) */}
-                    <div className="col-span-1">
-                      <div className="h-7 text-xs text-center flex items-center justify-center bg-purple-50 rounded border border-purple-200 text-purple-700">
-                        {cost > 0 ? `₹${cost.toFixed(0)}` : '-'}
-                      </div>
-                    </div>
-                    
-                    {/* Retail Price per 50gm (editable - stored as per 100gm) */}
-                    <div className="col-span-1">
+
+                    {/* Price (editable) */}
+                    <div className="col-span-2">
                       <Input
                         type="number"
-                        value={Math.round((getFieldValue(product, 'price') || product.price) / 2)}
-                        onChange={(e) => handleFieldChange(product.id, 'price', parseInt(e.target.value) * 2)}
+                        value={getFieldValue(product, 'price') ?? product.price ?? ''}
+                        onChange={(e) => handleFieldChange(product.id, 'price', parseFloat(e.target.value) || 0)}
                         className="h-7 text-xs text-center bg-blue-50 border-blue-200 text-blue-700"
-                      />
-                    </div>
-                    
-                    {/* Retail Profit/Loss per 50gm */}
-                    <div className="col-span-1">
-                      <div className={`h-7 text-xs text-center flex items-center justify-center rounded border font-medium ${
-                        retailProfit >= 0 
-                          ? 'bg-green-50 border-green-200 text-green-700' 
-                          : 'bg-red-50 border-red-200 text-red-700'
-                      }`}>
-                        {cost > 0 ? `${retailProfit >= 0 ? '+' : ''}₹${retailProfit.toFixed(0)}` : '-'}
-                      </div>
-                    </div>
-                    
-                    {/* Wholesale Price per 50gm (editable - stored as per 100gm) */}
-                    <div className="col-span-1">
-                      <Input
-                        type="number"
-                        value={Math.round((getFieldValue(product, 'wholesale_price') || product.wholesale_price || 0) / 2)}
-                        onChange={(e) => handleFieldChange(product.id, 'wholesale_price', parseInt(e.target.value) * 2)}
-                        className="h-7 text-xs text-center bg-orange-50 border-orange-200 text-orange-700"
                         placeholder="0"
+                        data-testid={`product-price-${product.id}`}
                       />
                     </div>
-                    
-                    {/* Wholesale Profit/Loss per 50gm */}
-                    <div className="col-span-1">
-                      <div className={`h-7 text-xs text-center flex items-center justify-center rounded border font-medium ${
-                        wholesalePrice > 0 
-                          ? (wholesaleProfit >= 0 
-                              ? 'bg-green-50 border-green-200 text-green-700' 
-                              : 'bg-red-50 border-red-200 text-red-700')
-                          : 'bg-gray-50 border-gray-200 text-gray-400'
-                      }`}>
-                        {wholesalePrice > 0 && cost > 0 ? `${wholesaleProfit >= 0 ? '+' : ''}₹${wholesaleProfit.toFixed(0)}` : '-'}
-                      </div>
-                    </div>
-                    
-                    {/* Growth Days */}
+
+                    {/* Unit value */}
                     <div className="col-span-1">
                       <Input
                         type="number"
-                        value={getFieldValue(product, 'growth_days')}
-                        onChange={(e) => handleFieldChange(product.id, 'growth_days', e.target.value)}
+                        value={getFieldValue(product, 'unit_value') ?? product.unit_value ?? 1}
+                        onChange={(e) => handleFieldChange(product.id, 'unit_value', parseFloat(e.target.value) || 0)}
                         className="h-7 text-xs text-center"
+                        placeholder="1"
+                        data-testid={`product-unit-value-${product.id}`}
                       />
                     </div>
-                    
-                    {/* Weight (gm) */}
-                    <div className="col-span-1">
+
+                    {/* Unit Type */}
+                    <div className="col-span-2">
+                      <Select
+                        value={getFieldValue(product, 'unit') || product.unit || 'kg'}
+                        onValueChange={(value) => handleFieldChange(product.id, 'unit', value)}
+                      >
+                        <SelectTrigger className="h-7 text-xs" data-testid={`product-unit-type-${product.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {UNIT_TYPE_OPTIONS.map((u) => (
+                            <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Weight (gm) - stock qty */}
+                    <div className="col-span-2">
                       <Select
                         value={String(getFieldValue(product, 'weight') ?? 100)}
                         onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
@@ -629,7 +615,7 @@ const AdminProducts = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     {/* Stock Status */}
                     <div className="col-span-2">
                       <Select
@@ -637,10 +623,8 @@ const AdminProducts = () => {
                         onValueChange={(value) => handleFieldChange(product.id, 'stock_status', value)}
                       >
                         <SelectTrigger className={`h-7 text-xs ${
-                          (getFieldValue(product, 'stock_status') || 'in_stock') === 'in_stock' 
-                            ? 'bg-green-100 text-green-700 border-green-300' 
-                            : (getFieldValue(product, 'stock_status') || 'in_stock') === 'growing'
-                            ? 'bg-amber-100 text-amber-700 border-amber-300'
+                          (getFieldValue(product, 'stock_status') || 'in_stock') === 'in_stock'
+                            ? 'bg-green-100 text-green-700 border-green-300'
                             : 'bg-red-100 text-red-700 border-red-300'
                         }`}>
                           <SelectValue />
@@ -649,103 +633,55 @@ const AdminProducts = () => {
                           <SelectItem value="in_stock">
                             <span className="text-green-700">In Stock</span>
                           </SelectItem>
-                          <SelectItem value="growing">
-                            <span className="text-amber-700">Growing</span>
-                          </SelectItem>
                           <SelectItem value="out_of_stock">
                             <span className="text-red-700">Out of Stock</span>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    
-                    {/* Availability Date - only for growing status */}
-                    <div className="col-span-1">
-                      {(getFieldValue(product, 'stock_status') || product.stock_status) === 'growing' ? (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className="h-7 w-full text-xs px-1">
-                              <CalendarIcon className="h-3 w-3 mr-1" />
-                              {(() => {
-                                const availDate = getFieldValue(product, 'availability_date') || product.availability_date;
-                                if (availDate) {
-                                  return format(new Date(availDate), 'MMM d');
-                                }
-                                const readyDays = getFieldValue(product, 'ready_in_days') || product.ready_in_days;
-                                if (readyDays) {
-                                  return format(addDays(new Date(), readyDays), 'MMM d');
-                                }
-                                return 'Set';
-                              })()}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={(() => {
-                              const availDate = getFieldValue(product, 'availability_date') || product.availability_date;
-                              if (availDate) return new Date(availDate);
-                              const readyDays = getFieldValue(product, 'ready_in_days') || product.ready_in_days;
-                              if (readyDays) return addDays(new Date(), readyDays);
-                              return addDays(new Date(), 7);
-                            })()}
-                            onSelect={(date) => {
-                              handleFieldChange(product.id, 'availability_date', date?.toISOString());
-                              handleFieldChange(product.id, 'ready_in_days', differenceInDays(date, new Date()));
-                            }}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </div>
-                  
-                  {/* Active Toggle */}
-                  <div className="col-span-1 flex justify-center">
-                    <Switch
-                      checked={getFieldValue(product, 'active') !== false}
-                      onCheckedChange={(checked) => handleFieldChange(product.id, 'active', checked)}
-                    />
-                  </div>
-                  
-                  {/* Actions */}
-                  <div className="col-span-2 flex items-center justify-center gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => openDialog(product)}
-                      className="h-7 w-7 p-0"
-                    >
-                      <Pencil className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleDelete(product.id)}
-                      className="h-7 w-7 p-0 text-red-500 hover:text-red-600"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                    {hasChanges(product.id) && (
+
+                    {/* Active Toggle */}
+                    <div className="col-span-1 flex justify-center">
+                      <Switch
+                        checked={getFieldValue(product, 'active') !== false}
+                        onCheckedChange={(checked) => handleFieldChange(product.id, 'active', checked)}
+                      />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="col-span-3 flex items-center justify-center gap-1">
                       <Button
                         size="sm"
-                        onClick={() => handleSaveProduct(product)}
-                        disabled={saving[product.id]}
-                        className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
+                        variant="ghost"
+                        onClick={() => openDialog(product)}
+                        className="h-7 w-7 p-0"
                       >
-                        {saving[product.id] ? '...' : 'Save'}
+                        <Pencil className="w-3 h-3" />
                       </Button>
-                    )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDelete(product.id)}
+                        className="h-7 w-7 p-0 text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                      {hasChanges(product.id) && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleSaveProduct(product)}
+                          disabled={saving[product.id]}
+                          className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
+                        >
+                          {saving[product.id] ? '...' : 'Save'}
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-                  );
-                })}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
         {/* Mobile Card View */}
         <div className="lg:hidden space-y-3" data-testid="admin-products-mobile">
@@ -762,7 +698,7 @@ const AdminProducts = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <h3 className="font-semibold text-sm truncate">{product.name}</h3>
-                        <p className="text-xs text-muted-foreground">₹{(product.price / 2).toFixed(0)}/50gm</p>
+                        <p className="text-xs text-muted-foreground">₹{product.price} / {product.unit || 'kg'}</p>
                       </div>
                       <div className="flex items-center gap-1">
                         <Switch
@@ -822,7 +758,6 @@ const AdminProducts = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="in_stock">In Stock</SelectItem>
-                        <SelectItem value="growing">Growing</SelectItem>
                         <SelectItem value="out_of_stock">Out</SelectItem>
                       </SelectContent>
                     </Select>
