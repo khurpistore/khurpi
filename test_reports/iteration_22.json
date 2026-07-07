@@ -1,0 +1,48 @@
+{
+  "summary": "Phase-1 security hardening testing PASSED. Backend: 17/17 pytest cases pass (login returns JWT; /api/admin/* + product write endpoints correctly 401 without Bearer token; work with token; public GETs /api/products & /api/categories stay open). Frontend regression: logged in as admin/Khurpi2026Secure, selected default 'Khurpi' project, and every one of the 25 admin sidebar pages (Dashboard, Create Order, Orders, Users, Customer View, Products, Categories, Subcategories, Subscriptions, Deliveries, Delivery Slots, Payments, Expenses, Cost Calculator, Inventory, Banners, Spin & Earn, Coupons, Order Discounts, Referrals, Page Content, Analytics, Store Settings, App Config, Settings) LOADS its data (7-25 successful 2xx admin API calls per page). Inline product price PUT /api/products/{id} returns 200 with the Bearer header attached by axios defaults; data persists after reload. Logout clears both adminToken and currentProject in localStorage; hitting /admin/dashboard afterwards redirects to /admin/login. Public storefront (/ and /products) loads without any token (158 products shown). ONE MINOR ISSUE found: Header.js on-mount fetch of /api/admin/coupons (welcome-coupon banner) fires before AuthContext restores the Authorization header and 401s on every page load; for anonymous customers it now 401s always — the welcome discount silently falls back to hardcoded 20% (functionally OK due to catch-silence, but the endpoint is admin-only now and should be replaced with a public endpoint).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Header.js welcome-coupon fetch on every page mount",
+        "issue": "Header.js:106-119 does `axios.get(API/admin/coupons)` on mount to display the KHURPIWELCOME20 discount. (a) On admin cold-load it 401s once because the useEffect runs before AuthProvider's useEffect that sets the Authorization header (child effects run before parent's). (b) For anonymous customers on the storefront it will now ALWAYS 401 since /api/admin/coupons is admin-protected. The catch swallows the error and falls back to the hardcoded 20, so users still see a value, but the dynamic welcome-discount value is effectively dead in production. Recommend: expose a small public endpoint like GET /api/coupons/welcome or /api/settings/welcome-discount and switch Header.js to that.",
+        "affected_selectors": ["Header banner: 'First Order? 20% OFF KHURPIWELCOME20'"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Admin sidebar (desktop, 1920x1080)",
+        "issues": [
+          "Sidebar contains 25 menu items + absolutely-positioned Logout button (AdminLayout.js:106 `absolute bottom-6`). With 25 items the nav overflows the viewport (~1088px content vs 1080px viewport). The `absolute bottom-6` Logout is positioned at the sidebar's own bottom (not fixed to viewport), so it can end up overlapping / very close to the last visible menu items when the sidebar container's own bottom aligns with the viewport bottom. Cypress/Playwright force-clicks on off-screen nav items also hit the Logout button (test flakiness). Recommend: wrap the nav in `overflow-y-auto` and move Logout inside the nav or `position: sticky; bottom: 0`. This is a UX/testability concern, not a security regression."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_auth_security.py",
+    "/app/test_reports/pytest/admin_auth_security.xml"
+  ],
+  "action_items": [
+    "MINOR: Replace Header.js:106-119 fetch of /api/admin/coupons with either a public endpoint or read the welcome discount from GET /api/settings so the storefront's dynamic welcome-discount label works for non-admin visitors (currently silently falls back to hardcoded 20).",
+    "MINOR (UX/testability): Make the admin sidebar's inner nav scrollable (`overflow-y-auto`) and stop absolutely-positioning the Logout button so it doesn't overlap the last menu items on a 1080px viewport with 25 entries."
+  ],
+  "critical_code_review_comments": [
+    "AuthContext.adminLogin already sets axios.defaults.headers.common['Authorization'] and the AuthProvider useEffect restores it on cold reload; however Header.js child useEffect fires BEFORE AuthProvider's parent useEffect, so any header-attached axios call inside a child mount effect can race and 401 on cold load. Consider adding an axios request interceptor that reads the token from localStorage at request time instead of relying on defaults being set-by-effect-order.",
+    "The /api/admin/coupons endpoint is used by public customer Header for the welcome-discount banner. Now that it's admin-only, customer storefronts get a permanent 401 there — decouple the storefront view from admin-only endpoints.",
+    "AdminLayout.js line 106 uses `absolute bottom-6` for the Logout button while the nav has 25 items — this both overlaps with the last menu items on smaller viewports and causes test-automation click-hijacking on force-clicks."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_admin_auth_security.py"
+  ],
+  "success_rate": { "backend": "100% (17/17)", "frontend": "100% (25/25 admin pages load; product-edit CRUD works with token; logout clears state; public pages open)" },
+  "test_credentials": "admin / Khurpi2026Secure (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None retained. Test transiently created TEST_AuthCat_SEC and TEST_AuthProd_SEC via pytest and deleted them in the same tests. UI test edited a real product price (Lemon Grass = 50) to 77.77 and restored it back to 50 in the same run — verified via reload.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Phase-1 security is fully green: backend middleware admin_auth_middleware enforces Bearer JWT on /api/admin/* (except /api/admin/login) and product writes; frontend AuthContext sets axios.defaults Authorization header on admin login and clears it on logout. All 25 admin pages verified to render with the token attached. The two non-blocking follow-ups: (1) Header.js public storefront calls /api/admin/coupons which now 401s (silent, but the dynamic welcome-discount display is dead); (2) AdminLayout sidebar overflow + absolute-positioned Logout button can hijack force-clicks in automation and can visually overlap items on <=1080px viewports. Backend security regression file to reuse: /app/backend/tests/test_admin_auth_security.py.",
+  "rca of the issue": "N/A - no bugs introduced by the security change. During testing I initially observed that clicking `[data-testid=admin-nav-coupons]` with force=True redirected to /admin/projects and wiped the token — this was a TEST bug caused by AdminLayout.js:106 rendering the Logout button `absolute bottom-6` inside a sidebar whose nav overflows the 1080px viewport (25 items ~ 1088px). The force-click landed on the Logout button. Direct URL navigation to /admin/coupons works perfectly. Same test using scroll_into_view_if_needed() + click also works. Recommendation captured in design_issues."
+}

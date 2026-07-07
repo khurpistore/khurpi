@@ -1,4 +1,6 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header, Request
+from fastapi.responses import JSONResponse
+import secrets
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -122,6 +124,34 @@ MSG91_AUTH_KEY = os.environ.get('MSG91_AUTH_KEY', '')
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# ==========================================
+# ADMIN AUTH MIDDLEWARE (Security)
+# ==========================================
+def _extract_admin_payload(request: Request):
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    result = decode_jwt_token(auth[7:])
+    if result.get("valid") and result["payload"].get("role") == "admin":
+        return result["payload"]
+    return None
+
+@app.middleware("http")
+async def admin_auth_middleware(request: Request, call_next):
+    path = request.url.path
+    method = request.method
+    protected = False
+    if method != "OPTIONS":
+        if path.startswith("/api/admin/") and path != "/api/admin/login":
+            protected = True
+        elif method == "POST" and path == "/api/products":
+            protected = True
+        elif method in ("PUT", "DELETE") and path.startswith("/api/products/"):
+            protected = True
+    if protected and _extract_admin_payload(request) is None:
+        return JSONResponse(status_code=401, content={"detail": "Admin authentication required"})
+    return await call_next(request)
 
 # ==========================================
 # MULTI-PROJECT (MULTI-TENANCY) SUPPORT
@@ -1797,10 +1827,15 @@ async def admin_reset_password(user_id: str, data: AdminResetPasswordRequest):
     
     return {"success": True, "message": f"Password reset successfully for {user['name']}"}
 
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
 @api_router.post("/admin/login")
-async def admin_login(username: str, password: str):
-    if username == admin_username and password == admin_password:
-        return {"success": True, "role": "admin", "name": "Admin", "id": "admin"}
+async def admin_login(data: AdminLoginRequest):
+    if secrets.compare_digest(data.username, admin_username) and secrets.compare_digest(data.password, admin_password):
+        token = create_jwt_token("admin", admin_username, "admin")
+        return {"success": True, "role": "admin", "name": "Admin", "id": "admin", "token": token}
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
 @api_router.post("/admin/clear-database")

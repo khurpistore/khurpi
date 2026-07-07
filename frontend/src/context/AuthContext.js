@@ -15,6 +15,11 @@ export const AuthProvider = ({ children }) => {
   const [addresses, setAddresses] = useState([]);
 
   useEffect(() => {
+    // Restore admin Bearer token for API auth
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+    }
     // Hydrate user from localStorage on mount
     const storedUser = localStorage.getItem('user');
     const sessionExpiry = localStorage.getItem('sessionExpiry');
@@ -85,8 +90,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const adminLogin = async (username, password) => {
-    const response = await axios.post(`${API}/admin/login?username=${username}&password=${password}`);
+    const response = await axios.post(`${API}/admin/login`, { username, password });
     const userData = { ...response.data, id: 'admin', role: 'admin' };
+    if (response.data.token) {
+      localStorage.setItem('adminToken', response.data.token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    }
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
@@ -98,6 +107,8 @@ export const AuthProvider = ({ children }) => {
     setAddresses([]);
     localStorage.removeItem('user');
     localStorage.removeItem('sessionExpiry');
+    localStorage.removeItem('adminToken');
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   const updateAddress = async (address) => {
