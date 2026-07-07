@@ -1,0 +1,61 @@
+{
+  "summary": "Tested the new Products table Category column + CRUD on Khurpi multi-tenant admin. Backend pytest (7/8 pass): admin auth, category resolution on GET /api/products, create with category (assigned + Uncategorized), inline update from cat A -> cat B (persists + category_name recomputed), and X-Project-Id scoping of /admin/categories all pass. Frontend Playwright verified: /admin/products loads with Category column (16-col grid, order: Product | Category | Price | Unit | Unit Type | Qty(gm) | Status | Active | Actions); each row shows product-category-<id> dropdown pre-selected to product.category_name (e.g., 'Exotic & Imported' for Lemon Grass); inline change highlights the row yellow (bg-yellow-50), shows 'Save All Changes', clicking Save persists via PUT /api/products/<id> and after refetch shows the new category (verified Lemon Grass Exotic&Imported -> Vegetables, then created TEST product Fruits -> Leafy Greens -> Microgreens). Add Product dialog opens with product-category-select (project-scoped list: Uncategorized + 6 Khurpi categories), submits POST /api/products with category_id and the new product shows up with correct category_name. Mobile view (390x844) shows category name under price in cards (verified 'Vegetables' visible on Lemon Grass card). Multi-tenant: newly created test project has 0 categories; category dropdown only lists the current project's categories. TWO BUGS FOUND (details below).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "PUT /api/products/{id}",
+        "issue": "Cannot clear a product's category via PUT with category_id: null. `update_product` at server.py line 2853 filters out None values (`if v is not None`), so an explicit null is dropped and the previous category_id is preserved. This breaks the inline-table 'Uncategorized' flow (AdminProducts.js line 593 sends null). Sending empty string works (dialog path uses ''). Fix: exclude only unset fields (use `product_data.model_dump(exclude_unset=True)`) OR special-case category_id to allow None (e.g., check `k in product_data.model_fields_set`). Verified via pytest test_update_product_to_uncategorized (FAIL) and manual curl reproduction.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ProductDialog (AdminProducts.js)",
+        "issue": "Edit dialog does NOT pre-fill the Category selector with the product's current category. The `useState({...})` initializer at line 58-71 is missing `category_id: product?.category_id || ''`, so formData.category_id is undefined and the Select falls back to 'Uncategorized' placeholder even when editing a product that has a category. Confirmed live: clicked pencil on a product whose category is 'Fruits' -> dialog opened with the Category select showing 'Uncategorized'. If the user just clicks Save without touching it, formData.category_id stays undefined and is not sent (so the existing category is preserved by the backend filter above) — but visually the user is misled into thinking the product is uncategorized. Also, clicking 'Uncategorized' on an already-Uncategorized-looking value may not trigger onValueChange (Radix skips same-value), so users cannot easily clear via dialog either. Fix: add `category_id: product?.category_id || ''` to the useState initial object.",
+        "selector": "[data-testid='product-category-select']",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Products table row actions",
+        "issue": "Edit (pencil) and Delete (trash) buttons in each row have no data-testid. Testers currently have to fall back to positional selectors. Suggest adding data-testid='edit-product-<id>' and 'delete-product-<id>' to lines 701/709 in AdminProducts.js.",
+        "selector": "row action buttons",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Inline set-to-Uncategorized",
+        "issue": "Selecting 'Uncategorized' in the row's Select + clicking Save All Changes does NOT clear the category on the backend (root cause is the backend PUT /api/products/{id} filter dropping None values — see backend critical above). User sees 'Uncategorized' after selection, but on refetch the previous category is still shown.",
+        "affected_selectors": ["[data-testid^='product-category-']", "button:has-text('Save All Changes')"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_product_category_crud.py",
+    "/app/test_reports/pytest/product_category_crud.xml"
+  ],
+  "action_items": [
+    "Backend: fix update_product (server.py line 2853) so category_id: null actually clears the field. Use model_dump(exclude_unset=True) or explicitly allow None for nullable Optional[str] fields like category_id, ready_in_days, availability_date.",
+    "Frontend: add `category_id: product?.category_id || ''` to ProductDialog's useState initializer (AdminProducts.js ~line 58) so the Edit dialog pre-fills the Category selector.",
+    "Frontend (minor): add data-testid='edit-product-<id>' and 'delete-product-<id>' to the row action buttons for reliable e2e selection."
+  ],
+  "critical_code_review_comments": [
+    "server.py update_product uses `{k:v for k,v in product_data.model_dump().items() if v is not None}` — this pattern prevents nullable fields (category_id, ready_in_days, availability_date, wholesale_price, etc.) from being set to null. Multiple endpoints (update_category, update_subcategory) share the same anti-pattern.",
+    "ProductDialog useState initializer omits several optional fields (category_id, growth_days, ready_in_days), which means editing a product loses those on the first render.",
+    "AdminProducts.js is 858 lines — ProductDialog (~300 lines) should be split into its own file for maintainability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_product_category_crud.py"
+  ],
+  "success_rate": { "backend": "87.5%", "frontend": "80%" },
+  "test_credentials": "admin / Khurpi2026Secure (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created a few TEST_ prefixed products during e2e (TEST_CatProd_*, TEST_UncatProd_*, TEST_ChangeCat_*, TEST_ToUncat_*, TEST_UI_Cat_*) and a temp project (TEST_CatScopeProj_*). All auto-cleaned by fixture teardown and manual DELETE. Verified 0 TEST_ products remain in the Khurpi project after the run.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The 6 Khurpi categories are: Vegetables, Fruits, Leafy Greens, Root Vegetables, Exotic & Imported, Microgreens. Default project id is literally 'default' (is_default=true). Backend PUT /api/products/{id} filter drops None -> inline Uncategorized breaks; empty string works. Dialog uses '' but has its own bug of not pre-filling category. Use /app/backend/tests/test_product_category_crud.py as regression for the category CRUD feature; the FAILING test test_update_product_to_uncategorized is the smoking gun for the backend bug and should pass once fixed.",
+  "rca of the issue": "BUG-1 (backend, HIGH): update_product at /app/backend/server.py:2853 uses `update_data = {k: v for k, v in product_data.model_dump().items() if v is not None}`. When frontend sends category_id: null (inline uncategorized), None is filtered out and the previous value is retained. Fix: use `product_data.model_dump(exclude_unset=True)` and treat 'set to None' as a valid update. BUG-2 (frontend, HIGH): /app/frontend/src/pages/AdminProducts.js ProductDialog useState (lines 58-71) doesn't include category_id. On edit, formData.category_id is undefined -> Select falls back to 'Uncategorized' placeholder. Fix: add `category_id: product?.category_id || ''`."
+}

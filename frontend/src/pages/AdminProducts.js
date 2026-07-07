@@ -43,7 +43,7 @@ const UNIT_TYPE_OPTIONS = [
   { value: 'dozen', label: 'Dozen' },
 ];
 
-const ProductDialog = ({ product, onClose, onSuccess }) => {
+const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
   // Calculate initial availability date from ready_in_days if exists
   const getInitialAvailabilityDate = () => {
     if (product?.availability_date) {
@@ -154,6 +154,23 @@ const ProductDialog = ({ product, onClose, onSuccess }) => {
           placeholder="Vitamins: A, C, K | Minerals: Calcium, Iron"
           className="mt-1 min-h-[60px]"
         />
+      </div>
+      <div>
+        <Label htmlFor="category" className="text-sm">Category</Label>
+        <Select
+          value={formData.category_id || 'none'}
+          onValueChange={(value) => setFormData({ ...formData, category_id: value === 'none' ? '' : value })}
+        >
+          <SelectTrigger className="mt-1" data-testid="product-category-select">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Uncategorized</SelectItem>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <div>
@@ -315,6 +332,7 @@ const getStockStatusBadge = (product) => {
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -329,8 +347,18 @@ const AdminProducts = () => {
     // Wait for auth to be resolved before fetching
     if (authLoading) return;
     fetchProducts();
+    fetchCategories();
     fetchCostSettings();
   }, [authLoading]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/categories`);
+      setCategories(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch categories', error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -513,6 +541,7 @@ const AdminProducts = () => {
             </DialogHeader>
             <ProductDialog
               product={selectedProduct}
+              categories={categories}
               onClose={() => setDialogOpen(false)}
               onSuccess={fetchProducts}
             />
@@ -530,13 +559,14 @@ const AdminProducts = () => {
               {/* Header */}
               <div className="grid gap-1 p-2 bg-gray-100 text-xs font-medium text-gray-600 border-b" style={{gridTemplateColumns: 'repeat(16, minmax(0, 1fr))'}}>
                 <div className="col-span-3">Product</div>
+                <div className="col-span-2 text-center">Category</div>
                 <div className="col-span-2 text-center text-blue-600">Price</div>
                 <div className="col-span-1 text-center">Unit</div>
                 <div className="col-span-2 text-center">Unit Type</div>
-                <div className="col-span-2 text-center">Qty(gm)</div>
+                <div className="col-span-1 text-center">Qty(gm)</div>
                 <div className="col-span-2">Status</div>
                 <div className="col-span-1 text-center">Active</div>
-                <div className="col-span-3 text-center">Actions</div>
+                <div className="col-span-2 text-center">Actions</div>
               </div>
 
               {/* Product Rows */}
@@ -554,6 +584,24 @@ const AdminProducts = () => {
                         <p className="font-medium text-sm truncate">{product.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{product.benefit?.slice(0, 30)}...</p>
                       </div>
+                    </div>
+
+                    {/* Category */}
+                    <div className="col-span-2">
+                      <Select
+                        value={getFieldValue(product, 'category_id') || product.category_id || 'none'}
+                        onValueChange={(value) => handleFieldChange(product.id, 'category_id', value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger className="h-7 text-xs" data-testid={`product-category-${product.id}`}>
+                          <SelectValue placeholder="—" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Uncategorized</SelectItem>
+                          {categories.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Price (editable) */}
@@ -598,7 +646,7 @@ const AdminProducts = () => {
                     </div>
 
                     {/* Weight (gm) - stock qty */}
-                    <div className="col-span-2">
+                    <div className="col-span-1">
                       <Select
                         value={String(getFieldValue(product, 'weight') ?? 100)}
                         onValueChange={(value) => handleFieldChange(product.id, 'weight', parseInt(value))}
@@ -649,7 +697,7 @@ const AdminProducts = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="col-span-3 flex items-center justify-center gap-1">
+                    <div className="col-span-2 flex items-center justify-center gap-1">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -699,6 +747,7 @@ const AdminProducts = () => {
                       <div>
                         <h3 className="font-semibold text-sm truncate">{product.name}</h3>
                         <p className="text-xs text-muted-foreground">₹{product.price} / {product.unit || 'kg'}</p>
+                        {product.category_name && <p className="text-[11px] text-green-700 font-medium">{product.category_name}</p>}
                       </div>
                       <div className="flex items-center gap-1">
                         <Switch
