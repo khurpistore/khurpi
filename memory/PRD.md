@@ -5,6 +5,10 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
 
 ## Recent Work (July 7, 2026)
 
+### Contact / Help & Support Page + Admin Flicker Fix — DONE & TESTED (100%, July 7 2026)
+- **Contact page** (`frontend/src/pages/Contact.js`, route `/contact`, public): "Help & Support" screen surfacing support phone (tel:), email (mailto:), WhatsApp (wa.me), address and support hours pulled from `GET /api/store/settings` (falls back to defaults). Footer got a "Help & Support" link.
+- **Admin flicker/refresh fix (routing refactor)**: `AdminLayout` is now a PERSISTENT parent route rendering React Router `<Outlet/>`. It derives active nav + page title from `useLocation` (titleMap). App.js admin routes nested under `<Route path="/admin" element={<ProtectedRoute requireAdmin><AdminLayout/></ProtectedRoute>}>` with relative child paths; `/admin/login` and `/admin/projects` kept standalone (outside layout). All 25 `Admin*.js` pages had their `<AdminLayout>` wrapper removed (render bare content). Sidebar no longer remounts on navigation → no flicker. Tested 100% (iteration_24).
+
 ### Multi-Project (Multi-Tenancy) Admin — DONE & TESTED (100%)
 - One admin panel now manages multiple projects/stores. Super admin = existing admin login (`admin`/`Khurpi2026Secure`).
 - Flow: admin login -> **Project Selection screen** (`/admin/projects`, premium dark UI) -> select project -> same admin menu; new projects start EMPTY. "Add Project" card opens a create dialog.
