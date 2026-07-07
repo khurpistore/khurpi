@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, Package, MapPin, Calendar, CreditCard, Clock, Tag, Repeat, ShoppingBag, Truck, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -40,6 +41,40 @@ const OrderDetail = () => {
       console.error('Failed to fetch order:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [actionLoading, setActionLoading] = useState(false);
+  const cancellable = ['pending', 'confirmed', 'preparing'].includes(order?.status);
+  const returnable = order?.status === 'delivered' && !order?.return_status;
+
+  const handleCancel = async () => {
+    const reason = window.prompt('Reason for cancellation (optional):') ?? '';
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    setActionLoading(true);
+    try {
+      await axios.post(`${API}/orders/${orderId}/cancel`, { user_id: user?.id, reason });
+      toast.success('Order cancelled');
+      fetchOrder();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Could not cancel order');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReturn = async () => {
+    const reason = window.prompt('Reason for return:') ?? '';
+    if (!reason) return;
+    setActionLoading(true);
+    try {
+      await axios.post(`${API}/orders/${orderId}/return`, { user_id: user?.id, reason });
+      toast.success('Return requested');
+      fetchOrder();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Could not request return');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -123,6 +158,29 @@ const OrderDetail = () => {
             <p className="text-sm text-muted-foreground">Order #{order.id.slice(0, 8)}</p>
           </div>
         </div>
+
+        {/* Order Actions */}
+        <div className="flex flex-wrap items-center gap-3 mb-6" data-testid="order-actions">
+            <Button variant="outline" onClick={() => window.open(`${API}/orders/${orderId}/invoice`, '_blank')} data-testid="download-invoice-button" className="rounded-full">
+              Download Invoice
+            </Button>
+            {cancellable && (
+              <Button variant="destructive" onClick={handleCancel} disabled={actionLoading} data-testid="cancel-order-button" className="rounded-full">
+                Cancel Order
+              </Button>
+            )}
+            {returnable && (
+              <Button variant="outline" onClick={handleReturn} disabled={actionLoading} data-testid="return-order-button" className="rounded-full">
+                Request Return
+              </Button>
+            )}
+            {order.return_status && (
+              <Badge className="bg-amber-100 text-amber-800">Return: {order.return_status}</Badge>
+            )}
+            {order.refund_status && (
+              <Badge className="bg-emerald-100 text-emerald-800">Refund: {order.refund_status}{order.refund_amount ? ` ₹${order.refund_amount}` : ''}</Badge>
+            )}
+          </div>
 
         {/* Order Status Card */}
         <Card className="mb-6 overflow-hidden">

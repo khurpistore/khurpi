@@ -106,9 +106,9 @@ const Header = () => {
   useEffect(() => {
     const fetchWelcomeCoupon = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/admin/coupons`);
-        const welcomeCoupon = res.data?.find(c => c.code === 'KHURPIWELCOME20' && c.is_active);
-        if (welcomeCoupon) {
+        const res = await axios.get(`${BACKEND_URL}/api/coupons/welcome`);
+        const welcomeCoupon = res.data;
+        if (welcomeCoupon && welcomeCoupon.is_active && welcomeCoupon.discount_value) {
           setWelcomeCouponDiscount(welcomeCoupon.discount_value);
         }
       } catch (error) {

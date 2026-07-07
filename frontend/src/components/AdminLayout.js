@@ -67,7 +67,7 @@ const AdminLayout = ({ children, active, title }) => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-64 bg-primary text-white min-h-screen p-6 flex-shrink-0">
+      <div className="hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-primary text-white p-6 flex-shrink-0">
         <div className="flex items-center gap-2 mb-3">
           <Leaf className="w-6 h-6" />
           <h2 className="text-xl font-bold heading-text">Khurpi Admin</h2>
@@ -85,7 +85,7 @@ const AdminLayout = ({ children, active, title }) => {
             <ChevronsUpDown className="w-4 h-4 flex-shrink-0 opacity-70" />
           </button>
         )}
-        <nav className="space-y-2">
+        <nav className="space-y-2 flex-1 overflow-y-auto -mr-2 pr-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -103,11 +103,12 @@ const AdminLayout = ({ children, active, title }) => {
             );
           })}
         </nav>
-        <div className="absolute bottom-6 left-6 right-6">
+        <div className="mt-4 pt-4 border-t border-white/10">
           <Button
             onClick={handleLogout}
             variant="ghost"
             className="w-full text-white hover:bg-white/10"
+            data-testid="admin-logout-button"
           >
             <LogOut className="w-4 h-4 mr-2" />
             Logout

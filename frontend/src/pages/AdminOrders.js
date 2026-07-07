@@ -52,6 +52,21 @@ const AdminOrders = () => {
     }
   };
 
+  const handleRefund = async (orderId) => {
+    if (!window.confirm('Process refund for this order? (online payments are refunded via Razorpay)')) return;
+    setUpdatingStatus(orderId);
+    try {
+      const res = await axios.post(`${API}/admin/orders/${orderId}/refund`, {});
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...res.data } : o));
+      if (selectedOrder?.id === orderId) setSelectedOrder(prev => ({ ...prev, ...res.data }));
+      toast.success(res.data.online_refund ? 'Refunded via Razorpay' : 'Marked as refunded');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to process refund');
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
   const updateOrderStatus = async (orderId, newStatus) => {
     setUpdatingStatus(orderId);
     try {
@@ -575,6 +590,36 @@ const AdminOrders = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Return / Refund */}
+                {(selectedOrder.return_status || selectedOrder.status === 'cancelled' || selectedOrder.payment_status === 'paid') && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="font-semibold text-sm mb-2">Return &amp; Refund</p>
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      {selectedOrder.return_status && (
+                        <Badge className="bg-amber-100 text-amber-800 text-xs">Return: {selectedOrder.return_status}</Badge>
+                      )}
+                      {selectedOrder.refund_status && (
+                        <Badge className="bg-emerald-100 text-emerald-800 text-xs">Refund: {selectedOrder.refund_status}{selectedOrder.refund_amount ? ` ₹${selectedOrder.refund_amount}` : ''}</Badge>
+                      )}
+                    </div>
+                    {selectedOrder.return_reason && (
+                      <p className="text-xs text-muted-foreground mb-2">Reason: {selectedOrder.return_reason}</p>
+                    )}
+                    {selectedOrder.refund_status !== 'refunded' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRefund(selectedOrder.id)}
+                        disabled={updatingStatus === selectedOrder.id}
+                        className="text-xs"
+                        data-testid="process-refund-btn"
+                      >
+                        {updatingStatus === selectedOrder.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Process Refund'}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (

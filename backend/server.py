@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header, Request
 from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse
 import secrets
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
@@ -743,6 +744,15 @@ class Order(BaseModel):
     payment_status: str = "pending"
     estimated_delivery_date: Optional[str] = None
     created_at: str
+    cancel_reason: Optional[str] = None
+    cancelled_at: Optional[str] = None
+    return_status: Optional[str] = None
+    return_reason: Optional[str] = None
+    return_requested_at: Optional[str] = None
+    refund_status: Optional[str] = None
+    refund_amount: Optional[float] = None
+    refund_id: Optional[str] = None
+    refunded_at: Optional[str] = None
 
 class OrderCreate(BaseModel):
     user_id: str
@@ -924,6 +934,8 @@ class StoreSettings(BaseModel):
     phone: str = ""
     email: str = ""
     address: str = ""
+    gstin: str = ""
+    gst_rate: float = 0
     # Delivery Configuration
     instant_delivery_enabled: bool = True
     instant_delivery_fee: float = 30
@@ -947,6 +959,8 @@ class StoreSettings(BaseModel):
 
 class StoreSettingsUpdate(BaseModel):
     store_name: Optional[str] = None
+    gstin: Optional[str] = None
+    gst_rate: Optional[float] = None
     tagline: Optional[str] = None
     description: Optional[str] = None
     logo_url: Optional[str] = None
@@ -5101,6 +5115,162 @@ async def get_all_payments_admin():
     
     return result
 
+class OrderCancelRequest(BaseModel):
+    user_id: Optional[str] = None
+    reason: Optional[str] = ""
+
+class OrderReturnRequest(BaseModel):
+    user_id: Optional[str] = None
+    reason: Optional[str] = ""
+
+class RefundRequest(BaseModel):
+    amount: Optional[float] = None
+
+async def _process_razorpay_refund(order):
+    """Attempt an online refund via Razorpay. Returns (refund_id, ok)."""
+    payment_id = order.get("payment_id")
+    if razorpay_client and payment_id and order.get("payment_status") == "paid":
+        try:
+            amount_paise = int(round(float(order.get("total", 0)) * 100))
+            rf = razorpay_client.payment.refund(payment_id, {"amount": amount_paise})
+            return rf.get("id"), True
+        except Exception:
+            return None, False
+    return None, False
+
+CANCELLABLE_STATUSES = {"pending", "confirmed", "preparing"}
+
+@api_router.post("/orders/{order_id}/cancel")
+async def cancel_order(order_id: str, data: OrderCancelRequest):
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if data.user_id and order.get("user_id") != data.user_id:
+        raise HTTPException(status_code=403, detail="Not your order")
+    if order.get("status") == "cancelled":
+        raise HTTPException(status_code=400, detail="Order already cancelled")
+    if order.get("status") not in CANCELLABLE_STATUSES:
+        raise HTTPException(status_code=400, detail="This order can no longer be cancelled")
+    update = {
+        "status": "cancelled",
+        "cancel_reason": data.reason or "",
+        "cancelled_at": datetime.now(timezone.utc).isoformat(),
+    }
+    refund_id, ok = await _process_razorpay_refund(order)
+    if order.get("payment_status") == "paid":
+        update["refund_status"] = "refunded" if ok else "pending"
+        update["refund_amount"] = order.get("total", 0)
+        if refund_id:
+            update["refund_id"] = refund_id
+            update["refunded_at"] = datetime.now(timezone.utc).isoformat()
+    await db.orders.update_one({"id": order_id}, {"$set": update})
+    return {"success": True, **update}
+
+@api_router.post("/orders/{order_id}/return")
+async def request_return(order_id: str, data: OrderReturnRequest):
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if data.user_id and order.get("user_id") != data.user_id:
+        raise HTTPException(status_code=403, detail="Not your order")
+    if order.get("status") != "delivered":
+        raise HTTPException(status_code=400, detail="Only delivered orders can be returned")
+    if order.get("return_status"):
+        raise HTTPException(status_code=400, detail="Return already requested for this order")
+    update = {
+        "return_status": "requested",
+        "return_reason": data.reason or "",
+        "return_requested_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.orders.update_one({"id": order_id}, {"$set": update})
+    return {"success": True, **update}
+
+@api_router.get("/orders/{order_id}/invoice")
+async def get_order_invoice(order_id: str):
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    settings = await db.store_settings.find_one({"id": "store_settings"}, {"_id": 0}) or {}
+    user = await db.users.find_one({"id": order.get("user_id")}, {"_id": 0}) or {}
+    addr = order.get("address") or {}
+    items = order.get("one_time_items") or order.get("items") or []
+    if not items and order.get("subscription"):
+        items = order["subscription"].get("items", [])
+    total = float(order.get("total", 0) or 0)
+    gst_rate = float(settings.get("gst_rate", 0) or 0)
+    tax = round(total - total / (1 + gst_rate / 100), 2) if gst_rate > 0 else 0.0
+    taxable = round(total - tax, 2)
+    cgst = sgst = round(tax / 2, 2)
+    rows = ""
+    for it in items:
+        name = it.get("product_name") or it.get("name") or "Item"
+        qty = it.get("quantity", 1)
+        price = it.get("price", 0)
+        rows += f"<tr><td>{name}</td><td style='text-align:center'>{qty}</td><td style='text-align:right'>Rs.{price}</td><td style='text-align:right'>Rs.{round(qty*price,2)}</td></tr>"
+    gst_rows = ""
+    if gst_rate > 0:
+        gst_rows = (f"<tr><td class='right'>CGST ({gst_rate/2}%)</td><td class='right'>Rs.{cgst}</td></tr>"
+                    f"<tr><td class='right'>SGST ({gst_rate/2}%)</td><td class='right'>Rs.{sgst}</td></tr>")
+    gstin_line = f"<div class='muted'>GSTIN: {settings.get('gstin')}</div>" if settings.get('gstin') else ''
+    html = f"""<!doctype html><html><head><meta charset='utf-8'><title>Invoice {order_id[:8]}</title>
+<style>body{{font-family:Arial,sans-serif;color:#111;max-width:800px;margin:24px auto;padding:0 16px}}
+h1{{color:#16a34a;margin:0}} table{{width:100%;border-collapse:collapse;margin-top:16px}}
+th,td{{border:1px solid #ddd;padding:8px;font-size:14px}} th{{background:#f3f4f6;text-align:left}}
+.totals td{{border:none}} .muted{{color:#666;font-size:13px}} .right{{text-align:right}}
+@media print{{.noprint{{display:none}}}}</style></head><body>
+<div style='display:flex;justify-content:space-between;align-items:flex-start'>
+<div><h1>{settings.get('store_name','Khurpi')}</h1>
+<div class='muted'>{settings.get('address','')}</div>
+<div class='muted'>{settings.get('phone','')} {settings.get('email','')}</div>{gstin_line}</div>
+<div class='right'><h2>TAX INVOICE</h2>
+<div class='muted'>Invoice #: {order_id[:8].upper()}</div>
+<div class='muted'>Date: {str(order.get('created_at',''))[:10]}</div></div></div><hr/>
+<div><strong>Bill To:</strong> {addr.get('receiver_name') or addr.get('name') or user.get('name','Customer')}<br/>
+<span class='muted'>{addr.get('address_line','')}, {addr.get('city','')} {addr.get('pincode','')}</span><br/>
+<span class='muted'>{addr.get('phone') or user.get('phone','')}</span></div>
+<table><thead><tr><th>Item</th><th style='text-align:center'>Qty</th><th class='right'>Rate</th><th class='right'>Amount</th></tr></thead>
+<tbody>{rows}</tbody></table>
+<table class='totals' style='margin-top:12px'>
+<tr><td class='right'>Taxable Value</td><td class='right' style='width:160px'>Rs.{taxable}</td></tr>
+{gst_rows}
+<tr><td class='right'><strong>Total (incl. GST)</strong></td><td class='right'><strong>Rs.{total}</strong></td></tr></table>
+<p class='muted'>Payment: {order.get('payment_method','-')} | Status: {order.get('payment_status','-')}</p>
+<p class='muted'>This is a computer-generated tax invoice.</p>
+<button class='noprint' onclick='window.print()' style='padding:10px 16px;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer'>Print / Save PDF</button>
+</body></html>"""
+    return HTMLResponse(content=html)
+
+@api_router.get("/admin/returns")
+async def get_returns_and_cancellations(project_id: str = Depends(get_project_id)):
+    """Orders needing attention: return requests, pending refunds, cancellations."""
+    scope = {"project_id": project_id} if project_id != DEFAULT_PROJECT_ID else {"$or": [{"project_id": DEFAULT_PROJECT_ID}, {"project_id": {"$exists": False}}]}
+    status_cond = {"$or": [
+        {"return_status": {"$ne": None}},
+        {"refund_status": {"$in": ["pending", "refunded"]}},
+        {"status": "cancelled"},
+    ]}
+    orders = await db.orders.find({"$and": [scope, status_cond]}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return orders
+
+@api_router.post("/admin/orders/{order_id}/refund")
+async def process_refund(order_id: str, data: RefundRequest):
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    refund_id, ok = await _process_razorpay_refund(order)
+    amount = data.amount if data.amount is not None else order.get("total", 0)
+    update = {
+        "refund_status": "refunded",
+        "refund_amount": amount,
+        "refunded_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if refund_id:
+        update["refund_id"] = refund_id
+    if order.get("return_status") == "requested":
+        update["return_status"] = "refunded"
+    await db.orders.update_one({"id": order_id}, {"$set": update})
+    return {"success": True, "online_refund": ok, **update}
+
 @api_router.get("/admin/orders")
 async def get_all_orders_admin(project_id: str = Depends(get_project_id)):
     """Get all orders for admin panel"""
@@ -5621,6 +5791,12 @@ async def delete_coupon(coupon_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Coupon not found")
     return {"success": True}
+
+@api_router.get("/coupons/welcome")
+async def get_welcome_coupon(project_id: str = Depends(get_project_id)):
+    """Public: return the welcome coupon (for storefront banner)."""
+    coupon = await db.coupons.find_one(scoped_filter(project_id, {"code": "KHURPIWELCOME20"}), {"_id": 0})
+    return coupon or {}
 
 @api_router.post("/coupons/validate")
 async def validate_coupon(code: str, order_amount: float, user_id: Optional[str] = None):

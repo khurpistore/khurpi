@@ -1,0 +1,47 @@
+{
+  "summary": "Phase 2 (cancel/return + refund) and Phase 3 (tax invoice) verified end-to-end for both customer and admin. Backend pytest 9/9 pass, 1 skipped (no delivered order). Customer OrderDetail: order-actions row renders; download-invoice-button opens the HTML invoice in a new tab containing 'TAX INVOICE', 'Bill To', 'Total', 'Khurpi'; cancel-order-button triggers window.prompt + confirm, POSTs /api/orders/{id}/cancel -> 200, status persisted as 'cancelled' with cancel_reason saved. return-order-button correctly hidden for non-delivered orders. Admin Orders page: Selecting a paid order (00d7aab1, ₹180) reveals the 'Return & Refund' section with process-refund-btn; clicking it -> POST /api/admin/orders/{id}/refund -> 200, refund_status='refunded', refund_amount=180.0, UI shows 'Refund: refunded ₹180' badge. Regression: admin Orders list loads all 51 orders and status update buttons (status-btn-*) remain functional. FIXED one blocker: OrderDetail.js used `toast` without importing it from sonner (would ReferenceError on cancel/return handlers) - added the import. Found one pre-existing critical customer bug (NOT Phase 2/3): AuthContext.login stores the entire /api/auth/login response `{token,user:{...}}` as the user object, so `user.id` is undefined, making MyOrders (/orders) always empty and any user.id-based call broken; the cancel endpoint accepts null user_id so cancel still works but ownership is effectively unchecked from the frontend.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/orders/{id}/cancel and /return", "issue": "Ownership check `if data.user_id and order.user_id != data.user_id` is skipped when the client omits user_id. Frontend currently sends `user_id: undefined` because of the AuthContext user.id bug, so any authenticated (or even unauthenticated) request can cancel/return any order by ID. Recommend making user_id mandatory or authenticating from a session token."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "OrderDetail.js", "issue": "`toast` was used in handleCancel/handleReturn without an import from 'sonner' - would throw ReferenceError on the happy/error paths and skip the refetch. FIXED in this iteration by adding `import { toast } from 'sonner';`.", "selector": "data-testid='cancel-order-button', data-testid='return-order-button'", "priority": "HIGH (fixed)"}
+    ],
+    "integration_issues": [
+      {"flow": "Customer login -> MyOrders / user.id-dependent features (PRE-EXISTING, out-of-scope for Phase 2/3 but discovered while testing)", "issue": "AuthContext.js line 77-80: `const userData = response.data; setUser(userData)` treats the login response `{token, user:{id, phone, role}}` as the user. So user.id is undefined. MyOrders calls GET /api/orders?user_id=undefined -> [], showing 'No Orders Yet' for a real customer with 31 orders. Also breaks address APIs that read user.id. Fix: `const userData = response.data.user; localStorage.setItem('token', response.data.token); setUser(userData);` (and same for loginWithOTP/hydrate).", "affected_selectors": ["/orders 'My Orders' empty state", "any page reading user.id"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_order_cancel_return_refund_invoice.py",
+    "/app/test_reports/pytest/phase23_results.xml"
+  ],
+  "action_items": [
+    "CRITICAL (pre-existing but blocks any customer feature using user.id, e.g. MyOrders): Fix AuthContext.login/loginWithOTP/adminLogin storage to extract `response.data.user` (customer path) instead of the whole response. Also persist token separately as `token` in localStorage and attach it to axios defaults so authenticated customer endpoints can be identified. Currently /orders is broken for real logged-in customers.",
+    "MEDIUM (security): Require verified user identity (from token, not from client-supplied user_id) for POST /api/orders/{id}/cancel and /return. Today, omitting user_id bypasses ownership.",
+    "LOW: The invoice HTML uses 'Rs.' prefix instead of the ₹ symbol - fine but visually inconsistent with the rest of the store which uses ₹."
+  ],
+  "critical_code_review_comments": [
+    "OrderDetail.js used `toast.success`/`toast.error` without importing toast from 'sonner'. This is a clear miss during Phase 2 implementation and would have surfaced immediately on any cancel/return click as a ReferenceError swallowing the success flow (fetchOrder would never fire). Fixed in this iteration.",
+    "AuthContext.js customer login: `setUser(response.data)` while backend returns `{token, user}` - contract mismatch. Since this file is shared by admin (which explicitly builds { ...response.data, id:'admin', role:'admin' }) and customer, only the customer branch is broken. Please add an integration test that logs in with the customer creds and asserts user.id is a real UUID.",
+    "Backend POST /orders/{id}/cancel and /orders/{id}/return use client-supplied user_id for ownership - this is bypassable. Prefer decoding a customer JWT similar to how admin_auth_middleware validates admin tokens.",
+    "Invoice endpoint renders monetary values as 'Rs.{value}'; consider ₹ for brand consistency, or explicitly note that Rs. is used for PDF/print safety across older printers."
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/OrderDetail.js (added `import { toast } from 'sonner';`)",
+    "/app/backend/tests/test_order_cancel_return_refund_invoice.py (new pytest for Phase 2/3)"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 executed, 1 skipped for missing delivered order)",
+    "frontend": "100% for Phase 2/3 flows (invoice open, cancel, return-btn-visibility, admin process-refund, refund badge, status-buttons regression). 1 pre-existing failure: My Orders empty due to AuthContext bug."
+  },
+  "test_credentials": "admin/Khurpi2026Secure (project 'default'); customer phone 9971818259 / password test1234",
+  "seed_data_creation": "None. Cancelled order 4b42846d-... on customer 9971818259 (was pending -> now cancelled, cancel_reason='Playwright test cancel reason'). Refunded order 00d7aab1-... (was paid+confirmed -> refund_status=refunded, refund_amount=180.0). These are real DB mutations left as-is (acceptable per review request 'test-data changes acceptable').",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Phase 2/3 fully green. Reusable test file: /app/backend/tests/test_order_cancel_return_refund_invoice.py (pytest, 10 cases). Frontend data-testids validated: order-actions, download-invoice-button, cancel-order-button, return-order-button, process-refund-btn, status-btn-<status>, project-card-default, orders-search. Two follow-ups for main agent: (1) fix AuthContext customer-login user shape - unblocks /orders and any user.id-dependent flow; (2) enforce ownership on customer cancel/return via JWT instead of client-supplied user_id.",
+  "rca of the issue": "Root cause for the OrderDetail toast crash: missing `import { toast } from 'sonner';` at the top of OrderDetail.js while handleCancel/handleReturn both call toast.success and toast.error. Mitigation applied: added the import - verified by running the cancel flow end-to-end (200 OK, badge updates, no console error). Root cause for MyOrders empty: AuthContext.js:78 sets user to the whole login response instead of response.data.user, so user.id is undefined -> /api/orders?user_id=undefined returns [] -> 'No Orders Yet'. Reproduce: login as 9971818259/test1234, visit /orders, observe network tab for user_id=undefined. Fix: `const userData = response.data.user;` (and store token separately)."
+}
