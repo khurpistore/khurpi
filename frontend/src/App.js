@@ -32,31 +32,25 @@ import ShippingPolicy from '@/pages/ShippingPolicy';
 import CancellationRefund from '@/pages/CancellationRefund';
 import AdminLogin from '@/pages/AdminLogin';
 import AdminDashboard from '@/pages/AdminDashboard';
-import AdminUsers from '@/pages/AdminUsers';
-import AdminProducts from '@/pages/AdminProducts';
 import AdminSubscriptions from '@/pages/AdminSubscriptions';
 import AdminDeliveries from '@/pages/AdminDeliveries';
-import AdminPayments from '@/pages/AdminPayments';
 import AdminInventory from '@/pages/AdminInventory';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminCoupons from '@/pages/AdminCoupons';
 import AdminReferrals from '@/pages/AdminReferrals';
 import AdminPages from '@/pages/AdminPages';
-import AdminOrders from '@/pages/AdminOrders';
 import AdminAnalytics from '@/pages/AdminAnalytics';
 import AdminDiscountTiers from '@/pages/AdminDiscountTiers';
-import AdminCustomerView from '@/pages/AdminCustomerView';
-import AdminCreateOrder from '@/pages/AdminCreateOrder';
-import AdminExpenses from '@/pages/AdminExpenses';
-import AdminCostCalculator from '@/pages/AdminCostCalculator';
 import AdminStoreSettings from '@/pages/AdminStoreSettings';
-import AdminCategories from '@/pages/AdminCategories';
 import AdminDeliverySlots from '@/pages/AdminDeliverySlots';
 import AdminBanners from '@/pages/AdminBanners';
 import AdminAppConfig from '@/pages/AdminAppConfig';
-import AdminSubcategories from '@/pages/AdminSubcategories';
 import AdminSpinWheel from '@/pages/AdminSpinWheel';
 import AdminProjects from '@/pages/AdminProjects';
+import AdminOrdersHub from '@/pages/AdminOrdersHub';
+import AdminUsersHub from '@/pages/AdminUsersHub';
+import AdminProductsHub from '@/pages/AdminProductsHub';
+import AdminFinanceHub from '@/pages/AdminFinanceHub';
 import AdminLayout from '@/components/AdminLayout';
 import Contact from '@/pages/Contact';
 import { ProjectProvider } from '@/context/ProjectContext';
@@ -127,12 +121,12 @@ function App() {
               <Route path="/admin/projects" element={<ProtectedRoute requireAdmin><AdminProjects /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminLayout /></ProtectedRoute>}>
                 <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="products" element={<AdminProducts />} />
+                <Route path="orders" element={<AdminOrdersHub />} />
+                <Route path="users" element={<AdminUsersHub />} />
+                <Route path="products" element={<AdminProductsHub />} />
+                <Route path="finance" element={<AdminFinanceHub />} />
                 <Route path="subscriptions" element={<AdminSubscriptions />} />
                 <Route path="deliveries" element={<AdminDeliveries />} />
-                <Route path="payments" element={<AdminPayments />} />
                 <Route path="inventory" element={<AdminInventory />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="coupons" element={<AdminCoupons />} />
@@ -140,16 +134,10 @@ function App() {
                 <Route path="referrals" element={<AdminReferrals />} />
                 <Route path="pages" element={<AdminPages />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
-                <Route path="customer-view" element={<AdminCustomerView />} />
-                <Route path="create-order" element={<AdminCreateOrder />} />
-                <Route path="expenses" element={<AdminExpenses />} />
-                <Route path="cost-calculator" element={<AdminCostCalculator />} />
                 <Route path="store-settings" element={<AdminStoreSettings />} />
-                <Route path="categories" element={<AdminCategories />} />
                 <Route path="delivery-slots" element={<AdminDeliverySlots />} />
                 <Route path="banners" element={<AdminBanners />} />
                 <Route path="app-config" element={<AdminAppConfig />} />
-                <Route path="subcategories" element={<AdminSubcategories />} />
                 <Route path="spin-wheel" element={<AdminSpinWheel />} />
               </Route>
               

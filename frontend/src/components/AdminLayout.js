@@ -3,24 +3,18 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useProject } from '@/context/ProjectContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers, Disc, Building2, ChevronsUpDown } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, Wallet, Store, Clock, Image, Smartphone, Disc, Building2, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-  { id: 'create-order', label: 'Create Order', icon: PlusCircle, path: '/admin/create-order', highlight: true },
   { id: 'orders', label: 'Orders', icon: ShoppingBag, path: '/admin/orders' },
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-  { id: 'customer-view', label: 'Customer View', icon: UserSearch, path: '/admin/customer-view' },
   { id: 'products', label: 'Products', icon: Package, path: '/admin/products' },
-  { id: 'categories', label: 'Categories', icon: FolderTree, path: '/admin/categories' },
-  { id: 'subcategories', label: 'Subcategories', icon: Layers, path: '/admin/subcategories' },
+  { id: 'finance', label: 'Finance', icon: Wallet, path: '/admin/finance' },
   { id: 'subscriptions', label: 'Subscriptions', icon: Users, path: '/admin/subscriptions' },
   { id: 'deliveries', label: 'Deliveries', icon: TrendingUp, path: '/admin/deliveries' },
   { id: 'delivery-slots', label: 'Delivery Slots', icon: Clock, path: '/admin/delivery-slots' },
-  { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-  { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/admin/expenses' },
-  { id: 'cost-calculator', label: 'Cost Calculator', icon: Calculator, path: '/admin/cost-calculator' },
   { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory' },
   { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
   { id: 'spin-wheel', label: 'Spin & Earn', icon: Disc, path: '/admin/spin-wheel' },
@@ -38,16 +32,12 @@ const menuItems = [
 // Pages not listed here render their own heading inside their content.
 const titleMap = {
   '/admin/dashboard': 'Dashboard',
-  '/admin/create-order': 'Create Order',
   '/admin/orders': 'Orders',
-  '/admin/users': 'User Management',
-  '/admin/customer-view': 'View as Customer',
-  '/admin/products': 'Manage Products',
+  '/admin/users': 'Users',
+  '/admin/products': 'Products',
+  '/admin/finance': 'Finance',
   '/admin/subscriptions': 'Subscriptions',
   '/admin/deliveries': "Today's Deliveries",
-  '/admin/payments': 'Payment Management',
-  '/admin/expenses': 'Expense Tracker',
-  '/admin/cost-calculator': 'Microgreen Cost Calculator',
   '/admin/inventory': 'Inventory & Growing Planner',
   '/admin/pages': 'Page Content',
   '/admin/settings': 'Settings'

@@ -236,7 +236,7 @@ const AdminOrders = () => {
               </SelectContent>
             </Select>
             <Button 
-              onClick={() => navigate('/admin/create-order')} 
+              onClick={() => navigate('/admin/orders?tab=create')} 
               className="h-9 bg-green-600 hover:bg-green-700"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
