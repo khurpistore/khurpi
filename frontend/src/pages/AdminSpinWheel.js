@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminLayout from '@/components/AdminLayout';
 import { Plus, Trash2, Save, RefreshCw, Gift, AlertCircle } from 'lucide-react';
 
 const AdminSpinWheel = () => {
@@ -96,6 +97,7 @@ const AdminSpinWheel = () => {
   }
 
   return (
+    <AdminLayout active="spin-wheel" title="">
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -266,6 +268,7 @@ const AdminSpinWheel = () => {
         </ul>
       </div>
     </div>
+    </AdminLayout>
   );
 };
 

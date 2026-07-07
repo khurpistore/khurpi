@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,6 +171,7 @@ const AdminDeliverySlots = () => {
   }
 
   return (
+    <AdminLayout active="delivery-slots" title="">
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -403,6 +405,7 @@ const AdminDeliverySlots = () => {
         </CardContent>
       </Card>
     </div>
+    </AdminLayout>
   );
 };
 

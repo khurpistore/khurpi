@@ -1,0 +1,31 @@
+{
+  "summary": "E2E verified all 3 reported bug fixes on multi-tenant Khurpi admin. Backend regression pytest (7/7 pass) confirms /admin/users and /admin/dashboard are project-scoped and /admin/categories works CRUD-wise. Playwright verified: (a) default 'Khurpi' project shows 34 users (Total 34 / Customers 34) and dashboard Total Subs 44, Active 40, Revenue Rs.164259.088; creating a new project via UI auto-selects it and shows Users 0 + Dashboard all zeros; switching back preserves Khurpi's data. (b) Clicked all 25 sidebar items (Dashboard, Create Order, Orders, Users, Customer View, Products, Categories, Subcategories, Subscriptions, Deliveries, Delivery Slots, Payments, Expenses, Cost Calculator, Inventory, Banners, Spin & Earn, Discount Coupons, Order Discounts, Referral Program, Page Content, Analytics, Store Settings, App Config, Settings) - EVERY page kept the left sidebar visible AND never redirected to /admin/login or /admin/projects. (c) /admin/categories renders with sidebar, shows Khurpi categories (Vegetables, Fruits, Leafy Greens visible), Add Category button present, backend CRUD works.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_bugfix_isolation.py",
+    "/app/backend/tests/test_multi_tenant_projects.py",
+    "/app/test_reports/pytest/bugfix_isolation.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "AdminProjects.js: the delete-project trash icon is nested inside the outer project-card <button>. Nesting <span role='button'> inside a <button> is invalid HTML and can cause click bubbling into handleSelect (clicking delete may also open the project). Consider replacing the outer <button> with a <div role='button'> OR wrapping the whole card differently so the trash is a sibling of the card.",
+    "server.py: PROJECT_SCOPED_COLLECTIONS still needs matching MongoDB indexes on project_id for the new scoped collections (users, subscriptions, deliveries, payments) to keep queries fast at scale.",
+    "server.py is 7600+ lines - splitting into routers is overdue.",
+    "AdminLogin uses query params for username/password instead of JSON body - fine, but consider moving to a JSON body + BCrypt hash for parity with rest of the API and to avoid credentials in URL/access logs."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_bugfix_isolation.py"
+  ],
+  "success_rate": { "backend": "100%", "frontend": "100%" },
+  "test_credentials": "admin / Khurpi2026Secure (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created + cleaned temp project TEST_UI_ISO_3892 via UI (cleanup done via DELETE /api/admin/projects/{id}). Backend pytest fixture also creates & auto-deletes TEST_ISO_<ts> per module. Only 'default' Khurpi + a pre-existing 'Test' project remain (Test was not created by this run).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All 3 bugs are FIXED. Regression tests: /app/backend/tests/test_bugfix_isolation.py (7 tests, users+dashboard+categories scoping) and /app/backend/tests/test_multi_tenant_projects.py (12 tests). Sidebar issue root cause was that AdminCategories/AdminDeliverySlots/AdminSpinWheel/AdminStoreSettings did not wrap their return in <AdminLayout> - now fixed. Any NEW admin page must import AdminLayout and wrap the return; otherwise it will render without sidebar and appear as 'logged out'. Currently scoped collections: products, categories, subcategories, orders, coupons, banners, spin_prizes, users, subscriptions, deliveries, payments.",
+  "rca of the issue": "Bug 1 (data mixing): /admin/users and /admin/dashboard did not accept project_id from X-Project-Id header and queried the full collections. Fix added Depends(get_project_id) + scoped_filter, and added users/subscriptions/deliveries/payments to PROJECT_SCOPED_COLLECTIONS. Verified default sees 34 users & Revenue 164259, new project sees 0/0. Bug 2 (sidebar disappearing): 4 admin pages (AdminCategories.js, AdminDeliverySlots.js, AdminSpinWheel.js, AdminStoreSettings.js) rendered their JSX directly without <AdminLayout>. Since AdminLayout provides both sidebar AND the auth-guard, missing the wrapper made those pages appear as if the user had been logged out. Fix wraps each in <AdminLayout active='..' title='..'>. Bug 3 (Categories broken): symptom was actually the sidebar-missing issue; the underlying /admin/categories endpoint already works. Confirmed: page renders with sidebar and lists Khurpi's Vegetables/Fruits/Leafy Greens."
+}

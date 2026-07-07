@@ -130,12 +130,23 @@ DEFAULT_PROJECT_ID = "default"
 
 # Collections whose documents belong to a specific project
 PROJECT_SCOPED_COLLECTIONS = [
-    "products", "categories", "subcategories", "orders", "coupons", "banners", "spin_prizes"
+    "products", "categories", "subcategories", "orders", "coupons", "banners", "spin_prizes",
+    "users", "subscriptions", "deliveries", "payments"
 ]
 
 async def get_project_id(x_project_id: Optional[str] = Header(None)) -> str:
     """Resolve the active project id from the X-Project-Id header (defaults to the primary project)."""
     return x_project_id or DEFAULT_PROJECT_ID
+
+def scoped_filter(project_id: str, base: dict = None) -> dict:
+    """Build a project-scoped Mongo filter. For the default project, legacy documents
+    that predate multi-tenancy (missing project_id) are also included."""
+    q = dict(base) if base else {}
+    if project_id == DEFAULT_PROJECT_ID:
+        q["$or"] = [{"project_id": DEFAULT_PROJECT_ID}, {"project_id": {"$exists": False}}]
+    else:
+        q["project_id"] = project_id
+    return q
 
 class ProjectCreate(BaseModel):
     name: str
@@ -3336,14 +3347,14 @@ async def get_payments(user_id: Optional[str] = None, subscription_id: Optional[
     return payments
 
 @api_router.get("/admin/dashboard")
-async def get_admin_dashboard():
-    total_subscriptions = await db.subscriptions.count_documents({})
-    active_subscriptions = await db.subscriptions.count_documents({"status": "active"})
+async def get_admin_dashboard(project_id: str = Depends(get_project_id)):
+    total_subscriptions = await db.subscriptions.count_documents(scoped_filter(project_id))
+    active_subscriptions = await db.subscriptions.count_documents(scoped_filter(project_id, {"status": "active"}))
     
     today = datetime.now(timezone.utc).date().isoformat()
-    today_deliveries = await db.deliveries.count_documents({"delivery_date": today, "status": "scheduled"})
+    today_deliveries = await db.deliveries.count_documents(scoped_filter(project_id, {"delivery_date": today, "status": "scheduled"}))
     
-    payments = await db.payments.find({"status": "success"}, {"_id": 0}).to_list(1000)
+    payments = await db.payments.find(scoped_filter(project_id, {"status": "success"}), {"_id": 0}).to_list(1000)
     total_revenue = sum(p["amount"] for p in payments)
     
     return {
@@ -4614,8 +4625,8 @@ async def admin_get_user_cart(user_id: str):
     return cart
 
 @api_router.get("/admin/users")
-async def get_all_users():
-    users = await db.users.find({}, {"_id": 0}).to_list(1000)
+async def get_all_users(project_id: str = Depends(get_project_id)):
+    users = await db.users.find(scoped_filter(project_id), {"_id": 0}).to_list(1000)
     for user in users:
         user.pop("password", None)
     return users
