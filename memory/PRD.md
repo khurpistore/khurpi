@@ -3,6 +3,25 @@
 ## Original Problem Statement
 Build a comprehensive e-commerce platform for selling microgreens with admin dashboard, customer-facing storefront, and Flutter mobile app.
 
+## Recent Work (July 7, 2026)
+
+### Multi-Project (Multi-Tenancy) Admin — DONE & TESTED (100%)
+- One admin panel now manages multiple projects/stores. Super admin = existing admin login (`admin`/`Khurpi2026Secure`).
+- Flow: admin login -> **Project Selection screen** (`/admin/projects`, premium dark UI) -> select project -> same admin menu; new projects start EMPTY. "Add Project" card opens a create dialog.
+- Backend (`server.py` ~line 124): `DEFAULT_PROJECT_ID="default"`, `get_project_id` dependency (reads `X-Project-Id` header), `PROJECT_SCOPED_COLLECTIONS`, project CRUD (`/api/admin/projects`), and a startup `init_projects()` that creates the default "Khurpi" project and backfills `project_id` on legacy docs.
+- Scoped collections: **products, categories, subcategories, orders, coupons, banners, spin_prizes**. Each list/create endpoint filters/sets `project_id`.
+- Frontend: `ProjectContext.js` (stores currentProject in localStorage, sets `axios.defaults.headers['X-Project-Id']` globally -> all admin pages auto-scoped without per-page edits), `AdminProjects.js` page, `AdminLayout` guard + switch-project control.
+- Storefront/mobile unaffected: no header -> defaults to "Khurpi" project (158 products retained).
+- NOT yet scoped (future phase): users, payments, deliveries, expenses, settings, discount tiers, delivery slots, pages, app_config.
+- Regression tests: `/app/backend/tests/test_multi_tenant_projects.py` (12 pytest cases).
+
+### Admin Products Table redesign — DONE & TESTED
+- Removed columns: Cost/50g, Retail Profit, WP/50g, WP Profit, Growth, Avl Date, "Growing" status.
+- Renamed Retail/50g -> "Price" (full price). Added "Unit" (unit_value) + "Unit Type" (G/Kg/Piece/Pieces/Bunch/Dozen) columns. Applied to table + Add/Edit dialog + mobile view.
+
+### Production data
+- Uploaded 52 vegetables to production DB (all under "Vegetables" category) via `backend/add_vegetables.py`.
+
 ## Current State (After feature/5july_deployed Sync - July 6, 2026)
 The codebase has been synced from the GitHub branch `feature/5july_deployed`. This is a more recent branch (July 5, 2026) with 66 commits ahead of main.
 
