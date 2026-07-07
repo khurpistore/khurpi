@@ -60,6 +60,7 @@ const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
     image: product?.image || '',
     benefit: product?.benefit || '',
     nutrients: product?.nutrients || '',
+    category_id: product?.category_id || '',
     price: product?.price || '',
     unit: product?.unit || 'kg',
     unit_value: product?.unit_value ?? 1,
@@ -703,6 +704,7 @@ const AdminProducts = () => {
                         variant="ghost"
                         onClick={() => openDialog(product)}
                         className="h-7 w-7 p-0"
+                        data-testid={`edit-product-${product.id}`}
                       >
                         <Pencil className="w-3 h-3" />
                       </Button>
@@ -711,6 +713,7 @@ const AdminProducts = () => {
                         variant="ghost"
                         onClick={() => handleDelete(product.id)}
                         className="h-7 w-7 p-0 text-red-500 hover:text-red-600"
+                        data-testid={`delete-product-${product.id}`}
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>

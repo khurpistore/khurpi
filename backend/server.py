@@ -2850,7 +2850,7 @@ async def create_product(product_data: ProductCreate, project_id: str = Depends(
 
 @api_router.put("/products/{product_id}", response_model=Product)
 async def update_product(product_id: str, product_data: ProductUpdate):
-    update_data = {k: v for k, v in product_data.model_dump().items() if v is not None}
+    update_data = product_data.model_dump(exclude_unset=True)
     
     if not update_data:
         raise HTTPException(status_code=400, detail="No data to update")
