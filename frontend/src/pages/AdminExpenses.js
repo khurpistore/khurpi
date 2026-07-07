@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -232,16 +231,16 @@ const AdminExpenses = () => {
 
   if (loading) {
     return (
-      <AdminLayout active="expenses" title="Expenses">
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout active="expenses" title="Expense Tracker">
+    <>
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <Card>
@@ -686,7 +685,7 @@ const AdminExpenses = () => {
           ))
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

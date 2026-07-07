@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Search, CreditCard, Tag, Percent, ShoppingCart, Repeat, User, Calendar, ChevronRight } from 'lucide-react';
 import { format, isValid, parseISO } from 'date-fns';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -149,7 +148,7 @@ const AdminPayments = () => {
   const couponUsageCount = filteredPayments.filter(p => p.order?.coupon_code).length;
 
   return (
-    <AdminLayout active="payments" title="Payment Management">
+    <>
       {/* Filters */}
       <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="flex-1 relative">
@@ -340,7 +339,7 @@ const AdminPayments = () => {
           })}
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import AdminLayout from '@/components/AdminLayout';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isToday, isTomorrow, isPast } from 'date-fns';
 import { 
   Sprout, Calendar, Package, TrendingUp, AlertTriangle, 
@@ -117,7 +116,7 @@ const AdminInventory = () => {
   const totalWeeklyPacks = inventory.reduce((sum, item) => sum + item.total_trays, 0);
 
   return (
-    <AdminLayout active="inventory" title="Inventory & Growing Planner">
+    <>
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -516,7 +515,7 @@ const AdminInventory = () => {
           </Card>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

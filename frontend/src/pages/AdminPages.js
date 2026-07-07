@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Shield, Save, Loader2, Eye, Edit, Truck, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -105,16 +104,16 @@ const AdminPages = () => {
 
   if (loading) {
     return (
-      <AdminLayout active="pages" title="Page Content">
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout active="pages" title="Page Content">
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -205,7 +204,7 @@ const AdminPages = () => {
           ))}
         </Tabs>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

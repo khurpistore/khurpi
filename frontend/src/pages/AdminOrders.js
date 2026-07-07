@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -161,16 +160,16 @@ const AdminOrders = () => {
 
   if (loading) {
     return (
-      <AdminLayout active="orders" title="Orders">
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout active="orders" title="Orders">
+    <>
       <div className="flex gap-6">
         {/* Left: Orders List */}
         <div className="flex-1">
@@ -633,7 +632,7 @@ const AdminOrders = () => {
           )}
         </div>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

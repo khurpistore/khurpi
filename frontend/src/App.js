@@ -57,6 +57,8 @@ import AdminAppConfig from '@/pages/AdminAppConfig';
 import AdminSubcategories from '@/pages/AdminSubcategories';
 import AdminSpinWheel from '@/pages/AdminSpinWheel';
 import AdminProjects from '@/pages/AdminProjects';
+import AdminLayout from '@/components/AdminLayout';
+import Contact from '@/pages/Contact';
 import { ProjectProvider } from '@/context/ProjectContext';
 import DeliveryBoyLogin from '@/pages/DeliveryBoyLogin';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
@@ -107,6 +109,7 @@ function App() {
               <Route path="/terms-of-service" element={<TermsConditions />} />
               <Route path="/shipping-policy" element={<ShippingPolicy />} />
               <Route path="/cancellation-refund" element={<CancellationRefund />} />
+              <Route path="/contact" element={<Contact />} />
               
               {/* Protected Customer Routes */}
               <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
@@ -121,32 +124,34 @@ function App() {
               
               {/* Admin Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin/dashboard" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/orders" element={<ProtectedRoute requireAdmin><AdminOrders /></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
-              <Route path="/admin/products" element={<ProtectedRoute requireAdmin><AdminProducts /></ProtectedRoute>} />
-              <Route path="/admin/subscriptions" element={<ProtectedRoute requireAdmin><AdminSubscriptions /></ProtectedRoute>} />
-              <Route path="/admin/deliveries" element={<ProtectedRoute requireAdmin><AdminDeliveries /></ProtectedRoute>} />
-              <Route path="/admin/payments" element={<ProtectedRoute requireAdmin><AdminPayments /></ProtectedRoute>} />
-              <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><AdminInventory /></ProtectedRoute>} />
-              <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
-              <Route path="/admin/coupons" element={<ProtectedRoute requireAdmin><AdminCoupons /></ProtectedRoute>} />
-              <Route path="/admin/discount-tiers" element={<ProtectedRoute requireAdmin><AdminDiscountTiers /></ProtectedRoute>} />
-              <Route path="/admin/referrals" element={<ProtectedRoute requireAdmin><AdminReferrals /></ProtectedRoute>} />
-              <Route path="/admin/pages" element={<ProtectedRoute requireAdmin><AdminPages /></ProtectedRoute>} />
-              <Route path="/admin/analytics" element={<ProtectedRoute requireAdmin><AdminAnalytics /></ProtectedRoute>} />
-              <Route path="/admin/customer-view" element={<ProtectedRoute requireAdmin><AdminCustomerView /></ProtectedRoute>} />
-              <Route path="/admin/create-order" element={<ProtectedRoute requireAdmin><AdminCreateOrder /></ProtectedRoute>} />
-              <Route path="/admin/expenses" element={<ProtectedRoute requireAdmin><AdminExpenses /></ProtectedRoute>} />
-              <Route path="/admin/cost-calculator" element={<ProtectedRoute requireAdmin><AdminCostCalculator /></ProtectedRoute>} />
-              <Route path="/admin/store-settings" element={<ProtectedRoute requireAdmin><AdminStoreSettings /></ProtectedRoute>} />
-              <Route path="/admin/categories" element={<ProtectedRoute requireAdmin><AdminCategories /></ProtectedRoute>} />
-              <Route path="/admin/delivery-slots" element={<ProtectedRoute requireAdmin><AdminDeliverySlots /></ProtectedRoute>} />
-              <Route path="/admin/banners" element={<ProtectedRoute requireAdmin><AdminBanners /></ProtectedRoute>} />
-              <Route path="/admin/app-config" element={<ProtectedRoute requireAdmin><AdminAppConfig /></ProtectedRoute>} />
-              <Route path="/admin/subcategories" element={<ProtectedRoute requireAdmin><AdminSubcategories /></ProtectedRoute>} />
-              <Route path="/admin/spin-wheel" element={<ProtectedRoute requireAdmin><AdminSpinWheel /></ProtectedRoute>} />
               <Route path="/admin/projects" element={<ProtectedRoute requireAdmin><AdminProjects /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminLayout /></ProtectedRoute>}>
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="subscriptions" element={<AdminSubscriptions />} />
+                <Route path="deliveries" element={<AdminDeliveries />} />
+                <Route path="payments" element={<AdminPayments />} />
+                <Route path="inventory" element={<AdminInventory />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="discount-tiers" element={<AdminDiscountTiers />} />
+                <Route path="referrals" element={<AdminReferrals />} />
+                <Route path="pages" element={<AdminPages />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
+                <Route path="customer-view" element={<AdminCustomerView />} />
+                <Route path="create-order" element={<AdminCreateOrder />} />
+                <Route path="expenses" element={<AdminExpenses />} />
+                <Route path="cost-calculator" element={<AdminCostCalculator />} />
+                <Route path="store-settings" element={<AdminStoreSettings />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="delivery-slots" element={<AdminDeliverySlots />} />
+                <Route path="banners" element={<AdminBanners />} />
+                <Route path="app-config" element={<AdminAppConfig />} />
+                <Route path="subcategories" element={<AdminSubcategories />} />
+                <Route path="spin-wheel" element={<AdminSpinWheel />} />
+              </Route>
               
               {/* Delivery Boy Routes - No header/footer */}
               <Route path="/delivery/login" element={<DeliveryBoyLogin />} />

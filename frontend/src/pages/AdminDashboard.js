@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, Users, TrendingUp, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -31,7 +30,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <AdminLayout active="dashboard" title="Dashboard">
+    <>
       {loading ? (
         <p className="text-muted-foreground">Loading...</p>
       ) : (
@@ -118,7 +117,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

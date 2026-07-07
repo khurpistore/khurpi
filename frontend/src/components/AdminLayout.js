@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useProject } from '@/context/ProjectContext';
-import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Phone, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers, Disc, Building2, ChevronsUpDown } from 'lucide-react';
+import { LayoutDashboard, Package, Users, TrendingUp, CreditCard, Menu, X, LogOut, Leaf, Settings, Tag, Gift, FileText, ShoppingBag, BarChart3, Percent, UserSearch, PlusCircle, Receipt, Calculator, Store, FolderTree, Clock, Image, Smartphone, Layers, Disc, Building2, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -34,11 +34,34 @@ const menuItems = [
   { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' }
 ];
 
-const AdminLayout = ({ children, active, title }) => {
+// Pages that rely on AdminLayout to render the page title.
+// Pages not listed here render their own heading inside their content.
+const titleMap = {
+  '/admin/dashboard': 'Dashboard',
+  '/admin/create-order': 'Create Order',
+  '/admin/orders': 'Orders',
+  '/admin/users': 'User Management',
+  '/admin/customer-view': 'View as Customer',
+  '/admin/products': 'Manage Products',
+  '/admin/subscriptions': 'Subscriptions',
+  '/admin/deliveries': "Today's Deliveries",
+  '/admin/payments': 'Payment Management',
+  '/admin/expenses': 'Expense Tracker',
+  '/admin/cost-calculator': 'Microgreen Cost Calculator',
+  '/admin/inventory': 'Inventory & Growing Planner',
+  '/admin/pages': 'Page Content',
+  '/admin/settings': 'Settings'
+};
+
+const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   const { currentProject, clearProject } = useProject();
+
+  const active = menuItems.find((m) => location.pathname === m.path)?.id;
+  const title = titleMap[location.pathname] || '';
 
   // Guard: a project must be selected to use the admin panel
   useEffect(() => {
@@ -141,7 +164,7 @@ const AdminLayout = ({ children, active, title }) => {
       )}
 
       {/* Mobile Sidebar */}
-      <div className={`lg:hidden fixed top-14 left-0 bottom-0 w-64 bg-primary text-white z-50 transform transition-transform duration-300 ${
+      <div className={`lg:hidden fixed top-14 left-0 bottom-0 w-64 bg-primary text-white z-50 transform transition-transform duration-300 overflow-y-auto ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <nav className="p-4 space-y-1">
@@ -178,7 +201,9 @@ const AdminLayout = ({ children, active, title }) => {
         <div className="p-4 sm:p-6 lg:p-8">
           {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary heading-text">{title}</h1>
+            {title ? (
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary heading-text">{title}</h1>
+            ) : <span />}
             <Button
               data-testid="admin-logout-button"
               onClick={handleLogout}
@@ -188,7 +213,7 @@ const AdminLayout = ({ children, active, title }) => {
               Logout
             </Button>
           </div>
-          {children}
+          <Outlet />
         </div>
       </div>
     </div>

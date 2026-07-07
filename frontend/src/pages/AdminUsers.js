@@ -14,7 +14,6 @@ import { toast } from 'sonner';
 import { Search, Pencil, Trash2, KeyRound, Truck, Plus, BadgePercent } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { format } from 'date-fns';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -318,7 +317,7 @@ const AdminUsers = () => {
   const regularUsers = filteredUsers.filter(u => u.role !== 'delivery_boy');
 
   return (
-    <AdminLayout active="users" title="User Management">
+    <>
       {/* Delivery Boys Section */}
       <Card className="mb-6 border-blue-200 bg-blue-50/30">
         <CardContent className="p-4">
@@ -638,7 +637,7 @@ const AdminUsers = () => {
           onSuccess={fetchUsers}
         />
       )}
-    </AdminLayout>
+    </>
   );
 };
 

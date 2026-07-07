@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Layers, FolderTree } from 'lucide-react';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -147,7 +146,7 @@ const AdminSubcategories = () => {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -335,7 +334,7 @@ const AdminSubcategories = () => {
           </div>
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

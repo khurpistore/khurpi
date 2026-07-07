@@ -16,7 +16,6 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Package, Sprout, XCircle, Clock, CalendarIcon } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
-import AdminLayout from '@/components/AdminLayout';
 
 // Import from core module - Single source of truth
 import { StockBadge, getStockStatus } from '../core';
@@ -513,7 +512,7 @@ const AdminProducts = () => {
   };
 
   return (
-    <AdminLayout active="products" title="Manage Products">
+    <>
       <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-6">
         {Object.keys(editedProducts).length > 0 && (
           <Button
@@ -854,7 +853,7 @@ const AdminProducts = () => {
         </div>
         </>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -238,7 +237,7 @@ const AdminCreateOrder = () => {
   );
 
   return (
-    <AdminLayout active="create-order" title="Create Order">
+    <>
       {/* Progress Steps */}
       <div className="mb-6">
         <div className="flex items-center justify-center gap-2">
@@ -841,7 +840,7 @@ const AdminCreateOrder = () => {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

@@ -16,6 +16,15 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
 - NOT yet scoped (future phase): expenses, discount tiers, delivery slots config, pages, app_config, store settings, inventory.
 - Regression tests: `/app/backend/tests/test_multi_tenant_projects.py` (12) + `/app/backend/tests/test_bugfix_isolation.py` (7).
 
+### Platform Completion Phases (July 7, 2026)
+- **Phase 1 — Security (DONE & TESTED 100%)**: JWT admin auth. `POST /api/admin/login` takes JSON, verifies env creds (secrets.compare_digest), issues JWT. `admin_auth_middleware` (server.py ~line 130) requires `Authorization: Bearer <admin JWT>` for ALL `/api/admin/*` (except login) + POST/PUT/DELETE `/api/products`. Frontend AuthContext stores token + sets axios default Authorization globally. Public/customer endpoints unchanged.
+- **Phase 2 — Order lifecycle (DONE & TESTED 100%)**: customer `POST /orders/{id}/cancel` (pending/confirmed/preparing only) + `POST /orders/{id}/return` (delivered only); admin `GET /admin/returns` + `POST /admin/orders/{id}/refund` (Razorpay refund via `_process_razorpay_refund`, else marked refunded). Order model has cancel/return/refund fields. UI: OrderDetail cancel/return buttons + badges; AdminOrders 'Return & Refund' section with Process Refund.
+- **Phase 3 — Tax invoices (DONE & TESTED 100%)**: `GET /orders/{id}/invoice` returns printable HTML tax invoice (store details, GSTIN, bill-to, items, GST breakup from inclusive total). StoreSettings gained `gstin`/`gst_rate`. OrderDetail 'Download Invoice' button.
+- **CRITICAL FIX**: AuthContext customer login stored whole `{token,user}` as user → `user.id` undefined → My Orders always empty. Fixed to extract `.user` + persist token. Verified My Orders now populates.
+- **Phase 4 — Support**: covered by existing StoreSettings phone/email (admin-configurable, shown on storefront).
+- **Phase 5 — Crash reporting (PENDING)**: needs user's Sentry DSN. App has basic error analytics already.
+- Follow-ups: enforce customer ownership on cancel/return via customer JWT (currently client-supplied user_id, bypassable); optional GST line in checkout math; Deep links (explicitly excluded by user).
+
 ### Admin Products Table redesign — DONE & TESTED
 - Removed columns: Cost/50g, Retail Profit, WP/50g, WP Profit, Growth, Avl Date, "Growing" status.
 - Renamed Retail/50g -> "Price" (full price). Added "Unit" (unit_value) + "Unit Type" (G/Kg/Piece/Pieces/Bunch/Dozen) columns. Applied to table + Add/Edit dialog + mobile view.

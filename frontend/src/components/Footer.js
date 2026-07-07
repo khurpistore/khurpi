@@ -54,6 +54,11 @@ const Footer = () => {
                   Cart
                 </button>
               </li>
+              <li>
+                <button onClick={() => navigate('/contact')} className="hover:text-white transition-colors">
+                  Help & Support
+                </button>
+              </li>
             </ul>
           </div>
 

@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Search, Package, MapPin, Calendar, Phone, ChevronRight, Repeat, User, Loader2, Clock, CheckCircle2, Circle, Truck, Edit2, X, Save } from 'lucide-react';
 import { format } from 'date-fns';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -214,16 +213,16 @@ const AdminSubscriptions = () => {
 
   if (loading) {
     return (
-      <AdminLayout active="subscriptions" title="Subscriptions">
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout active="subscriptions" title="Subscriptions">
+    <>
       <div className="flex gap-6">
         {/* Left: Subscriptions List */}
         <div className="flex-1">
@@ -677,7 +676,7 @@ const AdminSubscriptions = () => {
           )}
         </div>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

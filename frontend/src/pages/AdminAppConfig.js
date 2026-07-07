@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Settings, Palette, MapPin, Truck, Phone, Sparkles, Save, Plus, X } from 'lucide-react';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -116,16 +115,16 @@ const AdminAppConfig = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <>
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -500,7 +499,7 @@ const AdminAppConfig = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

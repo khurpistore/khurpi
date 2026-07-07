@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -256,16 +255,16 @@ const AdminCostCalculator = () => {
 
   if (loading) {
     return (
-      <AdminLayout active="cost-calculator" title="Cost Calculator">
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout active="cost-calculator" title="Microgreen Cost Calculator">
+    <>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-5 w-full max-w-3xl mb-6">
           <TabsTrigger value="overview" data-testid="cost-tab-overview">Overview</TabsTrigger>
@@ -1005,7 +1004,7 @@ const AdminCostCalculator = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 };
 

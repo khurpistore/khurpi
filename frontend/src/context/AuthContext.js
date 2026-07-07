@@ -15,10 +15,10 @@ export const AuthProvider = ({ children }) => {
   const [addresses, setAddresses] = useState([]);
 
   useEffect(() => {
-    // Restore admin Bearer token for API auth
-    const adminToken = localStorage.getItem('adminToken');
-    if (adminToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+    // Restore auth Bearer token (admin or customer) for API auth
+    const authToken = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    if (authToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
     }
     // Hydrate user from localStorage on mount
     const storedUser = localStorage.getItem('user');
@@ -66,7 +66,11 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (phone, name, password) => {
     const response = await axios.post(`${API}/auth/signup`, { phone, name, password });
-    const userData = response.data;
+    const userData = response.data.user || response.data;
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    }
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
@@ -75,7 +79,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (phone, password) => {
     const response = await axios.post(`${API}/auth/login`, { phone, password });
-    const userData = response.data;
+    const userData = response.data.user || response.data;
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    }
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
@@ -84,8 +92,13 @@ export const AuthProvider = ({ children }) => {
 
   // Login with OTP verification
   const loginWithOTP = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    const normalized = userData?.user || userData;
+    if (userData?.token) {
+      localStorage.setItem('token', userData.token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+    }
+    setUser(normalized);
+    localStorage.setItem('user', JSON.stringify(normalized));
     localStorage.setItem('sessionExpiry', (Date.now() + SESSION_DURATION).toString());
   };
 
@@ -108,6 +121,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('sessionExpiry');
     localStorage.removeItem('adminToken');
+    localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
   };
 

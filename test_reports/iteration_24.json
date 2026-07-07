@@ -1,0 +1,41 @@
+{
+  "summary": "Frontend-only regression test for (a) new customer /contact 'Help & Support' page and (b) admin routing refactor where AdminLayout is now a persistent parent <Outlet/> route and all 25 admin pages had their <AdminLayout> wrapper removed. RESULT: ALL 25 admin pages render correctly with the persistent sidebar, correct active nav highlight, no React crash and no runtime errors. Contact page loads all 5 required testids (contact-phone, contact-email, contact-whatsapp, contact-address, contact-hours) and the Footer 'Help & Support' link navigates to /contact.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verified_flows": [
+    "GET /contact renders <Contact/> with data-testid contact-page and populated phone (+91 9971818259), email (khurpi.store@gmail.com), WhatsApp card, address (E-312, ACE City, Noida Extension, 201306) and support hours (07:00 - 21:00) sourced from /api/store/settings.",
+    "Footer 'Help & Support' button (visible on non-admin pages) navigates from / to /contact.",
+    "POST /api/admin/login with admin/Khurpi2026Secure -> /admin/projects.",
+    "Clicking data-testid='project-card-default' on /admin/projects -> /admin/dashboard.",
+    "All 25 admin sidebar buttons present in DOM with data-testid=admin-nav-<id>: dashboard, create-order, orders, users, customer-view, products, categories, subcategories, subscriptions, deliveries, delivery-slots, payments, expenses, cost-calculator, inventory, banners, spin-wheel, coupons, discount-tiers, referrals, pages, analytics, store-settings, app-config, settings.",
+    "Clicking each admin-nav-<id>: (1) URL updates to /admin/<id>, (2) content region renders non-empty text (content_len ranged 445 - 4810 chars), (3) sidebar button gets 'bg-white/20' active class, (4) sidebar stays mounted (25 buttons remain in DOM before and after full nav walk), (5) no pageerror / console React error.",
+    "grep confirms zero admin pages still import AdminLayout - refactor is clean."
+  ],
+  "observations": [
+    "Sidebar persistence verified: <nav> element retained all 25 buttons across every navigation; fingerprint (outerHTML length) varied only by active-class shifts (~small delta).",
+    "AdminLayout page header (h1) is only rendered for the routes in titleMap; other pages render their own <h1>. Both visible in screenshots - Settings shows 'Settings', View as Customer page shows its own 'View as Customer' heading.",
+    "Pre-existing console noise (unrelated to refactor): Mixed-content warning for http://ip-api.com/json/ from Landing (should switch to https), and multiple 404 asset requests on Landing. Neither affects tested flows."
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "OPTIONAL cleanup (pre-existing, not caused by this refactor): switch ip-api.com call to https to remove mixed-content console warnings on Landing."
+  ],
+  "critical_code_review_comments": [
+    "AdminLayout mobile sidebar buttons (lg:hidden block) do NOT have data-testid attributes, while the desktop set does. If mobile E2E coverage is desired, add matching testids there too - minor.",
+    "AdminLayout has an internal 'switch-project-button' with data-testid but no automated coverage in current tests; consider adding a test case for project switching.",
+    "Contact.js correctly falls back to hardcoded defaults when /api/store/settings fails (setSettings({})). Good defensive UX.",
+    "App.js admin nested routes are ordered correctly; /admin/login and /admin/projects intentionally kept outside the AdminLayout parent - correct.",
+    "The AdminLayout header shows TWO logout buttons on desktop (top bar 'Logout' with data-testid='admin-logout-button' AND sidebar 'Logout' also using data-testid='admin-logout-button'). Duplicate data-testid on two elements can trip Playwright's strict-mode locators; consider unique testids like 'admin-logout-topbar' and 'admin-logout-sidebar'."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped per request)", "frontend": "100% (Contact page + all 25 admin routes + sidebar persistence)"},
+  "test_credentials": "admin/Khurpi2026Secure; project 'default' via project-card-default",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Admin routing refactor is fully green. Reusable playbook: (1) login at /admin/login, (2) click [data-testid=project-card-default], (3) after landing on /admin/dashboard wait ~1.5-2s BEFORE first sidebar query (early runs saw first-5 buttons transiently absent right after project select; DOM was 25/25 after 2s wait), (4) iterate data-testid=admin-nav-<id> for all 25 ids listed above. Duplicate data-testid='admin-logout-button' on two elements - use nth() or scope by container if needed."
+}

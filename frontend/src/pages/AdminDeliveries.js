@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Download, Pencil, Phone, MapPin, Package, Calendar, AlertTriangle, PauseCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -147,7 +146,7 @@ const AdminDeliveries = () => {
   const pausedSubCount = deliveries.filter(d => d.subscription_status === 'paused').length;
 
   return (
-    <AdminLayout active="deliveries" title="Today's Deliveries">
+    <>
       {/* Header with Export */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
@@ -345,7 +344,7 @@ const AdminDeliveries = () => {
           ))}
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

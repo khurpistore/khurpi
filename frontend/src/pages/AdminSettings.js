@@ -10,7 +10,6 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Store, Truck, Tag, Plus, Trash2, Save, FileText, Shield, Gift, Loader2 } from 'lucide-react';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -177,7 +176,7 @@ const AdminSettings = () => {
   };
 
   return (
-    <AdminLayout active="settings" title="Settings">
+    <>
       {authLoading || loading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -666,7 +665,7 @@ const AdminSettings = () => {
           </Card>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

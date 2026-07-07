@@ -14,7 +14,6 @@ import {
   Navigation, CircleDot, ZoomIn, ZoomOut, Layers
 } from 'lucide-react';
 import axios from 'axios';
-import AdminLayout from '@/components/AdminLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -110,16 +109,16 @@ const AdminAnalytics = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <>
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1171,7 +1170,7 @@ const AdminAnalytics = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

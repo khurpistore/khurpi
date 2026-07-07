@@ -14,7 +14,6 @@ import {
   ShoppingCart, Receipt, AlertCircle, Info
 } from 'lucide-react';
 import { format, addDays, isBefore, isAfter, startOfDay, isSameDay } from 'date-fns';
-import AdminLayout from '@/components/AdminLayout';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -230,7 +229,7 @@ const AdminCustomerView = () => {
   };
 
   return (
-    <AdminLayout active="customer-view" title="View as Customer">
+    <>
       {/* Search Section */}
       <Card className="mb-6">
         <CardContent className="p-4">
@@ -1584,7 +1583,7 @@ const AdminCustomerView = () => {
           )}
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 };
 
