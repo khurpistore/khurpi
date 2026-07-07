@@ -7,10 +7,11 @@ import requests
 import json
 
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://july-branch.preview.emergentagent.com')
-VEGETABLES_CATEGORY_ID = "034c8aea-38f6-49d0-b21e-3aee1f8b1365"
-LEAFY_GREENS_CATEGORY_ID = "6900f756-4063-40f7-b158-c93a7d63508f"
-ROOT_VEGETABLES_CATEGORY_ID = "3a1f7ff8-71db-4494-be32-6df62693f3dc"
-EXOTIC_CATEGORY_ID = "d790f665-5c8d-4267-b078-aceee52da106"
+# All vegetables mapped to production "Vegetables" category
+VEGETABLES_CATEGORY_ID = "4bfd15ba-a6d9-49bb-ad9b-076fa2c88031"
+LEAFY_GREENS_CATEGORY_ID = "4bfd15ba-a6d9-49bb-ad9b-076fa2c88031"
+ROOT_VEGETABLES_CATEGORY_ID = "4bfd15ba-a6d9-49bb-ad9b-076fa2c88031"
+EXOTIC_CATEGORY_ID = "4bfd15ba-a6d9-49bb-ad9b-076fa2c88031"
 
 # Vegetables data with Hindi names and details
 vegetables = [
@@ -760,9 +761,24 @@ def add_vegetables():
     """Add all vegetables to the database"""
     success_count = 0
     error_count = 0
-    
+    skipped_count = 0
+
+    # Fetch existing product names to avoid duplicates
+    existing_names = set()
+    try:
+        resp = requests.get(f"{BACKEND_URL}/api/products", timeout=30)
+        if resp.status_code == 200:
+            existing_names = {p.get("name", "").strip().lower() for p in resp.json()}
+            print(f"Found {len(existing_names)} existing products")
+    except Exception as e:
+        print(f"⚠️  Could not fetch existing products: {e}")
+
     for veg in vegetables:
         try:
+            if veg["name"].strip().lower() in existing_names:
+                skipped_count += 1
+                print(f"⏭️  Skipped (already exists): {veg['name']}")
+                continue
             # Prepare product data
             product_data = {
                 "name": veg["name"],
@@ -814,6 +830,7 @@ def add_vegetables():
     print(f"\n{'='*50}")
     print(f"Total: {len(vegetables)}")
     print(f"Success: {success_count}")
+    print(f"Skipped (duplicates): {skipped_count}")
     print(f"Errors: {error_count}")
 
 if __name__ == "__main__":
