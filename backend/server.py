@@ -229,6 +229,10 @@ async def init_projects():
             {"project_id": {"$exists": False}},
             {"$set": {"project_id": DEFAULT_PROJECT_ID}}
         )
+        try:
+            await db[col].create_index("project_id")
+        except Exception:
+            pass
 
 # Health check endpoint for Kubernetes deployment
 @app.get("/health")

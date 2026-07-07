@@ -102,11 +102,14 @@ const AdminProjects = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((project) => (
-              <button
+              <div
                 key={project.id}
+                role="button"
+                tabIndex={0}
                 data-testid={`project-card-${project.id}`}
                 onClick={() => handleSelect(project)}
-                className="group relative text-left rounded-2xl p-6 bg-white/[0.04] border border-white/10 hover:border-white/30 hover:bg-white/[0.07] transition-all duration-300 hover:-translate-y-1"
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSelect(project); }}
+                className="group relative text-left rounded-2xl p-6 bg-white/[0.04] border border-white/10 hover:border-white/30 hover:bg-white/[0.07] transition-all duration-300 hover:-translate-y-1 cursor-pointer"
               >
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
@@ -136,7 +139,7 @@ const AdminProjects = () => {
                     </span>
                   )}
                 </div>
-              </button>
+              </div>
             ))}
 
             {/* Add project card */}

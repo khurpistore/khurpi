@@ -8,12 +8,13 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
 ### Multi-Project (Multi-Tenancy) Admin — DONE & TESTED (100%)
 - One admin panel now manages multiple projects/stores. Super admin = existing admin login (`admin`/`Khurpi2026Secure`).
 - Flow: admin login -> **Project Selection screen** (`/admin/projects`, premium dark UI) -> select project -> same admin menu; new projects start EMPTY. "Add Project" card opens a create dialog.
-- Backend (`server.py` ~line 124): `DEFAULT_PROJECT_ID="default"`, `get_project_id` dependency (reads `X-Project-Id` header), `PROJECT_SCOPED_COLLECTIONS`, project CRUD (`/api/admin/projects`), and a startup `init_projects()` that creates the default "Khurpi" project and backfills `project_id` on legacy docs.
-- Scoped collections: **products, categories, subcategories, orders, coupons, banners, spin_prizes**. Each list/create endpoint filters/sets `project_id`.
-- Frontend: `ProjectContext.js` (stores currentProject in localStorage, sets `axios.defaults.headers['X-Project-Id']` globally -> all admin pages auto-scoped without per-page edits), `AdminProjects.js` page, `AdminLayout` guard + switch-project control.
+- Backend (`server.py` ~line 124): `DEFAULT_PROJECT_ID="default"`, `get_project_id` dependency (reads `X-Project-Id` header), `scoped_filter()` helper (default project also matches legacy docs missing project_id), `PROJECT_SCOPED_COLLECTIONS`, project CRUD (`/api/admin/projects`), and a startup `init_projects()` that creates the default "Khurpi" project, backfills `project_id`, and creates `project_id` indexes.
+- Scoped collections: **products, categories, subcategories, orders, coupons, banners, spin_prizes, users, subscriptions, deliveries, payments**.
+- Frontend: `ProjectContext.js` (localStorage + global `axios X-Project-Id` header -> all admin pages auto-scoped), `AdminProjects.js`, `AdminLayout` guard + switch-project control.
 - Storefront/mobile unaffected: no header -> defaults to "Khurpi" project (158 products retained).
-- NOT yet scoped (future phase): users, payments, deliveries, expenses, settings, discount tiers, delivery slots, pages, app_config.
-- Regression tests: `/app/backend/tests/test_multi_tenant_projects.py` (12 pytest cases).
+- Bug fixes (July 7): (1) `/admin/users` + `/admin/dashboard` now project-scoped (were mixing across projects). (2) AdminCategories/AdminDeliverySlots/AdminSpinWheel/AdminStoreSettings now wrapped in `AdminLayout` — previously rendered with NO sidebar, appearing as if logged out. (3) Categories page fixed (was the sidebar-missing issue).
+- NOT yet scoped (future phase): expenses, discount tiers, delivery slots config, pages, app_config, store settings, inventory.
+- Regression tests: `/app/backend/tests/test_multi_tenant_projects.py` (12) + `/app/backend/tests/test_bugfix_isolation.py` (7).
 
 ### Admin Products Table redesign — DONE & TESTED
 - Removed columns: Cost/50g, Retail Profit, WP/50g, WP Profit, Growth, Avl Date, "Growing" status.
