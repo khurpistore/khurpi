@@ -28,8 +28,8 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
 
   void _loadSelectedAddress() {
     final user = ref.read(provideAuthViewModelProvider)?.user;
-    if (user != null && user.userId.isNotEmpty) {
-      ref.read(addressNotifierProvider.notifier).loadDefaultAddress(user.userId);
+    if (user != null && user.id?.isNotEmpty == true) {
+      ref.read(addressNotifierProvider.notifier).loadDefaultAddress(user.id!);
     }
   }
 
