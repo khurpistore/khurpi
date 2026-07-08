@@ -61,7 +61,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           children: [
                             Text(state.product!.name, style: AppTextStyles.h2),
                             const SizedBox(height: 8),
-                            Row(children: [Text('₹${state.product!.price.toStringAsFixed(0)}', style: AppTextStyles.h3.copyWith(color: AppColors.primary)), const Text(' / 100g', style: AppTextStyles.body)]),
+                            Row(children: [Text('₹${state.product!.price.toStringAsFixed(0)}', style: AppTextStyles.h3.copyWith(color: AppColors.primary)), Text(' / 100g', style: AppTextStyles.body)]),
                             const SizedBox(height: 16),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

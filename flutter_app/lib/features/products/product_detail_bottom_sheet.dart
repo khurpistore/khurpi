@@ -161,7 +161,7 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                                 ),
                                 child: Row(
                                   children: [
-                                    const Text('Quantity', style: AppTextStyles.body),
+                                    Text('Quantity', style: AppTextStyles.body),
                                     const Spacer(),
                                     Container(
                                       decoration: BoxDecoration(

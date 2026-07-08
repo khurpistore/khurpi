@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/features/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/app_colors.dart';
+import 'core/constants/app_text_styles.dart';
 import 'features/splash/splash_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +37,7 @@ class KhurpiFreshApp extends ConsumerWidget {
           seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
-        fontFamily: 'Poppins',
+        fontFamily: AppTextStyles.fontFamily,
         scaffoldBackgroundColor: AppColors.background,
         appBarTheme: AppBarTheme(
           backgroundColor: AppColors.surface,

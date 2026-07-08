@@ -1,27 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:khurpi_fresh/data/models/app_config_model.dart';
 import 'app_colors.dart';
 
+/// Typography is driven by the admin App Config (font sizes + family).
+/// The values below are fallbacks used until `/config` is fetched (and offline).
 class AppTextStyles {
-  static const TextStyle h1 = TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textPrimary);
-  static const TextStyle h2 = TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary);
-  static const TextStyle h3 = TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
-  static const TextStyle h4 = TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
+  // Base values (overridden by AppConfig via applyConfig)
+  static double _heading = 24;
+  static double _body = 14;
+  static double _caption = 12;
+  static String _fontFamily = 'Poppins';
 
-  // Body text styles
-  static const TextStyle body = TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
-  static const TextStyle bodyLarge = TextStyle(fontSize: 16, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
-  static const TextStyle bodyMedium = TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
-  static const TextStyle bodySmall = TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: AppColors.textSecondary);
+  static void applyConfig(AppConfigModel config) {
+    if (config.headingFontSize > 0) _heading = config.headingFontSize.toDouble();
+    if (config.bodyFontSize > 0) _body = config.bodyFontSize.toDouble();
+    if (config.captionFontSize > 0) _caption = config.captionFontSize.toDouble();
+    if (config.fontFamily.trim().isNotEmpty) _fontFamily = config.fontFamily.trim();
+  }
 
-  static const TextStyle button = TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white);
-  static const TextStyle caption = TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: AppColors.textSecondary);
+  static String get fontFamily => _fontFamily;
 
-  static TextStyle get price => const TextStyle(fontSize: 18, fontWeight: FontWeight.bold).copyWith(color: AppColors.primary);
-  static TextStyle get priceSmall => const TextStyle(fontSize: 14, fontWeight: FontWeight.w600).copyWith(color: AppColors.primary);
-  static const TextStyle strikeThrough = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textHint,
-    decoration: TextDecoration.lineThrough,
-  );
+  // Headings (scaled around the config heading size)
+  static TextStyle get h1 => TextStyle(fontFamily: _fontFamily, fontSize: _heading + 4, fontWeight: FontWeight.bold, color: AppColors.textPrimary);
+  static TextStyle get h2 => TextStyle(fontFamily: _fontFamily, fontSize: _heading, fontWeight: FontWeight.bold, color: AppColors.textPrimary);
+  static TextStyle get h3 => TextStyle(fontFamily: _fontFamily, fontSize: _heading - 4, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
+  static TextStyle get h4 => TextStyle(fontFamily: _fontFamily, fontSize: _heading - 6, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
+
+  // Body text styles (scaled around the config body size)
+  static TextStyle get body => TextStyle(fontFamily: _fontFamily, fontSize: _body, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
+  static TextStyle get bodyLarge => TextStyle(fontFamily: _fontFamily, fontSize: _body + 2, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
+  static TextStyle get bodyMedium => TextStyle(fontFamily: _fontFamily, fontSize: _body, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
+  static TextStyle get bodySmall => TextStyle(fontFamily: _fontFamily, fontSize: _body - 2, fontWeight: FontWeight.normal, color: AppColors.textSecondary);
+
+  static TextStyle get button => TextStyle(fontFamily: _fontFamily, fontSize: _body + 2, fontWeight: FontWeight.w600, color: Colors.white);
+  static TextStyle get caption => TextStyle(fontFamily: _fontFamily, fontSize: _caption, fontWeight: FontWeight.normal, color: AppColors.textSecondary);
+
+  static TextStyle get price => TextStyle(fontFamily: _fontFamily, fontSize: _heading - 6, fontWeight: FontWeight.bold, color: AppColors.primary);
+  static TextStyle get priceSmall => TextStyle(fontFamily: _fontFamily, fontSize: _body, fontWeight: FontWeight.w600, color: AppColors.primary);
+  static TextStyle get strikeThrough => TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: _body,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textHint,
+        decoration: TextDecoration.lineThrough,
+      );
 }

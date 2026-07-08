@@ -94,12 +94,12 @@ class CartPage extends ConsumerWidget {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [const Text('Subtotal', style: AppTextStyles.body), Text(cartState.formattedSubtotal, style: AppTextStyles.body)],
+              children: [Text('Subtotal', style: AppTextStyles.body), Text(cartState.formattedSubtotal, style: AppTextStyles.body)],
             ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [const Text('Delivery Fee', style: AppTextStyles.body), Text(cartState.formattedDeliveryFee, style: AppTextStyles.body)],
+              children: [Text('Delivery Fee', style: AppTextStyles.body), Text(cartState.formattedDeliveryFee, style: AppTextStyles.body)],
             ),
             const Divider(height: 24),
             Row(

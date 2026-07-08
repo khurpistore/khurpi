@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
+import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/main_navigation_page.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
@@ -86,6 +87,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
       if (response.data != null) {
         final config = AppConfigModel.fromJson(response.data);
         AppColors.applyConfig(config);
+        AppTextStyles.applyConfig(config);
         ref.read(appConfigProvider.notifier).state = config;
         
         setState(() {
