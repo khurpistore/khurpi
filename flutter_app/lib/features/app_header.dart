@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/features/address/address_providers.dart';
@@ -31,18 +32,16 @@ class AppHeader extends ConsumerWidget {
     // App name from config or default
     final appName = appConfig?.appName ?? 'Khurpi Fresh';
 
-    return Container(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -65,12 +64,12 @@ class AppHeader extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: AppColors.primary.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
                               hasAddress ? Icons.location_on : Icons.eco,
-                              color: Colors.white,
+                              color: AppColors.primary,
                               size: 20,
                             ),
                           ),
@@ -85,15 +84,15 @@ class AppHeader extends ConsumerWidget {
                                           const Text(
                                             'Deliver to',
                                             style: TextStyle(
-                                              color: Colors.white70,
+                                              color: AppColors.textSecondary,
                                               fontSize: 11,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                           const SizedBox(width: 4),
-                                          const Icon(
+                                          Icon(
                                             Icons.keyboard_arrow_down,
-                                            color: Colors.white70,
+                                            color: AppColors.textSecondary,
                                             size: 16,
                                           ),
                                         ],
@@ -102,7 +101,7 @@ class AppHeader extends ConsumerWidget {
                                       Text(
                                         userAddress ?? 'Set location',
                                         style: const TextStyle(
-                                          color: Colors.white,
+                                          color: AppColors.textPrimary,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
                                         ),
@@ -117,7 +116,7 @@ class AppHeader extends ConsumerWidget {
                                       Text(
                                         appName,
                                         style: const TextStyle(
-                                          color: Colors.white,
+                                          color: AppColors.textPrimary,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
                                           letterSpacing: 0.5,
@@ -130,14 +129,14 @@ class AppHeader extends ConsumerWidget {
                                             Text(
                                               'Set delivery location',
                                               style: TextStyle(
-                                                color: Colors.white.withOpacity(0.8),
+                                                color: AppColors.textSecondary,
                                                 fontSize: 12,
                                               ),
                                             ),
                                             const SizedBox(width: 4),
                                             Icon(
                                               Icons.add_circle_outline,
-                                              color: Colors.white.withOpacity(0.8),
+                                              color: AppColors.primary,
                                               size: 14,
                                             ),
                                           ],
@@ -155,15 +154,19 @@ class AppHeader extends ConsumerWidget {
                   GestureDetector(
                     onTap: onAccountTap,
                     child: Container(
-                      padding: const EdgeInsets.all(10),
-
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Icon(
                         isLoggedIn ? Icons.person : Icons.person_outline,
-                        color: Colors.white,
+                        color: AppColors.primary,
                         size: 22,
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                 ],
               ),
             ),
@@ -177,12 +180,13 @@ class AppHeader extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.18)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.10),
-                        blurRadius: 18,
-                        offset: const Offset(0, 5),
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -192,7 +196,7 @@ class AppHeader extends ConsumerWidget {
                         padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Icon(Icons.search_rounded, color: AppColors.primary, size: 18),
                       ),
@@ -207,7 +211,6 @@ class AppHeader extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      Icon(Icons.tune_rounded, color: AppColors.textHint, size: 20),
                     ],
                   ),
                 ),
@@ -215,6 +218,7 @@ class AppHeader extends ConsumerWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
