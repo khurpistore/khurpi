@@ -57,6 +57,7 @@ const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
   const [formData, setFormData] = useState({
     name: product?.name || '',
     image: product?.image || '',
+    images: (product?.images || []).filter((u) => u && u !== (product?.image || product?.image_url)),
     benefit: product?.benefit || '',
     nutrients: product?.nutrients || '',
     category_id: product?.category_id || '',
@@ -77,8 +78,12 @@ const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
     setLoading(true);
 
     // Prepare data - convert availability_date to ready_in_days if status is growing
+    const galleryImages = [formData.image, ...(formData.images || [])]
+      .map((u) => (u || '').trim())
+      .filter((u, i, arr) => u && arr.indexOf(u) === i);
     const submitData = {
       ...formData,
+      images: galleryImages,
       ready_in_days: formData.stock_status === 'growing' 
         ? differenceInDays(formData.availability_date, new Date()) 
         : null,
@@ -124,7 +129,7 @@ const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
         />
       </div>
       <div>
-        <Label htmlFor="image" className="text-sm">Image URL</Label>
+        <Label htmlFor="image" className="text-sm">Image URL (Primary)</Label>
         <Input
           id="image"
           data-testid="product-image-input"
@@ -133,6 +138,51 @@ const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
           required
           className="mt-1"
         />
+      </div>
+      <div>
+        <div className="flex items-center justify-between">
+          <Label className="text-sm">Additional Images (Gallery)</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-testid="add-gallery-image-btn"
+            onClick={() => setFormData({ ...formData, images: [...(formData.images || []), ''] })}
+          >
+            + Add Image
+          </Button>
+        </div>
+        {(formData.images || []).length === 0 && (
+          <p className="text-xs text-muted-foreground mt-1">Add extra image URLs to show a swipeable gallery with dots in the app.</p>
+        )}
+        <div className="space-y-2 mt-2">
+          {(formData.images || []).map((url, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <Input
+                data-testid={`gallery-image-input-${idx}`}
+                value={url}
+                placeholder={`Image URL ${idx + 2}`}
+                onChange={(e) => {
+                  const next = [...formData.images];
+                  next[idx] = e.target.value;
+                  setFormData({ ...formData, images: next });
+                }}
+              />
+              {url ? (
+                <img src={url} alt="" className="w-9 h-9 rounded object-cover border" onError={(e) => { e.target.style.visibility = 'hidden'; }} />
+              ) : null}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                data-testid={`remove-gallery-image-btn-${idx}`}
+                onClick={() => setFormData({ ...formData, images: formData.images.filter((_, i) => i !== idx) })}
+              >
+                ✕
+              </Button>
+            </div>
+          ))}
+        </div>
       </div>
       <div>
         <Label htmlFor="benefit" className="text-sm">Health Benefit</Label>

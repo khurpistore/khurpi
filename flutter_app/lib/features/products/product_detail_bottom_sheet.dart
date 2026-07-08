@@ -26,12 +26,82 @@ class ProductDetailBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSheet> {
+  final PageController _imageController = PageController();
+  int _currentImage = 0;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(provideProductDetailViewModelNotifierProvider)?.loadProduct(widget.productId);
     });
+  }
+
+  @override
+  void dispose() {
+    _imageController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildImageCarousel(List<String> imgs) {
+    if (imgs.isEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: AspectRatio(
+          aspectRatio: 1.3,
+          child: Container(
+            color: AppColors.background,
+            child: Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
+          ),
+        ),
+      );
+    }
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: AspectRatio(
+            aspectRatio: 1.3,
+            child: PageView.builder(
+              controller: _imageController,
+              itemCount: imgs.length,
+              onPageChanged: (i) => setState(() => _currentImage = i),
+              itemBuilder: (context, index) => CachedNetworkImage(
+                imageUrl: imgs[index],
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: AppColors.background,
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: AppColors.background,
+                  child: Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (imgs.length > 1) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(imgs.length, (i) {
+              final isActive = i == _currentImage;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: isActive ? 20 : 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.primary : AppColors.border,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            }),
+          ),
+        ],
+      ],
+    );
   }
 
   @override
@@ -77,30 +147,8 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Product Image
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: AspectRatio(
-                                  aspectRatio: 1.3,
-                                  child: state!.product!.imageUrl != null
-                                      ? CachedNetworkImage(
-                                          imageUrl: state.product!.imageUrl!,
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) => Container(
-                                            color: AppColors.background,
-                                            child: const Center(child: CircularProgressIndicator()),
-                                          ),
-                                          errorWidget: (context, url, error) => Container(
-                                            color: AppColors.background,
-                                            child: Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
-                                          ),
-                                        )
-                                      : Container(
-                                          color: AppColors.background,
-                                          child: Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
-                                        ),
-                                ),
-                              ),
+                              // Product Image(s) with swipeable gallery + dots
+                              _buildImageCarousel(state!.product!.galleryImages),
                               const SizedBox(height: 16),
                               
                               // Name and Stock Status

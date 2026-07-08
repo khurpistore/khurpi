@@ -464,6 +464,7 @@ class Product(BaseModel):
     name: str
     image: str
     image_url: Optional[str] = None  # Flutter app compatibility field
+    images: List[str] = []  # Multiple product images (gallery). First is primary.
     benefit: str
     nutrients: Optional[str] = None
     price: float
@@ -503,6 +504,7 @@ class Product(BaseModel):
 class ProductCreate(BaseModel):
     name: str
     image: str
+    images: Optional[List[str]] = None
     benefit: str
     nutrients: Optional[str] = None
     price: float
@@ -538,6 +540,7 @@ class ProductCreate(BaseModel):
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     image: Optional[str] = None
+    images: Optional[List[str]] = None
     benefit: Optional[str] = None
     nutrients: Optional[str] = None
     price: Optional[float] = None
@@ -2833,6 +2836,9 @@ async def get_products(active_only: bool = True, project_id: str = Depends(get_p
         # Map 'image' to 'image_url' for Flutter app compatibility
         if product.get("image") and not product.get("image_url"):
             product["image_url"] = product["image"]
+        if not product.get("images"):
+            _primary = product.get("image_url") or product.get("image")
+            product["images"] = [_primary] if _primary else []
     
     return products
 
@@ -2883,6 +2889,9 @@ async def get_product(product_id: str):
     # Map 'image' to 'image_url' for Flutter app compatibility
     if product.get("image") and not product.get("image_url"):
         product["image_url"] = product["image"]
+    if not product.get("images"):
+        primary = product.get("image_url") or product.get("image")
+        product["images"] = [primary] if primary else []
     return Product(**product)
 
 @api_router.post("/products", response_model=Product)
@@ -7264,6 +7273,9 @@ async def get_products_by_category(category_id: str, active_only: bool = True, p
         # Map 'image' to 'image_url' for Flutter app compatibility
         if product.get("image") and not product.get("image_url"):
             product["image_url"] = product["image"]
+        if not product.get("images"):
+            _primary = product.get("image_url") or product.get("image")
+            product["images"] = [_primary] if _primary else []
     
     return products
 
@@ -7278,6 +7290,9 @@ async def get_featured_products(project_id: str = Depends(get_project_id)):
     for product in products:
         if product.get("image") and not product.get("image_url"):
             product["image_url"] = product["image"]
+        if not product.get("images"):
+            _primary = product.get("image_url") or product.get("image")
+            product["images"] = [_primary] if _primary else []
     return products
 
 # ==========================================
@@ -7726,6 +7741,9 @@ async def search_products(q: str, limit: int = 20):
     for product in products:
         if product.get("image") and not product.get("image_url"):
             product["image_url"] = product["image"]
+        if not product.get("images"):
+            _primary = product.get("image_url") or product.get("image")
+            product["images"] = [_primary] if _primary else []
     
     return {"products": products, "query": q, "count": len(products)}
 

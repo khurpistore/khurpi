@@ -15,6 +15,7 @@ abstract class ProductModel with _$ProductModel {
     String? benefit,
     required double price,
     @JsonKey(name: 'mrp') double? mrp,
+    @JsonKey(name: 'images') List<String>? images,
     @JsonKey(name: 'wholesale_price') double? wholesalePrice,
     @JsonKey(name: 'image_url') String? imageUrl,
     @JsonKey(name: 'category_id') String? categoryId,
@@ -42,6 +43,14 @@ abstract class ProductModel with _$ProductModel {
   int get discountPercentage {
     if (!hasDiscount) return 0;
     return (((mrp! - price) / mrp!) * 100).round();
+  }
+
+  // Full gallery: falls back to the primary image when no gallery is set
+  List<String> get galleryImages {
+    final list = (images ?? []).where((e) => e.isNotEmpty).toList();
+    if (list.isNotEmpty) return list;
+    if (imageUrl != null && imageUrl!.isNotEmpty) return [imageUrl!];
+    return [];
   }
 
   static ProductModel initial() {

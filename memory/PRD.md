@@ -148,9 +148,13 @@ The codebase has been synced from the GitHub branch `feature/5july_deployed`. Th
 - NOTE: Flutter SDK unavailable here — changes are brace-balanced but need `flutter run` to compile-verify. `ProductModel.mrp` did NOT need codegen since generated files were hand-edited.
 
 ## Still Pending
-- Multi-image dots for products (blocked: backend has no `images[]` array, only single `image`).
-- Image Upload (Profile/Category/Product/Banner) — needs object storage integration.
+- Image Upload (Profile/Category/Product/Banner) — needs object storage integration (currently URL fields).
 - Address full CRUD from home screen header.
+
+## Multi-image gallery (2026-06) — DONE
+- **Backend**: added `images: List[str]` to Product/ProductCreate/ProductUpdate. All 4 product-serving endpoints (list, by-category, featured, single, search) normalize `images` → falls back to `[primary]` when empty. Curl-verified: set/get/list/search all return the array; empty → `[primary]`.
+- **Admin panel** (`AdminProducts.js`): "Additional Images (Gallery)" editor — add/remove image URL rows with thumbnail preview; submit merges `[primary, ...additional]` unique into `images`.
+- **Flutter**: added `images` to `ProductModel` (freezed hand-edit, plain nullable list field) + `galleryImages` getter. Product detail bottom sheet now shows a swipeable `PageView` carousel with animated dot indicators. Needs local `flutter run` to compile-verify (no SDK here).
 
 ## Status
 - Preview environment: ✅ Working
