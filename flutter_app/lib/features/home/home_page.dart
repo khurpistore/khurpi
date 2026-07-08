@@ -58,7 +58,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final bannersState = ref.watch(provideBannersViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       body: RefreshIndicator(
         onRefresh: _loadData,
         child: CustomScrollView(
@@ -66,21 +66,18 @@ class _HomePageState extends ConsumerState<HomePage> {
             // Categories Section
             if (productsState?.categories.isNotEmpty == true) ...[
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top:16),
-                  child: SizedBox(
-                    height: 128,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: productsState!.categories.length,
-                      itemBuilder: (context, index) {
-                        final category = productsState.categories[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: _buildCategoryCircle(category),
-                        );
-                      },
-                    ),
+                child: SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: productsState!.categories.length,
+                    itemBuilder: (context, index) {
+                      final category = productsState.categories[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: _buildCategoryCircle(category),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -382,11 +379,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                     : _buildCategoryFallback(category),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               category.name,
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.w500,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

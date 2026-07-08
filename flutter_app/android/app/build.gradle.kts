@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.example.khurpi_fresh"
         // Razorpay requires minSdk 19 or higher
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

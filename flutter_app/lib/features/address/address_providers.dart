@@ -29,7 +29,6 @@ class AddressState {
     final addressLine = (address['address_line'] ?? address['addressLine'])?.toString();
     final line1 = (address['address_line_1'] ?? address['addressLine1'])?.toString();
     final area = address['area']?.toString();
-    final city = address['city']?.toString();
 
     if (addressLine != null && addressLine.trim().isNotEmpty) {
       return addressLine;
@@ -37,7 +36,6 @@ class AddressState {
 
     if (line1 != null && line1.trim().isNotEmpty) parts.add(line1);
     if (area != null && area.trim().isNotEmpty) parts.add(area);
-    if (city != null && city.trim().isNotEmpty) parts.add(city);
 
     if (parts.isEmpty) return null;
     return parts.join(', ');

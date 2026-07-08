@@ -175,7 +175,7 @@ class AppHeader extends ConsumerWidget {
             
             // Row 2: Search Bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              padding: const EdgeInsets.fromLTRB(12,12,12,16),
               child: GestureDetector(
                 onTap: onSearchTap,
                 child: Container(

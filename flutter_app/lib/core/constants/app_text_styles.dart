@@ -30,7 +30,7 @@ class AppTextStyles {
   static TextStyle get body => TextStyle(fontFamily: _fontFamily, fontSize: _body, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
   static TextStyle get bodyLarge => TextStyle(fontFamily: _fontFamily, fontSize: _body + 2, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
   static TextStyle get bodyMedium => TextStyle(fontFamily: _fontFamily, fontSize: _body, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
-  static TextStyle get bodySmall => TextStyle(fontFamily: _fontFamily, fontSize: _body - 2, fontWeight: FontWeight.normal, color: AppColors.textSecondary);
+  static TextStyle get bodySmall => TextStyle(fontFamily: _fontFamily, fontSize: _body - 2, fontWeight: FontWeight.normal, color: AppColors.textPrimary);
 
   static TextStyle get button => TextStyle(fontFamily: _fontFamily, fontSize: _body + 2, fontWeight: FontWeight.w600, color: Colors.white);
   static TextStyle get caption => TextStyle(fontFamily: _fontFamily, fontSize: _caption, fontWeight: FontWeight.normal, color: AppColors.textSecondary);
