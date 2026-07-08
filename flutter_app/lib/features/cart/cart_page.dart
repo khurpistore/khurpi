@@ -73,7 +73,7 @@ class CartPage extends ConsumerWidget {
         children: [
           Icon(Icons.shopping_cart_outlined, size: 80, color: AppColors.textHint.withValues(alpha: 0.5)),
           const SizedBox(height: 16),
-          const Text('Your cart is empty', style: AppTextStyles.h4),
+          Text('Your cart is empty', style: AppTextStyles.h4),
           const SizedBox(height: 8),
           Text('Add some fresh products to your cart', style: AppTextStyles.body.copyWith(color: AppColors.textHint)),
         ],
@@ -104,7 +104,7 @@ class CartPage extends ConsumerWidget {
             const Divider(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [const Text('Total', style: AppTextStyles.h4), Text(cartState.formattedTotal, style: AppTextStyles.h4.copyWith(color: AppColors.primary))],
+              children: [Text('Total', style: AppTextStyles.h4), Text(cartState.formattedTotal, style: AppTextStyles.h4.copyWith(color: AppColors.primary))],
             ),
             const SizedBox(height: 16),
             SizedBox(

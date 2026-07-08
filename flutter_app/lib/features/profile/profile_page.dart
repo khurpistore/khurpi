@@ -80,7 +80,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           const SizedBox(height: 24),
           Icon(Icons.account_circle_outlined, size: 100, color: AppColors.textHint.withValues(alpha: 0.5)),
           const SizedBox(height: 24),
-          const Text('Welcome to Khurpi Fresh!', style: AppTextStyles.h3, textAlign: TextAlign.center),
+          Text('Welcome to Khurpi Fresh!', style: AppTextStyles.h3, textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Text('Sign in to access your orders, save addresses, and more.', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 24),

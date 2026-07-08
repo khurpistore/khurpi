@@ -366,7 +366,7 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
             color: AppColors.textHint.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
-          const Text('No addresses saved', style: AppTextStyles.h4),
+          Text('No addresses saved', style: AppTextStyles.h4),
           const SizedBox(height: 8),
           Text(
             'Add your delivery addresses here',

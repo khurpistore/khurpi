@@ -357,7 +357,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             children: [
               Icon(Icons.access_time, size: 20, color: AppColors.primary),
               const SizedBox(width: 8),
-              const Text('Delivery Time', style: AppTextStyles.h4),
+              Text('Delivery Time', style: AppTextStyles.h4),
             ],
           ),
           const SizedBox(height: 16),
@@ -484,7 +484,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             children: [
               Icon(Icons.payment, size: 20, color: AppColors.primary),
               const SizedBox(width: 8),
-              const Text('Payment Method', style: AppTextStyles.h4),
+              Text('Payment Method', style: AppTextStyles.h4),
             ],
           ),
           const SizedBox(height: 12),
@@ -582,7 +582,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total', style: AppTextStyles.h4),
+              Text('Total', style: AppTextStyles.h4),
               Text(
                 '₹${total.toStringAsFixed(0)}',
                 style: AppTextStyles.h3.copyWith(color: AppColors.primary),

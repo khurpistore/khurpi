@@ -69,11 +69,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               child: Text(state.product!.stockStatus.toUpperCase(), style: TextStyle(color: _getStockColor(state.product!.stockStatus), fontWeight: FontWeight.w600, fontSize: 12)),
                             ),
                             const SizedBox(height: 24),
-                            const Text('Description', style: AppTextStyles.h4),
+                            Text('Description', style: AppTextStyles.h4),
                             const SizedBox(height: 8),
                             Text(state.product!.displayBenefit, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                             const SizedBox(height: 24),
-                            const Text('Quantity', style: AppTextStyles.h4),
+                            Text('Quantity', style: AppTextStyles.h4),
                             const SizedBox(height: 12),
                             Row(
                               children: [
