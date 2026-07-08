@@ -184,7 +184,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       body: Stack(
         children: [
           _isLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
                     color: AppColors.primary,

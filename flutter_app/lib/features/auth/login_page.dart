@@ -54,7 +54,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
-                        child: const Icon(Icons.eco, size: 50, color: AppColors.primary),
+                        child: Icon(Icons.eco, size: 50, color: AppColors.primary),
                       ),
                       const SizedBox(height: 16),
                       Text(_isLogin ? 'Welcome Back!' : 'Create Account', style: AppTextStyles.h2),
@@ -107,7 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                        Icon(Icons.error_outline, color: AppColors.error, size: 20),
                         const SizedBox(width: 8),
                         Expanded(child: Text(authState!.error!, style: AppTextStyles.bodySmall.copyWith(color: AppColors.error))),
                       ],
@@ -133,7 +133,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                         children: [
                           TextSpan(text: _isLogin ? "Don't have an account? " : 'Already have an account? '),
-                          TextSpan(text: _isLogin ? 'Sign Up' : 'Sign In', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                          TextSpan(text: _isLogin ? 'Sign Up' : 'Sign In', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),

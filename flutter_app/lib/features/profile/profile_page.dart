@@ -142,7 +142,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                         child: Text(
                           user?.name?.substring(0, 1).toUpperCase() ?? 'U',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
@@ -185,7 +185,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 ),
                 IconButton(
                   onPressed: _showEditProfileDialog,
-                  icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                  icon: Icon(Icons.edit_outlined, color: AppColors.primary),
                 ),
               ],
             ),
@@ -226,11 +226,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: _showLogoutConfirmation,
-              icon: const Icon(Icons.logout, color: AppColors.error),
-              label: const Text('Logout', style: TextStyle(color: AppColors.error)),
+              icon: Icon(Icons.logout, color: AppColors.error),
+              label: Text('Logout', style: TextStyle(color: AppColors.error)),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: AppColors.error),
+                side: BorderSide(color: AppColors.error),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -300,7 +300,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     backgroundColor: AppColors.primary.withOpacity(0.1),
                     child: Text(
                       authState?.user?.name?.substring(0, 1).toUpperCase() ?? 'U',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,

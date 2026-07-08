@@ -16,8 +16,8 @@ class AppTextStyles {
   static const TextStyle button = TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white);
   static const TextStyle caption = TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: AppColors.textSecondary);
 
-  static const TextStyle price = TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary);
-  static const TextStyle priceSmall = TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary);
+  static TextStyle get price => const TextStyle(fontSize: 18, fontWeight: FontWeight.bold).copyWith(color: AppColors.primary);
+  static TextStyle get priceSmall => const TextStyle(fontSize: 14, fontWeight: FontWeight.w600).copyWith(color: AppColors.primary);
   static const TextStyle strikeThrough = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.normal,

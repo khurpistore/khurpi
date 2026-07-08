@@ -85,6 +85,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
       
       if (response.data != null) {
         final config = AppConfigModel.fromJson(response.data);
+        AppColors.applyConfig(config);
         ref.read(appConfigProvider.notifier).state = config;
         
         setState(() {

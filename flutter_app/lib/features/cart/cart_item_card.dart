@@ -111,7 +111,7 @@ class CartItemCard extends StatelessWidget {
           // Remove button
           IconButton(
             onPressed: onRemove,
-            icon: const Icon(Icons.delete_outline, color: AppColors.error),
+            icon: Icon(Icons.delete_outline, color: AppColors.error),
           ),
         ],
       ),

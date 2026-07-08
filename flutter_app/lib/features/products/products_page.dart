@@ -117,7 +117,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
               // Main Content: Categories + Products
               Expanded(
                 child: productsState?.isLoading == true
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
                           color: AppColors.primary,

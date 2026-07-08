@@ -4,7 +4,6 @@ import 'package:khurpi_fresh/features/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/app_colors.dart';
 import 'features/splash/splash_page.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -21,11 +20,13 @@ void main() async {
   );
 }
 
-class KhurpiFreshApp extends StatelessWidget {
+class KhurpiFreshApp extends ConsumerWidget {
   const KhurpiFreshApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Rebuild MaterialApp theme once app config (colors) has been fetched/applied.
+    ref.watch(appConfigProvider);
     return MaterialApp(
       title: 'Khurpi Fresh',
       debugShowCheckedModeBanner: false,
@@ -37,7 +38,7 @@ class KhurpiFreshApp extends StatelessWidget {
         ),
         fontFamily: 'Poppins',
         scaffoldBackgroundColor: AppColors.background,
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           backgroundColor: AppColors.surface,
           elevation: 0,
           centerTitle: true,

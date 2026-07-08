@@ -39,8 +39,8 @@ class CartPage extends ConsumerWidget {
                         ),
                         TextButton.icon(
                           onPressed: () => ref.read(provideCartViewModelNotifierProvider)?.clearCart(),
-                          icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                          label: const Text('Clear All', style: TextStyle(color: AppColors.error)),
+                          icon: Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                          label: Text('Clear All', style: TextStyle(color: AppColors.error)),
                         ),
                       ],
                     ),

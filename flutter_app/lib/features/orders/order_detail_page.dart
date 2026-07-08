@@ -380,7 +380,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                     // Item Total
                     Text(
                       '₹${(price * qty).toStringAsFixed(0)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,
@@ -507,7 +507,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
               ),
               Text(
                 '₹${order.total.toStringAsFixed(0)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
@@ -606,7 +606,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             label: const Text('Cancel Order'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
-              side: const BorderSide(color: AppColors.error),
+              side: BorderSide(color: AppColors.error),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

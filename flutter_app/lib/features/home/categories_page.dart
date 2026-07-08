@@ -101,14 +101,14 @@ class _CategoryTile extends StatelessWidget {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                        child: const Icon(Icons.category, color: AppColors.primary, size: 40),
+                        child: Icon(Icons.category, color: AppColors.primary, size: 40),
                       ),
                     )
                   : Container(
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(Icons.category, color: AppColors.primary, size: 40),
+                      child: Icon(Icons.category, color: AppColors.primary, size: 40),
                     ),
             ),
             const SizedBox(height: 12),

@@ -267,14 +267,14 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.auto_awesome, color: AppColors.secondary, size: 24),
+              Icon(Icons.auto_awesome, color: AppColors.secondary, size: 24),
               const SizedBox(width: 8),
               Text(
                 'Spin & Win Free Veggies!',
                 style: AppTextStyles.h4.copyWith(color: AppColors.primary),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.auto_awesome, color: AppColors.secondary, size: 24),
+              Icon(Icons.auto_awesome, color: AppColors.secondary, size: 24),
             ],
           ),
           const SizedBox(height: 8),

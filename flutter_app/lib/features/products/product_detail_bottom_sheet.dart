@@ -41,7 +41,7 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
 
     return Container(
       constraints: BoxConstraints(maxHeight: screenHeight * 0.85),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),

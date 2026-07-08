@@ -31,7 +31,7 @@ class OrderSuccessPage extends StatelessWidget {
                   child: Container(
                     width: 80,
                     height: 80,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.success,
                       shape: BoxShape.circle,
                     ),

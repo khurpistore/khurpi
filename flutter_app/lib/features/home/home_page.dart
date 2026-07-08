@@ -163,7 +163,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             color: AppColors.secondary.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.stars_rounded,
                             color: AppColors.secondary,
                             size: 28,
@@ -298,7 +298,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   : Container(
                       height: 100,
                       color: AppColors.background,
-                      child: const Icon(
+                      child: Icon(
                         Icons.eco,
                         size: 40,
                         color: AppColors.primary,

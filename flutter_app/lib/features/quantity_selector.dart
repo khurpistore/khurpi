@@ -58,7 +58,7 @@ class QuantitySelector extends StatelessWidget {
             borderRadius: const BorderRadius.horizontal(left: Radius.circular(11)),
             child: Container(
               padding: const EdgeInsets.all(12),
-              child: const Icon(Icons.remove, color: AppColors.primary, size: 20),
+              child: Icon(Icons.remove, color: AppColors.primary, size: 20),
             ),
           ),
           Container(
@@ -80,7 +80,7 @@ class QuantitySelector extends StatelessWidget {
             borderRadius: const BorderRadius.horizontal(right: Radius.circular(11)),
             child: Container(
               padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primary,
                 borderRadius: BorderRadius.horizontal(right: Radius.circular(11)),
               ),

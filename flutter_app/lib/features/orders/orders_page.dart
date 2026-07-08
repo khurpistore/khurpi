@@ -296,7 +296,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                   // Total
                   Text(
                     '₹${order.total.toStringAsFixed(0)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,

@@ -26,14 +26,14 @@ class EarnPage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.stars_rounded, color: AppColors.secondary, size: 28),
+                  Icon(Icons.stars_rounded, color: AppColors.secondary, size: 28),
                   const SizedBox(width: 10),
                   Text(
                     'Earn & Win',
                     style: AppTextStyles.h2.copyWith(color: AppColors.primary),
                   ),
                   const SizedBox(width: 10),
-                  const Icon(Icons.stars_rounded, color: AppColors.secondary, size: 28),
+                  Icon(Icons.stars_rounded, color: AppColors.secondary, size: 28),
                 ],
               ),
             ),
