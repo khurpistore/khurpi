@@ -13,6 +13,14 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
   - **Finance** (`/admin/finance`, `AdminFinanceHub`): tabs Payments + Expenses + Cost Calculator.
 - Hubs reuse existing page components inside shadcn `Tabs`. Old standalone routes/menu items (create-order, customer-view, categories, subcategories, expenses, cost-calculator, payments) removed; `AdminLayout` menuItems + titleMap updated. Verified via screenshots (all tabs render real data).
 
+### Big multi-area request — BATCH A (Admin + Backend) DONE & TESTED 100% (July 8 2026)
+- Product **MRP + Selling Price**: `mrp` added to Product/Create/Update models; admin form has MRP + Selling Price inputs; product card shows struck MRP. (backend 8/8 green)
+- Spin wheel: prizes **link a product from the product list** (dropdown) + support **multiple combo products** (`products: List[dict]` on SpinPrizeCreate); admin combo editor with chips. Fixed 401 (AdminSpinWheel switched raw fetch()->axios so JWT+X-Project-Id apply). Save+persist verified.
+- Delivery-charge config (min_order_value/free_delivery_threshold/default_delivery_fee) + contact info (support phone/email/whatsapp) already existed in App Config.
+- Image uploads kept as URL fields (user choice).
+- KNOWN minor: GET /api/products uses direct project_id filter, not scoped_filter() — legacy docs w/o project_id not returned (non-blocking).
+- REMAINING (Flutter, not testable here): BATCH B (home/header/search/cart) and BATCH C (products/detail/address/checkout/profile/orders) — see the user's big list.
+
 ### Mobile: Home header address source fix — DONE (backend API verified 14/14; Flutter needs rebuild) (July 8 2026)
 - Bug: home header showed the cached profile address (`authLocalDataSource.getUser()`) instead of the actual selected/default delivery address.
 - Fix (Flutter): `app_header.dart` now sources the header address ONLY from the address API result (`addressState.displayAddress`); removed the `getUser()` address fallback. `main_navigation_page.dart` calls `AddressNotifier.loadDefaultAddress(userId)` on home load (post-frame) to fetch the selected/default address from `GET /users/{id}/addresses` (picks `is_default`, else first). `getUser()` address left intact for Profile/address-form (not stripped globally).
