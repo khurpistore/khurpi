@@ -288,7 +288,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       errorBuilder: (_, __, ___) => Container(
                         height: 100,
                         color: AppColors.background,
-                        child: const Icon(
+                        child: Icon(
                           Icons.image,
                           size: 40,
                           color: AppColors.textHint,
@@ -436,7 +436,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           errorBuilder: (_, __, ___) => Container(
             color: AppColors.background,
             alignment: Alignment.center,
-            child: const Icon(Icons.image, size: 34, color: AppColors.textHint),
+            child: Icon(Icons.image, size: 34, color: AppColors.textHint),
           ),
         ),
       ),

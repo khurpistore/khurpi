@@ -81,7 +81,7 @@ class AppHeader extends ConsumerWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          const Text(
+                                          Text(
                                             'Deliver to',
                                             style: TextStyle(
                                               color: AppColors.textSecondary,
@@ -100,7 +100,7 @@ class AppHeader extends ConsumerWidget {
                                       const SizedBox(height: 2),
                                       Text(
                                         userAddress ?? 'Set location',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppColors.textPrimary,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
@@ -115,7 +115,7 @@ class AppHeader extends ConsumerWidget {
                                     children: [
                                       Text(
                                         appName,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppColors.textPrimary,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,

@@ -7417,12 +7417,25 @@ class AppConfigCreate(BaseModel):
     # Colors (hex format)
     primary_color: str = "#4CAF50"
     primary_dark_color: str = "#388E3C"
+    primary_light_color: str = "#C8E6C9"
     secondary_color: str = "#FFC107"
+    secondary_dark_color: str = "#F57C00"
     accent_color: str = "#FF5722"
     background_color: str = "#F5F5F5"
     surface_color: str = "#FFFFFF"
+    card_color: str = "#FFFFFF"
+    text_primary_color: str = "#212121"
+    text_secondary_color: str = "#757575"
+    text_hint_color: str = "#BDBDBD"
     error_color: str = "#F44336"
     success_color: str = "#4CAF50"
+    warning_color: str = "#FFC107"
+    info_color: str = "#2196F3"
+    in_stock_color: str = "#4CAF50"
+    growing_color: str = "#FFC107"
+    out_of_stock_color: str = "#F44336"
+    border_color: str = "#E0E0E0"
+    divider_color: str = "#EEEEEE"
     
     # Typography
     font_family: str = "Poppins"
@@ -7461,7 +7474,8 @@ async def get_app_config():
     if not config:
         # Return default config if none exists
         return AppConfigCreate().model_dump()
-    return config
+    # Merge stored values over defaults so newly-added fields always present
+    return {**AppConfigCreate().model_dump(), **config}
 
 @api_router.get("/admin/config")
 async def get_admin_config():
@@ -7469,7 +7483,7 @@ async def get_admin_config():
     config = await db.app_config.find_one({"type": "app_config"}, {"_id": 0})
     if not config:
         return AppConfigCreate().model_dump()
-    return config
+    return {**AppConfigCreate().model_dump(), **config}
 
 @api_router.post("/admin/config")
 async def save_app_config(config: AppConfigCreate):

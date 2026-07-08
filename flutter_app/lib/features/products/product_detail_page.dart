@@ -50,9 +50,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 imageUrl: state.product!.imageUrl!,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(color: AppColors.background, child: const Center(child: CircularProgressIndicator())),
-                                errorWidget: (context, url, error) => Container(color: AppColors.background, child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint)),
+                                errorWidget: (context, url, error) => Container(color: AppColors.background, child: Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint)),
                               )
-                            : Container(color: AppColors.background, child: const Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint)),
+                            : Container(color: AppColors.background, child: Icon(Icons.image_not_supported, size: 80, color: AppColors.textHint)),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(16),

@@ -320,7 +320,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -367,7 +367,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                     : _otpSent
                         ? 'Verify OTP'
                         : 'Welcome',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -430,7 +430,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            const Text(
+                            Text(
                               '+91',
                               style: TextStyle(
                                 fontSize: 16,
@@ -452,7 +452,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                             fontWeight: FontWeight.w500,
                             letterSpacing: 2,
                           ),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: '98765 43210',
                             hintStyle: TextStyle(
                               color: AppColors.textHint,
@@ -517,7 +517,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
                       else
                         Column(
                           children: [
-                            const Text(
+                            Text(
                               "Didn't receive the code?",
                               style: TextStyle(color: AppColors.textSecondary),
                             ),
@@ -680,7 +680,7 @@ class _OTPLoginPageState extends ConsumerState<OTPLoginPage> {
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,

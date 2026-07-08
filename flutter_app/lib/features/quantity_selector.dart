@@ -69,9 +69,9 @@ class QuantitySelector extends StatelessWidget {
               children: [
                 Text(
                   _getQuantityValue(),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                 ),
-                Text(unit, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                Text(unit, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
               ],
             ),
           ),

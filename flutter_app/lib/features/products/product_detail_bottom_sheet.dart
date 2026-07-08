@@ -92,12 +92,12 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                                           ),
                                           errorWidget: (context, url, error) => Container(
                                             color: AppColors.background,
-                                            child: const Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
+                                            child: Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
                                           ),
                                         )
                                       : Container(
                                           color: AppColors.background,
-                                          child: const Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
+                                          child: Icon(Icons.image_not_supported, size: 60, color: AppColors.textHint),
                                         ),
                                 ),
                               ),

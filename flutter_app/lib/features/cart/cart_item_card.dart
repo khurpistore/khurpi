@@ -50,7 +50,7 @@ class CartItemCard extends StatelessWidget {
               ),
               errorWidget: (context, url, error) => Container(
                 color: AppColors.background,
-                child: const Icon(Icons.image_not_supported, color: AppColors.textHint),
+                child: Icon(Icons.image_not_supported, color: AppColors.textHint),
               ),
             ),
           ),

@@ -38,10 +38,10 @@ class CustomSearchBar extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
+          prefixIcon: Icon(Icons.search, color: AppColors.textHint),
           suffixIcon: controller != null && controller!.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: AppColors.textHint),
+                  icon: Icon(Icons.clear, color: AppColors.textHint),
                   onPressed: () {
                     controller?.clear();
                     onChanged?.call('');

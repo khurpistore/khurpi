@@ -263,7 +263,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 leading: Icon(item.icon, color: AppColors.primary),
                 title: Text(item.title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
                 subtitle: Text(item.subtitle, style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
-                trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
+                trailing: Icon(Icons.chevron_right, color: AppColors.textHint),
                 onTap: item.onTap,
               ),
               if (index < items.length - 1) const Divider(height: 1, indent: 16, endIndent: 16),

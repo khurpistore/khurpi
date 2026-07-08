@@ -25,12 +25,25 @@ const AdminAppConfig = () => {
     // Colors
     primary_color: '#4CAF50',
     primary_dark_color: '#388E3C',
+    primary_light_color: '#C8E6C9',
     secondary_color: '#FFC107',
+    secondary_dark_color: '#F57C00',
     accent_color: '#FF5722',
     background_color: '#F5F5F5',
     surface_color: '#FFFFFF',
+    card_color: '#FFFFFF',
+    text_primary_color: '#212121',
+    text_secondary_color: '#757575',
+    text_hint_color: '#BDBDBD',
     error_color: '#F44336',
     success_color: '#4CAF50',
+    warning_color: '#FFC107',
+    info_color: '#2196F3',
+    in_stock_color: '#4CAF50',
+    growing_color: '#FFC107',
+    out_of_stock_color: '#F44336',
+    border_color: '#E0E0E0',
+    divider_color: '#EEEEEE',
     
     // Typography
     font_family: 'Poppins',
@@ -263,24 +276,37 @@ const AdminAppConfig = () => {
                   {[
                     { key: 'primary_color', label: 'Primary' },
                     { key: 'primary_dark_color', label: 'Primary Dark' },
+                    { key: 'primary_light_color', label: 'Primary Light' },
                     { key: 'secondary_color', label: 'Secondary' },
+                    { key: 'secondary_dark_color', label: 'Secondary Dark' },
                     { key: 'accent_color', label: 'Accent' },
                     { key: 'background_color', label: 'Background' },
                     { key: 'surface_color', label: 'Surface' },
-                    { key: 'error_color', label: 'Error' },
+                    { key: 'card_color', label: 'Card' },
+                    { key: 'text_primary_color', label: 'Text Primary' },
+                    { key: 'text_secondary_color', label: 'Text Secondary' },
+                    { key: 'text_hint_color', label: 'Text Hint' },
                     { key: 'success_color', label: 'Success' },
+                    { key: 'warning_color', label: 'Warning' },
+                    { key: 'error_color', label: 'Error' },
+                    { key: 'info_color', label: 'Info' },
+                    { key: 'in_stock_color', label: 'In Stock' },
+                    { key: 'growing_color', label: 'Growing' },
+                    { key: 'out_of_stock_color', label: 'Out of Stock' },
+                    { key: 'border_color', label: 'Border' },
+                    { key: 'divider_color', label: 'Divider' },
                   ].map(({ key, label }) => (
                     <div key={key} className="space-y-2">
                       <Label>{label}</Label>
                       <div className="flex gap-2">
                         <input
                           type="color"
-                          value={config[key]}
+                          value={config[key] || '#000000'}
                           onChange={(e) => setConfig({...config, [key]: e.target.value})}
                           className="w-12 h-10 rounded border cursor-pointer"
                         />
                         <Input
-                          value={config[key]}
+                          value={config[key] || ''}
                           onChange={(e) => setConfig({...config, [key]: e.target.value})}
                           className="flex-1"
                         />
