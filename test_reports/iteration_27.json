@@ -1,0 +1,63 @@
+{
+  "summary": "Re-tested the previously-failing Admin > Spin & Earn Save flow after E1's fix (AdminSpinWheel.js switched fetchPrizes and savePrizes from raw fetch() to axios). Result: PASS. The 401 is gone, save succeeds with HTTP 200, and both the Linked Product and the Combo chip persist across page reload. Regression check on Admin > Products: page loads and product cards render normally.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "verified_flows": [
+    "POST /api/admin/login (admin/Khurpi2026Secure) -> 200; JWT applied to axios.defaults via AuthContext",
+    "Select 'Khurpi / Primary store' project -> /admin/spin-wheel navigates and shows 8 pre-existing prize rows",
+    "GET /api/spin-wheel/prizes -> 200 with X-Project-Id (via axios) — prizes render including row 0 'Tomato'",
+    "Linked Product dropdown (data-testid=spin-prize-product-0) selection persists in local state; product list contains 158+ items from GET /api/products",
+    "Combo product dropdown (data-testid=spin-combo-add-0) adds a green chip that includes the product's name and unit (verified: 'Basil Microgreens (1kg)')",
+    "POST /api/admin/spin-wheel/prizes on Save Changes click -> 200 (previously 401). No red 'Failed to save prizes' banner. Success banner path executes.",
+    "Reload of /admin/spin-wheel -> row 0 dropdown value is still Turnip Microgreens (c5cc3002-12ab-4a29-9f4d-50e27f88314b), and the green chip 'Basil Microgreens (1kg)' is still present, confirming persistence to Mongo.",
+    "Admin > Products regression: /admin/products loads, 15+ products render with price + unit + status controls; no console errors related to auth."
+  ],
+
+  "network_evidence": [
+    "POST /api/admin/login => 200",
+    "GET  /api/spin-wheel/prizes => 200 (twice: initial + reload)",
+    "POST /api/admin/spin-wheel/prizes => 200  <-- key fix verification",
+    "GET  /api/spin-wheel/prizes => 200 (after reload, returns saved prizes)"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_mrp_and_spin_combo.py (from iteration_26; still valid regression suite)"
+  ],
+
+  "action_items": [
+    "None blocking. Optional follow-ups from iteration_26 remain valid: (a) add data-testid to 'Save Changes' and 'Add Prize' buttons for future automation, (b) wrap delete_many+insert_many in save_spin_prizes in a mongo session/try-rollback so a mid-save failure does not wipe existing prizes, (c) add non-negative Pydantic Field(ge=0) on ProductCreate.mrp/price."
+  ],
+
+  "critical_code_review_comments": [
+    "Fix in AdminSpinWheel.js is minimal and correct — both fetchPrizes and savePrizes now use axios so the Bearer token from AuthContext (and X-Project-Id from ProjectContext) are auto-attached; no other files needed changes.",
+    "Still no data-testid on the 'Save Changes' button — automation had to fall back to role/name lookup; low priority."
+  ],
+
+  "updated_files": [],
+
+  "success_rate": {
+    "backend": "100% (no backend testing this round; POST /api/admin/spin-wheel/prizes verified via UI network trace as 200)",
+    "frontend": "100% for the targeted flow (Spin & Earn save+persistence + Products regression)"
+  },
+
+  "test_credentials": "Admin username=admin / password=Khurpi2026Secure (from /app/memory/test_credentials.md). Project = 'Khurpi' (default / Primary store).",
+
+  "seed_data_creation": "No new prizes were added; the existing row 0 ('Tomato', 250g, Prize) was mutated in place to link to Turnip Microgreens and to include a Basil Microgreens combo chip, then saved. This leaves the prizes collection in a valid, saved state per the request. No product data was created.",
+
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+
+  "context_for_next_testing_agent": "Iteration_26 HIGH bug (Admin Spin & Earn save 401) is now RESOLVED. AdminSpinWheel.js:fetchPrizes and :savePrizes use axios so the AuthContext-set Bearer token and ProjectContext X-Project-Id header are attached automatically. POST /api/admin/spin-wheel/prizes returns 200 and reload confirms linked_product + combo products persist. No further retest needed for this specific flow. The reusable backend regression suite at /app/backend/tests/test_mrp_and_spin_combo.py (from iteration_26, 8/8 passing) still covers this contract at the API level.",
+
+  "rca of the issue": "Root cause (from iteration_26) was that AdminSpinWheel.js used browser-native fetch() for /api/spin-wheel/prizes and /api/admin/spin-wheel/prizes, and fetch() does NOT read axios.defaults.headers where AuthContext stores the Bearer JWT. E1's fix replaced both calls with axios.get / axios.post, which automatically pick up Authorization + X-Project-Id from the shared axios defaults set by AuthContext and ProjectContext. Verification: network trace shows POST /api/admin/spin-wheel/prizes returning 200 (was 401), and a full page reload now shows the saved product_id and combo products still present."
+}

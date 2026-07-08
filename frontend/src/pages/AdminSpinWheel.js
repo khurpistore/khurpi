@@ -33,9 +33,8 @@ const AdminSpinWheel = () => {
   const fetchPrizes = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/spin-wheel/prizes`);
-      const data = await response.json();
-      setPrizes(data || []);
+      const response = await axios.get(`${BACKEND_URL}/api/spin-wheel/prizes`);
+      setPrizes(response.data || []);
     } catch (err) {
       setError('Failed to load prizes');
       console.error(err);
@@ -105,13 +104,7 @@ const AdminSpinWheel = () => {
         }
       }
 
-      const response = await fetch(`${BACKEND_URL}/api/admin/spin-wheel/prizes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(prizes)
-      });
-
-      if (!response.ok) throw new Error('Failed to save');
+      await axios.post(`${BACKEND_URL}/api/admin/spin-wheel/prizes`, prizes);
 
       setSuccess('Prizes saved successfully!');
       setTimeout(() => setSuccess(''), 3000);
