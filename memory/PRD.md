@@ -13,6 +13,13 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
   - **Finance** (`/admin/finance`, `AdminFinanceHub`): tabs Payments + Expenses + Cost Calculator.
 - Hubs reuse existing page components inside shadcn `Tabs`. Old standalone routes/menu items (create-order, customer-view, categories, subcategories, expenses, cost-calculator, payments) removed; `AdminLayout` menuItems + titleMap updated. Verified via screenshots (all tabs render real data).
 
+### Big request — BATCH B (Flutter home/header/search/cart) DONE (rebuild to verify; backend search 9/9) (July 8 2026)
+- Header: address excludes city/state/pincode (via displayAddress); 16px gap before profile icon.
+- New shared `core/widgets/app_search_bar.dart` (AppSearchBar) used in home header (read-only tap) + search page (editable) → identical UI; search page bg white.
+- Search stale-response race fixed (search_page `_search` ignores responses not matching current query; <2 chars empty). Backend /search verified deterministic 9/9 (iteration_28).
+- Cart floating button: circular product images, label "Cart" (was Checkout). Free/gift items (price==0) non-removable → show "FREE" badge (cart_item_card).
+- REMAINING: BATCH C (products/detail/address/checkout/profile/orders/logout/get-help).
+
 ### Big multi-area request — BATCH A (Admin + Backend) DONE & TESTED 100% (July 8 2026)
 - Product **MRP + Selling Price**: `mrp` added to Product/Create/Update models; admin form has MRP + Selling Price inputs; product card shows struck MRP. (backend 8/8 green)
 - Spin wheel: prizes **link a product from the product list** (dropdown) + support **multiple combo products** (`products: List[dict]` on SpinPrizeCreate); admin combo editor with chips. Fixed 401 (AdminSpinWheel switched raw fetch()->axios so JWT+X-Project-Id apply). Save+persist verified.
