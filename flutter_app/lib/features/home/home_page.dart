@@ -94,7 +94,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   child: Column(
                   children: [
                     SizedBox(
-                      height: 140,
+                      height: 180,
                       child: PageView.builder(
                         clipBehavior: Clip.hardEdge,
                         controller: _bannerPageController,
