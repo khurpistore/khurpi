@@ -92,12 +92,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OTPLoginPage())),
             ),
             _MenuItem(
-              icon: Icons.stars_rounded,
-              title: 'Earn & Spin',
-              subtitle: 'Win free veggies and rewards',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EarnPage())),
-            ),
-            _MenuItem(
               icon: Icons.help_outline_rounded,
               title: 'Get Help',
               subtitle: 'Contact support for assistance',
@@ -199,18 +193,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               title: 'My Orders',
               subtitle: 'View your order history',
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersPage())),
-            ),
-            _MenuItem(
-              icon: Icons.location_on_outlined,
-              title: 'Saved Addresses',
-              subtitle: user?.formattedAddress ?? user?.addressLine1 ?? user?.address ?? 'Add your delivery address',
-              onTap: _showAddressDialog,
-            ),
-            _MenuItem(
-              icon: Icons.stars_rounded,
-              title: 'Earn & Spin',
-              subtitle: 'Play spin game to win freebies',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EarnPage())),
             ),
             _MenuItem(
               icon: Icons.help_outline_rounded,

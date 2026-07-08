@@ -41,8 +41,9 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> clearAuthData() async {
-    await sharedPreferences.remove(AppConstants.tokenKey);
-    await sharedPreferences.remove(AppConstants.userKey);
+    // Logout must wipe ALL locally cached/session data (token, user, cached
+    // addresses, recent searches, spin & earn, orders cache, etc.).
+    await sharedPreferences.clear();
     DioClient.clearToken();
   }
 }

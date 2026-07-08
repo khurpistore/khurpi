@@ -13,6 +13,17 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
   - **Finance** (`/admin/finance`, `AdminFinanceHub`): tabs Payments + Expenses + Cost Calculator.
 - Hubs reuse existing page components inside shadcn `Tabs`. Old standalone routes/menu items (create-order, customer-view, categories, subcategories, expenses, cost-calculator, payments) removed; `AdminLayout` menuItems + titleMap updated. Verified via screenshots (all tabs render real data).
 
+### Big request — BATCH C (Flutter) PARTIAL (July 8 2026)
+- Logout now **wipes ALL local data** (`clearAuthData` -> `sharedPreferences.clear()`): token, user, cached addresses, recent searches, spin/earn, orders cache.
+- Profile: removed **Earn & Spin** (now on home) and the **Saved Addresses** item (address CRUD moves to home) from both guest & authenticated menus.
+- DEFERRED (need Flutter SDK / codegen or larger refactor, can't compile/verify here):
+  - Products/detail: real MRP+selling display, multi-image dots, dynamic total-after-add-to-cart, smaller qty stepper, remove in-stock overlay, vertical price/image align — needs ProductModel `mrp`/`images` freezed fields (build_runner).
+  - Checkout: white bg, remove payment section, optimize delivery-time UI, borderless address, open common address page, empty->home.
+  - Orders/detail: uniform title bar, white bg, product image, correct address, payment-summary spacing.
+  - Address: full CRUD on home page, borderless card, full info, title.
+  - Spin: bottom-sheet instructions/title + spin-to-cart gift flow (needs gift flag / codegen).
+  - Profile image upload + admin image upload (needs object storage).
+
 ### Big request — BATCH B (Flutter home/header/search/cart) DONE (rebuild to verify; backend search 9/9) (July 8 2026)
 - Header: address excludes city/state/pincode (via displayAddress); 16px gap before profile icon.
 - New shared `core/widgets/app_search_bar.dart` (AppSearchBar) used in home header (read-only tap) + search page (editable) → identical UI; search page bg white.
