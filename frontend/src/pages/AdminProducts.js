@@ -60,6 +60,7 @@ const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
     benefit: product?.benefit || '',
     nutrients: product?.nutrients || '',
     category_id: product?.category_id || '',
+    mrp: product?.mrp || '',
     price: product?.price || '',
     unit: product?.unit || 'kg',
     unit_value: product?.unit_value ?? 1,
@@ -174,7 +175,20 @@ const ProductDialog = ({ product, onClose, onSuccess, categories = [] }) => {
       </div>
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <div>
-          <Label htmlFor="price" className="text-sm">Price (₹)</Label>
+          <Label htmlFor="mrp" className="text-sm">MRP (₹)</Label>
+          <Input
+            id="mrp"
+            data-testid="product-mrp-input"
+            type="number"
+            step="0.01"
+            value={formData.mrp}
+            onChange={(e) => setFormData({ ...formData, mrp: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+            placeholder="Optional"
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="price" className="text-sm">Selling Price (₹)</Label>
           <Input
             id="price"
             data-testid="product-price-input"
@@ -748,7 +762,12 @@ const AdminProducts = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <h3 className="font-semibold text-sm truncate">{product.name}</h3>
-                        <p className="text-xs text-muted-foreground">₹{product.price} / {product.unit || 'kg'}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {product.mrp && product.mrp > product.price && (
+                            <span className="line-through mr-1 text-gray-400">₹{product.mrp}</span>
+                          )}
+                          <span className="text-green-700 font-medium">₹{product.price}</span> / {product.unit || 'kg'}
+                        </p>
                         {product.category_name && <p className="text-[11px] text-green-700 font-medium">{product.category_name}</p>}
                       </div>
                       <div className="flex items-center gap-1">

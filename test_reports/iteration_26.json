@@ -1,0 +1,76 @@
+{
+  "summary": "Batch A verification of (1) Product MRP + selling price and (2) Spin-Wheel combo products. Backend contract is fully green (8/8 pytest passes covering create/update/list/get/mrp-null legacy + spin combo save/get/auth). Admin Products UI is fully working end-to-end: MRP + Selling Price inputs render with correct data-testids, saving persists MRP and the product card shows strike-through MRP next to the green selling price (verified: ₹150 struck through appears next to a TEST_UI_MRP_* product with price ₹99). CRITICAL frontend bug found in Admin Spin & Earn UI: the Save Changes button silently fails with 401 because AdminSpinWheel.js:savePrizes uses raw fetch() instead of axios, so it never attaches the Authorization: Bearer <token> header (the app’s axios defaults are not applied to fetch). Consequence: linked_product AND combo products never persist through the UI (reload wipes them). Backend accepts them correctly when Auth is supplied (proven in pytest).",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/spin-wheel/prizes", "issue": "Default fallback prize list uses fake product_ids like 'spin_tomato' that don't exist in db.products. Harmless but the Admin UI 'Linked Product' dropdown will show '' (unlinked) for these until the admin explicitly links them."},
+      {"endpoint": "GET /api/products", "issue": "Uses direct project_id={project_id} filter (server.py:2812) instead of scoped_filter() — legacy documents without project_id are NOT returned even for the 'default' project. Non-blocking today because all products carry project_id, but inconsistent with other endpoints."}
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Admin > Spin & Earn > Save Changes",
+        "issue": "POST /api/admin/spin-wheel/prizes returns 401 Unauthorized every time. AdminSpinWheel.js:savePrizes (line 93-124) uses browser fetch() and only sets Content-Type header. It does not carry the Bearer JWT that AuthContext sets on axios.defaults, so the admin middleware rejects the request. UI shows a red 'Failed to save prizes' banner but users may not realise the entire flow is broken. Same file line 33-45 (fetchPrizes) also uses fetch() without X-Project-Id header, so a non-default project will silently load the default project's prizes.",
+        "affected_selectors": ["button:has-text('Save Changes')", "[data-testid='spin-prize-product-0']", "[data-testid='spin-combo-add-0']"],
+        "priority": "HIGH"
+      }
+    ],
+    "design_issues": []
+  },
+
+  "verified_flows": [
+    "POST /api/admin/login → JWT token; middleware protects /api/admin/*, POST /api/products, PUT/DELETE /api/products/{id}",
+    "POST /api/products with mrp=120,price=99 → 200; response has mrp=120 and price=99; GET /api/products/{id} returns same values",
+    "PUT /api/products/{id} with {mrp:199.5, price:129} → 200; GET confirms both persisted",
+    "POST /api/products without mrp key → 200; response mrp is null (legacy shape preserved)",
+    "GET /api/products (public, no auth) → 200; every returned product has an 'mrp' key (null or number)",
+    "POST /api/admin/spin-wheel/prizes with 3 prizes (1 combo with 2 items, 1 empty, 1 single) → 200 {count:3}; GET /api/spin-wheel/prizes returns them intact with products array preserved and order stable",
+    "Admin > Products UI: Add Product dialog shows product-mrp-input + product-price-input; saving with MRP=150 Price=99 creates the product and its card row shows a struck-through ₹150 badge alongside the green ₹99",
+    "Admin > Spin & Earn UI: 5 non-empty prize rows each expose spin-prize-product-{i} and spin-combo-add-{i}; both are populated from GET /api/products; selecting a combo option adds a removable chip (Turnip Microgreens (1kg))"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_mrp_and_spin_combo.py",
+    "/app/test_reports/pytest/mrp_spin_combo.xml"
+  ],
+
+  "action_items": [
+    "HIGH — /app/frontend/src/pages/AdminSpinWheel.js line 93-124 (savePrizes) and line 33-45 (fetchPrizes): replace the raw fetch() calls with axios so the Authorization: Bearer header (from AuthContext axios.defaults) and X-Project-Id (if globally set) are attached. Minimal fix: `await axios.post(`${BACKEND_URL}/api/admin/spin-wheel/prizes`, prizes)` and `await axios.get(`${BACKEND_URL}/api/spin-wheel/prizes`)`. Without this the entire Batch A spin-combo persistence is unreachable through the UI.",
+    "MEDIUM — Consider setting an explicit X-Project-Id header for admin-scoped writes (products, prizes) via an axios request interceptor tied to the selected project. Today the frontend relies on the backend default of 'default', which happens to be what the primary store uses but would silently break multi-project usage.",
+    "LOW — server.py:2812 GET /api/products should use scoped_filter() for consistency with other endpoints and to keep supporting legacy pre-multi-tenant documents."
+  ],
+
+  "critical_code_review_comments": [
+    "AdminSpinWheel.js mixes fetch() and axios: fetchProducts uses axios (gets Authorization from defaults) while fetchPrizes and savePrizes use fetch() (no auth, no X-Project-Id). Standardise on axios.",
+    "server.py:2888 create_product silently accepts arbitrary numeric price/mrp (no non-negative validation). Consider adding Pydantic Field(ge=0). Not blocking, just RCA-worthy.",
+    "server.py:7534 save_spin_prizes performs delete_many followed by insert_many WITHOUT a transaction. If the insert_many fails after the delete_many, the project loses ALL of its prizes. Wrap in a session or at least a try/rollback to preserve prior state.",
+    "AdminProducts.js:97/92 sends POST/PUT via axios and works, but the create body includes fields not defined on ProductCreate (e.g. legacy fields) — Pydantic silently drops them because ProductCreate does not have model_config extra='allow'. Not breaking, just confirming extra field behaviour is 'ignore'.",
+    "AdminSpinWheel.js:69 addComboProduct uses p.unit_value (base numeric quantity) but p.unit_value can be a fractional weight (e.g. 0.25). For default seed products with unit=kg and unit_value=1, chip renders '1kg' which is correct; for unit='g' unit_value=250 the chip is '250g'. Good — just noting the assumption.",
+    "AdminSpinWheel.js has no data-testid on 'Save Changes' or 'Add Prize' buttons — makes automation harder. Recommend adding data-testid='save-spin-prizes-button' and 'add-spin-prize-button'."
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_mrp_and_spin_combo.py (NEW)",
+    "/app/test_reports/pytest/mrp_spin_combo.xml (NEW - JUnit output)"
+  ],
+
+  "success_rate": {
+    "backend": "100% (8/8 pytest passing)",
+    "frontend": "50% (Products MRP flow 100% ok; Spin Wheel combo UI renders correctly but Save Changes returns 401 and nothing persists)"
+  },
+
+  "test_credentials": "Admin username=admin / password=Khurpi2026Secure (from /app/memory/test_credentials.md) — auth flow verified: POST /api/admin/login returns JWT that is required for /api/admin/* and product writes.",
+
+  "seed_data_creation": "All TEST_ prefixed products created during pytest and the single TEST_UI_MRP_* created by the Playwright run were deleted at the end of testing (verified 1 residual product cleaned). Spin prizes were reset to empty at teardown so GET returns the built-in default list.",
+
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+
+  "context_for_next_testing_agent": "Reusable regression test lives at /app/backend/tests/test_mrp_and_spin_combo.py — set REACT_APP_BACKEND_URL in the shell before invoking pytest. Note: real product-write and all /api/admin/* endpoints require an Authorization: Bearer <token> header (obtained from POST /api/admin/login) AND ideally an X-Project-Id header (defaults to 'default'). Admin GET /api/spin-wheel/prizes is NOT admin-protected and returns hardcoded defaults when the collection is empty for the project. If retesting the spin UI after the main agent fixes AdminSpinWheel.js, verify: (a) Save Changes returns 200, (b) reload shows both spin-prize-product-0 keeping the selected product_id AND the green combo chip persisting.",
+
+  "rca of the issue": "AdminSpinWheel.js uses browser-native fetch() in two functions (fetchPrizes and savePrizes). AuthContext (and AuthContext-like init on admin login) sets axios.defaults.headers.common['Authorization'] to the bearer token. Those defaults are ONLY applied by axios; fetch() does not read them. So the POST /api/admin/spin-wheel/prizes call from savePrizes goes out with no Authorization header, hits admin_auth_middleware (server.py:142-155), and is rejected with 401 before reaching the handler — regardless of what the admin has configured in the UI. Reproduction: log in as admin → pick Khurpi project → /admin/spin-wheel → change any row (link a product, add a combo chip) → click Save Changes → red 'Failed to save prizes' banner appears; reload shows the state was NOT persisted. Fix: replace the fetch() calls in AdminSpinWheel.js with axios.get/axios.post (they already work correctly in AdminProducts.js which uses axios throughout)."
+}

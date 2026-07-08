@@ -467,6 +467,7 @@ class Product(BaseModel):
     benefit: str
     nutrients: Optional[str] = None
     price: float
+    mrp: Optional[float] = None  # Maximum Retail Price (strike-through). price = selling price
     wholesale_price: Optional[float] = 0  # Wholesale price per unit
     # Category
     category_id: Optional[str] = None
@@ -505,6 +506,7 @@ class ProductCreate(BaseModel):
     benefit: str
     nutrients: Optional[str] = None
     price: float
+    mrp: Optional[float] = None
     wholesale_price: Optional[float] = 0
     # Category
     category_id: Optional[str] = None
@@ -539,6 +541,7 @@ class ProductUpdate(BaseModel):
     benefit: Optional[str] = None
     nutrients: Optional[str] = None
     price: Optional[float] = None
+    mrp: Optional[float] = None
     wholesale_price: Optional[float] = None
     # Category
     category_id: Optional[str] = None
@@ -7510,6 +7513,7 @@ class SpinPrizeCreate(BaseModel):
     unit: str = "g"
     color: str = "#4CAF50"
     is_empty: bool = False
+    products: List[dict] = []  # combo prize: [{product_id, name, quantity, unit}]
 
 @api_router.get("/spin-wheel/prizes")
 async def get_spin_prizes(project_id: str = Depends(get_project_id)):

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Plus, Trash2, Save, RefreshCw, Gift, AlertCircle } from 'lucide-react';
 
 const AdminSpinWheel = () => {
   const [prizes, setPrizes] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -16,7 +18,17 @@ const AdminSpinWheel = () => {
 
   useEffect(() => {
     fetchPrizes();
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/products`);
+      setProducts(res.data || []);
+    } catch (err) {
+      console.error('Failed to load products', err);
+    }
+  };
 
   const fetchPrizes = async () => {
     try {
@@ -39,9 +51,33 @@ const AdminSpinWheel = () => {
       quantity: 0,
       unit: 'g',
       color: defaultColors[prizes.length % defaultColors.length],
-      is_empty: false
+      is_empty: false,
+      products: []
     };
     setPrizes([...prizes, newPrize]);
+  };
+
+  const addComboProduct = (index, productId) => {
+    if (!productId) return;
+    const p = products.find((x) => (x.id || x._id) === productId);
+    if (!p) return;
+    const updated = [...prizes];
+    const list = updated[index].products || [];
+    if (list.some((it) => it.product_id === productId)) return;
+    updated[index] = {
+      ...updated[index],
+      products: [...list, { product_id: productId, name: p.name, quantity: p.unit_value || 1, unit: p.unit || 'kg' }]
+    };
+    setPrizes(updated);
+  };
+
+  const removeComboProduct = (index, productId) => {
+    const updated = [...prizes];
+    updated[index] = {
+      ...updated[index],
+      products: (updated[index].products || []).filter((it) => it.product_id !== productId)
+    };
+    setPrizes(updated);
   };
 
   const updatePrize = (index, field, value) => {
@@ -145,7 +181,7 @@ const AdminSpinWheel = () => {
           <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-600">
             <div className="col-span-1">Color</div>
             <div className="col-span-3">Prize Name</div>
-            <div className="col-span-2">Product ID</div>
+            <div className="col-span-2">Linked Product</div>
             <div className="col-span-2">Quantity</div>
             <div className="col-span-1">Unit</div>
             <div className="col-span-2">Type</div>
@@ -190,16 +226,25 @@ const AdminSpinWheel = () => {
                     />
                   </div>
 
-                  {/* Product ID */}
+                  {/* Linked Product (from product list) */}
                   <div className="col-span-2">
-                    <input
-                      type="text"
+                    <select
                       value={prize.product_id || ''}
-                      onChange={(e) => updatePrize(index, 'product_id', e.target.value)}
-                      placeholder="Optional"
+                      onChange={(e) => {
+                        const pid = e.target.value;
+                        const p = products.find((x) => (x.id || x._id) === pid);
+                        updatePrize(index, 'product_id', pid);
+                        if (p && !prize.name) updatePrize(index, 'name', p.name);
+                      }}
                       disabled={prize.is_empty}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:bg-gray-100"
-                    />
+                      data-testid={`spin-prize-product-${index}`}
+                      className="w-full px-2 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:bg-gray-100"
+                    >
+                      <option value="">Link product…</option>
+                      {products.map((p) => (
+                        <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Quantity */}
@@ -251,6 +296,37 @@ const AdminSpinWheel = () => {
                     </button>
                   </div>
                 </div>
+
+                {/* Combo products (multiple products awarded together) */}
+                {!prize.is_empty && (
+                  <div className="mt-3 pl-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Gift className="w-4 h-4 text-green-600" />
+                      <span className="text-xs font-medium text-gray-600">Combo products (optional — award multiple items together)</span>
+                    </div>
+                    <select
+                      value=""
+                      onChange={(e) => { addComboProduct(index, e.target.value); e.target.value = ''; }}
+                      data-testid={`spin-combo-add-${index}`}
+                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                    >
+                      <option value="">+ Add product to combo…</option>
+                      {products.map((p) => (
+                        <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>
+                      ))}
+                    </select>
+                    {(prize.products || []).length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(prize.products || []).map((it) => (
+                          <span key={it.product_id} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
+                            {it.name} ({it.quantity}{it.unit})
+                            <Trash2 className="w-3 h-3 cursor-pointer" onClick={() => removeComboProduct(index, it.product_id)} />
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           )}
@@ -263,7 +339,8 @@ const AdminSpinWheel = () => {
           <li>• Add at least 4-8 prizes for a good wheel experience</li>
           <li>• Include 1-2 "Better Luck" segments to balance win rate</li>
           <li>• Use distinct colors for better visual appeal</li>
-          <li>• Product ID is optional - leave empty for generic prizes</li>
+          <li>• Link a product from your product list; leave empty for generic prizes</li>
+          <li>• Use "Combo products" to award multiple items together (like a combo box)</li>
         </ul>
       </div>
     </div>
