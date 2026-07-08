@@ -13,6 +13,16 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
   - **Finance** (`/admin/finance`, `AdminFinanceHub`): tabs Payments + Expenses + Cost Calculator.
 - Hubs reuse existing page components inside shadcn `Tabs`. Old standalone routes/menu items (create-order, customer-view, categories, subcategories, expenses, cost-calculator, payments) removed; `AdminLayout` menuItems + titleMap updated. Verified via screenshots (all tabs render real data).
 
+### Mobile: Home header address source fix — DONE (backend API verified 14/14; Flutter needs rebuild) (July 8 2026)
+- Bug: home header showed the cached profile address (`authLocalDataSource.getUser()`) instead of the actual selected/default delivery address.
+- Fix (Flutter): `app_header.dart` now sources the header address ONLY from the address API result (`addressState.displayAddress`); removed the `getUser()` address fallback. `main_navigation_page.dart` calls `AddressNotifier.loadDefaultAddress(userId)` on home load (post-frame) to fetch the selected/default address from `GET /users/{id}/addresses` (picks `is_default`, else first). `getUser()` address left intact for Profile/address-form (not stripped globally).
+- Backend contract verified green (iteration_25): is_default returned, set-default flips flag, delete works. Flutter UI not auto-testable here (no SDK) — rebuild to confirm on device.
+
+### Mobile: All AppColors + typography admin-controlled — DONE (July 8 2026)
+- Backend `AppConfigCreate` extended to 21 colors (added primary_light, secondary_dark, card, text_primary/secondary/hint, warning, info, in_stock, growing, out_of_stock, border, divider). `/config` & `/admin/config` now merge defaults so all fields always return.
+- Admin App Config → Colors tab exposes all 21 color pickers; Branding tab has font family + heading/body/caption sizes (verified via screenshot + curl round-trip).
+- Flutter `AppColors` fully runtime-driven via `applyConfig(rawJson)` (no freezed codegen needed); `AppTextStyles` config-driven getters; ~75 `const` usages de-consted via precise scanner (idempotent). Fallbacks retained.
+
 ### Contact / Help & Support Page + Admin Flicker Fix — DONE & TESTED (100%, July 7 2026)
 - **Contact page** (`frontend/src/pages/Contact.js`, route `/contact`, public): "Help & Support" screen surfacing support phone (tel:), email (mailto:), WhatsApp (wa.me), address and support hours pulled from `GET /api/store/settings` (falls back to defaults). Footer got a "Help & Support" link.
 - **Admin flicker/refresh fix (routing refactor)**: `AdminLayout` is now a PERSISTENT parent route rendering React Router `<Outlet/>`. It derives active nav + page title from `useLocation` (titleMap). App.js admin routes nested under `<Route path="/admin" element={<ProtectedRoute requireAdmin><AdminLayout/></ProtectedRoute>}>` with relative child paths; `/admin/login` and `/admin/projects` kept standalone (outside layout). All 25 `Admin*.js` pages had their `<AdminLayout>` wrapper removed (render bare content). Sidebar no longer remounts on navigation → no flicker. Tested 100% (iteration_24).
