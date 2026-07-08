@@ -55,15 +55,17 @@ class _BannerCarouselState extends State<BannerCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 160,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: widget.banners.length,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
-            itemBuilder: (context, index) {
-              final banner = widget.banners[index];
-              return _buildBannerItem(banner);
-            },
+          child: AspectRatio(
+            aspectRatio: 2 / 1,
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: widget.banners.length,
+              onPageChanged: (index) => setState(() => _currentIndex = index),
+              itemBuilder: (context, index) {
+                final banner = widget.banners[index];
+                return _buildBannerItem(banner);
+              },
+            ),
           ),
         ),
         const SizedBox(height: 12),
