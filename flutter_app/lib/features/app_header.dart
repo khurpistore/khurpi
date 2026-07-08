@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/features/address/address_providers.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
+import 'package:khurpi_fresh/core/widgets/app_search_bar.dart';
 import 'package:khurpi_fresh/features/splash/splash_page.dart';
 
 class AppHeader extends ConsumerWidget {
@@ -152,6 +153,7 @@ class AppHeader extends ConsumerWidget {
                     ),
                   ),
 
+                  const SizedBox(width: 16),
                   // Account Button (Cart removed - shown at bottom of screen)
                   GestureDetector(
                     onTap: onAccountTap,
@@ -168,55 +170,14 @@ class AppHeader extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
                 ],
               ),
             ),
             
-            // Row 2: Search Bar
+            // Row 2: Search Bar (shared widget)
             Padding(
-              padding: const EdgeInsets.fromLTRB(12,12,12,16),
-              child: GestureDetector(
-                onTap: onSearchTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.18)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
-                        blurRadius: 14,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(Icons.search_rounded, color: AppColors.primary, size: 18),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Search vegetables, fruits & more',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: AppSearchBar(onTap: onSearchTap),
             ),
           ],
         ),

@@ -108,11 +108,30 @@ class CartItemCard extends StatelessWidget {
               ],
             ),
           ),
-          // Remove button
-          IconButton(
-            onPressed: onRemove,
-            icon: Icon(Icons.delete_outline, color: AppColors.error),
-          ),
+          // Remove button (hidden for free/gift items — removed on order placement)
+          if (item.price > 0)
+            IconButton(
+              onPressed: onRemove,
+              icon: Icon(Icons.delete_outline, color: AppColors.error),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'FREE',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

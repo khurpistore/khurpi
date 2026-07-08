@@ -71,7 +71,7 @@ class FloatingCartButton extends ConsumerWidget {
                             height: 40,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
+                              shape: BoxShape.circle,
                               border: Border.all(
                                 color: Colors.white,
                                 width: 2,
@@ -84,8 +84,7 @@ class FloatingCartButton extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
+                            child: ClipOval(
                               child: displayItems[i].imageUrl != null && 
                                      displayItems[i].imageUrl!.isNotEmpty
                                   ? CachedNetworkImage(
@@ -183,7 +182,7 @@ class FloatingCartButton extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Checkout',
+                        'Cart',
                         style: TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w700,

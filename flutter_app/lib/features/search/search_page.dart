@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
+import 'package:khurpi_fresh/core/widgets/app_search_bar.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/data/models/product_model.dart';
 import 'package:khurpi_fresh/features/products/product_detail_bottom_sheet.dart';
@@ -129,7 +130,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -139,53 +140,23 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           onPressed: () => Navigator.pop(context),
         ),
         titleSpacing: 0,
-        title: Container(
-          height: 46,
-          margin: const EdgeInsets.only(right: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.primary.withOpacity(0.15)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: TextField(
+        title: Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: AppSearchBar(
             controller: _searchController,
             focusNode: _focusNode,
-            style: const TextStyle(fontSize: 15),
-            decoration: InputDecoration(
-              hintText: 'Search vegetables, fruits & more',
-              hintStyle: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 15,
-              ),
-              prefixIcon: Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.close_rounded, color: Colors.grey.shade500, size: 20),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          _searchResults = [];
-                          _hasSearched = false;
-                        });
-                      },
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            ),
+            autofocus: true,
             onChanged: (value) {
               setState(() {});
               _search(value);
             },
-            onSubmitted: _search,
-            textInputAction: TextInputAction.search,
+            onClear: () {
+              _searchController.clear();
+              setState(() {
+                _searchResults = [];
+                _hasSearched = false;
+              });
+            },
           ),
         ),
       ),
@@ -556,6 +527,59 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                 onTap: () => cartNotifier?.incrementQuantity(product.productId),
                                 child: const Icon(Icons.add, color: Colors.white, size: 16),
                               ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : InkWell(
+                        onTap: () => cartNotifier?.addToCart(product),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.primary),
+                          ),
+                          child: Text(
+                            'ADD',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getStockColor(String? status) {
+    switch (status) {
+      case 'in_stock':
+        return AppColors.success;
+      case 'growing':
+        return AppColors.warning;
+      default:
+        return AppColors.error;
+    }
+  }
+
+  String _getStockText(String? status) {
+    switch (status) {
+      case 'in_stock':
+        return 'In Stock';
+      case 'growing':
+        return 'Growing';
+      default:
+        return 'Out of Stock';
+    }
+  }
+}
+ ),
                             ),
                           ],
                         ),
