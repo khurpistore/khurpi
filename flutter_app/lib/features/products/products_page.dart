@@ -45,7 +45,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     final productsState = ref.watch(provideProductsViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Products',

@@ -14,15 +14,16 @@ Build a comprehensive e-commerce platform for selling microgreens with admin das
 - Hubs reuse existing page components inside shadcn `Tabs`. Old standalone routes/menu items (create-order, customer-view, categories, subcategories, expenses, cost-calculator, payments) removed; `AdminLayout` menuItems + titleMap updated. Verified via screenshots (all tabs render real data).
 
 ### Big request — BATCH C (Flutter) PARTIAL (July 8 2026)
-- Logout now **wipes ALL local data** (`clearAuthData` -> `sharedPreferences.clear()`): token, user, cached addresses, recent searches, spin/earn, orders cache.
-- Profile: removed **Earn & Spin** (now on home) and the **Saved Addresses** item (address CRUD moves to home) from both guest & authenticated menus.
-- DEFERRED (need Flutter SDK / codegen or larger refactor, can't compile/verify here):
-  - Products/detail: real MRP+selling display, multi-image dots, dynamic total-after-add-to-cart, smaller qty stepper, remove in-stock overlay, vertical price/image align — needs ProductModel `mrp`/`images` freezed fields (build_runner).
-  - Checkout: white bg, remove payment section, optimize delivery-time UI, borderless address, open common address page, empty->home.
-  - Orders/detail: uniform title bar, white bg, product image, correct address, payment-summary spacing.
-  - Address: full CRUD on home page, borderless card, full info, title.
-  - Spin: bottom-sheet instructions/title + spin-to-cart gift flow (needs gift flag / codegen).
-  - Profile image upload + admin image upload (needs object storage).
+- Logout wipes ALL local data (`clearAuthData` -> `sharedPreferences.clear()`).
+- Profile: removed Earn & Spin + Saved Addresses items (moved to home).
+- Checkout: white bg + white appbar; removed inline payment-method section (payment still selected at bottom bar); empty cart -> auto return to home (popUntil first); payment bottom sheet fixed overlap (SafeArea + bottom inset padding) + white bg.
+- Orders + Order Detail + Products pages: white backgrounds (was #F8F9FA).
+- STILL DEFERRED (need Flutter SDK/codegen or larger refactor):
+  - Products/detail: real MRP+selling display, multi-image dots, dynamic total-after-add-to-cart, smaller qty stepper, remove in-stock overlay, vertical price/image align (ProductModel mrp/images -> build_runner).
+  - Orders/detail: uniform title bar, product image, correct address, payment-summary spacing.
+  - Address: full CRUD on home, borderless card, full info, title. Checkout: borderless address + open common address page + optimize delivery-time UI.
+  - Spin: bottom-sheet instructions/title + spin-to-cart gift flow (gift flag/codegen).
+  - Image upload (profile + admin): needs object storage.
 
 ### Big request — BATCH B (Flutter home/header/search/cart) DONE (rebuild to verify; backend search 9/9) (July 8 2026)
 - Header: address excludes city/state/pincode (via displayAddress); 16px gap before profile icon.

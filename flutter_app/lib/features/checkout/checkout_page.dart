@@ -157,9 +157,20 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     final storeState = ref.watch(provideStoreViewModelProvider);
 
     if (cartState == null || cartState.items.isEmpty) {
+      // Cart emptied (e.g. all items removed here) -> return to home.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.of(context).popUntil((r) => r.isFirst);
+        }
+      });
       return Scaffold(
-        appBar: AppBar(title: const Text('Checkout')),
-        body: const Center(child: Text('Your cart is empty')),
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('Checkout'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -167,10 +178,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     final total = cartState.subtotal + deliveryFee;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Checkout'),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: Column(
@@ -190,11 +201,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                   _buildDeliveryTimeSection(),
                   const SizedBox(height: 20),
 
-                  // Payment Method
-                  _buildPaymentMethodSection(),
-                  const SizedBox(height: 20),
-
-                  // Price Summary
+                  // Price Summary (payment method is selected at the bottom bar)
                   _buildPriceSummary(cartState, deliveryFee, total),
                 ],
               ),
@@ -776,21 +783,24 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   void _showPaymentMethodSheet() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder: (context) => SafeArea(
+        child: Container(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + MediaQuery.of(context).padding.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -824,6 +834,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             const SizedBox(height: 16),
           ],
         ),
+      ),
       ),
     );
   }

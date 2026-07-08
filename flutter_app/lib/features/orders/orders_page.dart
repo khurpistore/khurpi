@@ -27,7 +27,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     final ordersState = ref.watch(provideOrdersViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'My Orders',

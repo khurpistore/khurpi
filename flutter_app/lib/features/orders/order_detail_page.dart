@@ -31,7 +31,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
     final isLoading = ordersState?.isLoading ?? true;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Order Details',
