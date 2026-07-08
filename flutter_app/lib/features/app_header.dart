@@ -170,43 +170,44 @@ class AppHeader extends ConsumerWidget {
             
             // Row 2: Search Bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
               child: GestureDetector(
                 onTap: onSearchTap,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
+                        color: Colors.black.withOpacity(0.10),
+                        blurRadius: 18,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.search, color: AppColors.textSecondary, size: 22),
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.search_rounded, color: AppColors.primary, size: 18),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Search vegetables, fruits...',
+                          'Search vegetables, fruits & more',
                           style: TextStyle(
-                            color: AppColors.textHint,
+                            color: AppColors.textSecondary,
                             fontSize: 14,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.mic, color: AppColors.primary, size: 18),
-                      ),
+                      Icon(Icons.tune_rounded, color: AppColors.textHint, size: 20),
                     ],
                   ),
                 ),

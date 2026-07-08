@@ -140,23 +140,31 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         titleSpacing: 0,
         title: Container(
-          height: 44,
+          height: 46,
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: TextField(
             controller: _searchController,
             focusNode: _focusNode,
             style: const TextStyle(fontSize: 15),
             decoration: InputDecoration(
-              hintText: 'Search',
+              hintText: 'Search vegetables, fruits & more',
               hintStyle: TextStyle(
                 color: Colors.grey.shade500,
                 fontSize: 15,
               ),
-              prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 22),
+              prefixIcon: Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
                       icon: Icon(Icons.close_rounded, color: Colors.grey.shade500, size: 20),

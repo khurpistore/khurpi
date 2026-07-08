@@ -71,15 +71,22 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE8E8E8)),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: TextField(
                     controller: _searchController,
                     style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Search',
+                      hintText: 'Search vegetables, fruits & more',
                       hintStyle: TextStyle(
                         color: Colors.grey.shade500,
                         fontSize: 15,
@@ -87,7 +94,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                       ),
                       prefixIcon: Icon(
                         Icons.search_rounded,
-                        color: Colors.grey.shade500,
+                        color: AppColors.primary,
                         size: 22,
                       ),
                       suffixIcon: _searchController.text.isNotEmpty
