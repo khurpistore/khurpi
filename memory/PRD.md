@@ -138,7 +138,22 @@ The codebase has been synced from the GitHub branch `feature/5july_deployed`. Th
 - Flutter app is excluded from Kubernetes deployment
 - Do NOT use .gitignore from GitHub - it ignores .env files
 
+## Changelog — 2026-06 (fork continuation)
+- Fixed Flutter build error in `search_page.dart` (removed orphaned duplicate code after class close).
+- **Product MRP in Flutter**: added `mrp` field to `ProductModel` (+ hand-edited freezed/g.dart generated files: mixin getter, `_ProductModel` ctor+field, copyWith preserve, fromJson/toJson). Added `hasDiscount`/`discountPercentage` getters. Real strike-through MRP + % OFF badge now shown in product_card, product_detail_bottom_sheet, product_detail_page, search_page (removed old fake `price*1.15` MRP). Verified backend `/products` & `/search` return `mrp`.
+- **Order detail**: real product image (via `OrderItemModelX.imageUrl` from `product` map) + full delivery address (city/pincode).
+- **Address list**: shows full address (city/state included).
+- **Checkout**: borderless selected-address box.
+- **Spin & Earn**: added "How Spin & Win Works" instructions bottom sheet (info button in Earn AppBar). Spin-to-cart gift flow already existed.
+- NOTE: Flutter SDK unavailable here — changes are brace-balanced but need `flutter run` to compile-verify. `ProductModel.mrp` did NOT need codegen since generated files were hand-edited.
+
+## Still Pending
+- Multi-image dots for products (blocked: backend has no `images[]` array, only single `image`).
+- Image Upload (Profile/Category/Product/Banner) — needs object storage integration.
+- Address full CRUD from home screen header.
+
 ## Status
 - Preview environment: ✅ Working
-- Backend API: ✅ Working
-- Frontend: ✅ Working
+- Backend API: ✅ Working (MRP flow curl-verified)
+- Frontend (React admin): ✅ Working
+- Flutter app: ⚠️ Code updated, needs local rebuild to compile-verify (no SDK here)

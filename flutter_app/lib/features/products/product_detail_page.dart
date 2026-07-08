@@ -61,7 +61,35 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           children: [
                             Text(state.product!.name, style: AppTextStyles.h2),
                             const SizedBox(height: 8),
-                            Row(children: [Text('₹${state.product!.price.toStringAsFixed(0)}', style: AppTextStyles.h3.copyWith(color: AppColors.primary)), Text(' / 100g', style: AppTextStyles.body)]),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('₹${state.product!.price.toStringAsFixed(0)}', style: AppTextStyles.h3.copyWith(color: AppColors.primary)),
+                                if (state.product!.hasDiscount) ...[
+                                  const SizedBox(width: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 2),
+                                    child: Text(
+                                      '₹${state.product!.mrp!.toStringAsFixed(0)}',
+                                      style: AppTextStyles.body.copyWith(
+                                        color: AppColors.textHint,
+                                        decoration: TextDecoration.lineThrough,
+                                        decorationColor: AppColors.textHint,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 2),
+                                    child: Text(
+                                      '${state.product!.discountPercentage}% OFF',
+                                      style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700, fontSize: 13),
+                                    ),
+                                  ),
+                                ] else
+                                  Text(' / ${state.product!.unit ?? '100g'}', style: AppTextStyles.body),
+                              ],
+                            ),
                             const SizedBox(height: 16),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

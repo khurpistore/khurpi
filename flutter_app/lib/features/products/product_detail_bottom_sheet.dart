@@ -131,12 +131,46 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                               
                               // Price
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
                                     '₹${state.product!.price.toStringAsFixed(0)}',
                                     style: AppTextStyles.h2.copyWith(color: AppColors.primary),
                                   ),
-                                  Text(' / 100g', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
+                                  if (state.product!.hasDiscount) ...[
+                                    const SizedBox(width: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 3),
+                                      child: Text(
+                                        '₹${state.product!.mrp!.toStringAsFixed(0)}',
+                                        style: AppTextStyles.body.copyWith(
+                                          color: AppColors.textHint,
+                                          decoration: TextDecoration.lineThrough,
+                                          decorationColor: AppColors.textHint,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 3),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.error.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          '${state.product!.discountPercentage}% OFF',
+                                          style: TextStyle(
+                                            color: AppColors.error,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ] else
+                                    Text(' / ${state.product!.unit ?? '100g'}', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                                 ],
                               ),
                               const SizedBox(height: 16),

@@ -336,18 +336,21 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
 
   String _formatAddress(Map<String, dynamic> address) {
     final parts = <String>[];
-    // Use address_line_1 first, fallback to address_line
     final line1 = address['address_line_1'] ?? address['address_line'];
     if (line1 != null && line1.toString().isNotEmpty) parts.add(line1.toString());
-    // Add area if present
+    if (address['address_line_2'] != null && address['address_line_2'].toString().isNotEmpty) {
+      parts.add(address['address_line_2'].toString());
+    }
     if (address['area'] != null && address['area'].toString().isNotEmpty) {
       parts.add(address['area'].toString());
     }
-    // Add landmark if present
     if (address['landmark'] != null && address['landmark'].toString().isNotEmpty) {
       parts.add('Near ${address['landmark']}');
     }
-    // Don't show city, state, district - only pincode
+    final cityState = <String>[];
+    if (address['city'] != null && address['city'].toString().isNotEmpty) cityState.add(address['city'].toString());
+    if (address['state'] != null && address['state'].toString().isNotEmpty) cityState.add(address['state'].toString());
+    if (cityState.isNotEmpty) parts.add(cityState.join(', '));
     final pincode = address['pincode'];
     if (pincode != null && pincode.toString().isNotEmpty) {
       parts.add(pincode.toString());

@@ -371,9 +371,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
     final isInCart = quantityInCart > 0;
 
-    // Calculate MRP
-    final mrpPrice = product.price * 1.15;
-    final hasDiscount = mrpPrice > product.price;
+    // Real MRP from backend
+    final mrpPrice = product.mrp ?? 0;
+    final hasDiscount = product.hasDiscount;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -527,59 +527,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                 onTap: () => cartNotifier?.incrementQuantity(product.productId),
                                 child: const Icon(Icons.add, color: Colors.white, size: 16),
                               ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : InkWell(
-                        onTap: () => cartNotifier?.addToCart(product),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.primary),
-                          ),
-                          child: Text(
-                            'ADD',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _getStockColor(String? status) {
-    switch (status) {
-      case 'in_stock':
-        return AppColors.success;
-      case 'growing':
-        return AppColors.warning;
-      default:
-        return AppColors.error;
-    }
-  }
-
-  String _getStockText(String? status) {
-    switch (status) {
-      case 'in_stock':
-        return 'In Stock';
-      case 'growing':
-        return 'Growing';
-      default:
-        return 'Out of Stock';
-    }
-  }
-}
- ),
                             ),
                           ],
                         ),

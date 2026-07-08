@@ -45,14 +45,10 @@ class ProductCard extends ConsumerWidget {
         ? product.wholesalePrice!
         : product.price;
     
-    // Calculate MRP (assume 20% markup for demo, or use wholesalePrice as MRP)
-    final mrpPrice = product.wholesalePrice != null 
-        ? product.price * 1.15 // 15% above sell price as MRP
-        : product.price * 1.2; // 20% above sell price as MRP
-    final hasDiscount = mrpPrice > displayPrice;
-    final discountPercent = hasDiscount 
-        ? ((mrpPrice - displayPrice) / mrpPrice * 100).round()
-        : 0;
+    // Real MRP from backend (strike-through). price = selling price.
+    final mrpPrice = product.mrp ?? 0;
+    final hasDiscount = product.hasDiscount && !showWholesalePrice;
+    final discountPercent = product.discountPercentage;
     
     final packLabel = _buildPackLabel();
 

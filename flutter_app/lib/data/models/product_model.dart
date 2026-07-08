@@ -14,6 +14,7 @@ abstract class ProductModel with _$ProductModel {
     String? description,
     String? benefit,
     required double price,
+    @JsonKey(name: 'mrp') double? mrp,
     @JsonKey(name: 'wholesale_price') double? wholesalePrice,
     @JsonKey(name: 'image_url') String? imageUrl,
     @JsonKey(name: 'category_id') String? categoryId,
@@ -34,6 +35,14 @@ abstract class ProductModel with _$ProductModel {
   
   // Getter for display benefit/description
   String get displayBenefit => benefit ?? description ?? '';
+
+  // MRP helpers: `price` is the selling price, `mrp` is the strike-through price
+  bool get hasDiscount => mrp != null && mrp! > price;
+
+  int get discountPercentage {
+    if (!hasDiscount) return 0;
+    return (((mrp! - price) / mrp!) * 100).round();
+  }
 
   static ProductModel initial() {
     return const ProductModel(

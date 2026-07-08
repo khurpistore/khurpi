@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/data/models/order_model.dart';
@@ -326,6 +327,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
               final double price = item.displayPrice;
               final double qty = item.quantity;
               final String unit = item.unit;
+              final String? imgUrl = item.imageUrl;
 
               return Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -336,19 +338,33 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                 ),
                 child: Row(
                   children: [
-                    // Product Image Placeholder
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.eco_rounded,
-                        color: AppColors.primary.withOpacity(0.5),
-                        size: 24,
-                      ),
+                    // Product Image
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: (imgUrl != null && imgUrl.isNotEmpty)
+                          ? CachedNetworkImage(
+                              imageUrl: imgUrl,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => Container(
+                                width: 50,
+                                height: 50,
+                                color: AppColors.primary.withOpacity(0.1),
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                width: 50,
+                                height: 50,
+                                color: AppColors.primary.withOpacity(0.1),
+                                child: Icon(Icons.eco_rounded, color: AppColors.primary.withOpacity(0.5), size: 24),
+                              ),
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              color: AppColors.primary.withOpacity(0.1),
+                              child: Icon(Icons.eco_rounded, color: AppColors.primary.withOpacity(0.5), size: 24),
+                            ),
                     ),
                     const SizedBox(width: 12),
                     // Product Details
@@ -428,9 +444,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            order.deliveryAddress.isNotEmpty 
-                ? order.deliveryAddress 
-                : 'Address not available',
+            _formatAddress(order),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade700,
@@ -568,6 +582,16 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
         ],
       ),
     );
+  }
+
+  String _formatAddress(OrderModel order) {
+    final parts = <String>[];
+    if (order.deliveryAddress.isNotEmpty) parts.add(order.deliveryAddress);
+    final cityPin = <String>[];
+    if ((order.city ?? '').isNotEmpty) cityPin.add(order.city!);
+    if ((order.pincode ?? '').isNotEmpty) cityPin.add(order.pincode!);
+    if (cityPin.isNotEmpty) parts.add(cityPin.join(' - '));
+    return parts.isEmpty ? 'Address not available' : parts.join(', ');
   }
 
   Widget _buildSummaryRow(String label, String value, {bool isDiscount = false}) {

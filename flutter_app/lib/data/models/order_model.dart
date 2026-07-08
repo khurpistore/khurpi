@@ -72,4 +72,9 @@ extension OrderItemModelX on OrderItemModel {
   }
   
   double get displayPrice => price > 0 ? price : (product?['price']?.toDouble() ?? 0.0);
+
+  String? get imageUrl {
+    if (product == null) return null;
+    return (product!['image_url'] ?? product!['image']) as String?;
+  }
 }

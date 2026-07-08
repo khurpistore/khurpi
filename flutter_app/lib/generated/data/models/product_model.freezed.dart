@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductModel {
 
-@JsonKey(name: 'id') String? get id;@JsonKey(name: '_id') String? get mongoId; String get name; String? get description; String? get benefit; double get price;@JsonKey(name: 'wholesale_price') double? get wholesalePrice;@JsonKey(name: 'image_url') String? get imageUrl;@JsonKey(name: 'category_id') String? get categoryId;@JsonKey(name: 'category_name') String? get categoryName;@JsonKey(name: 'stock_status') String get stockStatus;@JsonKey(name: 'stock_quantity') int get stockQuantity; String? get unit; double? get weight;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'created_at') DateTime? get createdAt;
+@JsonKey(name: 'id') String? get id;@JsonKey(name: '_id') String? get mongoId; String get name; String? get description; String? get benefit; double get price;@JsonKey(name: 'mrp') double? get mrp;@JsonKey(name: 'wholesale_price') double? get wholesalePrice;@JsonKey(name: 'image_url') String? get imageUrl;@JsonKey(name: 'category_id') String? get categoryId;@JsonKey(name: 'category_name') String? get categoryName;@JsonKey(name: 'stock_status') String get stockStatus;@JsonKey(name: 'stock_quantity') int get stockQuantity; String? get unit; double? get weight;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of ProductModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -224,7 +224,7 @@ return $default(_that.id,_that.mongoId,_that.name,_that.description,_that.benefi
 @JsonSerializable()
 
 class _ProductModel extends ProductModel {
-  const _ProductModel({@JsonKey(name: 'id') this.id, @JsonKey(name: '_id') this.mongoId, required this.name, this.description, this.benefit, required this.price, @JsonKey(name: 'wholesale_price') this.wholesalePrice, @JsonKey(name: 'image_url') this.imageUrl, @JsonKey(name: 'category_id') this.categoryId, @JsonKey(name: 'category_name') this.categoryName, @JsonKey(name: 'stock_status') this.stockStatus = 'out_of_stock', @JsonKey(name: 'stock_quantity') this.stockQuantity = 0, this.unit, this.weight, @JsonKey(name: 'is_active') this.isActive = true, @JsonKey(name: 'created_at') this.createdAt}): super._();
+  const _ProductModel({@JsonKey(name: 'id') this.id, @JsonKey(name: '_id') this.mongoId, required this.name, this.description, this.benefit, required this.price, @JsonKey(name: 'mrp') this.mrp, @JsonKey(name: 'wholesale_price') this.wholesalePrice, @JsonKey(name: 'image_url') this.imageUrl, @JsonKey(name: 'category_id') this.categoryId, @JsonKey(name: 'category_name') this.categoryName, @JsonKey(name: 'stock_status') this.stockStatus = 'out_of_stock', @JsonKey(name: 'stock_quantity') this.stockQuantity = 0, this.unit, this.weight, @JsonKey(name: 'is_active') this.isActive = true, @JsonKey(name: 'created_at') this.createdAt}): super._();
   factory _ProductModel.fromJson(Map<String, dynamic> json) => _$ProductModelFromJson(json);
 
 @override@JsonKey(name: 'id') final  String? id;
@@ -233,6 +233,7 @@ class _ProductModel extends ProductModel {
 @override final  String? description;
 @override final  String? benefit;
 @override final  double price;
+@override@JsonKey(name: 'mrp') final  double? mrp;
 @override@JsonKey(name: 'wholesale_price') final  double? wholesalePrice;
 @override@JsonKey(name: 'image_url') final  String? imageUrl;
 @override@JsonKey(name: 'category_id') final  String? categoryId;
@@ -296,6 +297,7 @@ class __$ProductModelCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? mongoId = freezed,Object? name = null,Object? description = freezed,Object? benefit = freezed,Object? price = null,Object? wholesalePrice = freezed,Object? imageUrl = freezed,Object? categoryId = freezed,Object? categoryName = freezed,Object? stockStatus = null,Object? stockQuantity = null,Object? unit = freezed,Object? weight = freezed,Object? isActive = null,Object? createdAt = freezed,}) {
   return _then(_ProductModel(
+mrp: _self.mrp,
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,mongoId: freezed == mongoId ? _self.mongoId : mongoId // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable

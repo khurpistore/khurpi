@@ -14,6 +14,13 @@ class EarnPage extends StatelessWidget {
         title: const Text('Earn & Win'),
         backgroundColor: AppColors.surface,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.info_outline_rounded, color: AppColors.primary),
+            tooltip: 'How it works',
+            onPressed: () => _showInstructions(context),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -93,6 +100,64 @@ class EarnPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showInstructions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + MediaQuery.of(ctx).padding.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Icon(Icons.card_giftcard_rounded, color: AppColors.primary, size: 26),
+                  const SizedBox(width: 10),
+                  Text('How Spin & Win Works', style: AppTextStyles.h3.copyWith(color: AppColors.primary)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _HowItWorksStep(icon: Icons.shopping_cart_outlined, step: '1', text: 'Add items to your cart'),
+              _HowItWorksStep(icon: Icons.autorenew, step: '2', text: 'Come here and spin the wheel'),
+              _HowItWorksStep(icon: Icons.card_giftcard, step: '3', text: 'Win FREE vegetables added to your cart!'),
+              _HowItWorksStep(icon: Icons.local_shipping_outlined, step: '4', text: 'Place your order and enjoy', isLast: true),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Got it', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
