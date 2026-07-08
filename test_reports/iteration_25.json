@@ -1,0 +1,47 @@
+{
+  "summary": "Backend-only verification for the Flutter mobile home-header address bug fix. The mobile client's new loadDefaultAddress() flow depends on the /api/users/{user_id}/addresses endpoints correctly returning is_default and honouring set-default. Added focused test file /app/backend/tests/test_address_mobile_bugfix.py (5 tests) covering: (1) GET returns list with is_default boolean, (2) full create->add-second->set-default lifecycle proves exactly ONE address ends up is_default=true and it is the one just set, (3) fallback path when no address has is_default explicitly (client-side 'else first' safety net) - list is non-empty and order stable, (4) DELETE removes from subsequent GET, (5) documents server auto-marking the very first address is_default=true. Also re-ran the pre-existing test_address_crud.py (9 tests) as regression. RESULT: 14 passed, 1 skipped (pre-existing skip for un-implemented NOIDA validation), 0 failures.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verified_flows": [
+    "POST /api/auth/login with phone 9971818259 / test1234 -> {token, user{id, phone, ...}}",
+    "GET /api/users/{user_id}/addresses -> 200 List[Address], each address has boolean is_default field",
+    "POST /api/users/{user_id}/addresses -> 200, returns Address; first-ever address auto-marked is_default=true (server.py:4524)",
+    "POST second address (is_default=false) then PUT /api/users/{user_id}/addresses/{address_id}/set-default -> 200; GET list shows EXACTLY ONE is_default=true and it is the just-set address; previous default flipped to false",
+    "PUT /api/users/{user_id}/addresses/{address_id} with {is_default:false} correctly flips off; GET list can then have zero defaults - client 'else first' fallback path is exercisable",
+    "GET list order is stable across repeated calls (deterministic first-item fallback for the mobile client)",
+    "DELETE /api/users/{user_id}/addresses/{address_id} -> 200; subsequent GET no longer contains that id"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_address_mobile_bugfix.py",
+    "/app/backend/tests/test_address_crud.py",
+    "/app/test_reports/pytest/address_mobile_bugfix.xml",
+    "/app/test_reports/pytest/address_crud_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py:4481 GET /users/{user_id}/addresses has no auth guard - any caller with a user_id can list that user's addresses. Not exploited by the mobile fix, but worth locking down (JWT check + user_id must match caller).",
+    "server.py:4524 auto-marks the first-ever address as default even if the client sent is_default=false. This is fine for the mobile UX (guarantees a header address exists) but is worth documenting in the API contract - clients that intentionally create a non-default first address will observe is_default flipping to true silently.",
+    "server.py:4568 DELETE returns {success:true} instead of 204 No Content. Non-blocking but inconsistent with REST norms and with the mobile client's other flows.",
+    "server.py:4591 PUT set-default has no validation that address exists for THIS user beyond the composite {id, user_id} lookup - correct as-is, just noting the pattern is duplicated across 4 handlers and could be extracted."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_address_mobile_bugfix.py (NEW)"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 executed, 1 pre-existing skip)",
+    "frontend": "N/A - skipped per request (mobile/Flutter cannot be built here; web frontend out of scope for this bug)"
+  },
+  "test_credentials": "Customer: phone 9971818259 / password test1234 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Tests self-seed and self-clean TEST_MOBILE_* addresses via module-scoped fixture; no residual data left behind",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Address APIs at /api/users/{user_id}/addresses are fully green. Reusable test file: /app/backend/tests/test_address_mobile_bugfix.py. Pytest needs REACT_APP_BACKEND_URL exported into the shell env (frontend/.env isn't auto-sourced when running pytest from CLI) - export REACT_APP_BACKEND_URL=https://july-branch.preview.emergentagent.com before invoking pytest. Note: the server auto-marks the very first address for a user as is_default=true regardless of the request payload (server.py:4524) - tests that need a 'no default' state must PUT is_default:false after creation.",
+  "rca of the issue": "N/A - this iteration verifies the backend contract used by the Flutter mobile fix; no backend bug was found. The mobile-side change (Flutter home header reading address from API + calling loadDefaultAddress() on load) is not testable in this environment (no Flutter SDK). Backend contract fully supports the new mobile flow."
+}

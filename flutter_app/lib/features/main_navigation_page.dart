@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/features/address/address_list_page.dart';
 import 'package:khurpi_fresh/features/address/address_providers.dart';
+import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/home/home_page.dart';
 import 'package:khurpi_fresh/features/cart/cart_page.dart';
 import 'package:khurpi_fresh/features/search/search_page.dart';
@@ -18,6 +19,20 @@ class MainNavigationPage extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch the selected/default delivery address from the address API on load.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSelectedAddress());
+  }
+
+  void _loadSelectedAddress() {
+    final user = ref.read(provideAuthViewModelProvider)?.user;
+    if (user != null && user.userId.isNotEmpty) {
+      ref.read(addressNotifierProvider.notifier).loadDefaultAddress(user.userId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

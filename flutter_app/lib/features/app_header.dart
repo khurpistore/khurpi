@@ -25,7 +25,9 @@ class AppHeader extends ConsumerWidget {
     final addressState = ref.watch(addressNotifierProvider);
     
     final user = authState?.user;
-    final userAddress = addressState.displayAddress ?? user?.formattedAddress ?? user?.addressLine1 ?? user?.address;
+    // Address on the home header comes ONLY from the address API (selected/default
+    // address), never from the cached getUser() profile address.
+    final userAddress = addressState.displayAddress;
     final hasAddress = userAddress != null && userAddress.trim().isNotEmpty;
     final isLoggedIn = user != null;
     
