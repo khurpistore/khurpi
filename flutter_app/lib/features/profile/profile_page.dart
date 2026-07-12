@@ -8,6 +8,7 @@ import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
 import 'package:khurpi_fresh/features/orders/orders_page.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
+import 'package:khurpi_fresh/features/address/address_providers.dart';
 import 'package:khurpi_fresh/features/cart/floating_cart_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -442,8 +443,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              // Wipe in-memory cart (prefs are cleared by logout below)
+              // Wipe in-memory cart + cached address (prefs are cleared by logout below)
               await ref.read(provideCartViewModelNotifierProvider)?.clearCart();
+              ref.read(addressNotifierProvider.notifier).clear();
               await ref.read(provideAuthViewModelNotifierProvider)?.logout();
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),

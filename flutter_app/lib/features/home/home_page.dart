@@ -9,6 +9,7 @@ import 'package:khurpi_fresh/features/products/products_page.dart';
 import 'package:khurpi_fresh/features/products/product_detail_bottom_sheet.dart';
 import 'package:khurpi_fresh/features/home/home_providers.dart';
 import 'package:khurpi_fresh/features/products/products_providers.dart';
+import 'package:khurpi_fresh/core/widgets/app_error_view.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/address/address_providers.dart';
 import 'package:khurpi_fresh/features/spin_wheel_widget.dart';
@@ -63,6 +64,14 @@ class _HomePageState extends ConsumerState<HomePage> {
         onRefresh: _loadData,
         child: CustomScrollView(
           slivers: [
+            // Internet / server connectivity issue
+            if (productsState?.errorMessage != null &&
+                (productsState?.products.isEmpty ?? true) &&
+                (productsState?.isLoading != true))
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: AppErrorView.noInternet(onRetry: _loadData),
+              ),
             // Categories Section
             if (productsState?.categories.isNotEmpty == true) ...[
               SliverToBoxAdapter(

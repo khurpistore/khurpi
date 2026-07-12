@@ -87,30 +87,7 @@ class ProductCard extends ConsumerWidget {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              CachedNetworkImage(
-                                imageUrl: product.imageUrl ?? '',
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
-                                  color: const Color(0xFFF5F5F5),
-                                  child: const Center(
-                                    child: SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (_, __, ___) => Container(
-                                  color: const Color(0xFFF5F5F5),
-                                  child: Icon(
-                                    Icons.eco_rounded,
-                                    color: AppColors.primary.withOpacity(0.28),
-                                    size: 42,
-                                  ),
-                                ),
-                              ),
+                              ProductImageSlider(images: product.galleryImages),
                               // Discount badge (top left)
                               if (hasDiscount && discountPercent > 0)
                                 Positioned(
@@ -383,6 +360,78 @@ class _StepperButton extends StatelessWidget {
         padding: const EdgeInsets.all(4.0),
         child: Icon(icon, color: Colors.white, size: 14),
       ),
+    );
+  }
+}
+
+class ProductImageSlider extends StatefulWidget {
+  final List<String> images;
+  const ProductImageSlider({super.key, required this.images});
+
+  @override
+  State<ProductImageSlider> createState() => _ProductImageSliderState();
+}
+
+class _ProductImageSliderState extends State<ProductImageSlider> {
+  final PageController _controller = PageController();
+  int _current = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final imgs = widget.images.isEmpty ? [''] : widget.images;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          controller: _controller,
+          itemCount: imgs.length,
+          physics: imgs.length > 1 ? null : const NeverScrollableScrollPhysics(),
+          onPageChanged: (i) => setState(() => _current = i),
+          itemBuilder: (_, index) => CachedNetworkImage(
+            imageUrl: imgs[index],
+            fit: BoxFit.cover,
+            placeholder: (_, __) => Container(
+              color: const Color(0xFFF5F5F5),
+              child: const Center(
+                child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+            ),
+            errorWidget: (_, __, ___) => Container(
+              color: const Color(0xFFF5F5F5),
+              child: Icon(Icons.eco_rounded, color: AppColors.primary.withOpacity(0.28), size: 42),
+            ),
+          ),
+        ),
+        if (imgs.length > 1)
+          Positioned(
+            bottom: 6,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(imgs.length, (i) {
+                final active = i == _current;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  width: active ? 14 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: active ? Colors.white : Colors.white.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(3),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 2)],
+                  ),
+                );
+              }),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -83,6 +83,10 @@ class AddressNotifier extends StateNotifier<AddressState> {
   void setSelectedAddress(Map<String, dynamic> address) {
     state = state.copyWith(selectedAddress: address);
   }
+
+  void clear() {
+    state = const AddressState();
+  }
 }
 
 final addressNotifierProvider =

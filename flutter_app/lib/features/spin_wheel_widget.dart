@@ -7,6 +7,8 @@ import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/providers.dart';
+import 'package:khurpi_fresh/features/auth/auth_providers.dart';
+import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
 
 
 // Prize model for wheel sections
@@ -214,6 +216,13 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
   void _spin() {
     if (_isSpinning || !_canSpin) return;
 
+    // Guests must log in before playing (so prizes can be added to their cart).
+    final isAuth = ref.read(provideAuthViewModelProvider)?.isAuthenticated ?? false;
+    if (!isAuth) {
+      _promptLogin();
+      return;
+    }
+
     setState(() {
       _isSpinning = true;
       _showResult = false;
@@ -233,6 +242,31 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
 
     _controller.reset();
     _controller.forward();
+  }
+
+  void _promptLogin() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Login to Play'),
+        content: const Text('Please log in to spin the wheel and get free products added to your cart.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const OTPLoginPage()));
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Login', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onSpinComplete() async {

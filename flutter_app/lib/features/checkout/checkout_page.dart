@@ -7,6 +7,7 @@ import 'package:khurpi_fresh/features/home/home_providers.dart';
 import 'package:khurpi_fresh/features/orders/orders_providers.dart';
 import 'package:khurpi_fresh/features/orders/order_success_page.dart';
 import 'package:khurpi_fresh/features/address/address_list_page.dart';
+import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
 import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
@@ -585,7 +586,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                   child: SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _isPlacingOrder ? null : _placeOrder,
+                      onPressed: _isPlacingOrder ? null : _handleCheckoutTap,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
@@ -602,27 +603,40 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Place Order',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '₹${total.toStringAsFixed(0)}',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
-                                ),
-                              ],
+                          : Builder(
+                              builder: (context) {
+                                final isGuest = ref.watch(provideAuthViewModelProvider)?.user == null;
+                                final noAddress = _selectedAddress == null;
+                                final label = isGuest
+                                    ? 'Login to Checkout'
+                                    : noAddress
+                                        ? 'Add Delivery Address'
+                                        : 'Place Order';
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      label,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    if (!isGuest && !noAddress) ...[
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '₹${total.toStringAsFixed(0)}',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                );
+                              },
                             ),
                     ),
                   ),
@@ -792,6 +806,21 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     }
     
     return storeState.settings!.defaultDeliveryFee;
+  }
+
+  Future<void> _handleCheckoutTap() async {
+    final isGuest = ref.read(provideAuthViewModelProvider)?.user == null;
+    if (isGuest) {
+      // Guest: send to login. Cart persists, so they return and continue.
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const OTPLoginPage()));
+      return;
+    }
+    if (_selectedAddress == null) {
+      // No address yet: open the address page to add/select one.
+      _selectAddress();
+      return;
+    }
+    await _placeOrder();
   }
 
   Future<void> _placeOrder() async {
