@@ -36,6 +36,7 @@ class FloatingCartButton extends ConsumerWidget {
             MaterialPageRoute(builder: (_) => const CheckoutPage()),
           );
         },
+        child: Center(
         child: Container(
           height: 68,
           decoration: BoxDecoration(
@@ -56,11 +57,12 @@ class FloatingCartButton extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 // Product images stack
                 SizedBox(
-                  width: 80,
-                  height: 50,
+                  width: stackWidth,
+                  height: 44,
                   child: Stack(
                     children: [
                       for (int i = 0; i < displayItems.length && i < 5; i++)
@@ -145,8 +147,10 @@ class FloatingCartButton extends ConsumerWidget {
                 const SizedBox(width: 12),
                 
                 // Item count and total
-                Expanded(
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -201,6 +205,7 @@ class FloatingCartButton extends ConsumerWidget {
               ],
             ),
           ),
+        ),
         ),
       ),
     );

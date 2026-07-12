@@ -151,6 +151,11 @@ The codebase has been synced from the GitHub branch `feature/5july_deployed`. Th
 - Image Upload (Profile/Category/Product/Banner) — needs object storage integration (currently URL fields).
 - Address full CRUD from home screen header.
 
+## UI batch (2026-06)
+- Header address: `AddressState.displayAddress` now excludes city/state/country/pincode (uses address_line_1/2 + area only).
+- Floating cart: image stack width scales with item count; pill is content-width & centered (fixed overlap).
+- Search: added `_searchSeq` guard to drop stale responses (fixes clear→wrong-result race). Removed "in stock" label. Tile is now a simple divider row (no card) with tall image (60×120). Empty states aligned above center via Align(0,-0.45).
+
 ## Multi-image gallery (2026-06) — DONE
 - **Backend**: added `images: List[str]` to Product/ProductCreate/ProductUpdate. All 4 product-serving endpoints (list, by-category, featured, single, search) normalize `images` → falls back to `[primary]` when empty. Curl-verified: set/get/list/search all return the array; empty → `[primary]`.
 - **Admin panel** (`AdminProducts.js`): "Additional Images (Gallery)" editor — add/remove image URL rows with thumbnail preview; submit merges `[primary, ...additional]` unique into `images`.

@@ -25,19 +25,24 @@ class AddressState {
     final address = selectedAddress;
     if (address == null) return null;
 
+    // Header shows only house/area line — never city, state, country or pincode.
     final parts = <String>[];
-    final addressLine = (address['address_line'] ?? address['addressLine'])?.toString();
     final line1 = (address['address_line_1'] ?? address['addressLine1'])?.toString();
+    final line2 = (address['address_line_2'] ?? address['addressLine2'])?.toString();
     final area = address['area']?.toString();
 
-    if (addressLine != null && addressLine.trim().isNotEmpty) {
-      return addressLine;
+    if (line1 != null && line1.trim().isNotEmpty) parts.add(line1.trim());
+    if (line2 != null && line2.trim().isNotEmpty) parts.add(line2.trim());
+    if (area != null && area.trim().isNotEmpty) parts.add(area.trim());
+
+    if (parts.isEmpty) {
+      // Fallback: use only the first segment of the joined line (before city etc.)
+      final addressLine = (address['address_line'] ?? address['addressLine'])?.toString();
+      if (addressLine != null && addressLine.trim().isNotEmpty) {
+        return addressLine.split(',').first.trim();
+      }
+      return null;
     }
-
-    if (line1 != null && line1.trim().isNotEmpty) parts.add(line1);
-    if (area != null && area.trim().isNotEmpty) parts.add(area);
-
-    if (parts.isEmpty) return null;
     return parts.join(', ');
   }
 }

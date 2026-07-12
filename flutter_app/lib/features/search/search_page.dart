@@ -27,6 +27,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   List<String> _recentSearches = [];
   bool _isLoading = false;
   bool _hasSearched = false;
+  int _searchSeq = 0;
 
   static const String _recentSearchesKey = 'recent_searches';
 
@@ -94,10 +95,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _search(String query) async {
-    if (query.length < 2) {
+    final seq = ++_searchSeq;
+    if (query.trim().length < 2) {
       setState(() {
         _searchResults = [];
         _hasSearched = false;
+        _isLoading = false;
       });
       return;
     }
@@ -106,6 +109,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     try {
       final response = await _dio.get('/search', queryParameters: {'q': query, 'limit': 20});
+      // Ignore stale responses: the query changed/cleared while this was in flight.
+      if (seq != _searchSeq) return;
       final products = (response.data['products'] as List)
           .map((json) => ProductModel.fromJson(json))
           .toList();
@@ -120,6 +125,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         _saveRecentSearch(query);
       }
     } catch (e) {
+      if (seq != _searchSeq) return;
       setState(() {
         _isLoading = false;
         _hasSearched = true;
@@ -152,9 +158,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             },
             onClear: () {
               _searchController.clear();
+              _searchSeq++;
               setState(() {
                 _searchResults = [];
                 _hasSearched = false;
+                _isLoading = false;
               });
             },
           ),
@@ -197,9 +205,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   Widget _buildRecentSearches() {
     if (_recentSearches.isEmpty) {
-      return Center(
+      return Align(
+        alignment: const Alignment(0, -0.45),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(24),
@@ -296,9 +305,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
+    return Align(
+      alignment: const Alignment(0, -0.45),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(24),
@@ -376,25 +386,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final hasDiscount = product.hasDiscount;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF0F0F0))),
       ),
       child: InkWell(
         onTap: () {
           showProductDetailBottomSheet(context, product.productId);
         },
-        borderRadius: BorderRadius.circular(14),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
             children: [
               // Product image
@@ -403,25 +403,25 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 child: product.imageUrl != null
                     ? CachedNetworkImage(
                         imageUrl: product.imageUrl!,
-                        width: 70,
-                        height: 70,
+                        width: 60,
+                        height: 120,
                         fit: BoxFit.cover,
                         placeholder: (_, __) => Container(
-                          width: 70,
-                          height: 70,
+                          width: 60,
+                          height: 120,
                           color: const Color(0xFFF5F5F5),
                           child: Icon(Icons.eco, color: AppColors.primary.withOpacity(0.3)),
                         ),
                         errorWidget: (_, __, ___) => Container(
-                          width: 70,
-                          height: 70,
+                          width: 60,
+                          height: 120,
                           color: const Color(0xFFF5F5F5),
                           child: Icon(Icons.eco, color: AppColors.primary.withOpacity(0.3)),
                         ),
                       )
                     : Container(
-                        width: 70,
-                        height: 70,
+                        width: 60,
+                        height: 120,
                         color: const Color(0xFFF5F5F5),
                         child: Icon(Icons.eco, color: AppColors.primary.withOpacity(0.3)),
                       ),
@@ -474,22 +474,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: _getStockColor(product.stockStatus).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        _getStockText(product.stockStatus),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: _getStockColor(product.stockStatus),
-                        ),
-                      ),
-                    ),
+                    // in-stock label removed per design
                   ],
                 ),
               ),
@@ -555,27 +540,5 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
       ),
     );
-  }
-
-  Color _getStockColor(String? status) {
-    switch (status) {
-      case 'in_stock':
-        return AppColors.success;
-      case 'growing':
-        return AppColors.warning;
-      default:
-        return AppColors.error;
-    }
-  }
-
-  String _getStockText(String? status) {
-    switch (status) {
-      case 'in_stock':
-        return 'In Stock';
-      case 'growing':
-        return 'Growing';
-      default:
-        return 'Out of Stock';
-    }
   }
 }
