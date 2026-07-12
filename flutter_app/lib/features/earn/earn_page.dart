@@ -115,30 +115,47 @@ class EarnPage extends StatelessWidget {
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + MediaQuery.of(ctx).padding.bottom),
+          padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + MediaQuery.of(ctx).padding.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+              // Drag handle (same as profile Get Help sheet)
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Icon(Icons.card_giftcard_rounded, color: AppColors.primary, size: 26),
-                  const SizedBox(width: 10),
-                  Text('How Spin & Win Works', style: AppTextStyles.h3.copyWith(color: AppColors.primary)),
-                ],
+              const SizedBox(height: 24),
+              // Circular icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.card_giftcard_rounded, size: 40, color: AppColors.primary),
               ),
               const SizedBox(height: 20),
+              // Title
+              const Text(
+                'How Spin & Win Works',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1A1A2E),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Spin the wheel and win free veggies with your order!',
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
               _HowItWorksStep(icon: Icons.shopping_cart_outlined, step: '1', text: 'Add items to your cart'),
               _HowItWorksStep(icon: Icons.autorenew, step: '2', text: 'Come here and spin the wheel'),
               _HowItWorksStep(icon: Icons.card_giftcard, step: '3', text: 'Win FREE vegetables added to your cart!'),
