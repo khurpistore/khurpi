@@ -267,62 +267,79 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          // Remove button
-                          GestureDetector(
-                            onTap: () => ref.read(provideCartViewModelNotifierProvider)?.removeFromCart(item.productId),
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              child: Icon(Icons.close, size: 18, color: AppColors.textHint),
+                          // Remove button (gift items can't be removed manually)
+                          if (item.price > 0)
+                            GestureDetector(
+                              onTap: () => ref.read(provideCartViewModelNotifierProvider)?.removeFromCart(item.productId),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(Icons.close, size: 18, color: AppColors.textHint),
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text('FREE GIFT',
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
                             ),
-                          ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '₹${item.price.toStringAsFixed(0)} per ${item.unit}',
+                        item.price > 0 ? '₹${item.price.toStringAsFixed(0)} per ${item.unit}' : 'Free gift with your order',
                         style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 8),
                       // Quantity controls and total
                       Row(
                         children: [
-                          // Quantity controls
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.border),
-                              borderRadius: BorderRadius.circular(8),
+                          // Quantity controls (hidden for free gift items)
+                          if (item.price > 0)
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.border),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => ref.read(provideCartViewModelNotifierProvider)?.decrementQuantity(item.productId),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      child: Icon(Icons.remove, size: 18, color: AppColors.primary),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text(
+                                      '${item.quantity.toStringAsFixed(item.quantity == item.quantity.toInt() ? 0 : 1)} ${item.unit}',
+                                      style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => ref.read(provideCartViewModelNotifierProvider)?.incrementQuantity(item.productId),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      child: Icon(Icons.add, size: 18, color: AppColors.primary),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Text(
+                              '${item.quantity.toStringAsFixed(item.quantity == item.quantity.toInt() ? 0 : 1)} ${item.unit}',
+                              style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => ref.read(provideCartViewModelNotifierProvider)?.decrementQuantity(item.productId),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    child: Icon(Icons.remove, size: 18, color: AppColors.primary),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text(
-                                    '${item.quantity.toStringAsFixed(item.quantity == item.quantity.toInt() ? 0 : 1)} ${item.unit}',
-                                    style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => ref.read(provideCartViewModelNotifierProvider)?.incrementQuantity(item.productId),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    child: Icon(Icons.add, size: 18, color: AppColors.primary),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                           const Spacer(),
                           // Item total
                           Text(
-                            '₹${(item.price * item.quantity).toStringAsFixed(0)}',
+                            item.price > 0 ? '₹${(item.price * item.quantity).toStringAsFixed(0)}' : 'FREE',
                             style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary),
                           ),
                         ],
@@ -352,216 +369,47 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   Widget _buildDeliveryTimeSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(Icons.access_time, size: 20, color: AppColors.primary),
-              const SizedBox(width: 8),
-              Text('Delivery Time', style: AppTextStyles.h4),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              // Instant Delivery Option
-              Expanded(
-                child: _buildDeliveryOption(
-                  title: 'Instant',
-                  subtitle: 'Within 30 mins',
-                  icon: Icons.bolt,
-                  isSelected: _deliveryTime == 'instant',
-                  onTap: () => setState(() => _deliveryTime = 'instant'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Tomorrow Delivery Option
-              Expanded(
-                child: _buildDeliveryOption(
-                  title: 'Tomorrow',
-                  subtitle: 'By 8:00 AM',
-                  icon: Icons.wb_sunny_outlined,
-                  isSelected: _deliveryTime == 'tomorrow',
-                  onTap: () => setState(() => _deliveryTime = 'tomorrow'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Info Banner
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _deliveryTime == 'instant' 
-                  ? Colors.orange.withOpacity(0.1) 
-                  : AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _deliveryTime == 'instant' ? Icons.bolt : Icons.schedule,
-                  size: 18,
-                  color: _deliveryTime == 'instant' ? Colors.orange.shade700 : AppColors.success,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _deliveryTime == 'instant'
-                        ? 'Your order will be delivered within 30 minutes'
-                        : 'Your order will be delivered tomorrow by 8:00 AM',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: _deliveryTime == 'instant' ? Colors.orange.shade800 : Colors.green.shade800,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Icon(Icons.access_time, size: 18, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Text('Delivery', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+          const Spacer(),
+          _buildDeliveryChip('instant', 'Instant', Icons.bolt),
+          const SizedBox(width: 8),
+          _buildDeliveryChip('tomorrow', 'Tomorrow', Icons.wb_sunny_outlined),
         ],
       ),
     );
   }
 
-  Widget _buildDeliveryOption({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildDeliveryChip(String value, String label, IconData icon) {
+    final isSelected = _deliveryTime == value;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => setState(() => _deliveryTime = value),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 2 : 1,
-          ),
-          color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.transparent,
+          color: isSelected ? AppColors.primary : AppColors.background,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
         ),
-        child: Column(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 28,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-            ),
-            const SizedBox(height: 8),
+            Icon(icon, size: 15, color: isSelected ? Colors.white : AppColors.textSecondary),
+            const SizedBox(width: 5),
             Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: isSelected ? AppColors.primary : AppColors.textPrimary,
-              ),
-            ),
-            Text(
-              subtitle,
+              label,
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.payment, size: 20, color: AppColors.primary),
-              const SizedBox(width: 8),
-              Text('Payment Method', style: AppTextStyles.h4),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildPaymentOption(
-            title: 'Cash on Delivery',
-            subtitle: 'Pay when you receive',
-            icon: Icons.money,
-            value: 'cod',
-          ),
-          const Divider(height: 1),
-          _buildPaymentOption(
-            title: 'Online Payment',
-            subtitle: 'UPI / Card / Net Banking',
-            icon: Icons.credit_card,
-            value: 'online',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentOption({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required String value,
-  }) {
-    final isSelected = _selectedPaymentMethod == value;
-    return InkWell(
-      onTap: () => setState(() => _selectedPaymentMethod = value),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.textHint,
-                  width: 2,
-                ),
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Icon(icon, color: AppColors.textSecondary, size: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppTextStyles.body),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
-                  ),
-                ],
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.white : AppColors.textSecondary,
               ),
             ),
           ],
@@ -783,6 +631,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
