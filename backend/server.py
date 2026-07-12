@@ -5577,7 +5577,7 @@ async def vendor_get_products(
     result = []
     for p in products:
         images = p.get("images") or []
-        image = images[0] if images else p.get("image_url")
+        image = (images[0] if images else None) or p.get("image") or p.get("image_url")
         result.append({
             "id": p.get("id"),
             "name": p.get("name"),

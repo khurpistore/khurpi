@@ -55,6 +55,7 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
     final priceCtrl = TextEditingController(text: (product['price'] ?? '').toString());
     final mrpCtrl = TextEditingController(text: (product['mrp'] ?? '').toString());
     final stockCtrl = TextEditingController(text: (product['stock_quantity'] ?? 0).toString());
+    final unit = (product['unit']?.toString() ?? '').trim();
     bool saving = false;
 
     await showModalBottomSheet(
@@ -70,7 +71,7 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
                 left: 20,
                 right: 20,
                 top: 20,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + MediaQuery.of(ctx).padding.bottom + 24,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -78,12 +79,24 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
                 children: [
                   Text(product['name']?.toString() ?? 'Product',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  if (unit.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text('Unit: $unit',
+                          style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600)),
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   _field('Selling Price (₹)', priceCtrl),
                   const SizedBox(height: 14),
                   _field('MRP (₹)', mrpCtrl),
                   const SizedBox(height: 14),
-                  _field('Stock Quantity', stockCtrl, isInt: true),
+                  _field(unit.isNotEmpty ? 'Stock Quantity ($unit)' : 'Stock Quantity', stockCtrl, isInt: true),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -241,6 +254,7 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
     final mrp = p['mrp'];
     final price = p['price'];
     final stock = p['stock_quantity'] ?? 0;
+    final unit = (p['unit']?.toString() ?? '').trim();
 
     return InkWell(
       onTap: () => _openEditSheet(p),
@@ -267,8 +281,8 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(p['name']?.toString() ?? 'Product',
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                      maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, height: 1.2)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -284,12 +298,13 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text('Stock: $stock',
+                  Text('Stock: $stock${unit.isNotEmpty ? ' $unit' : ''}',
                       style: TextStyle(
                           color: (stock as num) > 0 ? AppColors.textSecondary : AppColors.error, fontSize: 12)),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Icon(Icons.edit_outlined, color: AppColors.primary, size: 20),
           ],
         ),
