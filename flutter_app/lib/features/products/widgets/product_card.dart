@@ -247,47 +247,53 @@ class ProductCard extends ConsumerWidget {
                 ),
             ],
           ),
-          // Price section (left aligned)
+          // Price section (aligned with image content)
           const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '₹${displayPrice.toStringAsFixed(0)}',
-                style: AppTextStyles.body.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (hasDiscount) ...[
-                const SizedBox(width: 6),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 1),
-                  child: Text(
-                    '₹${mrpPrice.toStringAsFixed(0)}',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textHint,
-                      fontSize: 12,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: AppColors.textHint,
-                    ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '₹${displayPrice.toStringAsFixed(0)}',
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
+                if (hasDiscount) ...[
+                  const SizedBox(width: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 1),
+                    child: Text(
+                      '₹${mrpPrice.toStringAsFixed(0)}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textHint,
+                        fontSize: 12,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: AppColors.textHint,
+                      ),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-          // Product name (left aligned)
+          // Product name (aligned with image content)
           const SizedBox(height: 4),
-          Text(
-            product.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodySmall.copyWith(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1F1F1F),
-              height: 1.2,
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              product.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1F1F1F),
+                height: 1.2,
+              ),
             ),
           ),
         ],
@@ -374,8 +380,8 @@ class _StepperButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(6.0),
-        child: Icon(icon, color: Colors.white, size: 16),
+        padding: const EdgeInsets.all(4.0),
+        child: Icon(icon, color: Colors.white, size: 14),
       ),
     );
   }

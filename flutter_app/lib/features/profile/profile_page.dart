@@ -20,6 +20,8 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   String? _supportPhone;
+  String? _supportWhatsapp;
+  String? _supportEmail;
   final _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
 
   @override
@@ -36,6 +38,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       if (response.data != null) {
         setState(() {
           _supportPhone = response.data['support_phone'] ?? response.data['phone'];
+          _supportWhatsapp = response.data['support_whatsapp'];
+          _supportEmail = response.data['support_email'] ?? response.data['email'];
         });
       }
     } catch (e) {
@@ -316,58 +320,46 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
             ),
             const SizedBox(height: 24),
-            if (_supportPhone != null && _supportPhone!.isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE8E8E8)),
+            if ((_supportPhone != null && _supportPhone!.isNotEmpty) ||
+                (_supportWhatsapp != null && _supportWhatsapp!.isNotEmpty) ||
+                (_supportEmail != null && _supportEmail!.isNotEmpty)) ...[
+              if (_supportPhone != null && _supportPhone!.isNotEmpty)
+                _buildContactTile(
+                  icon: Icons.phone_rounded,
+                  color: AppColors.primary,
+                  label: 'Call Us',
+                  value: _supportPhone!,
+                  actionIcon: Icons.call,
+                  onTap: () async {
+                    final u = Uri.parse('tel:$_supportPhone');
+                    if (await canLaunchUrl(u)) await launchUrl(u);
+                  },
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.phone_rounded, color: AppColors.primary, size: 24),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Call Us',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _supportPhone!,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1A1A2E),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final url = Uri.parse('tel:$_supportPhone');
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(url);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(12),
-                      ),
-                      child: const Icon(Icons.call, color: Colors.white, size: 20),
-                    ),
-                  ],
+              if (_supportWhatsapp != null && _supportWhatsapp!.isNotEmpty)
+                _buildContactTile(
+                  icon: Icons.chat_rounded,
+                  color: const Color(0xFF25D366),
+                  label: 'WhatsApp',
+                  value: _supportWhatsapp!,
+                  actionIcon: Icons.send_rounded,
+                  onTap: () async {
+                    final digits = _supportWhatsapp!.replaceAll(RegExp(r'[^0-9]'), '');
+                    final u = Uri.parse('https://wa.me/$digits');
+                    if (await canLaunchUrl(u)) await launchUrl(u, mode: LaunchMode.externalApplication);
+                  },
                 ),
-              ),
+              if (_supportEmail != null && _supportEmail!.isNotEmpty)
+                _buildContactTile(
+                  icon: Icons.email_rounded,
+                  color: Colors.orange.shade700,
+                  label: 'Email',
+                  value: _supportEmail!,
+                  actionIcon: Icons.arrow_forward_rounded,
+                  onTap: () async {
+                    final u = Uri.parse('mailto:$_supportEmail');
+                    if (await canLaunchUrl(u)) await launchUrl(u);
+                  },
+                ),
             ] else ...[
               Container(
                 padding: const EdgeInsets.all(16),
@@ -391,6 +383,50 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             const SizedBox(height: 16),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildContactTile({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String value,
+    required IconData actionIcon,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                const SizedBox(height: 2),
+                Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E))),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: onTap,
+            style: ElevatedButton.styleFrom(backgroundColor: color, shape: const CircleBorder(), padding: const EdgeInsets.all(11)),
+            child: Icon(actionIcon, color: Colors.white, size: 18),
+          ),
+        ],
       ),
     );
   }

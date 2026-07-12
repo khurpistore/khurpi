@@ -109,6 +109,22 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
     final state = ref.watch(provideProductDetailViewModelProvider);
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // Cart awareness: show Total + qty stepper only when the item is in the cart.
+    final cartState = ref.watch(provideCartViewModelProvider);
+    double cartQty = 0;
+    final pid = state?.product?.productId;
+    if (cartState != null && pid != null) {
+      for (final it in cartState.items) {
+        if (it.productId == pid) {
+          cartQty = it.quantity;
+          break;
+        }
+      }
+    }
+    final isInCart = cartQty > 0;
+    final ss = (state?.product?.stockStatus ?? '').toLowerCase().trim();
+    final isAvailable = ss == 'in_stock' || ss == 'in stock' || ss == 'available';
+
     return Container(
       constraints: BoxConstraints(maxHeight: screenHeight * 0.85),
       decoration: BoxDecoration(
@@ -158,21 +174,22 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                                   Expanded(
                                     child: Text(state.product!.name, style: AppTextStyles.h3),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: _getStockColor(state.product!.stockStatus).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Text(
-                                      _getStockText(state.product!.stockStatus),
-                                      style: TextStyle(
-                                        color: _getStockColor(state.product!.stockStatus),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
+                                  if (!isAvailable)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: _getStockColor(state.product!.stockStatus).withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Text(
+                                        _getStockText(state.product!.stockStatus),
+                                        style: TextStyle(
+                                          color: _getStockColor(state.product!.stockStatus),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ),
-                                  ),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -234,8 +251,8 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                                 const SizedBox(height: 16),
                               ],
                               
-                              // Quantity Selector
-                              Container(
+                              // Quantity Selector (only before the item is in the cart)
+                              if (!isInCart) Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: AppColors.background,
@@ -297,74 +314,97 @@ class _ProductDetailBottomSheetState extends ConsumerState<ProductDetailBottomSh
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  // Total Price
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Total', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
-                      Text(
-                        state!.formattedTotal,
-                        style: AppTextStyles.h3.copyWith(color: AppColors.primary),
+              child: !isAvailable
+                  ? SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: null,
+                        style: ElevatedButton.styleFrom(
+                          disabledBackgroundColor: AppColors.textHint,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Out of Stock',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
                       ),
-                    ],
-                  ),
-                  const SizedBox(width: 16),
-                  // Add to Cart Button
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: state.product!.stockStatus.toLowerCase().trim() == 'in_stock' ||
-                              state.product!.stockStatus.toLowerCase().trim() == 'in stock' ||
-                              state.product!.stockStatus.toLowerCase().trim() == 'available'
-                          ? () async {
+                    )
+                  : isInCart
+                      ? Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('Total', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                                Text(
+                                  '₹${(state!.product!.price * cartQty).toStringAsFixed(0)}',
+                                  style: AppTextStyles.h3.copyWith(color: AppColors.primary),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    onPressed: () => ref
+                                        .read(provideCartViewModelNotifierProvider)
+                                        ?.decrementQuantity(state.product!.productId),
+                                    icon: const Icon(Icons.remove, color: Colors.white, size: 20),
+                                    constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                  Text(
+                                    '${cartQty.toStringAsFixed(cartQty == cartQty.toInt() ? 0 : 1)} ${state.selectedUnit}',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => ref
+                                        .read(provideCartViewModelNotifierProvider)
+                                        ?.incrementQuantity(state.product!.productId),
+                                    icon: const Icon(Icons.add, color: Colors.white, size: 20),
+                                    constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
                               final cartNotifier = ref.read(provideCartViewModelNotifierProvider);
-                              if (cartNotifier == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Unable to add to cart. Please try again.')),
-                                );
-                                return;
-                              }
-
+                              if (cartNotifier == null) return;
                               await cartNotifier.addToCart(
-                                state.product!,
+                                state!.product!,
                                 quantity: state.quantity,
                                 unit: state.selectedUnit,
                               );
-
-                              if (!context.mounted) return;
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('${state.product!.name} added to cart')),
-                              );
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        disabledBackgroundColor: AppColors.textHint,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                              state.product!.stockStatus.toLowerCase().trim() == 'in_stock' ||
-                                      state.product!.stockStatus.toLowerCase().trim() == 'in stock' ||
-                                      state.product!.stockStatus.toLowerCase().trim() == 'available'
-                                  ? 'Add to Cart'
-                                  : 'Out of Stock',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                              // Keep the sheet open so Total + qty controls appear.
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 20),
+                                SizedBox(width: 8),
+                                Text('Add to Cart',
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                        ),
             ),
         ],
       ),

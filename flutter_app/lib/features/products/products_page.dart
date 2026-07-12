@@ -118,9 +118,6 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                 ),
               ),
 
-              // Divider
-              Container(height: 1, color: const Color(0xFFEEEEEE)),
-
               // Main Content: Categories + Products
               Expanded(
                 child: productsState?.isLoading == true

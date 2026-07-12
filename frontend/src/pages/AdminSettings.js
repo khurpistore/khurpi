@@ -26,6 +26,11 @@ const AdminSettings = () => {
     email: '',
     free_delivery_threshold: 1000
   });
+  const [supportContact, setSupportContact] = useState({
+    support_phone: '',
+    support_whatsapp: '',
+    support_email: ''
+  });
   const [deliveryPricing, setDeliveryPricing] = useState([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const [pages, setPages] = useState({
@@ -55,6 +60,16 @@ const AdminSettings = () => {
       setShopConfig(response.data.shop_config);
       setDeliveryPricing(response.data.delivery_pricing);
       setSubscriptionPlans(response.data.subscription_plans);
+
+      // Load support contact from store settings (shown in app Get Help)
+      try {
+        const ss = await axios.get(`${API}/admin/store/settings`);
+        setSupportContact({
+          support_phone: ss.data.support_phone || '',
+          support_whatsapp: ss.data.support_whatsapp || '',
+          support_email: ss.data.support_email || ''
+        });
+      } catch (_) {}
       
       // Load pages content
       const pagesData = response.data.pages || [];
@@ -87,8 +102,19 @@ const AdminSettings = () => {
     }
   };
 
-  const handleSaveDeliveryPricing = async () => {
+  const handleSaveSupport = async () => {
     setSaving(true);
+    try {
+      await axios.put(`${API}/admin/store/settings`, supportContact);
+      toast.success('Support contact saved');
+    } catch (error) {
+      toast.error('Failed to save support contact');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveDeliveryPricing = async () => {    setSaving(true);
     try {
       await axios.put(`${API}/admin/settings/delivery-pricing`, deliveryPricing);
       toast.success('Delivery pricing saved');
@@ -267,6 +293,60 @@ const AdminSettings = () => {
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Shop Settings
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Support Contact (shown in app Get Help) */}
+          <Card data-testid="support-contact-card">
+            <CardHeader className="p-4 sm:p-6 pb-2">
+              <CardTitle className="text-lg">Support Contact (Get Help)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-2">
+              <p className="text-sm text-muted-foreground mb-4">
+                Shown to customers in the app's "Get Help" screen (call / WhatsApp / email).
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <Label>Support Phone</Label>
+                  <Input
+                    data-testid="support-phone-input"
+                    value={supportContact.support_phone}
+                    onChange={(e) => setSupportContact({ ...supportContact, support_phone: e.target.value })}
+                    className="mt-1"
+                    placeholder="e.g. 9876543210"
+                  />
+                </div>
+                <div>
+                  <Label>WhatsApp Number</Label>
+                  <Input
+                    data-testid="support-whatsapp-input"
+                    value={supportContact.support_whatsapp}
+                    onChange={(e) => setSupportContact({ ...supportContact, support_whatsapp: e.target.value })}
+                    className="mt-1"
+                    placeholder="e.g. 9876543210"
+                  />
+                </div>
+                <div>
+                  <Label>Support Email</Label>
+                  <Input
+                    type="email"
+                    data-testid="support-email-input"
+                    value={supportContact.support_email}
+                    onChange={(e) => setSupportContact({ ...supportContact, support_email: e.target.value })}
+                    className="mt-1"
+                    placeholder="help@store.com"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleSaveSupport}
+                disabled={saving}
+                data-testid="save-support-btn"
+                className="mt-4 bg-primary hover:bg-primary/90 rounded-full"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Support Contact
               </Button>
             </CardContent>
           </Card>

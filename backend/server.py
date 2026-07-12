@@ -990,6 +990,9 @@ class StoreSettingsUpdate(BaseModel):
     show_stock_quantity: Optional[bool] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
+    support_phone: Optional[str] = None
+    support_email: Optional[str] = None
+    support_whatsapp: Optional[str] = None
 
 # ==========================================
 # CATEGORY MODELS
