@@ -26,6 +26,10 @@ class FloatingCartButton extends ConsumerWidget {
 
     // Get first 5 items for display
     final displayItems = items.take(5).toList();
+    // Width of the overlapping image stack scales with the number of products
+    final stackWidth = displayItems.isEmpty
+        ? 0.0
+        : (displayItems.length - 1) * 14.0 + 40 + (itemCount > 5 ? 16.0 : 0.0);
 
     return Container(
       padding: EdgeInsets.fromLTRB(16, 0, 16, safeBottomPadding),
