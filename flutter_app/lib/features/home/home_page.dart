@@ -462,6 +462,88 @@ class _HomePageState extends ConsumerState<HomePage> {
     showProductDetailBottomSheet(context, product.productId);
   }
 
+  void _showSpinInstructions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + MediaQuery.of(ctx).padding.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: Icon(Icons.card_giftcard_rounded, size: 40, color: AppColors.primary),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'How Spin & Win Works',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E)),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Spin the wheel and win free veggies with your order!',
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              _spinInstructionStep('1', 'Add items to your cart'),
+              _spinInstructionStep('2', 'Spin the wheel to win free products'),
+              _spinInstructionStep('3', 'Your prize is added to the cart as a FREE gift'),
+              _spinInstructionStep('4', 'Place your order and enjoy!'),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Got it', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _spinInstructionStep(String number, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+            child: Text(number, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(text, style: const TextStyle(fontSize: 14, color: Color(0xFF2A2A2A))),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showSpinWheelBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -488,12 +570,28 @@ class _HomePageState extends ConsumerState<HomePage> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Close button
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+              // Title header + instructions + close
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
+                child: Row(
+                  children: [
+                    Icon(Icons.card_giftcard_rounded, color: AppColors.primary, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Spin & Win',
+                      style: AppTextStyles.h3.copyWith(color: AppColors.primary),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      tooltip: 'How it works',
+                      onPressed: () => _showSpinInstructions(context),
+                      icon: Icon(Icons.info_outline_rounded, color: AppColors.primary),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
                 ),
               ),
               // Spin wheel content

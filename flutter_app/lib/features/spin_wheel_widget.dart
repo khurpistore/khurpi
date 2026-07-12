@@ -331,7 +331,6 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
       ),
       child: Column(
         children: [
