@@ -5572,25 +5572,19 @@ async def vendor_get_products(
     vendor_id: str = Depends(get_current_vendor_id),
     project_id: str = Depends(get_project_id),
 ):
-    """Return products with the fields a vendor can manage: photo, name, mrp, price, stock."""
+    """Return all products (active + inactive) mapped to the app's Product shape so
+    the vendor UI can reuse ProductModel (photo, name, mrp, price, stock, unit)."""
     products = await db.products.find(scoped_filter(project_id), {"_id": 0}).sort("name", 1).to_list(2000)
-    result = []
     for p in products:
-        images = p.get("images") or []
-        image = (images[0] if images else None) or p.get("image") or p.get("image_url")
-        result.append({
-            "id": p.get("id"),
-            "name": p.get("name"),
-            "image_url": image,
-            "mrp": p.get("mrp"),
-            "price": p.get("price"),
-            "stock_quantity": p.get("stock_quantity", 0),
-            "unit": p.get("unit"),
-            "stock_status": p.get("stock_status"),
-        })
-    return result
+        # Normalize image fields for Flutter (ProductModel uses image_url / images)
+        if p.get("image") and not p.get("image_url"):
+            p["image_url"] = p["image"]
+        if not p.get("images"):
+            _primary = p.get("image_url") or p.get("image")
+            p["images"] = [_primary] if _primary else []
+    return products
 
-@api_router.put("/vendor/products/{product_id}")
+@api_router.put("/vendor/products/{product_id}", response_model=Product)
 async def vendor_update_product(
     product_id: str,
     data: VendorProductUpdate,
@@ -5606,13 +5600,12 @@ async def vendor_update_product(
         raise HTTPException(status_code=404, detail="Product not found")
 
     product = await db.products.find_one({"id": product_id}, {"_id": 0})
-    return {
-        "id": product.get("id"),
-        "name": product.get("name"),
-        "mrp": product.get("mrp"),
-        "price": product.get("price"),
-        "stock_quantity": product.get("stock_quantity", 0),
-    }
+    if product.get("image") and not product.get("image_url"):
+        product["image_url"] = product["image"]
+    if not product.get("images"):
+        _primary = product.get("image_url") or product.get("image")
+        product["images"] = [_primary] if _primary else []
+    return Product(**product)
 
 
 # ============ ADMIN CREATE ORDER (Phone/WhatsApp Orders) ============

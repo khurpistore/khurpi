@@ -1,61 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khurpi_fresh/core/constants/app_colors.dart';
-import 'package:khurpi_fresh/core/network/dio_client.dart';
+import 'package:khurpi_fresh/data/models/product_model.dart';
+import 'package:khurpi_fresh/features/vendor/vendor_providers.dart';
 
-class VendorProductsPage extends StatefulWidget {
+class VendorProductsPage extends ConsumerStatefulWidget {
   const VendorProductsPage({super.key});
 
   @override
-  State<VendorProductsPage> createState() => _VendorProductsPageState();
+  ConsumerState<VendorProductsPage> createState() => _VendorProductsPageState();
 }
 
-class _VendorProductsPageState extends State<VendorProductsPage> {
-  final _dio = DioClient.instance;
-  bool _loading = true;
-  String? _error;
-  List<dynamic> _products = [];
+class _VendorProductsPageState extends ConsumerState<VendorProductsPage> {
   String _search = '';
 
   @override
   void initState() {
     super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(vendorProductsViewModelProvider.notifier).loadProducts();
     });
-    try {
-      final res = await _dio.get('/vendor/products');
-      setState(() {
-        _products = res.data as List<dynamic>;
-        _loading = false;
-      });
-    } on DioException catch (e) {
-      setState(() {
-        _error = e.response?.data is Map
-            ? (e.response?.data['detail']?.toString() ?? 'Failed to load products')
-            : 'Failed to load products';
-        _loading = false;
-      });
-    }
   }
 
-  List<dynamic> get _filtered {
-    if (_search.trim().isEmpty) return _products;
+  List<ProductModel> _filter(List<ProductModel> products) {
+    if (_search.trim().isEmpty) return products;
     final q = _search.toLowerCase();
-    return _products.where((p) => (p['name']?.toString().toLowerCase() ?? '').contains(q)).toList();
+    return products.where((p) => p.name.toLowerCase().contains(q)).toList();
   }
 
-  Future<void> _openEditSheet(Map<String, dynamic> product) async {
-    final priceCtrl = TextEditingController(text: (product['price'] ?? '').toString());
-    final mrpCtrl = TextEditingController(text: (product['mrp'] ?? '').toString());
-    final stockCtrl = TextEditingController(text: (product['stock_quantity'] ?? 0).toString());
-    final unit = (product['unit']?.toString() ?? '').trim();
+  Future<void> _openEditSheet(ProductModel product) async {
+    final priceCtrl = TextEditingController(text: product.price.toStringAsFixed(0));
+    final mrpCtrl = TextEditingController(text: product.mrp != null ? product.mrp!.toStringAsFixed(0) : '');
+    final stockCtrl = TextEditingController(text: product.stockQuantity.toString());
+    final unit = (product.unit ?? '').trim();
     bool saving = false;
 
     await showModalBottomSheet(
@@ -77,7 +55,7 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product['name']?.toString() ?? 'Product',
+                  Text(product.name,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   if (unit.isNotEmpty) ...[
                     const SizedBox(height: 6),
@@ -110,14 +88,24 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
                           ? null
                           : () async {
                               setSheet(() => saving = true);
-                              final ok = await _save(
-                                product['id'].toString(),
-                                price: double.tryParse(priceCtrl.text.trim()),
-                                mrp: double.tryParse(mrpCtrl.text.trim()),
-                                stock: int.tryParse(stockCtrl.text.trim()),
-                              );
-                              if (ok && ctx.mounted) Navigator.pop(ctx);
-                              if (!ok) setSheet(() => saving = false);
+                              final ok = await ref.read(vendorProductsViewModelProvider.notifier).updateProduct(
+                                    product.productId,
+                                    price: double.tryParse(priceCtrl.text.trim()),
+                                    mrp: double.tryParse(mrpCtrl.text.trim()),
+                                    stockQuantity: int.tryParse(stockCtrl.text.trim()),
+                                  );
+                              if (!ctx.mounted) return;
+                              if (ok) {
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: const Text('Product updated'), backgroundColor: AppColors.primary),
+                                );
+                              } else {
+                                setSheet(() => saving = false);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Update failed. Please try again.')),
+                                );
+                              }
                             },
                       child: saving
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -155,39 +143,11 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
     );
   }
 
-  Future<bool> _save(String productId, {double? price, double? mrp, int? stock}) async {
-    try {
-      final data = <String, dynamic>{};
-      if (price != null) data['price'] = price;
-      if (mrp != null) data['mrp'] = mrp;
-      if (stock != null) data['stock_quantity'] = stock;
-      final res = await _dio.put('/vendor/products/$productId', data: data);
-      setState(() {
-        final idx = _products.indexWhere((p) => p['id'] == productId);
-        if (idx != -1) {
-          _products[idx]['price'] = res.data['price'];
-          _products[idx]['mrp'] = res.data['mrp'];
-          _products[idx]['stock_quantity'] = res.data['stock_quantity'];
-        }
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Product updated'), backgroundColor: AppColors.primary),
-        );
-      }
-      return true;
-    } on DioException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.response?.data is Map ? (e.response?.data['detail']?.toString() ?? 'Update failed') : 'Update failed')),
-        );
-      }
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(vendorProductsViewModelProvider);
+    final products = _filter(state.products);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -213,18 +173,18 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: _load,
-              child: _loading
+              onRefresh: () => ref.read(vendorProductsViewModelProvider.notifier).loadProducts(),
+              child: state.isLoading && state.products.isEmpty
                   ? const Center(child: CircularProgressIndicator())
-                  : _error != null
-                      ? _buildError()
-                      : _filtered.isEmpty
+                  : state.errorMessage != null && state.products.isEmpty
+                      ? _buildError(state.errorMessage!)
+                      : products.isEmpty
                           ? _buildEmpty()
                           : ListView.separated(
                               padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
-                              itemCount: _filtered.length,
+                              itemCount: products.length,
                               separatorBuilder: (_, __) => const SizedBox(height: 8),
-                              itemBuilder: (context, i) => _buildProductRow(_filtered[i]),
+                              itemBuilder: (context, i) => _buildProductRow(products[i]),
                             ),
             ),
           ),
@@ -233,13 +193,18 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
     );
   }
 
-  Widget _buildError() => ListView(children: [
+  Widget _buildError(String message) => ListView(children: [
         const SizedBox(height: 120),
         Icon(Icons.error_outline, size: 48, color: AppColors.error),
         const SizedBox(height: 12),
-        Center(child: Text(_error!, textAlign: TextAlign.center)),
+        Center(child: Text(message, textAlign: TextAlign.center)),
         const SizedBox(height: 16),
-        Center(child: ElevatedButton(onPressed: _load, child: const Text('Retry'))),
+        Center(
+          child: ElevatedButton(
+            onPressed: () => ref.read(vendorProductsViewModelProvider.notifier).loadProducts(),
+            child: const Text('Retry'),
+          ),
+        ),
       ]);
 
   Widget _buildEmpty() => ListView(children: [
@@ -249,12 +214,12 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
         Center(child: Text('No products found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16))),
       ]);
 
-  Widget _buildProductRow(Map<String, dynamic> p) {
-    final image = p['image_url']?.toString();
-    final mrp = p['mrp'];
-    final price = p['price'];
-    final stock = p['stock_quantity'] ?? 0;
-    final unit = (p['unit']?.toString() ?? '').trim();
+  Widget _buildProductRow(ProductModel p) {
+    final image = p.galleryImages.isNotEmpty ? p.galleryImages.first : p.imageUrl;
+    final mrp = p.mrp;
+    final price = p.price;
+    final stock = p.stockQuantity;
+    final unit = (p.unit ?? '').trim();
 
     return InkWell(
       onTap: () => _openEditSheet(p),
@@ -280,16 +245,16 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p['name']?.toString() ?? 'Product',
+                  Text(p.name,
                       maxLines: 2, overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, height: 1.2)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('₹${(price ?? 0).toStringAsFixed(0)}',
+                      Text('₹${price.toStringAsFixed(0)}',
                           style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(width: 8),
-                      if (mrp != null && (mrp as num) > (price ?? 0))
+                      if (mrp != null && mrp > price)
                         Text('₹${mrp.toStringAsFixed(0)}',
                             style: TextStyle(
                                 color: AppColors.textHint,
@@ -300,7 +265,7 @@ class _VendorProductsPageState extends State<VendorProductsPage> {
                   const SizedBox(height: 2),
                   Text('Stock: $stock${unit.isNotEmpty ? ' $unit' : ''}',
                       style: TextStyle(
-                          color: (stock as num) > 0 ? AppColors.textSecondary : AppColors.error, fontSize: 12)),
+                          color: stock > 0 ? AppColors.textSecondary : AppColors.error, fontSize: 12)),
                 ],
               ),
             ),
