@@ -334,21 +334,6 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
       ),
       child: Column(
         children: [
-          // Title
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.auto_awesome, color: AppColors.secondary, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'Spin & Win Free Veggies!',
-                style: AppTextStyles.h4.copyWith(color: AppColors.primary),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.auto_awesome, color: AppColors.secondary, size: 24),
-            ],
-          ),
-          const SizedBox(height: 8),
           Text(
             _canSpin 
                 ? 'Spin once before placing your order!'
@@ -475,6 +460,62 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
                 ),
               ),
             ),
+          // Instructions shown directly below the spinner
+          const SizedBox(height: 22),
+          _buildInstructionsSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInstructionsSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text('How Spin & Win Works', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _instructionStep('1', 'Add items to your cart'),
+          _instructionStep('2', 'Spin the wheel to win free products'),
+          _instructionStep('3', 'Your prize is added to the cart as a FREE gift'),
+          _instructionStep('4', 'Place your order and enjoy!', isLast: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _instructionStep(String number, String text, {bool isLast = false}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+            child: Text(number, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(text, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+            ),
+          ),
         ],
       ),
     );

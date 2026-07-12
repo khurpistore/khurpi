@@ -583,11 +583,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                     const Spacer(),
                     IconButton(
-                      tooltip: 'How it works',
-                      onPressed: () => _showSpinInstructions(context),
-                      icon: Icon(Icons.info_outline_rounded, color: AppColors.primary),
-                    ),
-                    IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),
