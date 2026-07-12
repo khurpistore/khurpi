@@ -284,7 +284,7 @@ class ProductCard extends ConsumerWidget {
   }) {
     return Container(
       height: 32,
-      width: 80,
+      width: 70,
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(6),
