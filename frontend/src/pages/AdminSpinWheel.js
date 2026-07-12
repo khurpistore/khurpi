@@ -65,7 +65,7 @@ const AdminSpinWheel = () => {
     if (list.some((it) => it.product_id === productId)) return;
     updated[index] = {
       ...updated[index],
-      products: [...list, { product_id: productId, name: p.name, quantity: p.unit_value || 1, unit: p.unit || 'kg' }]
+      products: [...list, { product_id: productId, name: p.name, quantity: p.unit_value || 1, unit: p.unit || 'kg', image_url: p.image_url || p.image, price: p.price }]
     };
     setPrizes(updated);
   };

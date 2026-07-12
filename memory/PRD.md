@@ -149,7 +149,11 @@ The codebase has been synced from the GitHub branch `feature/5july_deployed`. Th
 
 ## Still Pending
 - Image Upload (Profile/Category/Product/Banner) — needs object storage integration (currently URL fields).
-- Address full CRUD from home screen header.
+
+## Address + Spin batch (2026-06)
+- Address: full CRUD from home (edit/delete/set-default always visible), removed card border, custom `label` title (backend Address/Create/Update + POST handler updated, verified persists), profile cleaned of address/earn imports.
+- Spin: landing logic now target-first (pointer matches prize); combo prizes add all linked products as free gifts with images; cart gift items show image+name+FREE (₹0, not charged); addFreeItem carries imageUrl.
+- Admin AdminSpinWheel combo products store image_url+price; backend /spin-wheel/prizes enriches prize + combo products with fresh image/name/price (curl-verified).
 
 ## UI batch (2026-06)
 - Header address: `AddressState.displayAddress` now excludes city/state/country/pincode (uses address_line_1/2 + area only).

@@ -6,8 +6,6 @@ import 'package:khurpi_fresh/core/constants/app_text_styles.dart';
 import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
-import 'package:khurpi_fresh/features/address/address_list_page.dart';
-import 'package:khurpi_fresh/features/earn/earn_page.dart';
 import 'package:khurpi_fresh/features/orders/orders_page.dart';
 import 'package:khurpi_fresh/features/cart/floating_cart_button.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -331,13 +329,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showAddressDialog() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddressListPage()),
     );
   }
 

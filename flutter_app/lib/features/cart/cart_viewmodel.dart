@@ -168,6 +168,7 @@ class CartViewModel extends _$CartViewModel {
     required String productName,
     required double quantity,
     required String unit,
+    String? imageUrl,
   }) async {
     try {
       // Check if free item already exists
@@ -182,6 +183,7 @@ class CartViewModel extends _$CartViewModel {
         productId: productId,
         productName: productName,
         price: 0, // FREE!
+        imageUrl: imageUrl,
         quantity: quantity,
         unit: unit,
       );

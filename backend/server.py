@@ -404,6 +404,7 @@ class Address(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     address_type: Optional[str] = "home"  # home, office, other
+    label: Optional[str] = None  # custom user-defined title
     is_default: bool = False
     created_at: str
     updated_at: Optional[str] = None
@@ -422,6 +423,7 @@ class AddressCreate(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     address_type: Optional[str] = "home"
+    label: Optional[str] = None
     is_default: bool = False
 
 class AddressUpdate(BaseModel):
@@ -438,6 +440,7 @@ class AddressUpdate(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     address_type: Optional[str] = None
+    label: Optional[str] = None
     is_default: Optional[bool] = None
 
 class User(BaseModel):
@@ -4533,6 +4536,7 @@ async def add_user_address(user_id: str, address_data: AddressCreate):
         "latitude": address_data.latitude,
         "longitude": address_data.longitude,
         "address_type": address_data.address_type or "home",
+        "label": address_data.label,
         "is_default": address_data.is_default or existing_count == 0,  # First address is always default
         "created_at": now,
         "updated_at": now
@@ -7544,6 +7548,22 @@ async def get_spin_prizes(project_id: str = Depends(get_project_id)):
             {"name": "Onion", "product_id": "spin_onion", "quantity": 250, "unit": "g", "color": "#8E24AA", "is_empty": False},
             {"name": "Potato", "product_id": "spin_potato", "quantity": 500, "unit": "g", "color": "#795548", "is_empty": False},
         ]
+    # Enrich prizes with fresh product image/name/price so the wheel & cart show images
+    for prize in prizes:
+        pid = prize.get("product_id")
+        if pid:
+            prod = await db.products.find_one({"id": pid}, {"_id": 0, "image_url": 1, "image": 1, "name": 1, "price": 1})
+            if prod and not prize.get("image_url"):
+                prize["image_url"] = prod.get("image_url") or prod.get("image")
+        for cp in prize.get("products", []):
+            cpid = cp.get("product_id")
+            if cpid:
+                prod = await db.products.find_one({"id": cpid}, {"_id": 0, "image_url": 1, "image": 1, "name": 1, "price": 1})
+                if prod:
+                    if not cp.get("image_url"):
+                        cp["image_url"] = prod.get("image_url") or prod.get("image")
+                    cp.setdefault("name", prod.get("name"))
+                    cp.setdefault("price", prod.get("price"))
     return prizes
 
 @api_router.post("/admin/spin-wheel/prizes")

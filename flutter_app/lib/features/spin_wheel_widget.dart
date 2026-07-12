@@ -18,6 +18,7 @@ class WheelPrize {
   final String? imageUrl;
   final Color color;
   final bool isEmpty;
+  final List<PrizeProduct> products;
 
   const WheelPrize({
     required this.name,
@@ -27,6 +28,22 @@ class WheelPrize {
     this.imageUrl,
     required this.color,
     this.isEmpty = false,
+    this.products = const [],
+  });
+}
+
+class PrizeProduct {
+  final String productId;
+  final String name;
+  final double quantity;
+  final String unit;
+  final String? imageUrl;
+  const PrizeProduct({
+    required this.productId,
+    required this.name,
+    this.quantity = 0,
+    this.unit = 'g',
+    this.imageUrl,
   });
 }
 
@@ -96,6 +113,7 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
   bool _isLoadingPrizes = true;
   
   double _currentRotation = 0;
+  int _targetIndex = 0;
   bool _isSpinning = false;
   bool _canSpin = true;
   WheelPrize? _wonPrize;
@@ -140,8 +158,16 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
             productId: json['product_id'],
             quantity: (json['quantity'] ?? 0).toDouble(),
             unit: json['unit'] ?? 'g',
+            imageUrl: json['image_url'],
             color: Color(int.parse((json['color'] ?? '#4CAF50').replaceFirst('#', '0xFF'))),
             isEmpty: json['is_empty'] ?? false,
+            products: (((json['products'] as List?) ?? []).map((p) => PrizeProduct(
+                  productId: (p['product_id'] ?? '').toString(),
+                  name: (p['name'] ?? 'Item').toString(),
+                  quantity: (p['quantity'] ?? 0).toDouble(),
+                  unit: (p['unit'] ?? 'g').toString(),
+                  imageUrl: p['image_url'],
+                ))).toList(),
           );
         }).toList();
         
@@ -194,29 +220,24 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
       _wonPrize = null;
     });
 
-    // Random number of full rotations (3-5) plus random segment
     final random = Random();
-    final fullRotations = 3 + random.nextInt(3);
-    final randomAngle = random.nextDouble() * 2 * pi;
-    final totalRotation = fullRotations * 2 * pi + randomAngle;
+    // Decide the winning segment FIRST, then spin exactly to it so the pointer
+    // always matches the prize that gets added to the cart.
+    _targetIndex = random.nextInt(_prizes.length);
+    final n = _prizes.length;
+    final sectionAngle = (2 * pi) / n;
+    final fullRotations = 4 + random.nextInt(3);
+    // Rotation that brings the CENTER of the target segment under the top pointer.
+    final base = (2 * pi - (((_targetIndex + 0.5) * sectionAngle) % (2 * pi))) % (2 * pi);
+    _currentRotation = fullRotations * 2 * pi + base;
 
-    _currentRotation = totalRotation;
     _controller.reset();
     _controller.forward();
   }
 
   void _onSpinComplete() async {
-    // Calculate which prize was won based on final rotation
-    final normalizedAngle = (_currentRotation % (2 * pi));
-    final sectionAngle = (2 * pi) / _prizes.length;
-    
-    // The pointer is at the top (12 o'clock), so we need to adjust
-    // Add pi/2 to account for the pointer position and reverse direction
-    final adjustedAngle = (2 * pi - normalizedAngle + pi / 2) % (2 * pi);
-    final prizeIndex = (adjustedAngle / sectionAngle).floor() % _prizes.length;
-    
-    final prize = _prizes[prizeIndex];
-    
+    final prize = _prizes[_targetIndex];
+
     setState(() {
       _isSpinning = false;
       _wonPrize = prize;
@@ -226,22 +247,39 @@ class _SpinWheelWidgetState extends ConsumerState<SpinWheelWidget>
     // Mark as spun (pending order completion)
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_spinKey, 'pending');
-    
+
     setState(() => _canSpin = false);
 
-    // If won a prize (not empty), add to cart
+    // If won a prize (not empty), add it (and any combo products) to the cart.
     if (!prize.isEmpty) {
       _addPrizeToCart(prize);
     }
   }
 
   void _addPrizeToCart(WheelPrize prize) {
-    ref.read(provideCartViewModelNotifierProvider)?.addFreeItem(
-      productId: prize.productId!,
-      productName: '🎁 FREE ${prize.name}',
-      quantity: prize.quantity / 1000, // Convert g to kg
-      unit: 'kg',
-    );
+    final cart = ref.read(provideCartViewModelNotifierProvider);
+    if (cart == null) return;
+
+    if (prize.products.isNotEmpty) {
+      // Combo prize: add every linked product as a free gift.
+      for (final p in prize.products) {
+        cart.addFreeItem(
+          productId: p.productId.isNotEmpty ? p.productId : 'gift_${p.name}',
+          productName: '🎁 ${p.name}',
+          quantity: p.unit == 'g' ? p.quantity / 1000 : p.quantity,
+          unit: p.unit == 'g' ? 'kg' : p.unit,
+          imageUrl: p.imageUrl,
+        );
+      }
+    } else {
+      cart.addFreeItem(
+        productId: prize.productId ?? 'gift_${prize.name}',
+        productName: '🎁 FREE ${prize.name}',
+        quantity: prize.unit == 'g' ? prize.quantity / 1000 : prize.quantity,
+        unit: prize.unit == 'g' ? 'kg' : prize.unit,
+        imageUrl: prize.imageUrl,
+      );
+    }
   }
 
   @override

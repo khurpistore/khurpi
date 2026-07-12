@@ -193,9 +193,6 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(12),
-                          border: widget.isSelecting && isSelected
-                              ? Border.all(color: AppColors.primary, width: 2)
-                              : null,
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.05),
@@ -227,10 +224,10 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        address['address_type']
-                                                ?.toString()
-                                                .toUpperCase() ??
-                                            'HOME',
+                                        (address['label']?.toString().isNotEmpty == true
+                                                ? address['label'].toString()
+                                                : (address['address_type']?.toString() ?? 'HOME'))
+                                            .toUpperCase(),
                                         style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w600,
@@ -258,23 +255,21 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
                                       ),
                                     ],
                                     const Spacer(),
-                                    if (!widget.isSelecting) ...[
-                                      IconButton(
-                                        icon: Icon(Icons.edit_outlined,
-                                            size: 20, color: AppColors.primary),
-                                        onPressed: () => _editAddress(address),
-                                        constraints: const BoxConstraints(),
-                                        padding: const EdgeInsets.all(8),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.delete_outline,
-                                            size: 20, color: AppColors.error),
-                                        onPressed: () =>
-                                            _deleteAddress(address['id']),
-                                        constraints: const BoxConstraints(),
-                                        padding: const EdgeInsets.all(8),
-                                      ),
-                                    ],
+                                    IconButton(
+                                      icon: Icon(Icons.edit_outlined,
+                                          size: 20, color: AppColors.primary),
+                                      onPressed: () => _editAddress(address),
+                                      constraints: const BoxConstraints(),
+                                      padding: const EdgeInsets.all(8),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete_outline,
+                                          size: 20, color: AppColors.error),
+                                      onPressed: () =>
+                                          _deleteAddress(address['id']),
+                                      constraints: const BoxConstraints(),
+                                      padding: const EdgeInsets.all(8),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
@@ -310,7 +305,7 @@ class _AddressListPageState extends ConsumerState<AddressListPage> {
                                     ],
                                   ),
                                 ],
-                                if (!isDefault && !widget.isSelecting) ...[
+                                if (!isDefault) ...[
                                   const SizedBox(height: 12),
                                   TextButton(
                                     onPressed: () =>
@@ -405,6 +400,7 @@ class _AddAddressPageState extends ConsumerState<AddAddressPage> {
   final _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
 
   late final TextEditingController _nameController;
+  late final TextEditingController _titleController;
   late final TextEditingController _phoneController;
   late final TextEditingController _addressLine1Controller;
   late final TextEditingController _addressLine2Controller;
@@ -425,6 +421,7 @@ class _AddAddressPageState extends ConsumerState<AddAddressPage> {
     super.initState();
     final addr = widget.address;
     _nameController = TextEditingController(text: addr?['name']);
+    _titleController = TextEditingController(text: addr?['label']);
     _phoneController = TextEditingController(text: addr?['phone']);
     _addressLine1Controller = TextEditingController(
         text: addr?['address_line_1'] ?? addr?['address_line']);
@@ -442,6 +439,7 @@ class _AddAddressPageState extends ConsumerState<AddAddressPage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _titleController.dispose();
     _phoneController.dispose();
     _addressLine1Controller.dispose();
     _addressLine2Controller.dispose();
@@ -479,6 +477,7 @@ class _AddAddressPageState extends ConsumerState<AddAddressPage> {
 
     final data = {
       'name': _nameController.text.trim(),
+      'label': _titleController.text.trim(),
       'phone': _phoneController.text.trim(),
       'address_line': addressLine,
       'address_line_1': _addressLine1Controller.text.trim(),
@@ -548,6 +547,15 @@ class _AddAddressPageState extends ConsumerState<AddAddressPage> {
                 ],
               ),
               const SizedBox(height: 20),
+
+              // Custom title (label) for the address
+              TextFormField(
+                controller: _titleController,
+                decoration: _inputDecoration(
+                    "Address title (optional) e.g. Mom's Home", Icons.label_outline),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 12),
 
               // Name & Phone
               TextFormField(
