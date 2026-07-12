@@ -7,6 +7,7 @@ import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
 import 'package:khurpi_fresh/features/orders/orders_page.dart';
+import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/cart/floating_cart_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -124,41 +125,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
             child: Row(
               children: [
-                // Profile Image with edit option
-                GestureDetector(
-                  onTap: _showEditProfileDialog,
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 35,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                        child: Text(
-                          user?.name?.substring(0, 1).toUpperCase() ?? 'U',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                // Profile avatar (initial letter)
+                CircleAvatar(
+                  radius: 35,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: Text(
+                    user?.name?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -265,49 +242,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Profile image placeholder (future: actual image picker)
-            GestureDetector(
-              onTap: () {
-                // TODO: Implement image picker
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Image upload coming soon!')),
-                );
-              },
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
-                    child: Text(
-                      authState?.user?.name?.substring(0, 1).toUpperCase() ?? 'U',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(
@@ -470,9 +404,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ref.read(provideAuthViewModelNotifierProvider)?.logout();
+              // Wipe in-memory cart (prefs are cleared by logout below)
+              await ref.read(provideCartViewModelNotifierProvider)?.clearCart();
+              await ref.read(provideAuthViewModelNotifierProvider)?.logout();
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),

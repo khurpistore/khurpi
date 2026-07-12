@@ -30,6 +30,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   
   String _selectedPaymentMethod = 'online';
   bool _isPlacingOrder = false;
+  bool _addressLoadTried = false;
   Map<String, dynamic>? _selectedAddress;
   String _deliveryTime = 'tomorrow'; // 'instant' or 'tomorrow'
   
@@ -155,6 +156,13 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   Widget build(BuildContext context) {
     final cartState = ref.watch(provideCartViewModelProvider);
     final storeState = ref.watch(provideStoreViewModelProvider);
+
+    // Robust address load: if auth restored after initState, load default once.
+    final authUser = ref.watch(provideAuthViewModelProvider)?.user;
+    if (authUser != null && _selectedAddress == null && !_addressLoadTried) {
+      _addressLoadTried = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadDefaultAddress());
+    }
 
     if (cartState == null || cartState.items.isEmpty) {
       // Cart emptied (e.g. all items removed here) -> return to home.
@@ -290,8 +298,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        item.price > 0 ? '₹${item.price.toStringAsFixed(0)} per ${item.unit}' : 'Free gift with your order',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                        item.price > 0 ? '₹${item.price.toStringAsFixed(0)} per ${item.unit}' : '🎁 Won from Spin & Earn',
+                        style: AppTextStyles.caption.copyWith(color: item.price > 0 ? AppColors.textSecondary : AppColors.primary),
                       ),
                       const SizedBox(height: 8),
                       // Quantity controls and total

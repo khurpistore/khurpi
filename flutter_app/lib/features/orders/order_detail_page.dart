@@ -85,7 +85,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
     final List<OrderItemModel> items = order.allItems;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 32 + MediaQuery.of(context).padding.bottom),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -107,9 +107,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
 
           // Payment Summary
           _buildPaymentSummary(order),
-          const SizedBox(height: 24),
-
-          // Action Buttons removed as per requirement
         ],
       ),
     );
