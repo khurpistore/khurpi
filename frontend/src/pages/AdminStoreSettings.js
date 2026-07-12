@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { Store, Truck, Clock, Palette, Save, Loader2 } from 'lucide-react';
+import { Store, Truck, Clock, Palette, Save, Loader2, ListChecks, Plus, X } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -47,6 +47,25 @@ const AdminStoreSettings = () => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
+  const DEFAULT_STATUSES = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'];
+  const orderStatuses = settings?.order_statuses && settings.order_statuses.length > 0
+    ? settings.order_statuses
+    : DEFAULT_STATUSES;
+
+  const updateStatus = (index, value) => {
+    const next = [...orderStatuses];
+    next[index] = value;
+    updateSetting('order_statuses', next);
+  };
+
+  const addStatus = () => {
+    updateSetting('order_statuses', [...orderStatuses, '']);
+  };
+
+  const removeStatus = (index) => {
+    updateSetting('order_statuses', orderStatuses.filter((_, i) => i !== index));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -70,10 +89,11 @@ const AdminStoreSettings = () => {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general"><Store className="w-4 h-4 mr-2" />General</TabsTrigger>
           <TabsTrigger value="delivery"><Truck className="w-4 h-4 mr-2" />Delivery</TabsTrigger>
           <TabsTrigger value="hours"><Clock className="w-4 h-4 mr-2" />Hours</TabsTrigger>
+          <TabsTrigger value="orders"><ListChecks className="w-4 h-4 mr-2" />Orders</TabsTrigger>
           <TabsTrigger value="theme"><Palette className="w-4 h-4 mr-2" />Theme</TabsTrigger>
         </TabsList>
 
@@ -269,6 +289,55 @@ const AdminStoreSettings = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Order Statuses */}
+        <TabsContent value="orders">
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Status Workflow</CardTitle>
+              <CardDescription>
+                Define the order statuses vendors can set. Customers see the status you assign.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {orderStatuses.map((status, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="w-6 text-sm text-muted-foreground">{index + 1}.</span>
+                  <Input
+                    data-testid={`order-status-input-${index}`}
+                    value={status}
+                    onChange={(e) => updateStatus(index, e.target.value)}
+                    placeholder="e.g. out_for_delivery"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    data-testid={`order-status-remove-${index}`}
+                    className="text-destructive"
+                    onClick={() => removeStatus(index)}
+                    disabled={orderStatuses.length <= 1}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="order-status-add"
+                onClick={addStatus}
+              >
+                <Plus className="w-4 h-4 mr-1" /> Add Status
+              </Button>
+              <p className="text-xs text-muted-foreground pt-2">
+                Tip: keep names simple (lowercase with underscores). Click "Save Changes" above to apply.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
 
         {/* Theme Settings */}
         <TabsContent value="theme">

@@ -15,6 +15,14 @@
 - Phone: `9971818259`
 - Password: `test1234`
 
+## Vendor (test account)
+- Login: same app login as customers (phone + password). App shows Vendor Panel in Profile when role==vendor.
+- Phone: `9000000007`
+- Password: `vendor1234`
+- Promoted to vendor via Admin Panel (Users -> green Store icon "Make vendor").
+- Vendor APIs (require JWT of a vendor user): `GET /api/vendor/orders`, `GET /api/vendor/order-statuses`,
+  `PUT /api/vendor/orders/{id}/status`, `GET /api/vendor/products`, `PUT /api/vendor/products/{id}`.
+
 ## Delivery Boy
 - Login URL: /delivery/login (POST /api/delivery-boy/login)
 - Created by admin via /admin/deliveries (delivery boys section).

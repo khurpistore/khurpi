@@ -11,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Search, Pencil, Trash2, KeyRound, Truck, Plus, BadgePercent } from 'lucide-react';
+import { Search, Pencil, Trash2, KeyRound, Truck, Plus, BadgePercent, Store } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { format } from 'date-fns';
 
@@ -170,6 +170,7 @@ const UserDialog = ({ user, onClose, onSuccess }) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="customer">Customer</SelectItem>
+            <SelectItem value="vendor">Vendor</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>
           </SelectContent>
         </Select>
@@ -275,6 +276,18 @@ const AdminUsers = () => {
       fetchUsers();
     } catch (error) {
       toast.error('Failed to delete user');
+    }
+  };
+
+  const handleMakeVendor = async (user, makeVendor) => {
+    try {
+      await axios.put(`${API}/admin/users/${user.id}`, {
+        role: makeVendor ? 'vendor' : 'customer',
+      });
+      toast.success(makeVendor ? `${user.name} is now a Vendor` : `Vendor access removed from ${user.name}`);
+      fetchUsers();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update role');
     }
   };
 
@@ -450,6 +463,7 @@ const AdminUsers = () => {
           <SelectContent>
             <SelectItem value="all">All Roles</SelectItem>
             <SelectItem value="customer">Customer</SelectItem>
+            <SelectItem value="vendor">Vendor</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>
           </SelectContent>
         </Select>
@@ -457,7 +471,7 @@ const AdminUsers = () => {
 
       {/* Stats Summary - Mobile Friendly */}
       <div className="mb-6 p-3 sm:p-4 bg-white rounded-lg border border-border">
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-center">
           <div>
             <p className="text-lg sm:text-2xl font-bold text-primary">{regularUsers.length}</p>
             <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
@@ -465,6 +479,10 @@ const AdminUsers = () => {
           <div>
             <p className="text-lg sm:text-2xl font-bold text-blue-600">{users.filter(u => u.role === 'customer').length}</p>
             <p className="text-xs sm:text-sm text-muted-foreground">Customers</p>
+          </div>
+          <div>
+            <p className="text-lg sm:text-2xl font-bold text-green-600">{users.filter(u => u.role === 'vendor').length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Vendors</p>
           </div>
           <div>
             <p className="text-lg sm:text-2xl font-bold text-purple-600">{users.filter(u => u.role === 'admin').length}</p>
@@ -503,7 +521,7 @@ const AdminUsers = () => {
                   <div className="col-span-3 flex items-center gap-2">
                     <div>
                       <p className="font-medium text-primary">{u.name}</p>
-                      <Badge className={`text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                      <Badge className={`text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : u.role === 'vendor' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
                         {u.role}
                       </Badge>
                     </div>
@@ -528,6 +546,18 @@ const AdminUsers = () => {
                     )}
                   </div>
                   <div className="col-span-3 flex justify-end gap-1">
+                    {u.role !== 'admin' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        data-testid={`toggle-vendor-${u.id}`}
+                        title={u.role === 'vendor' ? 'Remove vendor access' : 'Make vendor'}
+                        className={u.role === 'vendor' ? 'text-green-600' : ''}
+                        onClick={() => handleMakeVendor(u, u.role !== 'vendor')}
+                      >
+                        <Store className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Dialog open={dialogOpen && selectedUser?.id === u.id} onOpenChange={setDialogOpen}>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="ghost" onClick={() => openDialog(u)}>
@@ -573,7 +603,7 @@ const AdminUsers = () => {
                       <p className="font-medium text-primary">{u.name}</p>
                       <p className="text-sm text-muted-foreground">{u.phone}</p>
                     </div>
-                    <Badge className={`text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                    <Badge className={`text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : u.role === 'vendor' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
                       {u.role}
                     </Badge>
                   </div>
@@ -597,6 +627,17 @@ const AdminUsers = () => {
                   )}
                   
                   <div className="flex gap-2">
+                    {u.role !== 'admin' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        data-testid={`toggle-vendor-mobile-${u.id}`}
+                        className={`flex-1 text-xs ${u.role === 'vendor' ? 'text-green-600 border-green-300' : ''}`}
+                        onClick={() => handleMakeVendor(u, u.role !== 'vendor')}
+                      >
+                        <Store className="w-3 h-3 mr-1" /> {u.role === 'vendor' ? 'Unset' : 'Vendor'}
+                      </Button>
+                    )}
                     <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => openDialog(u)}>
                       <Pencil className="w-3 h-3 mr-1" /> Edit
                     </Button>

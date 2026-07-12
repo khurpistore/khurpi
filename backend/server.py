@@ -88,6 +88,26 @@ async def get_optional_user_id(credentials: HTTPAuthorizationCredentials = Depen
     
     return result["payload"].get("user_id")
 
+async def get_current_vendor_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    """Extract user_id from JWT token and ensure the user is a vendor (checked against DB)."""
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    result = decode_jwt_token(credentials.credentials)
+    if not result["valid"]:
+        raise HTTPException(status_code=401, detail=result.get("error", "Invalid token"))
+
+    user_id = result["payload"].get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token: user_id missing")
+
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "role": 1})
+    if not user or user.get("role") != "vendor":
+        raise HTTPException(status_code=403, detail="Vendor access required")
+
+    return user_id
+
+
 # Environment Mode
 ENV = os.environ.get('ENV', 'development')
 IS_PRODUCTION = ENV == 'production'
@@ -961,6 +981,8 @@ class StoreSettings(BaseModel):
     # Product display
     default_unit: str = "kg"  # kg, g, piece, dozen
     show_stock_quantity: bool = True
+    # Order status workflow (configurable by admin, used by vendors)
+    order_statuses: List[str] = ["pending", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"]
     # Theme colors (for dynamic UI)
     primary_color: str = "#16a34a"
     secondary_color: str = "#22c55e"
@@ -988,6 +1010,7 @@ class StoreSettingsUpdate(BaseModel):
     closing_time: Optional[str] = None
     default_unit: Optional[str] = None
     show_stock_quantity: Optional[bool] = None
+    order_statuses: Optional[List[str]] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
     support_phone: Optional[str] = None
@@ -1798,8 +1821,8 @@ async def register(data: RegisterRequest):
 
 @api_router.post("/auth/login")
 async def login(login_data: UserLogin):
-    # Login only for customers (not delivery boys or admin)
-    user = await db.users.find_one({"phone": login_data.phone, "role": "customer"}, {"_id": 0})
+    # Login for customers and vendors (not delivery boys or admin)
+    user = await db.users.find_one({"phone": login_data.phone, "role": {"$in": ["customer", "vendor"]}}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
@@ -5451,6 +5474,146 @@ async def update_order_status(order_id: str, status_data: OrderStatusUpdate):
     
     order = await db.orders.find_one({"id": order_id}, {"_id": 0})
     return order
+
+# ==========================================
+# VENDOR ENDPOINTS (role == "vendor")
+# ==========================================
+
+class VendorOrderStatusUpdate(BaseModel):
+    status: str
+
+class VendorProductUpdate(BaseModel):
+    price: Optional[float] = None
+    mrp: Optional[float] = None
+    stock_quantity: Optional[int] = None
+
+async def _get_order_statuses(project_id: str) -> List[str]:
+    settings = await db.store_settings.find_one({"id": "store_settings"}, {"_id": 0}) or {}
+    statuses = settings.get("order_statuses")
+    if statuses and isinstance(statuses, list) and len(statuses) > 0:
+        return statuses
+    return ["pending", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"]
+
+@api_router.get("/vendor/order-statuses")
+async def vendor_get_order_statuses(
+    vendor_id: str = Depends(get_current_vendor_id),
+    project_id: str = Depends(get_project_id),
+):
+    """Return the configurable order status workflow for vendors to pick from."""
+    return {"statuses": await _get_order_statuses(project_id)}
+
+@api_router.get("/vendor/orders")
+async def vendor_get_orders(
+    vendor_id: str = Depends(get_current_vendor_id),
+    project_id: str = Depends(get_project_id),
+):
+    """Return a simplified list of all customer orders for the vendor to manage."""
+    orders = await db.orders.find(scoped_filter(project_id), {"_id": 0}).sort("created_at", -1).to_list(1000)
+    if not orders:
+        return []
+
+    user_ids = list({o.get("user_id") for o in orders if o.get("user_id")})
+    users_map = {}
+    if user_ids:
+        users = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "name": 1, "phone": 1}).to_list(len(user_ids))
+        users_map = {u["id"]: u for u in users if u.get("id")}
+
+    result = []
+    for order in orders:
+        user = users_map.get(order.get("user_id")) or {}
+        addr = order.get("delivery_address") or {}
+        address_text = addr.get("formatted_address") or addr.get("address") or ""
+
+        items = []
+        for item in ((order.get("items") or []) + (order.get("one_time_items") or [])):
+            if not item:
+                continue
+            items.append({
+                "product_name": item.get("product_name") or "Item",
+                "quantity": item.get("quantity"),
+                "unit": item.get("unit"),
+                "price": item.get("price"),
+            })
+
+        result.append({
+            "id": order.get("id"),
+            "customer_name": user.get("name") or "Customer",
+            "customer_phone": user.get("phone") or "",
+            "address": address_text,
+            "items": items,
+            "total": order.get("total") or order.get("total_amount") or order.get("subtotal") or 0,
+            "status": order.get("status") or "pending",
+            "payment_status": order.get("payment_status") or "pending",
+            "order_source": order.get("order_source") or "online",
+            "created_at": order.get("created_at"),
+        })
+    return result
+
+@api_router.put("/vendor/orders/{order_id}/status")
+async def vendor_update_order_status(
+    order_id: str,
+    data: VendorOrderStatusUpdate,
+    vendor_id: str = Depends(get_current_vendor_id),
+    project_id: str = Depends(get_project_id),
+):
+    """Vendor updates an order's status (visible to the customer)."""
+    valid_statuses = await _get_order_statuses(project_id)
+    if data.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+
+    result = await db.orders.update_one({"id": order_id}, {"$set": {"status": data.status}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    return {"success": True, "id": order_id, "status": data.status}
+
+@api_router.get("/vendor/products")
+async def vendor_get_products(
+    vendor_id: str = Depends(get_current_vendor_id),
+    project_id: str = Depends(get_project_id),
+):
+    """Return products with the fields a vendor can manage: photo, name, mrp, price, stock."""
+    products = await db.products.find(scoped_filter(project_id), {"_id": 0}).sort("name", 1).to_list(2000)
+    result = []
+    for p in products:
+        images = p.get("images") or []
+        image = images[0] if images else p.get("image_url")
+        result.append({
+            "id": p.get("id"),
+            "name": p.get("name"),
+            "image_url": image,
+            "mrp": p.get("mrp"),
+            "price": p.get("price"),
+            "stock_quantity": p.get("stock_quantity", 0),
+            "unit": p.get("unit"),
+            "stock_status": p.get("stock_status"),
+        })
+    return result
+
+@api_router.put("/vendor/products/{product_id}")
+async def vendor_update_product(
+    product_id: str,
+    data: VendorProductUpdate,
+    vendor_id: str = Depends(get_current_vendor_id),
+):
+    """Vendor updates only selling price, MRP and stock quantity of a product."""
+    update_data = {k: v for k, v in data.model_dump(exclude_unset=True).items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+
+    result = await db.products.update_one({"id": product_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    return {
+        "id": product.get("id"),
+        "name": product.get("name"),
+        "mrp": product.get("mrp"),
+        "price": product.get("price"),
+        "stock_quantity": product.get("stock_quantity", 0),
+    }
+
 
 # ============ ADMIN CREATE ORDER (Phone/WhatsApp Orders) ============
 

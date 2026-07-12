@@ -25,6 +25,7 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   formattedAddress: json['formatted_address'] as String?,
   isAdmin: json['is_admin'] as bool? ?? false,
   wholesaleEnabled: json['wholesale_enabled'] as bool? ?? false,
+  role: json['role'] as String? ?? 'customer',
   createdAt: json['created_at'] == null
       ? null
       : DateTime.parse(json['created_at'] as String),
@@ -50,5 +51,6 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'formatted_address': ?instance.formattedAddress,
       'is_admin': instance.isAdmin,
       'wholesale_enabled': instance.wholesaleEnabled,
+      'role': instance.role,
       'created_at': ?instance.createdAt?.toIso8601String(),
     };

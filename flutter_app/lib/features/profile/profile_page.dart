@@ -7,6 +7,9 @@ import 'package:khurpi_fresh/core/constants/app_constants.dart';
 import 'package:khurpi_fresh/features/auth/auth_providers.dart';
 import 'package:khurpi_fresh/features/auth/otp_login_page.dart';
 import 'package:khurpi_fresh/features/orders/orders_page.dart';
+import 'package:khurpi_fresh/features/vendor/vendor_orders_page.dart';
+import 'package:khurpi_fresh/features/vendor/vendor_products_page.dart';
+import 'package:khurpi_fresh/data/models/user_model.dart';
 import 'package:khurpi_fresh/features/cart/cart_providers.dart';
 import 'package:khurpi_fresh/features/address/address_providers.dart';
 import 'package:khurpi_fresh/features/cart/floating_cart_button.dart';
@@ -164,6 +167,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
           const SizedBox(height: 20),
           
+          // Vendor Section (only for vendor users)
+          if (user?.isVendor == true) ...[
+            _buildVendorSection(),
+            const SizedBox(height: 16),
+          ],
+
           // Menu Section
           _buildMenuSection([
             _MenuItem(
@@ -194,6 +203,47 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVendorSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+            child: Row(
+              children: [
+                Icon(Icons.store_mall_directory_outlined, color: AppColors.primary, size: 20),
+                const SizedBox(width: 8),
+                Text('Vendor Panel',
+                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.receipt_long_outlined, color: AppColors.primary),
+            title: Text('Manage Orders', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+            subtitle: Text('View orders and update status', style: AppTextStyles.bodySmall),
+            trailing: Icon(Icons.chevron_right, color: AppColors.textHint),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorOrdersPage())),
+          ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          ListTile(
+            leading: Icon(Icons.inventory_2_outlined, color: AppColors.primary),
+            title: Text('Manage Products', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+            subtitle: Text('Update price & stock', style: AppTextStyles.bodySmall),
+            trailing: Icon(Icons.chevron_right, color: AppColors.textHint),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorProductsPage())),
           ),
         ],
       ),

@@ -24,6 +24,7 @@ abstract class UserModel with _$UserModel {
     @JsonKey(name: 'formatted_address') String? formattedAddress,
     @JsonKey(name: 'is_admin') @Default(false) bool isAdmin,
     @JsonKey(name: 'wholesale_enabled') @Default(false) bool wholesaleEnabled,
+    @JsonKey(name: 'role') @Default('customer') String role,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _UserModel;
 
@@ -39,6 +40,8 @@ abstract class UserModel with _$UserModel {
 
 extension UserModelX on UserModel {
   String get userId => id ?? mongoId ?? '';
+
+  bool get isVendor => role == 'vendor';
 
   String get displayAddress {
     final candidates = [

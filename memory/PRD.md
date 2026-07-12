@@ -160,7 +160,25 @@ The codebase has been synced from the GitHub branch `feature/5july_deployed`. Th
 - Floating cart: image stack width scales with item count; pill is content-width & centered (fixed overlap).
 - Search: added `_searchSeq` guard to drop stale responses (fixes clear→wrong-result race). Removed "in stock" label. Tile is now a simple divider row (no card) with tall image (60×120). Empty states aligned above center via Align(0,-0.45).
 
-## Multi-image gallery (2026-06) — DONE
+## Vendor Role (2026-07) — DONE (backend + admin verified; Flutter needs local rebuild)
+- **Requirement**: Admin can flip a user to "vendor". A vendor logs in via the same app (phone+password) and gets a Vendor Panel in Profile to (1) manage ALL customer orders + update status (visible to customer), (2) update products' selling price, MRP & stock. Order statuses are configurable from Admin Store Settings.
+- **Backend** (`server.py`):
+  - `get_current_vendor_id` guard (JWT decode + DB role==vendor check → 403/401 otherwise). Vendor routes under `/api/vendor/*` are NOT caught by admin middleware.
+  - `/auth/login` now allows role in {customer, vendor} (was customer-only).
+  - `StoreSettings.order_statuses: List[str]` (default 6-status workflow) + in `StoreSettingsUpdate`.
+  - Endpoints: `GET /vendor/order-statuses`, `GET /vendor/orders` (simplified: customer name/phone, address, items, total, status), `PUT /vendor/orders/{id}/status` (validates against configured statuses), `GET /vendor/products` (photo/name/mrp/price/stock), `PUT /vendor/products/{id}` (price, mrp, stock_quantity only).
+  - All curl-verified incl. security (customer→403, no-token→401) and config flow (admin sets statuses → vendor sees them).
+- **Admin panel**:
+  - `AdminUsers.js`: green "Make vendor"/"Unset" Store-icon toggle (desktop+mobile), vendor added to Edit role select + role filter, green "vendor" badge, Vendors stat card. Verified rendering.
+  - `AdminStoreSettings.js`: new "Orders" tab = Order Status Workflow editor (add/remove/edit statuses). Verified rendering.
+- **Flutter** (needs local `flutter run` to compile-verify — no SDK here):
+  - `UserModel`: added `role` (default 'customer') + `isVendor` getter. Hand-edited freezed/g.dart (all 21 role touch-points, brace-verified).
+  - New pages `features/vendor/vendor_orders_page.dart` & `vendor_products_page.dart` using `DioClient.instance` directly (no codegen). Orders: card list + status dropdown from `/vendor/order-statuses`. Products: list (photo/name/MRP/price/stock) + bottom-sheet editor.
+  - `profile_page.dart`: "Vendor Panel" section (Manage Orders / Manage Products) shown only when `user.isVendor`.
+  - NOTE: a promoted vendor must log out & log back in for the app to pick up the new role.
+- Test vendor: phone `9000000007` / `vendor1234`.
+
+## Product MRP + Multi-image gallery (2026-06) — DONE
 - **Backend**: added `images: List[str]` to Product/ProductCreate/ProductUpdate. All 4 product-serving endpoints (list, by-category, featured, single, search) normalize `images` → falls back to `[primary]` when empty. Curl-verified: set/get/list/search all return the array; empty → `[primary]`.
 - **Admin panel** (`AdminProducts.js`): "Additional Images (Gallery)" editor — add/remove image URL rows with thumbnail preview; submit merges `[primary, ...additional]` unique into `images`.
 - **Flutter**: added `images` to `ProductModel` (freezed hand-edit, plain nullable list field) + `galleryImages` getter. Product detail bottom sheet now shows a swipeable `PageView` carousel with animated dot indicators. Needs local `flutter run` to compile-verify (no SDK here).
