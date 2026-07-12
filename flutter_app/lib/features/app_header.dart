@@ -60,7 +60,17 @@ class AppHeader extends ConsumerWidget {
                 children: [
                   // Delivery Location OR App Name
                   Expanded(
-                    child: GestureDetector(
+                    child: !isLoggedIn
+                        ? Text(
+                            appName,
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              letterSpacing: 0.5,
+                            ),
+                          )
+                        : GestureDetector(
                       onTap: onAddressTap,
                       child: Row(
                         children: [
